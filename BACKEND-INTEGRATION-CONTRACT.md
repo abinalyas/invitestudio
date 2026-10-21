@@ -1,6 +1,6 @@
 # InviteStudio backend integration contract (draft)
 
-Status: proposed contract for implementation review; no backend is connected in this package.
+Status: implementation contract; no backend is connected in this package. Recommended infrastructure: Cloudflare Pages + Supabase. See [Technical Architecture Decision](docs/TECHNICAL_ARCHITECTURE_DECISION.md) for deployment, schema, access-control, and rollout decisions.
 
 ## Project resource
 
