@@ -36,6 +36,13 @@ test('intro style changes to a compatible signature transition', async ({ page }
   const envelopeOptions = await transition.locator('option').evaluateAll(options => options.map(o => o.value));
   expect(envelopeOptions).toContain('envelope');
   expect(envelopeOptions).not.toContain('floral');
+  const expectedDefaults = {cinematic:'dissolve',floral:'floral',envelope:'envelope',monogram:'monogram',editorial:'page-turn',celebration:'confetti',nature:'scenic',type:'type-wipe',storybook:'illustration',light:'light-sweep'};
+  for (const [intro, signature] of Object.entries(expectedDefaults)) {
+    await style.selectOption(intro);
+    await expect(transition).toHaveValue(signature);
+    const values = await transition.locator('option').evaluateAll(options => options.map(o => o.value));
+    expect(values).toContain(signature);
+  }
 });
 
 test('preview and publish dialog provide an honest path back to the invitation', async ({ page }) => {
