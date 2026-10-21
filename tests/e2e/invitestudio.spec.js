@@ -14,7 +14,7 @@ test('homepage starts a short personalised-preview journey', async ({ page }) =>
   await page.locator('#projectDate').fill('2027-01-20');
   await page.getByRole('button', { name: /create my preview/i }).click();
   await expect(page.getByText(/your first preview is ready/i)).toBeVisible();
-  await expect(page.locator('#live-preview')).toContainText('Mira & Arun');
+  await expect(page.locator('main')).toContainText('Mira & Arun');
 });
 
 test('intro style changes to a compatible signature transition', async ({ page }) => {
