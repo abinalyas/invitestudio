@@ -1,0 +1,14 @@
+PASS JavaScript parses
+PASS Category changes synchronize selected template
+PASS Setup navigation checks save result
+PASS Locale is restored from saved project
+PASS Setup template switching preserves current project
+PASS Gallery has explicit empty state
+PASS Photo uploads respect remaining capacity
+PASS Photo save failure rolls back in-memory state
+PASS Publish does not claim success if save fails
+PASS Demo publishing limitation is explicit
+PASS RSVP limitation is explicit
+PASS Section add/reorder/hide controls exist
+PASS Function add/reorder/hide/duplicate controls exist
+SUMMARY 13 passed, 0 failed (source-level checks only)
