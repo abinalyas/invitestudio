@@ -29,6 +29,56 @@ button:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
  .modal{width:min(94vw,560px);max-height:88vh;overflow:auto}
 }
 
+
+/* InviteStudio design pass: editorial hero, device mockups, and compact feature strip */
+.hero{grid-template-columns:.92fr 1.08fr;gap:38px;padding-top:46px;padding-bottom:30px}
+.hero h1{max-width:590px;font-size:clamp(40px,4.7vw,62px);line-height:1.06;letter-spacing:-2px}
+.hero h1 em{font-style:normal;color:#8d6a43}
+.hero-art{height:390px;background:#e9e0d3;border:1px solid #e4d9ca;overflow:visible;box-shadow:0 18px 48px #4a382012}
+.hero-art>img{border-radius:18px;object-fit:cover}
+.hero-art:after{content:"";position:absolute;inset:0;border-radius:18px;background:linear-gradient(90deg,#f7f0e522,transparent 60%);pointer-events:none}
+.art-label{z-index:2;left:7%;right:7%;bottom:7%;padding:12px 16px;background:#fffdf7f2}
+.device-phone{position:absolute;z-index:3;right:3%;bottom:5%;width:105px;height:190px;border:5px solid #292824;border-radius:20px;background:#fffdf7;box-shadow:0 12px 28px #251c1533;overflow:hidden;padding:5px}
+.device-phone img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.device-phone:before{content:"";position:absolute;top:5px;left:32%;right:32%;height:8px;border-radius:0 0 8px 8px;background:#292824;z-index:2}
+.hero-note{margin-top:22px}
+.home-categories{grid-template-columns:repeat(8,minmax(0,1fr));gap:10px}
+.home-categories .category{padding:15px 6px;border-radius:11px}
+.home-categories .category .emoji{font-size:22px;margin-bottom:9px;color:#8d6a43}
+.home-categories .category strong{font-size:11px}
+.benefit-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:8px 0 42px;padding:18px 20px;background:#eee8dd;border:1px solid #e4dbce;border-radius:13px}
+.benefit-item{display:flex;gap:10px;align-items:center;min-width:0}
+.benefit-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border:1px solid #d9c8b2;border-radius:50%;color:#8d6a43;background:#fffaf3;font-size:16px}
+.benefit-item strong{display:block;font-size:11px;font-weight:700}
+.benefit-item small{display:block;color:var(--muted);font-size:10px;margin-top:3px;line-height:1.4}
+.home-template-section{padding-top:20px}
+.template-card{border-radius:10px}
+.template-thumb{height:205px}
+.template-info h3{font-size:17px}
+.template-info{padding:12px}
+@media(max-width:900px){
+ .home-categories{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .benefit-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .hero-art{height:350px}
+}
+@media(max-width:640px){
+ .hero{padding-top:30px;gap:20px}
+ .hero h1{font-size:clamp(36px,10vw,45px);letter-spacing:-1.4px}
+ .hero-art{height:280px;overflow:hidden;border-radius:15px}
+ .device-phone{width:77px;height:142px;border-width:4px;right:3%;bottom:17%}
+ .art-label{left:5%;right:18%;bottom:5%;padding:10px}
+ .art-label strong{font-size:16px}
+ .home-categories{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+ .home-categories .category{padding:12px 4px}
+ .home-categories .category strong{font-size:10px}
+ .benefit-strip{gap:12px;padding:14px;margin-bottom:25px}
+ .benefit-item{align-items:flex-start;gap:7px}
+ .benefit-icon{width:29px;height:29px;flex-basis:29px;font-size:13px}
+ .benefit-item strong{font-size:10px}
+ .benefit-item small{font-size:9px}
+ .template-thumb{height:155px}
+}
+
 </style></head>
 <body><div id="app" class="app"></div><div id="modal-root"></div><div id="toast-root" aria-live="polite" aria-atomic="true"></div>
 <script>
@@ -63,8 +113,35 @@ function toast(message){const root=document.getElementById('toast-root');root.in
 function header(){return `<header class="topbar"><div class="brand" onclick="go('home')">Invite<span>Studio</span></div><nav class="nav"><a onclick="go('templates')">Templates</a><a onclick="document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">How it works</a><a onclick="toast('Pricing plans will be added later')">Pricing</a><a onclick="toast('Help center coming soon')">Help</a></nav><div class="top-actions"><button class="btn" onclick="go('dashboard')">My projects</button><button class="btn dark" onclick="startCreate()">Get started ↗</button></div></header>`}
 function footer(){return `<footer class="footer container"><div class="brand">Invite<span>Studio</span></div><div>Made for moments that matter. <span style="margin-left:8px">© 2026 InviteStudio</span></div></footer>`}
 function templateCard(t){return `<article class="template-card"><div class="template-thumb">${img(t.image,t.name)}<span class="tag">${t.category}</span></div><div class="template-info"><h3>${t.name}</h3><p>${t.desc}</p><div class="template-foot"><div class="swatches">${t.colors.map(c=>`<i style="background:${c}"></i>`).join('')}</div><button class="btn small" onclick="previewTemplate('${t.id}')">Preview ↗</button></div></div></article>`}
-function home(){return `${header()}<main><section class="hero container"><div><div class="eyebrow">A little magic, made yours</div><h1>Beautiful websites for life's <em>special moments.</em></h1><p>Create a stunning, personalized invitation website in minutes. Choose a design, add your details, and share it with the people who matter.</p><div class="hero-buttons"><button class="btn dark" onclick="startCreate()">Create your website ↗</button><button class="btn" onclick="go('templates')">Explore templates</button></div><div class="hero-note"><div class="avatars"><span></span><span></span><span></span></div><span>Made for every kind of celebration</span></div></div><div class="hero-art">${img(templates[0].image,'Elegant celebration setup')}<div class="art-label"><div><strong>Meera & Abin</strong><small>Our day, our story · 24 August</small></div><span style="font-size:24px;color:#ad895c">✳</span></div></div></section><section class="section container"><div class="section-head"><div><div class="eyebrow">Start with a moment</div><h2>What are you celebrating?</h2><p>We'll help you find the right look and feel.</p></div><button class="text-link" onclick="startCreate()">All event types ↗</button></div><div class="categories">${categories.slice(0,6).map(([n,e])=>`<button class="category" onclick="startCreate('${n}')"><div class="emoji">${e}</div><strong>${n}</strong></button>`).join('')}</div></section><section class="section container"><div class="section-head"><div><div class="eyebrow">Thoughtfully designed</div><h2>Find your kind of beautiful.</h2><p>Start with a design. Make every detail your own.</p></div><button class="text-link" onclick="go('templates')">View all templates ↗</button></div><div class="template-grid">${templates.slice(0,4).map(templateCard).join('')}</div></section><section class="container"><div class="how" id="how"><div class="eyebrow">Simple by design</div><h2 style="font:500 32px var(--serif);margin:10px 0">From idea to invitation in three steps.</h2><div class="steps"><div><div class="step-number">01</div><h3>Choose your canvas</h3><p>Pick a template that feels like you, for whatever you're celebrating.</p></div><div><div class="step-number">02</div><h3>Make it yours</h3><p>Add your details, functions, photos and a few personal touches.</p></div><div><div class="step-number">03</div><h3>Share the joy</h3><p>Preview your website and get it ready to share with your guests.</p></div></div></div></section></main>${footer()}`}
-function templatesPage(){const visible=templates.filter(t=>(state.category==='All'||t.category===state.category)&&(state.filter==='All Templates'||t.style===state.filter)&&(t.name+' '+t.category+' '+t.desc).toLowerCase().includes(state.search.toLowerCase()));return `${header()}<main class="container view"><div class="page-title"><div class="eyebrow">The template collection</div><h1>Find the feeling.</h1><p>Beautiful starting points, with room to make them your own.</p></div><div class="filters"><input class="search" placeholder="Search templates…" value="${esc(state.search)}" oninput="state.search=this.value;renderTemplatesOnly()">${['All Templates','Modern','Elegant','Minimal','Colorful','Editorial'].map(f=>`<button class="pill ${state.filter===f?'active':''}" onclick="state.filter='${f}';render()">${f}</button>`).join('')}<select class="search" style="margin-left:auto;min-width:150px" onchange="state.category=this.value;render()"><option value="All">All event types</option>${categories.map(([n])=>`<option ${state.category===n?'selected':''}>${n}</option>`).join('')}</select></div><div class="template-grid" id="template-grid">${visible.map(templateCard).join('')||'<div class="empty" style="grid-column:1/-1">No templates match. Try another filter.</div>'}</div></main>${footer()}`}
+function home(){return `${header()}<main>
+<section class="hero container">
+ <div>
+  <div class="eyebrow">Beautifully yours, from the very first click</div>
+  <h1>Beautiful invitation websites for life’s <em>special moments.</em></h1>
+  <p>Create a stunning, personalized website in minutes. Choose a template, add your details, and share your celebration with the people you love.</p>
+  <div class="hero-buttons"><button class="btn dark" onclick="startCreate()">Create your website ↗</button><button class="btn" onclick="go('templates')">Explore templates</button></div>
+  <div class="hero-note"><div class="avatars"><span></span><span></span><span></span></div><span>Thoughtfully designed for your most meaningful moments</span></div>
+ </div>
+ <div class="hero-art">
+  ${img(templates[0].image,'Elegant invitation website preview')}
+  <div class="art-label"><div><strong>Meera & Abin</strong><small>Our day, our story · 24 August</small></div><span style="font-size:24px;color:#ad895c">✳</span></div>
+  <div class="device-phone">${img(templates[0].image,'Mobile invitation preview')}</div>
+ </div>
+</section>
+<section class="section container" style="padding-top:16px;padding-bottom:24px">
+ <div class="section-head"><div><div class="eyebrow">Start with a moment</div><h2>What are you celebrating?</h2><p>Choose an occasion and find a design that feels like you.</p></div><button class="text-link" onclick="startCreate()">All event types ↗</button></div>
+ <div class="categories home-categories">${[['Wedding','♡'],['Engagement','♢'],['Birthday','♧'],['Baptism','✳'],['Anniversary','♡'],['Baby Shower','♧'],['Celebration','✧'],['Other Event','＋']].map(([n,e])=>`<button class="category" onclick="startCreate('${n}')"><div class="emoji">${e}</div><strong>${n}</strong></button>`).join('')}</div>
+</section>
+<section class="container"><div class="benefit-strip">
+ <div class="benefit-item"><span class="benefit-icon">✧</span><div><strong>Beautiful templates</strong><small>Designed for your big moments</small></div></div>
+ <div class="benefit-item"><span class="benefit-icon">▣</span><div><strong>Easy to create</strong><small>No design skills needed</small></div></div>
+ <div class="benefit-item"><span class="benefit-icon">↗</span><div><strong>Share instantly</strong><small>One link for your guests</small></div></div>
+ <div class="benefit-item"><span class="benefit-icon">▯</span><div><strong>Works on every device</strong><small>Mobile, tablet and desktop</small></div></div>
+</div></section>
+<section class="section container home-template-section"><div class="section-head"><div><div class="eyebrow">A little inspiration</div><h2>Find your kind of beautiful.</h2><p>Start with a design. Make every detail your own.</p></div><button class="text-link" onclick="go('templates')">View all templates ↗</button></div><div class="template-grid">${templates.slice(0,4).map(templateCard).join('')}</div></section>
+<section class="container"><div class="how" id="how"><div class="eyebrow">Simple by design</div><h2 style="font:500 32px var(--serif);margin:10px 0">From idea to invitation in three steps.</h2><div class="steps"><div><div class="step-number">01</div><h3>Choose your canvas</h3><p>Pick a template that feels like you, for whatever you're celebrating.</p></div><div><div class="step-number">02</div><h3>Make it yours</h3><p>Add your details, functions, photos and personal touches.</p></div><div><div class="step-number">03</div><h3>Share the joy</h3><p>Preview your website and prepare it to share with your guests.</p></div></div></div></section>
+</main>${footer()}`}
+function templatesPage(){const visible=templates.filter(t=>(state.category==='All'||t.category===state.category)&&(state.filter==='All Templates'||t.style===state.filter)&&(t.name+' '+t.category+' '+t.desc).toLowerCase().includes(state.search.toLowerCase()));return `${header()}<main class="container view"><div class="page-title"><div class="eyebrow">The template collection</div><h1>Find the feeling.</h1><p>Beautiful starting points, with room to make them your own.</p></div><div class="filters"><input class="search" placeholder="Search templates…" value="${esc(state.search)}" oninput="state.search=this.value;renderTemplatesOnly()">${['All Templates','Modern','Elegant','Minimal','Colorful','Editorial'].map(f=>`<button class="pill ${state.filter===f?'active':''}" onclick="state.filter='${f}';render()">${f}</button>`).join('')}<select class="search" style="margin-left:auto;min-width:150px" onchange="state.category=this.value;render()"><option value="All">All event types</option>${categories.map(([n])=>`<option ${state.category===n?'selected':''}>${n}</option>`).join('')}</select></div><div class="template-grid" id="template-grid">${visible.map(templateCard).join('')||'<div class="empty" style="grid-column:1/-1">No templates match these filters. Clear your search or choose another style.</div>'}</div></main>${footer()}`}
 function renderTemplatesOnly(){const el=document.getElementById('template-grid');if(!el)return;const visible=templates.filter(t=>(state.category==='All'||t.category===state.category)&&(state.filter==='All Templates'||t.style===state.filter)&&(t.name+' '+t.category+' '+t.desc).toLowerCase().includes(state.search.toLowerCase()));el.innerHTML=visible.map(templateCard).join('')||'<div class="empty" style="grid-column:1/-1">No templates match. Try another filter.</div>'}
 function startCreate(cat){state.currentId=null;state.category=cat||'Wedding';state.selectedTemplate=templates.find(t=>t.category===state.category||t.category===categoryAlias(state.category))?.id||'eternal';state.setupStep=0;state.page='setup';render()}
 function setupPage(){const steps=['Basics','Your story','Functions','Photos & style'];const p=current();return `${header()}<main class="container view"><div class="page-title"><div class="eyebrow">Let's make it yours</div><h1>Create your website</h1><p>Start with a few details. Everything can be changed later.</p></div><div class="flow-layout"><aside class="flow-sidebar">${steps.map((s,i)=>`<div class="flow-step ${state.setupStep===i?'active':''}"><span class="num">${i+1}</span>${s}</div>`).join('')}</aside><section class="panel">${setupContent()}<div class="flow-actions"><button class="btn" onclick="${state.setupStep===0?'if(saveSetupFields()){state.templateReturnToSetup=true;go(\'templates\')}':'setSetupStep(-1)'}">${state.setupStep===0?'Choose a different template':'← Back'}</button><button class="btn dark" onclick="setSetupStep(1)">${state.setupStep===3?'Open editor':'Continue →'}</button></div></section></div></main>${footer()}`}
