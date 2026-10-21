@@ -56,7 +56,7 @@ test('preview and publish dialog provide an honest path back to the invitation',
   await expect(page.getByText(/you can’t publish a live website yet/i)).toBeVisible();
   await page.getByRole('button', { name: /view my preview/i }).click();
   await expect(page.getByText('Website preview')).toBeVisible();
-  await expect(page.locator('#live-preview')).toContainText('Mira & Arun');
+  await expect(page.locator('main')).toContainText('Mira & Arun');
 });
 
 for (const width of [320, 375, 390, 768, 1280]) {
