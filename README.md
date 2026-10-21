@@ -23,3 +23,14 @@ Open http://localhost:8000.
 - Browser automation was blocked by the current execution environment's navigation policy. QA2-01 remains open until a supported browser run is completed.
 - Publishing and RSVP are demo-only. No public site, server storage, authentication, or RSVP submission persistence is created.
 - Production readiness, real device/browser compatibility, and visual parity have not been certified.
+
+
+## Latest design-fidelity pass
+
+- Reworked the landing page hierarchy with a more editorial headline, invitation/laptop-style hero treatment, phone mockup, eight event shortcuts, and a four-item benefits strip.
+- Added small-screen layout adjustments for the hero, category shortcuts, benefits strip, and template cards.
+- Reworked template preview into a split, image-led detail panel with theme swatches and a clear “Use this template” action.
+- Added lazy image loading where the shared image helper supports it.
+- Improved empty template search result copy.
+
+These changes are committed to the `main` branch. After GitHub Pages finishes deploying, review the live site on desktop and mobile. This is a design iteration, not a claim that every storyboard panel is pixel-identical or that browser regression has passed.
