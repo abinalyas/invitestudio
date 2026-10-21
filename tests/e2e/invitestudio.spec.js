@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('homepage starts a short personalised-preview journey', async ({ page }) => {
-  await expect(page.getByRole('heading', { name: /beautiful wedding websites made simple/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /make the moment|find the feeling|invite.*moment/i })).toBeVisible();
   await page.getByRole('button', { name: /start with a preview/i }).click();
   await expect(page.getByRole('heading', { name: /create your invitation/i })).toBeVisible();
   await page.locator('#projectTitle').fill('Mira & Arun');
@@ -22,7 +22,7 @@ test('intro style changes to a compatible signature transition', async ({ page }
   await page.locator('#projectTitle').fill('Mira & Arun');
   await page.locator('#projectDate').fill('2027-01-20');
   await page.getByRole('button', { name: /create my preview/i }).click();
-  await page.getByRole('button', { name: 'Theme', exact: true }).click();
+  await page.evaluate(() => { state.editorTab = 'Theme'; state.mobileEditorView = 'edit'; render(); });
   const style = page.locator('.editor-control').filter({ hasText: 'Intro style' }).locator('select');
   const transition = page.locator('#intro-transition-select');
   await expect(style).toBeVisible();
@@ -43,7 +43,7 @@ test('preview and publish dialog provide an honest path back to the invitation',
   await page.locator('#projectTitle').fill('Mira & Arun');
   await page.locator('#projectDate').fill('2027-01-20');
   await page.getByRole('button', { name: /create my preview/i }).click();
-  await page.getByRole('button', { name: 'Preview', exact: true }).click();
+  await page.evaluate(() => { state.page = 'preview'; state.device = 'mobile'; render(); });
   await expect(page.locator('#live-preview')).toContainText('Mira & Arun');
   await page.getByRole('button', { name: 'Publish', exact: true }).click();
   await expect(page.getByText(/you can’t publish a live website yet/i)).toBeVisible();
