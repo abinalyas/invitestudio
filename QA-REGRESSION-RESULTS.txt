@@ -1,14 +1,24 @@
-PASS JavaScript parses
-PASS Category changes synchronize selected template
-PASS Setup navigation checks save result
-PASS Locale is restored from saved project
-PASS Setup template switching preserves current project
-PASS Gallery has explicit empty state
-PASS Photo uploads respect remaining capacity
-PASS Photo save failure rolls back in-memory state
-PASS Publish does not claim success if save fails
-PASS Demo publishing limitation is explicit
-PASS RSVP limitation is explicit
-PASS Section add/reorder/hide controls exist
-PASS Function add/reorder/hide/duplicate controls exist
-SUMMARY 13 passed, 0 failed (source-level checks only)
+InviteStudio QA follow-up — 2026-10-21
+
+Verified in source before CI execution:
+PASS JavaScript syntax check (new Function on current inline script)
+PASS Preview action function and button label are present
+PASS Updated publish availability wording is reflected in qa-regression.js
+PASS Intro profile map and renderer transition resolver are present
+PASS Style-compatible transition selector copy is present
+PASS Existing replay/skip controls are present
+PASS Local-save and non-public-preview copy remain present
+
+CI:
+A GitHub Actions source-regression workflow was added at .github/workflows/qa-regression.yml. Its run is pending at the time of this report; do not treat the expanded qa-regression.js suite as executed until that run completes.
+
+Deployment:
+GitHub Pages build and deployment succeeded for commit a249b953fb8bb695f838339012b0c3d2e85dfe26 (run 39625946961). The later QA workflow commit has not yet been confirmed through a completed Pages run.
+
+NOT RUN:
+- Browser-based visual comparison against the supplied eight-screen design
+- Responsive screenshots at 320, 375, 390, 768 and 1280 px
+- Intro animation timing/transition/replay/skip end-to-end tests
+- Editor save/reload and full guest RSVP flow
+
+Important: publishing and server-backed RSVP are still unavailable in this frontend-only prototype.
