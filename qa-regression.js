@@ -21,6 +21,11 @@ const checks = [
   ['RSVP limitation is explicit', () => { if (!js.includes('RSVP preview only — backend not connected')) throw Error('RSVP limitation text missing'); }],
   ['Section add/reorder/hide controls exist', () => { for (const fn of ['addCustomSection','moveSection','toggleSection']) if (!js.includes('function '+fn+'(')) throw Error(fn+' missing'); }],
   ['Function add/reorder/hide/duplicate controls exist', () => { for (const fn of ['addFunction','moveFunction','toggleFunction','duplicateFunction']) if (!js.includes('function '+fn+'(')) throw Error(fn+' missing'); }],
+  ['Onboarding can skip optional details', () => { if (!js.includes('function skipSetupStep()') || !js.includes('Skip for now')) throw Error('optional onboarding skip missing'); }],
+  ['Pricing and privacy expectations are explicit', () => { for (const text of ['function openInfo(type)','No paid plans or charges','Drafts stay in this browser on this device']) if (!js.includes(text)) throw Error(text+' missing'); }],
+  ['Wedding function supports guest logistics', () => { for (const field of ['fnParking','fnAccommodation','fnAccessibility']) if (!js.includes('id="'+field+'"')) throw Error(field+' missing'); }],
+  ['Guest logistics render on invitation preview', () => { for (const field of ['f.parking','f.accommodation','f.accessibility']) if (!js.includes(field)) throw Error(field+' preview missing'); }],
+  ['Function end time is validated', () => { if (!js.includes('End time must be after the start time.')) throw Error('end time validation missing'); }],
 ];
 let failures=0;
 for (const [name, run] of checks) { try { run(); console.log('PASS '+name); } catch(e) { failures++; console.log('FAIL '+name+' — '+e.message); } }
