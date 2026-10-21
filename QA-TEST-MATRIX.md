@@ -26,3 +26,17 @@ Run `node qa-regression.js`. The current script reports 13 source-level checks p
 ## Release gate
 
 Do not approve backend-integration readiness until QA2-01 has a completed browser run, the core user journey passes, responsive checks have evidence, and API contract decisions are agreed. Publishing and RSVP remain prototype-only in this package.
+
+
+## Follow-up coverage (2026-10-21)
+
+| ID | Scenario | Expected result | Status |
+|---|---|---|---|
+| QA-PUBLISH-01 | Draft dialog → View my preview | Closes dialog and opens the existing mobile invitation preview | Source assertion added; CI run pending |
+| QA-INTRO-01 | Change each intro style | Matching profile and signature transition resolve in the renderer | Source assertions added; browser animation test NOT RUN |
+| QA-INTRO-02 | Change transition option | Only compatible alternatives are offered and renderer uses selected compatible transition | Source assertions added; browser test NOT RUN |
+| QA-INTRO-03 | Replay/skip intro | Full sequence replays once; skip reaches invitation without blocking interaction | Controls exist in source; end-to-end behaviour NOT RUN |
+| QA-DEPLOY-01 | Latest source commits | GitHub Pages build and deploy completes successfully | Pages deployment succeeded for commit a249b953; new QA workflow added after that run |
+| QA-RESP-02 | Compare design reference at desktop/mobile sizes | No overflow; hierarchy and composition match designer's eight screens | NOT RUN: no browser screenshot evidence |
+
+A separate GitHub Actions workflow now runs `node qa-regression.js` on pushes and pull requests. This workflow verifies source-level assertions only; it is not a substitute for browser visual regression or end-to-end tests.
