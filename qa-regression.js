@@ -4,6 +4,11 @@ const html = fs.readFileSync(__dirname + '/index.html', 'utf8');
 const js = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 const checks = [
   ['JavaScript parses', () => { new Function(js); }],
+  ['Landing page includes eight event shortcuts', () => { if (!js.includes("['Wedding','♡'],['Engagement','♢'],['Birthday','♧'],['Baptism','✳'],['Anniversary','♡'],['Baby Shower','♧'],['Celebration','✧'],['Other Event','＋']")) throw Error('reference event shortcuts missing'); }],
+  ['Landing page includes benefits strip', () => { for (const text of ['Beautiful templates','Easy to create','Share instantly','Works on every device']) if (!js.includes(text)) throw Error(text+' missing'); }],
+  ['Template detail preview includes swatches and use action', () => { if (!js.includes('template-detail-swatches') || !js.includes('Use this template →')) throw Error('template detail composition missing'); }],
+  ['Template preview modal receives wide layout class', () => { if (!js.includes("content.includes('template-detail-modal')?'template-detail-shell':''")) throw Error('wide modal class missing'); }],
+  ['Responsive and reduced-motion rules exist', () => { if (!html.includes('@media(max-width:480px)') || !html.includes('prefers-reduced-motion:reduce')) throw Error('responsive or reduced motion rules missing'); }],
   ['Category changes synchronize selected template', () => { if (!js.includes("const compatible=templates.find(t=>t.category===state.category||t.category===categoryAlias(state.category))")) throw Error('compatible template synchronization missing'); }],
   ['Setup navigation checks save result', () => { if (!js.includes('function setSetupStep(delta){if(!saveSetupFields())return;')) throw Error('save result not checked'); }],
   ['Locale is restored from saved project', () => { if (!js.includes("(p.locale||'English')===locale")) throw Error('locale binding missing'); }],
