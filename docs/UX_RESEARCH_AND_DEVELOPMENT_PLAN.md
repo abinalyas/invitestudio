@@ -205,3 +205,21 @@ For each important form/action provide: default, focused, invalid, submitting/lo
 4. Design and implement publish status/error/recovery states alongside the real publishing vertical slice.
 5. Complete guest-facing mobile schedule and RSVP states with secure backend behaviour.
 6. Run moderated tests with 5–8 UK couples; record task completion, time to personalised preview, errors, confidence and verbatim feedback. The under-2-minute preview and 5/5 completion figures remain proposed targets, not current results.
+
+
+## Implementation update — 2026-10-23
+
+The following frontend improvements have now been committed:
+- Added a real `#how` destination for the homepage "How it works" navigation, with a three-step explanation of the creation journey.
+- Fixed quick-personalisation category changes so the template image in the live preview updates immediately.
+- Added an explicit device-only draft persistence notice to My Projects.
+- Clarified on the standalone preview page that it is a preview, drafts are stored on the current device, and public publishing/live RSVPs are not available.
+- Added source regression checks for these behaviours.
+
+These changes improve guidance and transparency; they do not remove the core backend blockers. Before positioning InviteStudio as launch-ready, the following still require implementation and environment-specific decisions:
+1. **Publishing:** choose and configure the hosting/data contract for public invitation URLs; verify published pages open outside the editor and reflect the latest saved version.
+2. **Cloud persistence/authentication:** choose an account/project-access model and connect secure save/load, recovery, and migration from local drafts.
+3. **RSVP backend:** store submissions securely, associate them with the correct invitation, validate and rate-limit requests, and provide a host response dashboard.
+4. **Browser validation:** run the Playwright suite against the updated commit and test the main flows at 320, 375, 390, 768 and 1280px, including keyboard and reduced-motion behaviour.
+
+Do not claim publishing, cloud sync, or live RSVP functionality until the end-to-end acceptance criteria in US-01, US-02 and US-03 pass.
