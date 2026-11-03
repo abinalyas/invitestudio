@@ -4,3 +4,6 @@
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=replace-with-server-only-secret
 ALLOWED_ORIGIN=http://localhost:8788
+INVITESTUDIO_PUBLIC_ORIGIN=http://localhost:8788
+RESEND_API_KEY=replace-with-server-only-secret
+EMAIL_FROM=InviteStudio <hello@example.com>

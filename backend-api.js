@@ -57,6 +57,13 @@
         headers: { Authorization: `Bearer ${editToken}` }
       });
     },
+    sendEditLinkEmail(id, editToken, email) {
+      return request(`/weddings/${encodeURIComponent(id)}/edit-link/email`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${editToken}` },
+        body: JSON.stringify({ email })
+      });
+    },
     publishWedding(id, editToken, version, slug) {
       return request(`/weddings/${encodeURIComponent(id)}/publish`, {
         method: 'POST',

@@ -44,6 +44,21 @@ The editor's event list and gallery metadata are saved in `weddings.content`.
 The current phase does not upload local image bytes; `wedding_photos` and
 Supabase Storage are reserved for the media-upload phase.
 
+### Send a private link by email
+
+```http
+POST /api/weddings/<uuid>/edit-link/email
+Authorization: Bearer <currentEditToken>
+Content-Type: application/json
+
+{"email":"you@example.com"}
+```
+
+This issues a fresh hashed edit token and sends the private `/edit/<token>` link
+through Resend. The existing edit links remain valid until they expire or are
+revoked. Email delivery is optional; if the provider is not configured, the
+draft remains available and the editor can still copy a private link.
+
 ### Retrieve a private draft
 
 ```http
@@ -121,6 +136,9 @@ Configure these as Cloudflare Pages environment variables/secrets:
 - `SUPABASE_URL` — regular environment variable
 - `SUPABASE_SERVICE_ROLE_KEY` — encrypted secret, server-only
 - `ALLOWED_ORIGIN` — the deployed InviteStudio origin
+- `INVITESTUDIO_PUBLIC_ORIGIN` — origin used in emailed `/edit/<token>` links
+- `RESEND_API_KEY` — encrypted Resend API secret, server-only
+- `EMAIL_FROM` — verified Resend sender, for example `InviteStudio <hello@example.com>`
 
 For local Pages Functions development, copy `.dev.vars.example` to `.dev.vars`
 and put the real service-role key there. Never commit `.dev.vars`.
@@ -131,3 +149,4 @@ The Supabase migrations must be applied before the API is deployed:
 2. `202611030001_wedding_backend_foundation.sql`
 3. `202611030002_anonymous_access_and_publishing.sql`
 4. `202611030003_template_catalogue_compatibility.sql`
+5. `202611030004_recovery_email.sql`

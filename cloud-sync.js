@@ -258,6 +258,51 @@
     }
   };
 
+  window.openRecoveryEmailCapture = function openRecoveryEmailCapture() {
+    const project = typeof current === 'function' ? current() : null;
+    if (!project?.cloudId || !tokenFor(project.cloudId) || !window.inviteStudioApi?.enabled) {
+      toast('Email recovery is available after your cloud draft is created.');
+      return;
+    }
+    renderModal(`<div class="eyebrow">Continue on any device</div><h2 id="modal-title">Email me a private editing link</h2><p class="muted">Add your email so you can return to this invitation from another phone or computer. We’ll send a private link; no account or password is required.</p><div class="field"><label for="recovery-email">Email address</label><input id="recovery-email" type="email" autocomplete="email" placeholder="you@example.com" value="${esc(project.recoveryEmail||'')}"></div><p class="tiny muted">Optional, but recommended before you leave. Your draft remains saved even if you skip this.</p><div class="modal-actions"><button class="btn" onclick="closeModal()">Not now</button><button class="btn dark" onclick="sendRecoveryLinkEmail()">Send private link</button></div>`);
+    document.getElementById('recovery-email')?.focus();
+  };
+
+  window.sendRecoveryLinkEmail = async function sendRecoveryLinkEmail() {
+    const project = typeof current === 'function' ? current() : null;
+    const email = document.getElementById('recovery-email')?.value?.trim();
+    if (!project?.cloudId || !tokenFor(project.cloudId) || !window.inviteStudioApi?.enabled || !email) {
+      toast('Enter an email address to continue.');
+      return;
+    }
+    const button = document.querySelector('[onclick="sendRecoveryLinkEmail()"]');
+    if (button) { button.disabled = true; button.textContent = 'Sending…'; }
+    try {
+      const result = await window.inviteStudioApi.sendEditLinkEmail(project.cloudId, tokenFor(project.cloudId), email);
+      project.recoveryEmail = email;
+      localSave();
+      closeModal();
+      dismissRecoveryEmailPrompt(project);
+      toast(`Private link sent to ${result.sentTo||email}.`);
+      render();
+    } catch (error) {
+      if (button) { button.disabled = false; button.textContent = 'Send private link'; }
+      toast(error.code === 'EMAIL_NOT_CONFIGURED'
+        ? 'Email delivery is not configured yet. You can copy the private link instead.'
+        : error.message || 'The private link could not be sent.');
+    }
+  };
+
+  function dismissRecoveryEmailPrompt(project) {
+    try { sessionStorage.setItem(`invitestudio-email-prompt-dismissed:${project.cloudId}`, '1'); } catch { /* best effort */ }
+    document.querySelector('[data-recovery-email-prompt]')?.remove();
+  }
+
+  window.dismissRecoveryEmailPrompt = function dismissRecoveryEmailPromptForCurrent() {
+    const project = typeof current === 'function' ? current() : null;
+    if (project) dismissRecoveryEmailPrompt(project);
+  };
+
   window.continueLastDraft = async function continueLastDraft() {
     const project = projectForReference();
     const reference = draftReference();
@@ -350,6 +395,7 @@
     project.message = wedding.message || '';
     project.story = wedding.story || '';
     project.hosts = wedding.hosts || '';
+    project.recoveryEmail = wedding.recovery_email || project.recoveryEmail || '';
     project.locale = wedding.locale || 'English';
     project.theme = wedding.theme || project.theme || {};
     project.preferences = wedding.preferences || project.preferences || {};
@@ -398,16 +444,19 @@
       return;
     }
     const actions = document.querySelector('.editor-toolbar .right');
-    if (!actions || actions.querySelector('[data-private-edit-link]')) return;
-    const button = document.createElement('button');
-    button.className = 'btn small';
-    button.type = 'button';
-    button.dataset.privateEditLink = 'true';
-    button.textContent = 'Copy private link';
-    button.title = 'Copy a private link that lets you edit this draft';
-    button.onclick = () => window.copyPrivateEditLink();
-    actions.insertBefore(button, actions.firstChild);
+    if (!actions) return;
+    if (!actions.querySelector('[data-private-edit-link]')) {
+      const button = document.createElement('button');
+      button.className = 'btn small';
+      button.type = 'button';
+      button.dataset.privateEditLink = 'true';
+      button.textContent = 'Copy private link';
+      button.title = 'Copy a private link that lets you edit this draft';
+      button.onclick = () => window.copyPrivateEditLink();
+      actions.insertBefore(button, actions.firstChild);
+    }
     decorateTokenControls(project);
+    decorateEmailPrompt(project);
   }
 
   function decorateTokenControls(project) {
@@ -423,6 +472,23 @@
     controls.querySelector('[data-regenerate-edit-link]').onclick = () => window.regeneratePrivateEditLink();
     controls.querySelector('[data-revoke-edit-link]').onclick = () => window.revokePrivateEditLinks();
     panel.append(controls);
+  }
+
+  function decorateEmailPrompt(project) {
+    if (state.page !== 'editor' || !project?.cloudId || project.recoveryEmail) return;
+    let dismissed = false;
+    try { dismissed = sessionStorage.getItem(`invitestudio-email-prompt-dismissed:${project.cloudId}`) === '1'; } catch { /* best effort */ }
+    if (dismissed || document.querySelector('[data-recovery-email-prompt]')) return;
+    const shell = document.querySelector('.editor-shell');
+    if (!shell?.parentNode) return;
+    const prompt = document.createElement('section');
+    prompt.dataset.recoveryEmailPrompt = 'true';
+    prompt.setAttribute('aria-label', 'Recover this draft on another device');
+    prompt.style.cssText = 'width:min(1160px,91%);margin:16px auto 0;padding:14px 18px;border:1px solid #dccdb9;border-radius:10px;background:#f5eee3;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;';
+    prompt.innerHTML = '<div><strong>Keep editing from any device</strong><p class="tiny muted" style="margin:4px 0 0">Email yourself a private link before you leave. No account or password needed.</p></div><div style="display:flex;gap:8px"><button class="btn small dark" type="button" data-email-recovery>Send me the link</button><button class="btn small" type="button" data-dismiss-email-recovery>Not now</button></div>';
+    prompt.querySelector('[data-email-recovery]').onclick = () => window.openRecoveryEmailCapture();
+    prompt.querySelector('[data-dismiss-email-recovery]').onclick = () => dismissRecoveryEmailPrompt(project);
+    shell.parentNode.insertBefore(prompt, shell);
   }
 
   function markDirty(project) {

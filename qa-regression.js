@@ -47,6 +47,8 @@ const checks = [
   ['Private edit links recover token-protected drafts', () => { for (const text of ['parsePrivateEditLink','recoverFromPrivateLink','getWedding(link.id, link.token)','getWeddingByEditToken(link.token)']) if (!cloud.includes(text)) throw Error(text+' missing'); }],
   ['Private edit tokens are removed from the address bar', () => { if (!cloud.includes('history.replaceState') || !cloud.includes("window.history.replaceState({}, document.title")) throw Error('private link cleanup missing'); }],
   ['Private token administration is exposed safely', () => { for (const text of ['regeneratePrivateEditLink','revokePrivateEditLinks','regenerateEditToken','revokeEditTokens']) if (!cloud.includes(text)) throw Error(text+' missing'); }],
+  ['Cross-device email recovery is optional and encouraged', () => { for (const text of ['openRecoveryEmailCapture','sendRecoveryLinkEmail','Keep editing from any device','Not now']) if (!cloud.includes(text)) throw Error(text+' missing'); }],
+  ['Email recovery never exposes provider secrets to the browser', () => { if (cloud.includes('RESEND_API_KEY') || cloud.includes('EMAIL_FROM')) throw Error('email provider secret leaked to client'); }],
 ];
 let failures=0;
 for (const [name, run] of checks) { try { run(); console.log('PASS '+name); } catch(e) { failures++; console.log('FAIL '+name+' — '+e.message); } }

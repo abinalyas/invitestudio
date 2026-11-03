@@ -49,6 +49,12 @@ website starts a separate project. Private edit links use the form
 store the token locally for authorised API requests, and immediately remove it
 from the address bar.
 
+Phase 3.3 adds optional cross-device recovery. The editor encourages the
+customer to enter an email before leaving, then the server issues a fresh
+hashed edit token and sends its private link through Resend. The email and
+provider credentials remain server-side; the customer can still skip email and
+continue using the copied private link.
+
 ## 1. Executive summary
 
 InviteStudio is currently a single-page, static HTML application. The complete UI, CSS, template catalogue, editor state, preview renderer and browser persistence are implemented in `index.html`.

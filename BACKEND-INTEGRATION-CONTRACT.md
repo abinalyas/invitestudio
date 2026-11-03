@@ -12,6 +12,7 @@ Status: implementation contract; Cloudflare Pages Functions and Supabase impleme
 - `functions: [{ id, title, date?, time?, endTime?, venue?, description?, dressCode?, directionsUrl?, visible }]`
 - `photos: [{ id, url, alt, width?, height? }]` — use server URLs, not base64 in project JSON
 - `status: draft | published | unpublished`, `visibility: private | public`, `slug?`, `createdAt`, `updatedAt`, `publishedAt?`, `version`
+- optional private `recoveryEmail`, used only for sending edit links and never exposed through public invitation reads
 
 Customer accounts are not required for the initial release. Anonymous drafts
 use `ownershipMode: anonymous`, no `ownerId`, and an expiring edit token. The
@@ -28,6 +29,7 @@ Implemented by the Cloudflare Pages Functions in `functions/api/`:
 - `GET /api/edit-links/:edit-token` — resolve a private path link to its associated draft; the token is hash-validated server-side.
 - `POST /api/weddings/:id/edit-token` — regenerate the edit token after validating the current token; previous links are revoked.
 - `POST /api/weddings/:id/edit-token/revoke` — revoke all edit tokens for the draft.
+- `POST /api/weddings/:id/edit-link/email` — validate an optional email, issue a fresh edit token and send its private link through the configured email provider.
 - `POST /api/weddings/:id/publish` — validate slug and publish atomically with a version check.
 - `POST /api/weddings/:id/unpublish` — return a published wedding to private state.
 - `GET /api/public-weddings/:slug` — public, read-only published invitation projection.

@@ -33,6 +33,10 @@ design is documented in
 Before using the editor's full template catalogue with cloud drafts, also run
 `supabase/migrations/202611030003_template_catalogue_compatibility.sql`.
 
+For optional cross-device email recovery, also apply
+`supabase/migrations/202611030004_recovery_email.sql` and configure the Resend
+server secret, sender address and public origin in Cloudflare Pages.
+
 New projects now create a cloud draft and autosave through `cloud-sync.js`.
 The edit token is kept only in a browser-local token map so the same browser
 can recover the draft later. Local browser storage remains as an offline copy.
@@ -51,8 +55,9 @@ URL and publishable/anon key. Do not commit database passwords or secret keys.
 
 Anonymous cloud drafts are handled by the Cloudflare Pages Functions in
 `functions/api/`. Configure `SUPABASE_URL`, the encrypted server-only
-`SUPABASE_SERVICE_ROLE_KEY`, and `ALLOWED_ORIGIN` in Cloudflare Pages before
-deploying. See `functions/README.md` for endpoint examples. The service-role
+`SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGIN`, `INVITESTUDIO_PUBLIC_ORIGIN`,
+`RESEND_API_KEY`, and `EMAIL_FROM` in Cloudflare Pages before deploying. See
+`functions/README.md` for endpoint examples. The service-role
 key must never be placed in `supabase-config.js`, `backend-api.js` or any
 browser bundle.
 

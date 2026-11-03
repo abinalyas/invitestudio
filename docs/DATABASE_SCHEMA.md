@@ -5,6 +5,7 @@ Migrations:
 - `supabase/migrations/202611030001_wedding_backend_foundation.sql`
 - `supabase/migrations/202611030002_anonymous_access_and_publishing.sql`
 - `supabase/migrations/202611030003_template_catalogue_compatibility.sql`
+- `supabase/migrations/202611030004_recovery_email.sql`
 
 ## Canonical cloud model
 

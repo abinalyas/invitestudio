@@ -17,6 +17,78 @@ test('homepage starts a short personalised-preview journey', async ({ page }) =>
   await expect(page.locator('main')).toContainText('Mira & Arun');
 });
 
+test('same-device recovery offers Continue Editing for the last draft', async ({ page }) => {
+  const draftId = '7d4f6a30-8e5e-4d2b-9c8a-1b2c3d4e5f60';
+  await page.evaluate(({ draftId }) => {
+    const project = {
+      id: draftId,
+      cloudId: draftId,
+      cloudStatus: 'saved',
+      cloudVersion: 3,
+      name: 'Anika & Rohan',
+      title: 'Anika & Rohan',
+      category: 'Wedding',
+      templateId: 'eternal',
+      status: 'Draft',
+      updated: 'Just now',
+      date: '2027-02-14',
+      location: 'Kochi, India',
+      message: 'We cannot wait to celebrate with you.',
+      story: 'Our story.',
+      functions: [],
+      sections: [],
+      theme: { background: '#f4eee4', accent: '#a77d4d', text: '#28241f' },
+      photos: []
+    };
+    localStorage.setItem('invitestudio-projects', JSON.stringify([project]));
+    localStorage.setItem('invitestudio-current-draft', JSON.stringify({
+      localId: draftId,
+      cloudId: draftId,
+      updatedAt: Date.now()
+    }));
+  }, { draftId });
+  await page.reload();
+
+  await expect(page.getByRole('region', { name: /continue your draft/i })).toContainText('Anika & Rohan');
+  await page.getByRole('button', { name: /continue editing/i }).click();
+  await expect(page.locator('.editor-shell')).toBeVisible();
+  await expect(page.locator('.editor-canvas')).toContainText('Anika & Rohan');
+});
+
+test('cloud drafts encourage optional cross-device email recovery', async ({ page }) => {
+  const draftId = '8e5e7b41-9f6f-4e3c-a9d1-2b3c4d5e6f70';
+  await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
+  await page.evaluate(({ draftId }) => {
+    const project = {
+      id: draftId,
+      cloudId: draftId,
+      cloudStatus: 'saved',
+      cloudVersion: 1,
+      name: 'Mira & Arun',
+      title: 'Mira & Arun',
+      category: 'Wedding',
+      templateId: 'eternal',
+      status: 'Draft',
+      updated: 'Just now',
+      functions: [],
+      sections: [],
+      theme: { background: '#f4eee4', accent: '#a77d4d', text: '#28241f' },
+      photos: []
+    };
+    localStorage.setItem('invitestudio-projects', JSON.stringify([project]));
+    localStorage.setItem('invitestudio-current-draft', JSON.stringify({ localId: draftId, cloudId: draftId }));
+    localStorage.setItem('invitestudio-edit-tokens', JSON.stringify({ [draftId]: 'a'.repeat(43) }));
+  }, { draftId });
+  await page.reload();
+
+  await page.getByRole('button', { name: /continue editing/i }).click();
+  const prompt = page.getByRole('region', { name: /recover this draft on another device/i });
+  await expect(prompt).toContainText('Keep editing from any device');
+  await prompt.getByRole('button', { name: /send me the link/i }).click();
+  await expect(page.getByRole('dialog')).toContainText(/email me a private editing link/i);
+  await expect(page.getByLabel('Email address')).toBeVisible();
+});
+
 test('intro style changes to a compatible signature transition', async ({ page }) => {
   await page.evaluate(() => { startCreate('Wedding'); });
   await page.locator('#projectTitle').fill('Mira & Arun');

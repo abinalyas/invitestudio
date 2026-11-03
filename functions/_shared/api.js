@@ -111,6 +111,61 @@ export async function readJson(request) {
   }
 }
 
+export function validateEmailAddress(value) {
+  const email = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (email.length < 3 || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new ApiError('Enter a valid email address.', 422, 'VALIDATION_ERROR', {
+      email: 'Enter a valid email address.'
+    });
+  }
+  return email;
+}
+
+export function maskEmailAddress(email) {
+  const [local, domain] = email.split('@');
+  if (!local || !domain) return 'your email address';
+  const visible = local.length <= 2 ? local[0] : local.slice(0, 2);
+  return `${visible}${'•'.repeat(Math.max(1, local.length - visible.length))}@${domain}`;
+}
+
+function publicOrigin(request, env) {
+  const configured = env.INVITESTUDIO_PUBLIC_ORIGIN?.trim() || env.ALLOWED_ORIGIN?.trim();
+  if (configured && configured !== '*') return configured.replace(/\/$/, '');
+  return new URL(request.url).origin;
+}
+
+function emailHtmlEscape(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[character]));
+}
+
+export async function sendPrivateEditEmail(request, env, { to, title, token }) {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    throw new ApiError('Email delivery is not configured yet.', 503, 'EMAIL_NOT_CONFIGURED');
+  }
+  const link = `${publicOrigin(request, env)}/edit/${encodeURIComponent(token)}`;
+  const safeTitle = emailHtmlEscape(title || 'your invitation');
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from: env.EMAIL_FROM,
+      to: [to],
+      subject: 'Your private InviteStudio editing link',
+      text: `Open your private InviteStudio editing link for ${title || 'your invitation'}:\n\n${link}\n\nKeep this link private. It works until it expires or is revoked.`,
+      html: `<p>Here is your private InviteStudio editing link for <strong>${safeTitle}</strong>:</p><p><a href="${link}">Continue editing your invitation</a></p><p>This link works until it expires or is revoked. Keep it private.</p>`
+    })
+  });
+  if (!response.ok) {
+    throw new ApiError('The email could not be sent. Your draft is still safe.', 502, 'EMAIL_DELIVERY_FAILED');
+  }
+  return link;
+}
+
 function stringField(input, key, max, fields) {
   if (input[key] === undefined) return undefined;
   if (typeof input[key] !== 'string' || input[key].length > max) {
@@ -379,6 +434,14 @@ export async function revokeEditTokens(env, weddingId, keepHash = '') {
     body: JSON.stringify({ revoked_at: new Date().toISOString() })
   })));
   return rows?.length || 0;
+}
+
+export async function revokeEditTokenHash(env, tokenHash) {
+  await db(env, `edit_tokens?token_hash=eq.${tokenHash}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({ revoked_at: new Date().toISOString() })
+  });
 }
 
 export async function getWedding(env, id) {

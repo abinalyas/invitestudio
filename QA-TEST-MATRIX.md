@@ -20,9 +20,10 @@ Status values are intentionally conservative. Source checks are not equivalent t
 | QA-DRAFT-01 | New website creates a cloud draft | Server draft ID and one-time edit token are stored for recovery | Source implementation added; browser/deployed API test pending |
 | QA-DRAFT-02 | Editor autosave | Debounced save shows saving/saved states and persists content, events, theme and gallery metadata | Source implementation added; browser/deployed API test pending |
 | QA-DRAFT-03 | Autosave network failure | Local copy is preserved, retries are bounded, stale responses cannot overwrite newer edits | Source implementation added; browser failure test pending |
-| QA-DRAFT-04 | Return to an existing draft | Current draft reference is detected and Continue editing opens the saved project | Source implementation added; browser test pending |
+| QA-DRAFT-04 | Return to an existing draft | Current draft reference is detected and Continue editing opens the saved project | Browser E2E passed |
 | QA-DRAFT-05 | Start a new website from recovery prompt | New website creates a separate draft without replacing the previous project | Source implementation added; browser test pending |
 | QA-DRAFT-06 | Private edit link recovery | Token-based `/edit/<token>` link resolves the token-authorised draft and removes the token from the address bar | Source implementation added; deployed-link test pending |
+| QA-DRAFT-07 | Optional cross-device email recovery | Editor encourages an email, server sends a fresh private link, and the link opens the same draft on another device | Source implementation added; provider/deployed API test pending |
 | QA-BACKEND-01 | Public publishing and RSVP persistence | Real URL and server-stored RSVP | BLOCKED: no backend connected |
 
 ## Automated source-level checks
