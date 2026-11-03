@@ -17,7 +17,9 @@ $$;
 
 create table if not exists public.projects (
   id uuid primary key default gen_random_uuid(),
-  owner_id uuid not null references auth.users(id) on delete cascade,
+  -- Optional future account owner. Anonymous drafts are governed by the
+  -- canonical weddings/edit_tokens model and trusted Edge Functions.
+  owner_id uuid references auth.users(id) on delete cascade,
   name text not null default 'Untitled wedding',
   category text not null default 'Wedding',
   template_id text not null,

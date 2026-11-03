@@ -17,6 +17,9 @@ Status values are intentionally conservative. Source checks are not equivalent t
 | QA-RESP-01 | 320×568, 375×812, 390×844, 768×1024, 1280×800, 1440×900, 1920×1080 | No overflow, clipping or overlap | NOT RUN in browser |
 | QA-A11Y-01 | Keyboard-only flow and focus visibility | All actions reachable and focus visible | CSS hardening added; manual test pending |
 | QA-DATA-01 | Storage unavailable/quota exceeded | Save failure visible; no success claim | Source save guard present; browser test pending |
+| QA-DRAFT-01 | New website creates a cloud draft | Server draft ID and one-time edit token are stored for recovery | Source implementation added; browser/deployed API test pending |
+| QA-DRAFT-02 | Editor autosave | Debounced save shows saving/saved states and persists content, events, theme and gallery metadata | Source implementation added; browser/deployed API test pending |
+| QA-DRAFT-03 | Autosave network failure | Local copy is preserved, retries are bounded, stale responses cannot overwrite newer edits | Source implementation added; browser failure test pending |
 | QA-BACKEND-01 | Public publishing and RSVP persistence | Real URL and server-stored RSVP | BLOCKED: no backend connected |
 
 ## Automated source-level checks

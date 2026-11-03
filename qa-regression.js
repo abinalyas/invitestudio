@@ -2,6 +2,7 @@
 const fs = require('fs');
 const html = fs.readFileSync(__dirname + '/index.html', 'utf8');
 const js = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+const cloud = fs.readFileSync(__dirname + '/cloud-sync.js', 'utf8');
 const checks = [
   ['JavaScript parses', () => { new Function(js); }],
   ['Landing page includes six occasion collections', () => { for (const text of ['Wedding','Birthdays','Baby & Family','Home & Personal','Milestones','Events & Gatherings']) if (!js.includes("['"+text+"'")) throw Error(text+' collection missing'); }],
@@ -35,6 +36,11 @@ const checks = [
   ['Wedding function supports guest logistics', () => { for (const field of ['fnParking','fnAccommodation','fnAccessibility']) if (!js.includes('id="'+field+'"')) throw Error(field+' missing'); }],
   ['Guest logistics render on invitation preview', () => { for (const field of ['f.parking','f.accommodation','f.accessibility']) if (!js.includes(field)) throw Error(field+' preview missing'); }],
   ['Function end time is validated', () => { if (!js.includes('End time must be after the start time.')) throw Error('end time validation missing'); }],
+  ['Cloud autosave is debounced', () => { if (!cloud.includes('setTimeout(() => syncProject(project), delay)') || !cloud.includes('queueCloudSave(project, delay = 650)')) throw Error('debounced cloud save missing'); }],
+  ['Cloud save statuses are user-readable', () => { for (const text of ['Saving changes…','Saved just now ✓','Cloud save failed — local copy safe']) if (!cloud.includes(text)) throw Error(text+' missing'); }],
+  ['Cloud saves retry with backoff', () => { if (!cloud.includes('maxRetries = 5') || !cloud.includes('retryDelay(meta.retryCount)')) throw Error('safe retry policy missing'); }],
+  ['Older responses cannot overwrite newer edits', () => { if (!cloud.includes('revisionAtRequest') || !cloud.includes('const isCurrent = meta.revision === revisionAtRequest')) throw Error('stale response guard missing'); }],
+  ['Cloud payload includes events and gallery metadata', () => { if (!cloud.includes('functions: project.functions || []') || !cloud.includes('gallery: galleryPayload(project)')) throw Error('draft payload coverage missing'); }],
 ];
 let failures=0;
 for (const [name, run] of checks) { try { run(); console.log('PASS '+name); } catch(e) { failures++; console.log('FAIL '+name+' — '+e.message); } }

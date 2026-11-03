@@ -216,6 +216,11 @@ body{background:var(--paper);letter-spacing:.005em}.topbar{background:#faf7f0ef;
 @media(max-width:640px){.editor-toolbar{align-items:stretch}.editor-toolbar .left,.editor-toolbar .right{width:100%;justify-content:space-between}.editor-toolbar .right .btn{flex:1}.mobile-editor-modes .pill{flex:1;min-height:42px}.editor-panel{padding:16px 14px}.editor-control select,.editor-control input,.editor-control textarea{min-height:42px}.template-info .use-template{min-height:40px}}
 </style></head>
 <body><div id="app" class="app"></div><div id="modal-root"></div><div id="toast-root" aria-live="polite" aria-atomic="true"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script src="./supabase-client.js"></script>
+<script src="./backend-api.js"></script>
+<script src="./cloud-sync.js"></script>
 <script>
 const categories=[['Wedding','💍'],['Engagement','✨'],['Baptism / Christening / Naming Ceremony','🕊️'],['Birthday','🎂'],['Wedding Anniversary','🥂'],['Graduation','🎓'],['Baby Shower','🧸'],['Bridal Shower','🌸'],['Housewarming','🏡'],['First Communion','🕯️'],['Confirmation','✳️'],['Family Reunion','👨‍👩‍👧‍👦'],['Memorial / Celebration of Life','🕊️'],['Corporate Event','🏢'],['Community Event','🤝'],['Portfolio','✍️'],['Business Website','💼'],['Product / E-commerce Website','🛍️'],['Other / Custom Event','＋']];
 const topCategories=[{label:'Wedding',subtitle:'Romantic, modern and timeless wedding invitations.',image:'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=85'},{label:'Birthdays',subtitle:'From first birthdays to milestone celebrations.',image:'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1000&q=85'},{label:'Baby & Family',subtitle:'Welcome little ones and gather the people you love.',image:'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1000&q=85'},{label:'Home & Personal',subtitle:'New beginnings, home blessings and meaningful days.',image:'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1000&q=85'},{label:'Milestones',subtitle:'Celebrate achievements and the next chapter.',image:'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1000&q=85'},{label:'Events & Gatherings',subtitle:'Bring colleagues, friends and communities together.',image:'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1000&q=85'}];function categoryGroupForTemplate(t){const c=(t.category+' '+(t.occasion||'')).toLowerCase();if(/wedding|engagement|anniversary|vow renewal|haldi|mehendi|sangeet|roka|sagai|ganesh|chooda|baraat|phera|vidaai|reception|kerala|south indian|christian wedding|orthodox christian wedding|catholic wedding|sikh wedding|muslim wedding|interfaith wedding|destination wedding/.test(c))return 'Wedding';if(/birthday|first birthday/.test(c))return 'Birthdays';if(/baby shower|baptism|christening|naming|communion|confirmation|family reunion|family celebration/.test(c))return 'Baby & Family';if(/housewarming|home blessing|personal celebration/.test(c))return 'Home & Personal';if(/graduation|retirement|milestone|academic achievement|professional achievement/.test(c))return 'Milestones';return 'Events & Gatherings'}function browseCategory(cat){state.category=cat;state.filter='All Templates';state.search='';state.tradition='All';state.animation='All';state.palette='All';state.occasionFilter='';state.sort='Recommended';state.page='templates';render()}
@@ -431,5 +436,5 @@ function render(){
  lastAnimatedPage=page;
  window.scrollTo({top:0,behavior:'instant'});
 }
-load();render();
+bootInviteStudioCloud();
 </script></body></html>
