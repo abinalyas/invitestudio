@@ -10,6 +10,38 @@ python3 -m http.server 8000
 
 Open http://localhost:8000.
 
+## Supabase foundation
+
+The browser-safe Supabase client is initialised by `supabase-client.js` using
+the public configuration in `supabase-config.js`. The current editor continues
+to use local/demo persistence until the repository methods are connected to
+authenticated Supabase queries.
+
+The publishable key is designed for browser use. Never replace it with a
+`service_role` or secret key. Before enabling cloud data, apply
+`supabase/migrations/202610210001_initial_schema.sql` in the Supabase SQL
+Editor and verify the Row Level Security policies.
+
+The Phase 1.2 wedding-oriented schema is in
+`supabase/migrations/202611030001_wedding_backend_foundation.sql`. Apply it
+after the initial migration. Then apply
+`supabase/migrations/202611030002_anonymous_access_and_publishing.sql` for
+anonymous ownership, edit-token access and publishing separation. The table
+design is documented in
+`docs/DATABASE_SCHEMA.md`.
+
+For a different Supabase project, update `supabase-config.js` with its Project
+URL and publishable/anon key. Do not commit database passwords or secret keys.
+
+## Server API
+
+Anonymous cloud drafts are handled by the Cloudflare Pages Functions in
+`functions/api/`. Configure `SUPABASE_URL`, the encrypted server-only
+`SUPABASE_SERVICE_ROLE_KEY`, and `ALLOWED_ORIGIN` in Cloudflare Pages before
+deploying. See `functions/README.md` for endpoint examples. The service-role
+key must never be placed in `supabase-config.js`, `backend-api.js` or any
+browser bundle.
+
 ## QA and integration docs
 
 - Run source-level checks: `node qa-regression.js`.

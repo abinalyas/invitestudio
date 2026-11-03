@@ -1,0 +1,6 @@
+# Copy this file to .dev.vars for local Cloudflare Pages Functions testing.
+# Never commit the real .dev.vars file or expose the service-role key to the
+# browser.
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=replace-with-server-only-secret
+ALLOWED_ORIGIN=http://localhost:8788

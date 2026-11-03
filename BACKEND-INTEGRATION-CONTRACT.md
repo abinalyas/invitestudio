@@ -2,31 +2,38 @@
 
 Status: implementation contract; no backend is connected in this package. Recommended infrastructure: Cloudflare Pages + Supabase. See [Technical Architecture Decision](docs/TECHNICAL_ARCHITECTURE_DECISION.md) for deployment, schema, access-control, and rollout decisions.
 
-## Project resource
+## Wedding resource
 
-`Project` should contain:
-- `id` (server-generated UUID), `ownerId`, `name`, `category`, `templateId`
+`Wedding` should contain:
+- `id` (server-generated UUID), optional `ownerId`, `ownershipMode`, `name`, `category`, `templateId`
 - `title`, `date` (ISO `YYYY-MM-DD` or null), `location`, `message`, `story`, `hosts`, `locale`
 - `theme: { background, accent, text }`
 - `sections: [{ id, title, content?, visible, custom? }]`
 - `functions: [{ id, title, date?, time?, endTime?, venue?, description?, dressCode?, directionsUrl?, visible }]`
 - `photos: [{ id, url, alt, width?, height? }]` — use server URLs, not base64 in project JSON
-- `status: draft | published`, `slug?`, `createdAt`, `updatedAt`, `publishedAt?`, `version`
+- `status: draft | published | unpublished`, `visibility: private | public`, `slug?`, `createdAt`, `updatedAt`, `publishedAt?`, `version`
 
-## Suggested REST endpoints
+Customer accounts are not required for the initial release. Anonymous drafts
+use `ownershipMode: anonymous`, no `ownerId`, and an expiring edit token. The
+raw token is returned once by the trusted create operation and only its hash
+is stored in `edit_tokens`.
 
-- `POST /api/projects` — create a draft; returns `201` and the canonical project.
-- `GET /api/projects` — list only projects the authenticated user can access.
-- `GET /api/projects/:id` — read one authorized project.
-- `PATCH /api/projects/:id` — partial update; support optimistic concurrency using `version` or `If-Match`.
-- `DELETE /api/projects/:id` — delete after confirmation; return `204`.
-- `POST /api/projects/:id/photos` — validate MIME type, size, dimensions and ownership; return asset metadata/URL.
-- `DELETE /api/projects/:id/photos/:photoId` — remove an owned asset.
-- `POST /api/projects/:id/publish` — validate and publish; return canonical public URL only after success.
-- `POST /api/projects/:id/unpublish` — unpublish and invalidate public access.
-- `GET /s/:slug` — public, read-only published invitation.
-- `POST /api/public/:slug/rsvps` — validate and persist guest RSVP.
-- `GET /api/projects/:id/rsvps` — authenticated owner-only RSVP listing/export.
+## API endpoints
+
+Implemented by the Cloudflare Pages Functions in `functions/api/`:
+
+- `POST /api/weddings` — create an anonymous draft; returns `201`, the canonical wedding and a raw edit token once.
+- `GET /api/weddings/:id` — read a draft with `Authorization: Bearer <edit-token>`.
+- `PATCH /api/weddings/:id` — validated partial update with a required `version`.
+- `POST /api/weddings/:id/publish` — validate slug and publish atomically with a version check.
+- `POST /api/weddings/:id/unpublish` — return a published wedding to private state.
+- `GET /api/public-weddings/:slug` — public, read-only published invitation projection.
+
+Planned follow-up endpoints:
+
+- `POST /api/weddings/:id/photos` and photo delete — validate and store assets.
+- `POST /api/public-weddings/:slug/rsvps` — rate-limited public RSVP submission.
+- `GET /api/weddings/:id/rsvps` — token-authorized RSVP listing/export.
 
 ## Response and error behavior
 
@@ -37,7 +44,9 @@ Use appropriate HTTP status codes (`400/422` validation, `401` unauthenticated, 
 
 ## Security and privacy requirements
 
-- Enforce authentication and project ownership server-side; never rely on client-side visibility.
+- Validate edit tokens server-side and scope every draft operation to the token's wedding; never rely on client-side visibility.
+- Keep the Supabase service-role key in server runtime secrets only; never expose it in browser code.
+- Public routes must allow reads only for `status = published` and `visibility = public`.
 - Validate/sanitize text and URLs, including direction links; only allow safe URL schemes.
 - Restrict upload type/size, inspect actual file contents, and store assets outside executable web roots.
 - Apply rate limits and spam protection to public RSVP endpoints.
