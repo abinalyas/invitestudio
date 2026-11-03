@@ -35,11 +35,26 @@
         headers: { Authorization: `Bearer ${editToken}` }
       });
     },
+    getWeddingByEditToken(editToken) {
+      return request(`/edit-links/${encodeURIComponent(editToken)}`);
+    },
     updateWedding(id, editToken, patch) {
       return request(`/weddings/${encodeURIComponent(id)}`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${editToken}` },
         body: JSON.stringify(patch)
+      });
+    },
+    regenerateEditToken(id, editToken) {
+      return request(`/weddings/${encodeURIComponent(id)}/edit-token`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${editToken}` }
+      });
+    },
+    revokeEditTokens(id, editToken) {
+      return request(`/weddings/${encodeURIComponent(id)}/edit-token/revoke`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${editToken}` }
       });
     },
     publishWedding(id, editToken, version, slug) {

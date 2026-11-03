@@ -1,6 +1,6 @@
 # InviteStudio backend integration contract (draft)
 
-Status: implementation contract; no backend is connected in this package. Recommended infrastructure: Cloudflare Pages + Supabase. See [Technical Architecture Decision](docs/TECHNICAL_ARCHITECTURE_DECISION.md) for deployment, schema, access-control, and rollout decisions.
+Status: implementation contract; Cloudflare Pages Functions and Supabase implement the anonymous draft slice. See [Technical Architecture Decision](docs/TECHNICAL_ARCHITECTURE_DECISION.md) for deployment, schema, access-control, and rollout decisions.
 
 ## Wedding resource
 
@@ -25,6 +25,9 @@ Implemented by the Cloudflare Pages Functions in `functions/api/`:
 - `POST /api/weddings` — create an anonymous draft; returns `201`, the canonical wedding and a raw edit token once.
 - `GET /api/weddings/:id` — read a draft with `Authorization: Bearer <edit-token>`.
 - `PATCH /api/weddings/:id` — validated partial update with a required `version`.
+- `GET /api/edit-links/:edit-token` — resolve a private path link to its associated draft; the token is hash-validated server-side.
+- `POST /api/weddings/:id/edit-token` — regenerate the edit token after validating the current token; previous links are revoked.
+- `POST /api/weddings/:id/edit-token/revoke` — revoke all edit tokens for the draft.
 - `POST /api/weddings/:id/publish` — validate slug and publish atomically with a version check.
 - `POST /api/weddings/:id/unpublish` — return a published wedding to private state.
 - `GET /api/public-weddings/:slug` — public, read-only published invitation projection.

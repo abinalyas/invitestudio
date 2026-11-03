@@ -7,6 +7,7 @@
  */
 (function installCloudDraftSync() {
   const tokenStorageKey = 'invitestudio-edit-tokens';
+  const draftReferenceKey = 'invitestudio-current-draft';
   const projectMeta = new WeakMap();
   const maxRetries = 5;
 
@@ -28,16 +29,275 @@
   }
 
   function rememberToken(id, token) {
-    const tokens = tokenMap();
-    tokens[id] = token;
-    localStorage.setItem(tokenStorageKey, JSON.stringify(tokens));
+    try {
+      const tokens = tokenMap();
+      tokens[id] = token;
+      localStorage.setItem(tokenStorageKey, JSON.stringify(tokens));
+    } catch {
+      // The local project remains usable even when browser storage is full.
+    }
   }
 
   function forgetToken(id) {
-    const tokens = tokenMap();
-    delete tokens[id];
-    localStorage.setItem(tokenStorageKey, JSON.stringify(tokens));
+    try {
+      const tokens = tokenMap();
+      delete tokens[id];
+      localStorage.setItem(tokenStorageKey, JSON.stringify(tokens));
+    } catch { /* best effort cleanup */ }
   }
+
+  function draftReference() {
+    try {
+      const value = JSON.parse(localStorage.getItem(draftReferenceKey) || 'null');
+      return value && typeof value === 'object' ? value : null;
+    } catch { return null; }
+  }
+
+  function rememberDraftReference(project) {
+    if (!project?.id) return;
+    try {
+      localStorage.setItem(draftReferenceKey, JSON.stringify({
+        localId: project.id,
+        cloudId: project.cloudId || null,
+        updatedAt: Date.now()
+      }));
+    } catch { /* local project data is still retained when possible */ }
+  }
+
+  function projectForReference(reference = draftReference()) {
+    if (!reference) return null;
+    return state.projects.find(project =>
+      (reference.localId && project.id === reference.localId) ||
+      (reference.cloudId && project.cloudId === reference.cloudId) ||
+      (reference.cloudId && project.id === reference.cloudId)
+    ) || null;
+  }
+
+  function privateEditLink(project) {
+    const token = project?.cloudId ? tokenFor(project.cloudId) : '';
+    if (!project?.cloudId || !token || !window.location?.origin) return '';
+    return `${window.location.origin}/edit/${encodeURIComponent(token)}`;
+  }
+
+  function parsePrivateEditLink() {
+    if (!window.location) return null;
+    const url = new URL(window.location.href);
+    const query = new URLSearchParams(url.search);
+    const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
+    let id = query.get('draft') || query.get('wedding') || query.get('id') || hash.get('edit');
+    let token = query.get('token') || query.get('editToken') || hash.get('token');
+    const packed = query.get('edit') || hash.get('editLink');
+    if ((!id || !token) && packed) {
+      const separator = packed.indexOf('.');
+      if (separator > 0) {
+        id = id || packed.slice(0, separator);
+        token = token || packed.slice(separator + 1);
+      }
+    }
+    const pathToken = url.pathname.match(/\/edit\/([^/]+)$/i)?.[1];
+    if (!token && pathToken) {
+      try { token = decodeURIComponent(pathToken); } catch { return null; }
+    }
+    if ((!id && !token) || (id && !/^[0-9a-f-]{36}$/i.test(id)) || token.length < 32 || token.length > 256) return null;
+
+    // Never leave a raw edit token in the address bar after accepting a link.
+    try {
+      ['draft', 'wedding', 'id', 'token', 'editToken', 'edit'].forEach(key => query.delete(key));
+      const cleanPath = pathToken ? '/' : url.pathname;
+      window.history.replaceState({}, document.title, `${cleanPath}${query.toString() ? `?${query}` : ''}`);
+    } catch { /* history may be unavailable in an embedded preview */ }
+    return { id, token };
+  }
+
+  function recoveredProject(id) {
+    return state.projects.find(project => project.cloudId === id || project.id === id) || {
+      id,
+      cloudId: id,
+      name: 'Loading invitation draft…',
+      category: 'Wedding',
+      templateId: 'eternal',
+      status: 'Draft',
+      updated: 'Just now',
+      title: '',
+      date: '',
+      location: '',
+      message: '',
+      story: '',
+      functions: [],
+      theme: { background: '#f4eee4', accent: '#a77d4d', text: '#28241f' },
+      sections: [],
+      photos: [],
+      published: false
+    };
+  }
+
+  function mergeRecoveredChildren(project, result) {
+    if (Array.isArray(result?.events) && !project.functions?.length) {
+      project.functions = result.events.map(event => ({
+        id: event.id || crypto.randomUUID(),
+        title: event.title || 'Event',
+        date: event.event_date || '',
+        time: event.start_time || '',
+        endTime: event.end_time || '',
+        venue: event.venue || '',
+        description: event.description || '',
+        dressCode: event.dress_code || '',
+        directionsUrl: event.directions_url || '',
+        parking: event.parking || '',
+        accommodation: event.accommodation || '',
+        accessibility: event.accessibility || '',
+        visible: event.visible !== false
+      }));
+    }
+    if (Array.isArray(result?.photos)) project.galleryMetadata = result.photos;
+  }
+
+  async function recoverFromPrivateLink(link) {
+    state.recoveryStatus = 'loading';
+    state.recoveryError = '';
+    state.page = 'home';
+    render();
+    if (!window.inviteStudioApi?.enabled) {
+      state.recoveryStatus = 'error';
+      state.recoveryError = 'Cloud recovery is unavailable in this environment.';
+      render();
+      return;
+    }
+    try {
+      const result = link.id
+        ? await window.inviteStudioApi.getWedding(link.id, link.token)
+        : await window.inviteStudioApi.getWeddingByEditToken(link.token);
+      const id = result.wedding.id;
+      rememberToken(id, link.token);
+      const project = recoveredProject(id);
+      if (!state.projects.includes(project)) state.projects.unshift(project);
+      state.currentId = project.id;
+      state.page = 'editor';
+      rememberDraftReference(project);
+      // Keep any same-browser photo bytes; cloud recovery currently restores
+      // gallery metadata, while binary media is handled by the media phase.
+      mergeServerWedding(project, result.wedding, true);
+      mergeRecoveredChildren(project, result);
+      project.cloudStatus = 'saved';
+      project.cloudSavedAt = Date.now();
+      state.recoveryStatus = 'ready';
+      state.recoveryError = '';
+      localSave();
+      render();
+      toast('Private draft recovered — continue editing where you left off.');
+    } catch (error) {
+      if (error.code === 'EDIT_TOKEN_INVALID' && link.id) forgetToken(link.id);
+      state.recoveryStatus = 'error';
+      state.recoveryError = error.message || 'This private edit link is no longer available.';
+      render();
+      toast('We could not recover that private draft.');
+    }
+  }
+
+  function recoveryCard() {
+    const project = projectForReference();
+    if (!project) return '';
+    const cloud = Boolean(project.cloudId);
+    const title = project.name || project.title || 'Your invitation draft';
+    const status = project.cloudStatus === 'error'
+      ? 'Your local copy is safe. Check your connection and try again.'
+      : cloud ? 'Your latest changes are saved securely in the cloud.' : 'Your draft is saved on this device.';
+    return `<section class="container" aria-label="Continue your draft" style="margin-top:18px"><div style="display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#f3eee5;border:1px solid #dfd4c5;border-radius:12px;padding:18px 20px"><div><div class="eyebrow">Welcome back</div><strong style="font-family:var(--serif);font-size:22px">Continue ${esc(title)}</strong><p class="tiny muted" style="margin:5px 0 0">${esc(status)}</p>${state.recoveryError?`<p class="tiny" role="alert" style="color:#9b5147;margin:5px 0 0">${esc(state.recoveryError)}</p>`:''}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn dark" onclick="continueLastDraft()">Continue editing</button><button class="btn" onclick="startCreate()">＋ New website</button></div></div></section>`;
+  }
+
+  window.copyPrivateEditLink = async function copyPrivateEditLink() {
+    const link = privateEditLink(typeof current === 'function' ? current() : null);
+    if (!link) { toast('A private edit link is available after cloud draft creation.'); return; }
+    try {
+      await navigator.clipboard.writeText(link);
+      toast('Private edit link copied. Keep it safe.');
+    } catch {
+      window.prompt('Copy your private edit link:', link);
+    }
+  };
+
+  window.regeneratePrivateEditLink = async function regeneratePrivateEditLink() {
+    const project = typeof current === 'function' ? current() : null;
+    const token = project?.cloudId ? tokenFor(project.cloudId) : '';
+    if (!project?.cloudId || !token || !window.inviteStudioApi?.enabled) {
+      toast('An active private edit link is required to regenerate access.');
+      return;
+    }
+    if (!window.confirm('Regenerate this private edit link? The previous link will stop working.')) return;
+    try {
+      const result = await window.inviteStudioApi.regenerateEditToken(project.cloudId, token);
+      rememberToken(project.cloudId, result.editToken);
+      project.editTokenExpiresAt = result.editTokenExpiresAt;
+      project.cloudStatus = 'saved';
+      localSave();
+      decorateRecoveryUi(project);
+      toast('Private edit link regenerated. The previous link is revoked.');
+    } catch (error) {
+      toast(error.message || 'The private edit link could not be regenerated.');
+    }
+  };
+
+  window.revokePrivateEditLinks = async function revokePrivateEditLinks() {
+    const project = typeof current === 'function' ? current() : null;
+    const token = project?.cloudId ? tokenFor(project.cloudId) : '';
+    if (!project?.cloudId || !token || !window.inviteStudioApi?.enabled) {
+      toast('No active private edit link is available.');
+      return;
+    }
+    if (!window.confirm('Revoke every private edit link for this draft? This cannot be undone.')) return;
+    try {
+      await window.inviteStudioApi.revokeEditTokens(project.cloudId, token);
+      forgetToken(project.cloudId);
+      project.cloudStatus = 'token-missing';
+      project.cloudError = 'Private edit links have been revoked.';
+      localSave();
+      render();
+      toast('All private edit links have been revoked.');
+    } catch (error) {
+      toast(error.message || 'The private edit links could not be revoked.');
+    }
+  };
+
+  window.continueLastDraft = async function continueLastDraft() {
+    const project = projectForReference();
+    const reference = draftReference();
+    if (!project && reference?.cloudId && tokenFor(reference.cloudId)) {
+      await recoverFromPrivateLink({ id: reference.cloudId, token: tokenFor(reference.cloudId) });
+      return;
+    }
+    if (!project) { toast('This draft is no longer available on this device.'); return; }
+    state.currentId = project.id;
+    state.page = 'editor';
+    state.editorTab = 'Sections';
+    state.recoveryError = '';
+    rememberDraftReference(project);
+    render();
+    if (project.cloudId && tokenFor(project.cloudId) && window.inviteStudioApi?.enabled) {
+      try {
+        const result = await window.inviteStudioApi.getWedding(project.cloudId, tokenFor(project.cloudId));
+        mergeServerWedding(project, result.wedding, true);
+        mergeRecoveredChildren(project, result);
+        project.cloudStatus = 'saved';
+        project.cloudSavedAt = Date.now();
+        localSave();
+        render();
+      } catch (error) {
+        project.cloudStatus = 'error';
+        project.cloudError = error.message;
+        localSave();
+        paintStatus(project);
+        toast('Cloud draft could not be refreshed. Your local copy is still available.');
+      }
+    }
+  };
+
+  window.draftRecoveryCard = recoveryCard;
+  window.draftStorageNote = () => {
+    const project = projectForReference();
+    return project?.cloudId
+      ? 'Your draft is saved in the cloud and can be continued from this browser.'
+      : 'Drafts are saved on this device until cloud setup is available.';
+  };
 
   function galleryPayload(project) {
     return {
@@ -110,6 +370,7 @@
   function localSave() {
     try {
       localStorage.setItem('invitestudio-projects', JSON.stringify(state.projects));
+      if (typeof current === 'function') rememberDraftReference(current());
       state.saveFailed = false;
       state.saveStatus = 'saved';
       return true;
@@ -126,6 +387,42 @@
     status.setAttribute('aria-label', window.cloudSaveLabel(project));
     const text = [...status.childNodes].find(node => node.nodeType === Node.TEXT_NODE);
     if (text) text.textContent = ` ${window.cloudSaveLabel(project)}`;
+  }
+
+  function decorateRecoveryUi(project) {
+    const note = document.querySelector('.dashboard-data-note strong');
+    if (note && typeof window.draftStorageNote === 'function') note.textContent = window.draftStorageNote();
+    const toolbarLink = document.querySelector('[data-private-edit-link]');
+    if (!project?.cloudId || !tokenFor(project.cloudId) || state.page !== 'editor') {
+      toolbarLink?.remove();
+      return;
+    }
+    const actions = document.querySelector('.editor-toolbar .right');
+    if (!actions || actions.querySelector('[data-private-edit-link]')) return;
+    const button = document.createElement('button');
+    button.className = 'btn small';
+    button.type = 'button';
+    button.dataset.privateEditLink = 'true';
+    button.textContent = 'Copy private link';
+    button.title = 'Copy a private link that lets you edit this draft';
+    button.onclick = () => window.copyPrivateEditLink();
+    actions.insertBefore(button, actions.firstChild);
+    decorateTokenControls(project);
+  }
+
+  function decorateTokenControls(project) {
+    if (state.editorTab !== 'Settings') return;
+    const panel = document.querySelector('.editor-panel');
+    if (!panel || panel.querySelector('[data-edit-token-controls]')) return;
+    const controls = document.createElement('section');
+    controls.className = 'editor-control';
+    controls.dataset.editTokenControls = 'true';
+    controls.style.marginTop = '24px';
+    controls.innerHTML = `<h3>Private editing access</h3><p class="tiny muted">Anyone with this link can edit this private draft. Keep it safe and regenerate it if you think it was shared.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" data-copy-edit-link>Copy private link</button><button class="btn small" type="button" data-regenerate-edit-link>Regenerate link</button><button class="btn small" type="button" data-revoke-edit-link>Revoke all links</button></div>`;
+    controls.querySelector('[data-copy-edit-link]').onclick = () => window.copyPrivateEditLink();
+    controls.querySelector('[data-regenerate-edit-link]').onclick = () => window.regeneratePrivateEditLink();
+    controls.querySelector('[data-revoke-edit-link]').onclick = () => window.revokePrivateEditLinks();
+    panel.append(controls);
   }
 
   function markDirty(project) {
@@ -226,6 +523,7 @@
       project.id = result.wedding.id;
       project.cloudId = result.wedding.id;
       rememberToken(project.cloudId, result.editToken);
+      rememberDraftReference(project);
       if (state.currentId === oldId) state.currentId = project.id;
       const isCurrent = meta.revision === revisionAtCreate;
       if (isCurrent) mergeServerWedding(project, result.wedding);
@@ -281,7 +579,7 @@
       }
     }
     localSave();
-    if (state.page === 'dashboard' || state.page === 'editor') {
+    if (state.page === 'home' || state.page === 'dashboard' || state.page === 'editor') {
       render();
       paintStatus(typeof current === 'function' ? current() : null);
     }
@@ -326,6 +624,11 @@
     const originalRender = window.render;
     const originalDuplicateProject = window.duplicateProject;
     originalLoad();
+    if (!draftReference()) {
+      const cloudProject = state.projects.find(project => project.cloudId);
+      if (cloudProject) rememberDraftReference(cloudProject);
+    }
+    const privateLink = parsePrivateEditLink();
 
     window.save = function cloudAwareSave() {
       const result = originalSave();
@@ -335,7 +638,9 @@
 
     window.render = function cloudAwareRender() {
       originalRender();
-      paintStatus(typeof current === 'function' ? current() : null);
+      const project = typeof current === 'function' ? current() : null;
+      paintStatus(project);
+      decorateRecoveryUi(project);
     };
 
     window.startCreate = function cloudAwareStartCreate(category) {
@@ -347,10 +652,10 @@
     };
 
     window.duplicateProject = function cloudAwareDuplicateProject(id) {
-      const source = state.projects.find(project => project.id === id);
+      const existingIds = new Set(state.projects.map(project => project.id));
       originalDuplicateProject(id);
-      const copy = state.projects[0] !== source ? state.projects[0] : null;
-      if (!copy || !copy.cloudId) return;
+      const copy = state.projects.find(project => !existingIds.has(project.id));
+      if (!copy) return;
       copy.cloudId = null;
       copy.cloudVersion = null;
       copy.cloudStatus = 'local';
@@ -362,6 +667,10 @@
     };
 
     render();
-    hydrateCloudProjects();
+    if (privateLink) {
+      recoverFromPrivateLink(privateLink);
+    } else {
+      hydrateCloudProjects();
+    }
   };
 })();

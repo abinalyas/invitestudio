@@ -41,6 +41,12 @@ const checks = [
   ['Cloud saves retry with backoff', () => { if (!cloud.includes('maxRetries = 5') || !cloud.includes('retryDelay(meta.retryCount)')) throw Error('safe retry policy missing'); }],
   ['Older responses cannot overwrite newer edits', () => { if (!cloud.includes('revisionAtRequest') || !cloud.includes('const isCurrent = meta.revision === revisionAtRequest')) throw Error('stale response guard missing'); }],
   ['Cloud payload includes events and gallery metadata', () => { if (!cloud.includes('functions: project.functions || []') || !cloud.includes('gallery: galleryPayload(project)')) throw Error('draft payload coverage missing'); }],
+  ['Current draft reference is stored locally', () => { if (!cloud.includes("invitestudio-current-draft") || !cloud.includes('rememberDraftReference(project)')) throw Error('draft reference persistence missing'); }],
+  ['Returning customers get a continue option', () => { if (!cloud.includes('Continue editing') || !js.includes('draftRecoveryCard')) throw Error('draft recovery prompt missing'); }],
+  ['Customers can start a separate new website', () => { if (!cloud.includes('＋ New website') || !js.includes('Create a website')) throw Error('new website recovery action missing'); }],
+  ['Private edit links recover token-protected drafts', () => { for (const text of ['parsePrivateEditLink','recoverFromPrivateLink','getWedding(link.id, link.token)','getWeddingByEditToken(link.token)']) if (!cloud.includes(text)) throw Error(text+' missing'); }],
+  ['Private edit tokens are removed from the address bar', () => { if (!cloud.includes('history.replaceState') || !cloud.includes("window.history.replaceState({}, document.title")) throw Error('private link cleanup missing'); }],
+  ['Private token administration is exposed safely', () => { for (const text of ['regeneratePrivateEditLink','revokePrivateEditLinks','regenerateEditToken','revokeEditTokens']) if (!cloud.includes(text)) throw Error(text+' missing'); }],
 ];
 let failures=0;
 for (const [name, run] of checks) { try { run(); console.log('PASS '+name); } catch(e) { failures++; console.log('FAIL '+name+' — '+e.message); } }

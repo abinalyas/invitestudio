@@ -294,6 +294,13 @@ export function editTokenFromRequest(request) {
   return token;
 }
 
+function validateEditTokenValue(token) {
+  if (typeof token !== 'string' || token.length < 32 || token.length > 256) {
+    throw new ApiError('An edit token is required.', 401, 'EDIT_TOKEN_REQUIRED');
+  }
+  return token;
+}
+
 export function randomEditToken() {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
@@ -311,17 +318,17 @@ export async function hashEditToken(token) {
   return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-export async function requireEditAccess(request, env, weddingId) {
-  const token = editTokenFromRequest(request);
+export async function requireEditToken(env, token, weddingId = undefined) {
+  validateEditTokenValue(token);
   const tokenHash = await hashEditToken(token);
   const query = new URLSearchParams({
     select: 'id,wedding_id,purpose,expires_at,revoked_at',
     token_hash: `eq.${tokenHash}`,
-    wedding_id: `eq.${weddingId}`,
     purpose: 'eq.edit',
     revoked_at: 'is.null',
     limit: '1'
   });
+  if (weddingId) query.set('wedding_id', `eq.${weddingId}`);
   const rows = await db(env, `edit_tokens?${query}`);
   const record = rows?.[0];
   if (!record || new Date(record.expires_at).getTime() <= Date.now()) {
@@ -333,6 +340,45 @@ export async function requireEditAccess(request, env, weddingId) {
     body: JSON.stringify({ last_used_at: new Date().toISOString() })
   });
   return record;
+}
+
+export async function requireEditAccess(request, env, weddingId) {
+  return requireEditToken(env, editTokenFromRequest(request), weddingId);
+}
+
+export async function issueEditToken(env, weddingId) {
+  const editToken = randomEditToken();
+  const tokenHash = await hashEditToken(editToken);
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 90).toISOString();
+  await db(env, 'edit_tokens', {
+    method: 'POST',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({
+      wedding_id: weddingId,
+      token_hash: tokenHash,
+      token_hint: `${editToken.slice(0, 6)}…`,
+      purpose: 'edit',
+      expires_at: expiresAt
+    })
+  });
+  return { editToken, editTokenExpiresAt: expiresAt, tokenHash };
+}
+
+export async function revokeEditTokens(env, weddingId, keepHash = '') {
+  const query = new URLSearchParams({
+    select: 'id,token_hash',
+    wedding_id: `eq.${weddingId}`,
+    purpose: 'eq.edit',
+    revoked_at: 'is.null'
+  });
+  if (keepHash) query.set('token_hash', `not.eq.${keepHash}`);
+  const rows = await db(env, `edit_tokens?${query}`);
+  await Promise.all((rows || []).map(row => db(env, `edit_tokens?id=eq.${row.id}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({ revoked_at: new Date().toISOString() })
+  })));
+  return rows?.length || 0;
 }
 
 export async function getWedding(env, id) {

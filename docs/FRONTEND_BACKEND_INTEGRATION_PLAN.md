@@ -42,6 +42,13 @@ failures, local fallback persistence, explicit saving/saved/error labels, and a
 per-project revision guard. A response from an older request updates only the
 server version; it cannot replace newer in-memory editor content.
 
+Draft recovery stores a small current-draft reference separately from the
+project payload. Returning visitors see a Continue editing action, while New
+website starts a separate project. Private edit links use the form
+`/edit/<edit-token>`, resolve the associated wedding through the token hash,
+store the token locally for authorised API requests, and immediately remove it
+from the address bar.
+
 ## 1. Executive summary
 
 InviteStudio is currently a single-page, static HTML application. The complete UI, CSS, template catalogue, editor state, preview renderer and browser persistence are implemented in `index.html`.
