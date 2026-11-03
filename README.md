@@ -36,6 +36,8 @@ Before using the editor's full template catalogue with cloud drafts, also run
 New projects now create a cloud draft and autosave through `cloud-sync.js`.
 The edit token is kept only in a browser-local token map so the same browser
 can recover the draft later. Local browser storage remains as an offline copy.
+Duplicated projects receive their own cloud draft rather than sharing the
+source project's draft ID.
 
 For a different Supabase project, update `supabase-config.js` with its Project
 URL and publishable/anon key. Do not commit database passwords or secret keys.

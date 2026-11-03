@@ -6,6 +6,8 @@
  */
 (function exposeInviteStudioApi() {
   const base = (window.INVITESTUDIO_API_BASE || '/api').replace(/\/$/, '');
+  const localHost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+  const enabled = !localHost || window.INVITESTUDIO_API_ENABLED === true;
 
   async function request(path, options = {}) {
     const response = await fetch(`${base}${path}`, {
@@ -24,6 +26,7 @@
   }
 
   window.inviteStudioApi = Object.freeze({
+    enabled,
     createWedding(input) {
       return request('/weddings', { method: 'POST', body: JSON.stringify(input) });
     },

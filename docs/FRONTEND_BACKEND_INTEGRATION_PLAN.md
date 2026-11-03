@@ -37,6 +37,11 @@ again. The project payload currently stores event functions and gallery
 metadata in the wedding `content` JSONB field; binary photo storage remains a
 separate media-upload slice.
 
+Autosave uses a short debounce, bounded exponential retry for transient network
+failures, local fallback persistence, explicit saving/saved/error labels, and a
+per-project revision guard. A response from an older request updates only the
+server version; it cannot replace newer in-memory editor content.
+
 ## 1. Executive summary
 
 InviteStudio is currently a single-page, static HTML application. The complete UI, CSS, template catalogue, editor state, preview renderer and browser persistence are implemented in `index.html`.
