@@ -1,7 +1,7 @@
 # InviteStudio frontend-to-backend integration plan
 
-Status: Phase 1 foundation in progress  
-Branch: `phase-1-backend-foundation`  
+Status: Phase 2 draft management in progress
+Branch: `phase-2-draft-management`
 Audited commit: `a04665a` (`main`)
 
 This document records the current frontend implementation and the work required to introduce backend persistence without changing the existing visual direction or user flow.
@@ -29,6 +29,13 @@ The API creates anonymous drafts, retrieves and updates them using a hashed
 edit token, publishes/unpublishes with version checks, and exposes only a safe
 read-only public invitation endpoint. The Supabase service-role key is read
 only from Cloudflare runtime secrets and is never included in browser code.
+
+Phase 2 adds `cloud-sync.js`. A new website now creates a server-backed draft,
+stores the returned edit token only in a browser-local token map, debounces
+editor saves to the API, and hydrates cloud drafts when the browser is opened
+again. The project payload currently stores event functions and gallery
+metadata in the wedding `content` JSONB field; binary photo storage remains a
+separate media-upload slice.
 
 ## 1. Executive summary
 

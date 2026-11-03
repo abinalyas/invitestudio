@@ -30,6 +30,13 @@ anonymous ownership, edit-token access and publishing separation. The table
 design is documented in
 `docs/DATABASE_SCHEMA.md`.
 
+Before using the editor's full template catalogue with cloud drafts, also run
+`supabase/migrations/202611030003_template_catalogue_compatibility.sql`.
+
+New projects now create a cloud draft and autosave through `cloud-sync.js`.
+The edit token is kept only in a browser-local token map so the same browser
+can recover the draft later. Local browser storage remains as an offline copy.
+
 For a different Supabase project, update `supabase-config.js` with its Project
 URL and publishable/anon key. Do not commit database passwords or secret keys.
 

@@ -16,13 +16,28 @@ Content-Type: application/json
   "templateId": "eternal",
   "title": "Mira & Arun",
   "category": "Wedding",
-  "date": "2027-01-20"
+  "date": "2027-01-20",
+  "functions": [{
+    "title": "Wedding ceremony",
+    "date": "2027-01-20",
+    "time": "10:00",
+    "venue": "The Garden Estate",
+    "visible": true
+  }],
+  "gallery": {
+    "preference": "gallery",
+    "photos": [{"alt": "Engagement portrait"}]
+  }
 }
 ```
 
 The response returns the wedding record and a random `editToken` once. Store it
 securely in the client session or in a customer-provided edit link; it is not
 stored in the database in raw form.
+
+The editor's event list and gallery metadata are saved in `weddings.content`.
+The current phase does not upload local image bytes; `wedding_photos` and
+Supabase Storage are reserved for the media-upload phase.
 
 ### Retrieve a private draft
 
@@ -88,3 +103,4 @@ The Supabase migrations must be applied before the API is deployed:
 1. `202610210001_initial_schema.sql`
 2. `202611030001_wedding_backend_foundation.sql`
 3. `202611030002_anonymous_access_and_publishing.sql`
+4. `202611030003_template_catalogue_compatibility.sql`

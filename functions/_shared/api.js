@@ -133,8 +133,87 @@ const allowedFields = new Set([
   'name', 'category', 'templateId', 'title', 'date', 'eventDate', 'location',
   'message', 'story', 'hosts', 'locale', 'theme', 'preferences',
   'culturalPreferences', 'content', 'sections', 'introSettings',
-  'animationSettings'
+  'animationSettings', 'functions', 'gallery'
 ]);
+
+function validDate(value) {
+  return value === '' || (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value));
+}
+
+function validTime(value) {
+  return value === '' || (typeof value === 'string' && /^\d{2}:\d{2}$/.test(value));
+}
+
+function validateFunctions(value, fields) {
+  if (!Array.isArray(value) || value.length > 50) {
+    fields.functions = 'Use an array with no more than 50 events.';
+    return [];
+  }
+  return value.map((event, index) => {
+    const prefix = `functions[${index}]`;
+    if (!event || typeof event !== 'object' || Array.isArray(event)) {
+      fields[prefix] = 'Each event must be an object.';
+      return null;
+    }
+    const text = (key, max, required = false) => {
+      if ((event[key] === undefined || event[key] === null) && !required) return '';
+      if (typeof event[key] !== 'string' || event[key].length > max || (required && !event[key].trim())) {
+        fields[`${prefix}.${key}`] = `Must be text${required ? ' and is required' : ''} of at most ${max} characters.`;
+        return '';
+      }
+      return event[key].trim();
+    };
+    const date = event.date || '';
+    const time = event.time || '';
+    const endTime = event.endTime || '';
+    if (!validDate(date)) fields[`${prefix}.date`] = 'Must use YYYY-MM-DD format.';
+    if (!validTime(time)) fields[`${prefix}.time`] = 'Must use HH:MM format.';
+    if (!validTime(endTime)) fields[`${prefix}.endTime`] = 'Must use HH:MM format.';
+    if (time && endTime && endTime < time) fields[`${prefix}.endTime`] = 'Must be after the start time.';
+    if (event.directionsUrl && !/^https?:\/\//i.test(event.directionsUrl)) {
+      fields[`${prefix}.directionsUrl`] = 'Must be an http(s) URL.';
+    }
+    return {
+      id: typeof event.id === 'string' && event.id.length <= 80 ? event.id : undefined,
+      title: text('title', 180, true),
+      date: validDate(date) ? date : '',
+      time: validTime(time) ? time : '',
+      endTime: validTime(endTime) ? endTime : '',
+      venue: text('venue', 500),
+      description: text('description', 4000),
+      dressCode: text('dressCode', 180),
+      directionsUrl: text('directionsUrl', 2000),
+      parking: text('parking', 4000),
+      accommodation: text('accommodation', 4000),
+      accessibility: text('accessibility', 4000),
+      visible: event.visible !== false
+    };
+  }).filter(Boolean);
+}
+
+function validateGallery(value, fields) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    fields.gallery = 'Gallery settings must be an object.';
+    return {};
+  }
+  const photos = Array.isArray(value.photos) ? value.photos : [];
+  if (photos.length > 4) fields.gallery = 'A gallery can contain no more than 4 photos.';
+  return {
+    preference: typeof value.preference === 'string' ? value.preference.slice(0, 40) : '',
+    photos: photos.slice(0, 4).map((photo, index) => {
+      if (!photo || typeof photo !== 'object') {
+        fields[`gallery.photos[${index}]`] = 'Photo metadata must be an object.';
+        return null;
+      }
+      return {
+        alt: typeof photo.alt === 'string' ? photo.alt.trim().slice(0, 500) : '',
+        storagePath: typeof photo.storagePath === 'string' ? photo.storagePath.slice(0, 500) : null,
+        width: Number.isInteger(photo.width) && photo.width > 0 ? photo.width : null,
+        height: Number.isInteger(photo.height) && photo.height > 0 ? photo.height : null
+      };
+    }).filter(Boolean)
+  };
+}
 
 export function validateWeddingInput(input, { create = false } = {}) {
   const fields = {};
@@ -167,7 +246,9 @@ export function validateWeddingInput(input, { create = false } = {}) {
 
   const date = input.date ?? input.eventDate;
   if (date !== undefined) {
-    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    if (date === null || date === '') {
+      output.event_date = null;
+    } else if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       fields.date = 'Must use YYYY-MM-DD format.';
     } else {
       output.event_date = date;
@@ -186,6 +267,13 @@ export function validateWeddingInput(input, { create = false } = {}) {
     const value = jsonField(input, source, fields);
     if (value !== undefined) output[target] = value;
   }
+
+  const content = output.content && typeof output.content === 'object' && !Array.isArray(output.content)
+    ? { ...output.content }
+    : {};
+  if (input.functions !== undefined) content.functions = validateFunctions(input.functions, fields);
+  if (input.gallery !== undefined) content.gallery = validateGallery(input.gallery, fields);
+  if (input.functions !== undefined || input.gallery !== undefined) output.content = content;
 
   if (create) {
     if (!output.template_id) fields.templateId = 'A template is required.';
