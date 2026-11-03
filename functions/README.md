@@ -35,6 +35,11 @@ The response returns the wedding record and a random `editToken` once. Store it
 securely in the client session or in a customer-provided edit link; it is not
 stored in the database in raw form.
 
+The browser recovery client accepts private links in the form
+`https://your-invitestudio-host/edit/<edit-token>`. The token is resolved by
+`GET /api/edit-links/<edit-token>`, used for the token-authorised request, and
+removed from the address bar immediately.
+
 The editor's event list and gallery metadata are saved in `weddings.content`.
 The current phase does not upload local image bytes; `wedding_photos` and
 Supabase Storage are reserved for the media-upload phase.
@@ -45,6 +50,15 @@ Supabase Storage are reserved for the media-upload phase.
 GET /api/weddings/<uuid>
 Authorization: Bearer <editToken>
 ```
+
+Private links can also be resolved without knowing the wedding ID:
+
+```http
+GET /api/edit-links/<editToken>
+```
+
+The token is looked up by its SHA-256 hash and can return only the wedding
+associated with that token.
 
 ### Update a private draft
 
@@ -86,6 +100,19 @@ Publishing is server-controlled and returns a public URL only after the
 database confirms the published state. `POST /api/weddings/<uuid>/unpublish`
 uses the edit token and current version to return the invitation to private
 state.
+
+### Regenerate or revoke private links
+
+```http
+POST /api/weddings/<uuid>/edit-token
+Authorization: Bearer <currentEditToken>
+
+POST /api/weddings/<uuid>/edit-token/revoke
+Authorization: Bearer <currentEditToken>
+```
+
+Regeneration returns one new raw token and revokes previous tokens. Revocation
+invalidates every active private edit link for the draft.
 
 ## Cloudflare configuration
 

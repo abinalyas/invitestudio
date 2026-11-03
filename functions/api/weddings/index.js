@@ -2,9 +2,8 @@ import {
   ApiError,
   db,
   fail,
+  issueEditToken,
   optionsResponse,
-  randomEditToken,
-  hashEditToken,
   readJson,
   requireSupabase,
   success,
@@ -49,21 +48,14 @@ export async function onRequest(context) {
     const wedding = rows?.[0];
     if (!wedding) throw new ApiError('Wedding draft could not be created.', 502, 'CREATE_FAILED');
 
-    const editToken = randomEditToken();
-    const tokenHash = await hashEditToken(editToken);
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 90).toISOString();
     try {
-      await db(env, 'edit_tokens', {
-        method: 'POST',
-        headers: { Prefer: 'return=minimal' },
-        body: JSON.stringify({
-          wedding_id: wedding.id,
-          token_hash: tokenHash,
-          token_hint: `${editToken.slice(0, 6)}…`,
-          purpose: 'edit',
-          expires_at: expiresAt
-        })
-      });
+      const issued = await issueEditToken(env, wedding.id);
+      return success(request, env, {
+        wedding,
+        editToken: issued.editToken,
+        editTokenExpiresAt: issued.editTokenExpiresAt,
+        warning: 'Store this edit token securely. It is returned only once.'
+      }, 201);
     } catch (error) {
       await db(env, `weddings?id=eq.${wedding.id}`, {
         method: 'DELETE',
@@ -71,13 +63,6 @@ export async function onRequest(context) {
       });
       throw error;
     }
-
-    return success(request, env, {
-      wedding,
-      editToken,
-      editTokenExpiresAt: expiresAt,
-      warning: 'Store this edit token securely. It is returned only once.'
-    }, 201);
   } catch (error) {
     return fail(request, env, error);
   }

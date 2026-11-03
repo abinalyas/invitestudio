@@ -39,6 +39,11 @@ can recover the draft later. Local browser storage remains as an offline copy.
 Duplicated projects receive their own cloud draft rather than sharing the
 source project's draft ID.
 
+Returning visitors see a **Continue editing** prompt for the current draft.
+The app also accepts private recovery links in the form
+`/edit/<edit-token>` and removes the token from the address bar after it is
+accepted.
+
 For a different Supabase project, update `supabase-config.js` with its Project
 URL and publishable/anon key. Do not commit database passwords or secret keys.
 
