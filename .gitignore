@@ -4,3 +4,4 @@
 !.env.example
 .wrangler/
 node_modules/
+test-results/
