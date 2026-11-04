@@ -421,6 +421,18 @@
     meta.timer = setTimeout(() => syncProject(project), delay);
   }
 
+  // Sends any unsaved change right away when the page is closed, reloaded or hidden,
+  // so a change made just before leaving is not lost to the autosave delay.
+  function flushPendingCloudSaves() {
+    for (const project of state.projects) {
+      if (project.cloudStatus !== 'pending' || !project.cloudId || !tokenFor(project.cloudId)) continue;
+      const meta = metaFor(project);
+      clearTimeout(meta.timer);
+      clearTimeout(meta.retryTimer);
+      syncProject(project, { keepalive: true });
+    }
+  }
+
   function scheduleCloudSave(project) {
     markDirty(project);
     queueCloudSave(project);
@@ -434,7 +446,7 @@
     return Math.min(15000, 1000 * (2 ** Math.max(0, attempt - 1)));
   }
 
-  async function syncProject(project) {
+  async function syncProject(project, options = {}) {
     if (!project?.cloudId || !tokenFor(project.cloudId) || !window.inviteStudioApi?.enabled) return;
     const meta = metaFor(project);
     if (meta.inFlight) {
@@ -452,7 +464,8 @@
       const result = await window.inviteStudioApi.updateWedding(
         project.cloudId,
         tokenFor(project.cloudId),
-        { version, ...payload }
+        { version, ...payload },
+        { keepalive: options.keepalive === true }
       );
       const isCurrent = meta.revision === revisionAtRequest;
       if (isCurrent) mergeServerWedding(project, result.wedding);
@@ -668,6 +681,10 @@
       setTimeout(() => createCloudDraft(copy), 0);
     };
 
+    window.addEventListener('pagehide', flushPendingCloudSaves);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') flushPendingCloudSaves();
+    });
     render();
     if (privateLink) {
       recoverFromPrivateLink(privateLink);

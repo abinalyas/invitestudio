@@ -39,11 +39,13 @@
     getWeddingByEditToken(editToken) {
       return request('/edit-links', { method: 'POST', body: JSON.stringify({ token: editToken }) });
     },
-    updateWedding(id, editToken, patch) {
+    // keepalive lets a save started while the page is closing or hidden finish.
+    updateWedding(id, editToken, patch, options = {}) {
       return request(`/weddings/${encodeURIComponent(id)}`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${editToken}` },
-        body: JSON.stringify(patch)
+        body: JSON.stringify(patch),
+        keepalive: options.keepalive === true
       });
     },
     regenerateEditToken(id, editToken) {
