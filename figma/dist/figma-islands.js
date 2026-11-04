@@ -260,8 +260,8 @@ Error generating stack: `+l.message+`
 .figma-app .invitation-card::before{ content: ""; position: absolute; inset: 30px; border: 1px solid #b88b4f; border-radius: 50%; opacity: .6; box-shadow: inset 0 0 0 5px rgba(255,255,255,.4); }
 .figma-app .invitation-card p{ z-index: 1; margin-top: 15px; font: italic 32px "Playfair Display", serif; }
 .figma-app .invitation-card small{ z-index: 1; margin-top: 17px; letter-spacing: 2.5px; font-size: 7px; }
-.figma-app .card-date{ z-index: 1; margin-top: 15px; color: #856b49; font: 9px "DM Sans"; letter-spacing: 2px; }
-.figma-app .tiny-mark{ position: absolute; z-index: 1; top: 59px; color: #986c2c; font: 10px "Playfair Display"; letter-spacing: 3px; }
+.figma-app .card-date{ z-index: 1; margin-top: 15px; color: #86681c; font: 9px "DM Sans"; letter-spacing: 2px; }
+.figma-app .tiny-mark{ position: absolute; z-index: 1; top: 59px; color: #86681c; font: 10px "Playfair Display"; letter-spacing: 3px; }
 .figma-app .tiny-mark i{ font-size: 8px; }
 .figma-app .card-flower{ position: absolute; width: 115px; height: 140px; opacity: .78; background: radial-gradient(ellipse at 35% 35%, #df8f77 0 4%, transparent 5%), radial-gradient(ellipse at 50% 50%, #d8a078 0 4%, transparent 5%), repeating-linear-gradient(62deg, transparent 0 15px, #718461 16px 17px, transparent 18px 27px); }
 .figma-app .top-left{ left: -4px; top: -12px; transform: rotate(-18deg); }
@@ -291,12 +291,12 @@ Error generating stack: `+l.message+`
 .figma-app .benefit-grid{ display: grid; grid-template-columns: repeat(4, 1fr); }
 .figma-app .benefit-grid article{ display: flex; gap: 18px; min-height: 105px; align-items: center; padding: 18px 28px; border-right: 1px solid var(--line); }
 .figma-app .benefit-grid article:last-child{ border: 0; }
-.figma-app .benefit-icon{ color: #99770e; }
+.figma-app .benefit-icon{ color: #86681c; }
 .figma-app .benefit-grid h3{ margin-bottom: 5px; font-size: 13px; }
 .figma-app .benefit-grid p{ color: #5a605b; font-size: 11px; line-height: 1.45; }
 .figma-app .section-heading{ margin-bottom: 28px; }
 .figma-app .section-heading p{ margin-top: 7px; color: #646964; font-size: 13px; }
-.figma-app .section-kicker{ display: block; margin-bottom: 6px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-size: 9px; font-weight: 600; }
+.figma-app .section-kicker{ display: block; margin-bottom: 6px; color: var(--gold-text); text-transform: uppercase; letter-spacing: 2px; font-size: 9px; font-weight: 600; }
 .figma-app .section-heading.row{ display: flex; align-items: end; justify-content: space-between; }
 .figma-app .section-heading.row > a{ display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 500; }
 .figma-app .template-grid{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
@@ -319,12 +319,12 @@ Error generating stack: `+l.message+`
 .figma-app .how .number{ display: grid; width: 28px; height: 28px; place-items: center; align-self: center; border: 1px solid rgba(20, 92, 55, .14); border-radius: 50%; color: var(--ink); background: #f7f3e9; font-size: 14px; font-weight: 600; }
 .figma-app .how .steps h3{ margin-bottom: 4px; font-size: 14px; }
 .figma-app .how .steps p{ color: #646964; font-size: 11px; line-height: 1.45; }
-.figma-app .how .step-arrow{ position: absolute; right: -30px; font-size: 22px; color: #6c746e; }
+.figma-app .how .step-arrow{ position: absolute; right: -30px; font-size: 22px; color: #6b6760; }
 .figma-app .feature-panel{ display: grid; grid-template-columns: 36% 64%; min-height: 220px; overflow: hidden; border: 1px solid #e3e2d6; border-radius: 20px; background: linear-gradient(120deg, #f0efe4, #f7f6ef); box-shadow: 0 16px 45px rgba(60,65,48,.07); }
 .figma-app .panel-intro{ position: relative; display: flex; align-items: center; padding: 24px 30px 24px 78px; border-right: 1px solid #d9d9ce; }
 .figma-app .panel-intro h2{ font-size: 27px; }
 .figma-app .panel-intro p{ margin-top: 7px; font-size: 11px; line-height: 1.4; }
-.figma-app .botanical{ position: absolute; left: -8px; bottom: -10px; color: #9d831e; font: 115px serif; transform: rotate(-25deg); }
+.figma-app .botanical{ position: absolute; left: -8px; bottom: -10px; color: #86681c; font: 115px serif; transform: rotate(-25deg); }
 .figma-app .feature-list{ display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); align-items: center; padding: 14px 24px; }
 .figma-app .feature-list article{ display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 10px; align-items: start; color: var(--ink); }
 .figma-app .feature-list article > svg{ padding: 8px; width: 34px; height: 34px; border-radius: 10px; background: rgba(20,92,55,.07); }
@@ -350,7 +350,7 @@ Error generating stack: `+l.message+`
 .figma-app .testimonial{ display: grid; grid-template-columns: 32% 1fr auto; min-height: 165px; overflow: hidden; border-radius: 20px; background: linear-gradient(120deg, #f1e4d5, #f7eee6); box-shadow: 0 14px 38px rgba(70,50,35,.08); }
 .figma-app .testimonial img{ width: 100%; height: 165px; object-fit: cover; object-position: center 35%; }
 .figma-app .quote{ position: relative; align-self: center; padding-left: 50px; }
-.figma-app .quote > span{ position: absolute; left: 11px; top: -11px; color: #8d822b; font: 45px Georgia; }
+.figma-app .quote > span{ position: absolute; left: 11px; top: -11px; color: #86681c; font: 45px Georgia; }
 .figma-app .quote blockquote{ margin: 0; font-size: 17px; font-style: italic; line-height: 1.5; }
 .figma-app .quote cite{ display: block; margin-top: 7px; font-size: 9px; font-style: normal; }
 .figma-app .slider-controls{ display: flex; align-items: center; gap: 8px; padding: 0 22px; }
@@ -542,9 +542,9 @@ Error generating stack: `+l.message+`
 .figma-app .gallery-search{ display: flex; min-height: 52px; align-items: center; gap: 14px; padding: 0 22px; border: 1px solid #d8d2cb; border-radius: 999px; background: rgba(255,255,255,.35); color: var(--ink); transition: border-color .2s, box-shadow .2s; }
 .figma-app .gallery-search:focus-within{ border-color: #7b9a82; box-shadow: 0 0 0 3px rgba(20,92,55,.08); }
 .figma-app .gallery-search input{ width: 100%; border: 0; outline: 0; background: transparent; color: #18241d; font-size: 14px; }
-.figma-app .gallery-search input::placeholder{ color: #7b7f7b; }
+.figma-app .gallery-search input::placeholder{ color: #6b6760; }
 .figma-app .gallery-sort{ position: relative; display: flex; align-items: center; gap: 12px; font-size: 13px; }
-.figma-app .gallery-sort select{ min-width: 180px; min-height: 48px; appearance: none; padding: 0 48px 0 20px; border: 1px solid #d8d2cb; border-radius: 999px; outline: 0; color: #1c261f; background: rgba(255,255,255,.35); font: inherit; cursor: pointer; }
+.figma-app .gallery-sort select{ min-width: 180px; min-height: 48px; appearance: none; padding: 0 48px 0 20px; border: 1px solid #8a8276; border-radius: 999px; outline: 0; color: #1c261f; background: rgba(255,255,255,.35); font: inherit; cursor: pointer; }
 .figma-app .gallery-sort svg{ position: absolute; right: 18px; pointer-events: none; }
 .figma-app .filter-toggle{ display: none; min-height: 46px; align-items: center; justify-content: center; gap: 9px; border: 1px solid #cfd6cf; border-radius: 999px; color: var(--ink); background: #fffaf5; font-weight: 600; }
 .figma-app .gallery-layout{ display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 34px; align-items: start; }
@@ -774,7 +774,7 @@ Error generating stack: `+l.message+`
 .figma-app .editor-controls > h3{ margin: 20px 0 15px; font: 20px "Playfair Display"; }
 .figma-app .editor-form{ display: grid; gap: 12px; }
 .figma-app .editor-form label{ display: grid; gap: 5px; font-size: 11px; font-weight: 600; }
-.figma-app .editor-form input, .figma-app .editor-form textarea{ width: 100%; min-height: 42px; padding: 0 13px; border: 1px solid #d5cec7; border-radius: 8px; outline: none; color: #17221c; background: rgba(255,255,255,.3); font: 12px "DM Sans"; }
+.figma-app .editor-form input, .figma-app .editor-form textarea{ width: 100%; min-height: 42px; padding: 0 13px; border: 1px solid #8a8276; border-radius: 8px; outline: none; color: #17221c; background: rgba(255,255,255,.3); font: 12px "DM Sans"; }
 .figma-app .editor-form textarea{ padding-block: 10px; resize: vertical; }
 .figma-app .editor-form input:focus, .figma-app .editor-form textarea:focus{ border-color: #78927d; box-shadow: 0 0 0 3px rgba(20,92,55,.07); }
 .figma-app .input-with-icon{ position: relative; display: block; }
@@ -851,6 +851,11 @@ Error generating stack: `+l.message+`
   --cream: #fbf7f2;
   --gold: #a67d24;
   --line: #ded9d0;
+  /* Accessible tokens approved in D1 (docs/DESIGN_SYSTEM.md, section 2). */
+  --gold-text: #86681c;
+  --muted-text: #6b6760;
+  --line-strong: #8a8276;
+  --success: #2f6b45;
 }
 .figma-app .occasion-strip{ padding: 40px 0 8px; text-align: center; }
 .figma-app .occasion-chips{ display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 16px; }
@@ -876,7 +881,7 @@ Error generating stack: `+l.message+`
 .figma-app .figma-canvas{ min-height: 420px; }
 .figma-app .image-control > div{ display: grid; gap: 10px; }
 .figma-app .image-control label:has(input[type="url"]){ display: block; padding: 0; margin: 0; border: 0; background: none; border-radius: 0; font-size: 13px; cursor: text; }
-.figma-app .image-control label input[type="url"]{ display: block; width: 100%; margin-top: 6px; padding: 9px 10px; border: 1px solid #d9d0c2; border-radius: 8px; font: inherit; font-size: 14px; background: #fffefa; }
+.figma-app .image-control label input[type="url"]{ display: block; width: 100%; margin-top: 6px; padding: 9px 10px; border: 1px solid var(--line-strong); border-radius: 8px; font: inherit; font-size: 14px; background: #fffefa; }
 .figma-app .image-control label input[type="url"]:focus-visible{ outline: 2px solid var(--green); outline-offset: 1px; }
 @media (max-width: 480px){.figma-app .recovery-banner{ padding: 16px; }
 .figma-app .recovery-actions{ width: 100%; }

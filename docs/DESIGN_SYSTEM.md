@@ -24,13 +24,13 @@ review is approved. Figma export values are shown as the baseline.
 | `--pale` | `#f7f1e9` | Warm panels | ink on it 12.98:1 |
 | `--cream` | `#fbf7f2` | Page background | |
 | `--gold` | `#a67d24` | Decorative accents, rules, icons | 3.53:1 on cream: **decorative only** |
-| `--gold-text` | `#86681c` (**proposed**) | Eyebrows and any small gold text | 4.91:1 on cream, 4.64:1 on ivory |
+| `--gold-text` | `#86681c` (**approved and applied**) | Eyebrows and any small gold text | 4.91:1 on cream, 4.64:1 on ivory |
 | `--muted` | `#79766f` (export) | Secondary text | 4.25:1 on cream: **fails AA for body text** |
-| `--muted-text` | `#6b6760` (**proposed**) | Secondary body text | 5.27:1 on cream |
+| `--muted-text` | `#6b6760` (**approved and applied**) | Secondary body text | 5.27:1 on cream |
 | `--line` | `#ded9d0` | Decorative dividers, card edges | 1.32:1: **decorative only** |
-| `--line-strong` | `#8a8276` (**proposed**) | Input and control borders (WCAG 1.4.11, 3:1) | 3.56:1 on cream |
+| `--line-strong` | `#8a8276` (**approved and applied**) | Input and control borders (WCAG 1.4.11, 3:1) | 3.56:1 on cream |
 | `--danger` | `#9b5147` | Errors | 5.38:1 on cream |
-| `--success` | `#2f6b45` (**proposed**) | Saved and published confirmations | checked on pale: see §10 |
+| `--success` | `#2f6b45` (**approved and applied**) | Saved and published confirmations | checked on pale: see §10 |
 | `--shadow` | `0 18px 50px rgba(37,46,37,.1)` | Floating panels | |
 
 Template palettes are separate. Each template keeps its own curated palette inside the

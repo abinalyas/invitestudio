@@ -8,6 +8,11 @@
   --cream: #fbf7f2;
   --gold: #a67d24;
   --line: #ded9d0;
+  /* Accessible tokens approved in D1 (docs/DESIGN_SYSTEM.md, section 2). */
+  --gold-text: #86681c;
+  --muted-text: #6b6760;
+  --line-strong: #8a8276;
+  --success: #2f6b45;
 }
 .occasion-strip { padding: 40px 0 8px; text-align: center; }
 .occasion-chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 16px; }
@@ -34,7 +39,7 @@
 /* The design hides file inputs inside the image control; this field is a URL input. */
 .image-control > div { display: grid; gap: 10px; }
 .image-control label:has(input[type="url"]) { display: block; padding: 0; margin: 0; border: 0; background: none; border-radius: 0; font-size: 13px; cursor: text; }
-.image-control label input[type="url"] { display: block; width: 100%; margin-top: 6px; padding: 9px 10px; border: 1px solid #d9d0c2; border-radius: 8px; font: inherit; font-size: 14px; background: #fffefa; }
+.image-control label input[type="url"] { display: block; width: 100%; margin-top: 6px; padding: 9px 10px; border: 1px solid var(--line-strong); border-radius: 8px; font: inherit; font-size: 14px; background: #fffefa; }
 .image-control label input[type="url"]:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
 @media (max-width: 480px) {
   .recovery-banner { padding: 16px; }
