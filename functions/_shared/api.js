@@ -36,6 +36,11 @@ export function json(request, env, body, status = 200, extraHeaders = {}) {
     headers: {
       ...corsHeaders(request, env),
       'Content-Type': 'application/json; charset=utf-8',
+      // Responses can carry edit access or private draft data: never cache them,
+      // never sniff them, and never leak the page URL in a Referer header.
+      'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'no-referrer',
       ...extraHeaders
     }
   });
@@ -388,20 +393,43 @@ export async function getWedding(env, id) {
   return rows[0];
 }
 
+// content.functions is the single event source (see docs/PHASE_0_INTEGRATION_PLAN.md).
+// The wedding_events table is retained but intentionally not read or written.
 export async function getWeddingChildren(env, id) {
-  const [events, photos] = await Promise.all([
-    db(env, `wedding_events?${new URLSearchParams({
-      select: 'id,title,event_date,start_time,end_time,venue,description,dress_code,directions_url,parking,accommodation,accessibility,visible,sort_order,metadata',
-      wedding_id: `eq.${id}`,
-      order: 'sort_order.asc,event_date.asc,start_time.asc'
-    })}`),
-    db(env, `wedding_photos?${new URLSearchParams({
-      select: 'id,storage_path,alt,width,height,sort_order,metadata',
-      wedding_id: `eq.${id}`,
-      order: 'sort_order.asc,created_at.asc'
-    })}`)
-  ]);
-  return { events: events || [], photos: photos || [] };
+  const photos = await db(env, `wedding_photos?${new URLSearchParams({
+    select: 'id,storage_path,alt,width,height,sort_order,metadata',
+    wedding_id: `eq.${id}`,
+    order: 'sort_order.asc,created_at.asc'
+  })}`);
+  return { photos: photos || [] };
+}
+
+const PUBLIC_FUNCTION_FIELDS = [
+  'id', 'title', 'date', 'time', 'endTime', 'venue', 'description', 'dressCode',
+  'directionsUrl', 'parking', 'accommodation', 'accessibility'
+];
+
+// Allowlist: hidden events and any unexpected keys are dropped; nothing private
+// (owner, tokens, storage paths, drafts) can reach a public response.
+function publicFunctions(list) {
+  if (!Array.isArray(list)) return [];
+  return list
+    .filter(item => item && typeof item === 'object' && item.visible !== false)
+    .map(item => Object.fromEntries(
+      PUBLIC_FUNCTION_FIELDS.filter(key => item[key] !== undefined).map(key => [key, item[key]])
+    ));
+}
+
+function publicGallery(gallery) {
+  const photos = Array.isArray(gallery?.photos) ? gallery.photos : [];
+  return {
+    preference: typeof gallery?.preference === 'string' ? gallery.preference : '',
+    photos: photos.map(photo => ({
+      alt: typeof photo?.alt === 'string' ? photo.alt : '',
+      width: Number.isInteger(photo?.width) ? photo.width : null,
+      height: Number.isInteger(photo?.height) ? photo.height : null
+    }))
+  };
 }
 
 export function publicWeddingProjection(wedding) {
@@ -411,8 +439,11 @@ export function publicWeddingProjection(wedding) {
   const animation = wedding.animation_settings && typeof wedding.animation_settings === 'object'
     ? wedding.animation_settings
     : {};
+  const content = wedding.content && typeof wedding.content === 'object' ? wedding.content : {};
+  const sections = Array.isArray(wedding.sections)
+    ? wedding.sections.filter(section => section && typeof section === 'object' && section.visible !== false)
+    : [];
   return {
-    id: wedding.id,
     slug: wedding.slug,
     template_id: wedding.template_id,
     name: wedding.name,
@@ -425,8 +456,11 @@ export function publicWeddingProjection(wedding) {
     hosts: wedding.hosts,
     locale: wedding.locale,
     theme: wedding.theme,
-    content: wedding.content,
-    sections: wedding.sections,
+    content: {
+      functions: publicFunctions(content.functions),
+      gallery: publicGallery(content.gallery)
+    },
+    sections,
     intro_settings: {
       enabled: intro.enabled,
       style: intro.style,

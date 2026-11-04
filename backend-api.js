@@ -36,7 +36,7 @@
       });
     },
     getWeddingByEditToken(editToken) {
-      return request(`/edit-links/${encodeURIComponent(editToken)}`);
+      return request('/edit-links', { method: 'POST', body: JSON.stringify({ token: editToken }) });
     },
     updateWedding(id, editToken, patch) {
       return request(`/weddings/${encodeURIComponent(id)}`, {

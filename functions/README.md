@@ -37,8 +37,7 @@ stored in the database in raw form.
 
 The browser recovery client accepts private links in the form
 `https://your-invitestudio-host/edit/<edit-token>`. The token is resolved by
-`GET /api/edit-links/<edit-token>`, used for the token-authorised request, and
-removed from the address bar immediately.
+`POST /api/edit-links` with the token in the JSON body, used for the token-authorised request. The token is never placed in a request path.
 
 The editor's event list and gallery metadata are saved in `weddings.content`.
 The current phase does not upload local image bytes; `wedding_photos` and
@@ -54,7 +53,10 @@ Authorization: Bearer <editToken>
 Private links can also be resolved without knowing the wedding ID:
 
 ```http
-GET /api/edit-links/<editToken>
+POST /api/edit-links
+Content-Type: application/json
+
+{"token": "<editToken>"}
 ```
 
 The token is looked up by its SHA-256 hash and can return only the wedding

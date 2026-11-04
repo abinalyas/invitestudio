@@ -20,7 +20,7 @@ export async function onRequest(context) {
     }
 
     const query = new URLSearchParams({
-      select: 'id,slug,template_id,name,category,title,event_date,location,message,story,hosts,locale,theme,content,sections,intro_settings,animation_settings,published_at',
+      select: 'slug,template_id,name,category,title,event_date,location,message,story,hosts,locale,theme,content,sections,intro_settings,animation_settings,published_at,id',
       slug: `eq.${slug}`,
       status: 'eq.published',
       visibility: 'eq.public',
@@ -30,22 +30,15 @@ export async function onRequest(context) {
     if (!weddings?.[0]) throw new ApiError('Invitation not found.', 404, 'NOT_FOUND');
     const wedding = weddings[0];
 
-    const [events, photos] = await Promise.all([
-      db(env, `wedding_events?${new URLSearchParams({
-        select: 'id,title,event_date,start_time,end_time,venue,description,dress_code,directions_url,parking,accommodation,accessibility,sort_order',
-        wedding_id: `eq.${wedding.id}`,
-        visible: 'eq.true',
-        order: 'sort_order.asc,event_date.asc,start_time.asc'
-      })}`),
-      db(env, `wedding_photos?${new URLSearchParams({
-        select: 'id,alt,width,height,sort_order',
-        wedding_id: `eq.${wedding.id}`,
-        order: 'sort_order.asc,created_at.asc'
-      })}`)
-    ]);
+    // Events come from wedding.content.functions (the single event source). Photos
+    // are metadata only; signed storage URLs are introduced with the media phase.
+    const photos = await db(env, `wedding_photos?${new URLSearchParams({
+      select: 'alt,width,height,sort_order',
+      wedding_id: `eq.${wedding.id}`,
+      order: 'sort_order.asc,created_at.asc'
+    })}`);
     return success(request, env, {
       wedding: publicWeddingProjection(wedding),
-      events: events || [],
       photos: photos || []
     });
   } catch (error) {

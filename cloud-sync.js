@@ -123,24 +123,9 @@
     };
   }
 
+  // Events are restored from wedding.content.functions by mergeServerWedding().
+  // Only photo metadata is merged here.
   function mergeRecoveredChildren(project, result) {
-    if (Array.isArray(result?.events) && !project.functions?.length) {
-      project.functions = result.events.map(event => ({
-        id: event.id || crypto.randomUUID(),
-        title: event.title || 'Event',
-        date: event.event_date || '',
-        time: event.start_time || '',
-        endTime: event.end_time || '',
-        venue: event.venue || '',
-        description: event.description || '',
-        dressCode: event.dress_code || '',
-        directionsUrl: event.directions_url || '',
-        parking: event.parking || '',
-        accommodation: event.accommodation || '',
-        accessibility: event.accessibility || '',
-        visible: event.visible !== false
-      }));
-    }
     if (Array.isArray(result?.photos)) project.galleryMetadata = result.photos;
   }
 
