@@ -27,8 +27,9 @@
 
   window.inviteStudioApi = Object.freeze({
     enabled,
-    createWedding(input) {
-      return request('/weddings', { method: 'POST', body: JSON.stringify(input) });
+    createWedding(input, idempotencyKey) {
+      const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {};
+      return request('/weddings', { method: 'POST', headers, body: JSON.stringify(input) });
     },
     getWedding(id, editToken) {
       return request(`/weddings/${encodeURIComponent(id)}`, {

@@ -351,7 +351,7 @@ export async function requireEditAccess(request, env, weddingId) {
   return requireEditToken(env, editTokenFromRequest(request), weddingId);
 }
 
-export async function issueEditToken(env, weddingId) {
+export async function issueEditToken(env, weddingId, metadata = {}) {
   const editToken = randomEditToken();
   const tokenHash = await hashEditToken(editToken);
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 90).toISOString();
@@ -363,7 +363,8 @@ export async function issueEditToken(env, weddingId) {
       token_hash: tokenHash,
       token_hint: `${editToken.slice(0, 6)}…`,
       purpose: 'edit',
-      expires_at: expiresAt
+      expires_at: expiresAt,
+      metadata
     })
   });
   return { editToken, editTokenExpiresAt: expiresAt, tokenHash };
@@ -476,6 +477,27 @@ export function publicWeddingProjection(wedding) {
     },
     published_at: wedding.published_at
   };
+}
+
+// Optional client-generated key that makes draft creation safe to retry. The raw
+// key is never stored; only its SHA-256 hash is kept in the creation token's
+// metadata (see docs/PHASE_0_INTEGRATION_PLAN.md, D7).
+export const CREATE_REPLAY_WINDOW_MS = 1000 * 60 * 60 * 24;
+
+export function idempotencyKeyFromRequest(request) {
+  const key = request.headers.get('Idempotency-Key');
+  if (key === null) return null;
+  if (!/^[A-Za-z0-9-]{16,128}$/.test(key)) {
+    throw new ApiError('Invalid Idempotency-Key header.', 400, 'INVALID_IDEMPOTENCY_KEY');
+  }
+  return key;
+}
+
+// Looks up a previous creation made with the same key. The filter is built by hand
+// because URLSearchParams would percent-encode the JSON path operator.
+export async function findCreateReplay(env, keyHash) {
+  const rows = await db(env, `edit_tokens?select=wedding_id,created_at&metadata->>createRequestHash=eq.${keyHash}&order=created_at.desc&limit=1`);
+  return rows?.[0] || null;
 }
 
 export function assertUuid(value) {

@@ -487,12 +487,19 @@
     const meta = metaFor(project);
     if (meta.inFlight) return;
     const revisionAtCreate = meta.revision;
+    // One key per creation attempt, persisted with the project so retries and
+    // reloads reuse it. The server treats a repeated key as the same creation.
+    if (!project.createRequestId) project.createRequestId = crypto.randomUUID();
     meta.inFlight = true;
     project.cloudStatus = 'creating';
     localSave();
     paintStatus(project);
     try {
-      const result = await window.inviteStudioApi.createWedding(JSON.parse(JSON.stringify(cloudPayload(project))));
+      const result = await window.inviteStudioApi.createWedding(
+        JSON.parse(JSON.stringify(cloudPayload(project))),
+        project.createRequestId
+      );
+      project.createRequestId = null;
       const oldId = project.id;
       project.id = result.wedding.id;
       project.cloudId = result.wedding.id;
@@ -511,6 +518,8 @@
       render();
       if (!isCurrent) queueCloudSave(project);
     } catch (error) {
+      // A replay that is too old cannot be recovered with the same key.
+      if (error.code === 'CREATE_REPLAY_EXPIRED') project.createRequestId = null;
       project.cloudStatus = shouldRetry(error) && attempt < maxRetries ? 'retrying' : 'local';
       project.cloudError = error.message;
       localSave();
@@ -527,6 +536,10 @@
 
   async function hydrateCloudProjects() {
     if (!window.inviteStudioApi?.enabled) return;
+    // Resume a creation that was interrupted by a reload or a closed tab.
+    for (const project of state.projects.filter(item => !item.cloudId && item.createRequestId)) {
+      createCloudDraft(project);
+    }
     for (const project of state.projects.filter(item => item.cloudId)) {
       const token = tokenFor(project.cloudId);
       if (!token) {
