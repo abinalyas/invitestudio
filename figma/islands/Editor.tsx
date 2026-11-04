@@ -363,6 +363,12 @@ function EventsPanel({ snap }: { snap: EditorSnapshot }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const trimmed = name.trim();
+  const presets = bridge.eventPresets();
+
+  function quickAdd(title: string) {
+    const id = bridge.addEvent(title);
+    setOpenId(id);
+  }
 
   function add(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -401,6 +407,16 @@ function EventsPanel({ snap }: { snap: EditorSnapshot }) {
           </li>
         ))}
       </ul>
+      {presets.length ? (
+        <div className="preset-chips" role="group" aria-label="Quick-add events">
+          <p className="tiny muted">Quick-add a common event</p>
+          {presets.map(title => (
+            <button key={title} type="button" className="preset-chip" onClick={() => quickAdd(title)}>
+              + {title}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <form className="add-event" onSubmit={add}>
         <label>
           Add an event

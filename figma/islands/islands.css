@@ -180,3 +180,10 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
   .editor-pages button.mobile-only.btn { display: inline-flex; margin-top: 16px; }
   .save-status { white-space: normal; }
 }
+
+/* Quick-add event chips, shared with the setup step's options. */
+.preset-chips { display: grid; gap: 8px; }
+.preset-chips p { margin: 0; }
+.preset-chip { min-height: 44px; padding: 0 14px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.preset-chip:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }
+.preset-chips { justify-items: start; }

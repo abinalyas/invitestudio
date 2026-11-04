@@ -91,12 +91,12 @@
     return {
       available: Boolean(p),
       title: p?.title || '',
-      pretitle: prefs.pretitle || '',
+      pretitle: prefs.pretitle || 'THE WEDDING OF',
       date: p?.date || '',
       location: p?.location || '',
       message: p?.message || '',
       hosts: p?.hosts || '',
-      storyTitle: prefs.storyTitle || '',
+      storyTitle: prefs.storyTitle || 'Our Story',
       storyCopy: p?.story || '',
       templateId: p?.templateId || '',
       templateName: p ? tpl(p.templateId).name : '',
@@ -237,6 +237,14 @@
 
     designs() {
       return launchDesigns();
+    },
+
+    // The same quick-add options as the setup step, minus the ones already on the schedule.
+    eventPresets() {
+      const p = project();
+      if (!p || typeof eventPresetsFor !== 'function') return [];
+      const added = new Set((p.functions || []).map(f => String(f.title || '').trim().toLowerCase()));
+      return eventPresetsFor(p).filter(title => !added.has(title.toLowerCase()));
     },
 
     retrySave() {
