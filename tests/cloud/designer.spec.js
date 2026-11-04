@@ -203,3 +203,58 @@ test('RSVP preference is saved, and guests are told responses are not open yet',
   await expect(page.locator('.invitation-canvas')).toContainText('Guest responses are not open yet.');
   await expect(page.locator('.invitation-canvas').getByRole('button', { name: 'RSVP' })).toHaveCount(0);
 });
+
+test.describe('designer on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+
+  test('the phone opens on the invitation, with three clear views', async ({ page }) => {
+    await openDesigner(page, 5);
+    await expect(page.getByRole('tab', { name: 'Preview' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('.invitation-canvas')).toBeVisible();
+    await expect(page.getByLabel('Welcome message')).not.toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Sections' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Edit' })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test('tapping a section in the preview offers its editor; the offer opens the Edit view', async ({ page }) => {
+    await openDesigner(page, 6);
+    await page.locator('.invitation-canvas [data-section="story"]').click();
+    const pill = page.getByRole('button', { name: /^Edit Our story$/ });
+    await expect(pill).toBeVisible();
+    await pill.click();
+    await expect(page.getByRole('tab', { name: 'Edit' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('heading', { name: 'Our story', level: 2 })).toBeVisible();
+    await expect(page.getByLabel('Your story')).toBeVisible();
+  });
+
+  test('choosing a section in the list opens its editor, and edits show on the invitation', async ({ page }) => {
+    await openDesigner(page, 7);
+    await page.getByRole('tab', { name: 'Sections' }).click();
+    await page.getByRole('button', { name: /our story/i }).click();
+    await expect(page.getByRole('tab', { name: 'Edit' })).toHaveAttribute('aria-selected', 'true');
+    const text = `Phone edit ${randomUUID().slice(0, 6)}`;
+    await page.getByLabel('Your story').fill(text);
+    await waitSaved(page);
+    await page.getByRole('tab', { name: 'Preview' }).click();
+    await expect(page.locator('.invitation-canvas')).toContainText(text);
+  });
+});
+
+test.describe('setup on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('the four setup steps fit on one row with no sideways scrolling', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => { localStorage.clear(); startCreate('Wedding'); });
+    await expect(page.locator('#projectTitle')).toBeVisible({ timeout: 15000 });
+    const sidebar = await page.locator('.flow-sidebar').evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+    expect(sidebar.scroll).toBeLessThanOrEqual(sidebar.client);
+    const steps = page.locator('.flow-sidebar .flow-step');
+    await expect(steps).toHaveCount(4);
+    const tops = await steps.evaluateAll(items => new Set(items.map(item => Math.round(item.getBoundingClientRect().top))).size);
+    expect(tops).toBe(1);
+    await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth).then(overflow => expect(overflow).toBeLessThanOrEqual(0));
+  });
+});

@@ -37,7 +37,7 @@ async function useTemplate(page, number) {
   await expect(page.getByRole('heading', { name: EXPECTED_TEMPLATES[number].name })).toBeVisible({ timeout: 15000 });
   await page.getByRole('button', { name: /use this template/i }).click();
   await expect(page).toHaveURL(new RegExp(`/editor/${number}$`), { timeout: 15000 });
-  await expect(page.getByRole('button', { name: /advanced editing/i })).toBeVisible();
+  await expect(page.locator('button', { hasText: /advanced editing/i }).first()).toBeAttached();
 }
 
 test('the home design renders, and only weddings are offered at launch', async ({ page }) => {

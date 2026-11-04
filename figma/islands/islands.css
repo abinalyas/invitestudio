@@ -113,3 +113,70 @@
 @media (max-width: 480px) { .two-up { grid-template-columns: 1fr; } }
 .design-picker > button.btn { justify-self: start; min-height: 44px; padding: 0 16px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; cursor: pointer; }
 .design-picker > button.btn:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }
+
+/* D3 stage 3: phone layout. One panel at a time; Preview is the starting view. */
+.mobile-tabs, .mobile-only, .mobile-edit-pill { display: none; }
+@media (max-width: 767px) {
+  .editor-header { flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
+  .editor-brand { min-width: 0; flex: 1 1 auto; }
+  .editor-brand strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .device-switcher, .editor-advanced, .editor-header-actions > .editor-action:not(.editor-advanced) { display: none; }
+  .editor-header-actions { gap: 8px; }
+  .save-status { min-height: 40px; padding: 0 10px; font-size: 13px; }
+  .editor-workspace { display: block; min-height: 0; padding: 12px 12px 104px; }
+  .editor-workspace > .editor-pages,
+  .editor-workspace > .editor-canvas-area,
+  .editor-workspace > .editor-controls { display: none; }
+  .editor-workspace[data-tab="sections"] > .editor-pages,
+  .editor-workspace[data-tab="preview"] > .editor-canvas-area,
+  .editor-workspace[data-tab="edit"] > .editor-controls { display: block; }
+  .editor-canvas-area { overflow: visible; padding: 0; }
+  .editor-browser, .editor-browser.tablet, .editor-browser.mobile { max-width: 100%; }
+  .mobile-only { display: inline-flex; margin-top: 16px; }
+  .editor-controls, .editor-pages { border-radius: 14px; }
+  .mobile-tabs {
+    display: grid; grid-template-columns: repeat(3, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    gap: 4px; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: #fffdf8; border-top: 1px solid #ded9d0;
+  }
+  .mobile-tabs button {
+    display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 56px; padding: 4px;
+    border: 0; border-radius: 12px; background: transparent; font: inherit; font-size: 13px; color: #4f4b44; cursor: pointer;
+  }
+  .mobile-tabs button[aria-selected="true"] { background: #e9eadb; color: #145c37; font-weight: 600; }
+  .mobile-tabs button:focus-visible, .mobile-edit-pill:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }
+  .mobile-edit-pill {
+    display: inline-flex; align-items: center; position: fixed; left: 50%; bottom: 96px; z-index: 21; transform: translateX(-50%);
+    min-height: 48px; padding: 0 20px; border: 0; border-radius: 999px; background: #145c37; color: #fff;
+    font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: 0 10px 30px rgba(37, 46, 37, .2);
+  }
+}
+
+/* D3 phone polish: header on two rows, and field hints inline with their labels. */
+.editor-form label, .event-form label, .add-event label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
+.editor-form label > input, .editor-form label > textarea, .editor-form label > select, .editor-form label > .input-with-icon,
+.event-form label > input, .event-form label > textarea, .add-event label > input { flex: 1 1 100%; width: 100%; }
+@media (max-width: 767px) {
+  .editor-header { display: grid; grid-template-columns: 1fr auto; align-items: center; }
+  .editor-brand .editor-divider, .editor-brand strong, .editor-brand .draft-badge { display: none; }
+  .editor-header-actions { grid-column: 1 / -1; display: flex; width: 100%; gap: 8px; }
+  .editor-header-actions .save-status { flex: 1 1 auto; justify-content: center; min-width: 0; }
+  .editor-header-actions .editor-publish { flex: none; }
+}
+
+/* D3 phone sections list and button styling inside the island. */
+.editor-pages nav .section-select { min-height: 56px; padding: 8px 12px; border: 0; border-radius: 0; background: transparent; }
+button.btn.small:not(.danger) { min-height: 44px; padding: 0 16px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; cursor: pointer; }
+@media (max-width: 767px) {
+  .editor-pages nav { display: grid; grid-template-columns: 1fr; gap: 0; overflow: visible; }
+  .editor-pages nav .section-row { min-width: 0; }
+}
+.editor-pages nav .section-select { flex: 1 1 auto; width: auto; }
+button.btn.small:not(.danger) { display: inline-flex; align-items: center; justify-content: center; }
+/* Specific rules so the phone-only link and checkboxes keep their intended layout. */
+.editor-pages button.mobile-only.btn { display: none; }
+.editor-form label > input[type="checkbox"], .event-form label > input[type="checkbox"] { flex: none; width: 20px; height: 20px; min-height: 0; padding: 0; accent-color: #145c37; }
+.save-status { white-space: nowrap; }
+@media (max-width: 767px) {
+  .editor-pages button.mobile-only.btn { display: inline-flex; margin-top: 16px; }
+  .save-status { white-space: normal; }
+}

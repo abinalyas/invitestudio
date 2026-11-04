@@ -934,3 +934,50 @@
 @media (max-width: 480px){.figma-app .two-up{ grid-template-columns: 1fr; }}
 .figma-app .design-picker > button.btn{ justify-self: start; min-height: 44px; padding: 0 16px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; cursor: pointer; }
 .figma-app .design-picker > button.btn:focus-visible{ outline: 2px solid #145c37; outline-offset: 2px; }
+.figma-app .mobile-tabs, .figma-app .mobile-only, .figma-app .mobile-edit-pill{ display: none; }
+@media (max-width: 767px){.figma-app .editor-header{ flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
+.figma-app .editor-brand{ min-width: 0; flex: 1 1 auto; }
+.figma-app .editor-brand strong{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.figma-app .device-switcher, .figma-app .editor-advanced, .figma-app .editor-header-actions > .editor-action:not(.editor-advanced){ display: none; }
+.figma-app .editor-header-actions{ gap: 8px; }
+.figma-app .save-status{ min-height: 40px; padding: 0 10px; font-size: 13px; }
+.figma-app .editor-workspace{ display: block; min-height: 0; padding: 12px 12px 104px; }
+.figma-app .editor-workspace > .editor-pages, .figma-app .editor-workspace > .editor-canvas-area, .figma-app .editor-workspace > .editor-controls{ display: none; }
+.figma-app .editor-workspace[data-tab="sections"] > .editor-pages, .figma-app .editor-workspace[data-tab="preview"] > .editor-canvas-area, .figma-app .editor-workspace[data-tab="edit"] > .editor-controls{ display: block; }
+.figma-app .editor-canvas-area{ overflow: visible; padding: 0; }
+.figma-app .editor-browser, .figma-app .editor-browser.tablet, .figma-app .editor-browser.mobile{ max-width: 100%; }
+.figma-app .mobile-only{ display: inline-flex; margin-top: 16px; }
+.figma-app .editor-controls, .figma-app .editor-pages{ border-radius: 14px; }
+.figma-app .mobile-tabs{
+    display: grid; grid-template-columns: repeat(3, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    gap: 4px; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: #fffdf8; border-top: 1px solid #ded9d0;
+  }
+.figma-app .mobile-tabs button{
+    display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 56px; padding: 4px;
+    border: 0; border-radius: 12px; background: transparent; font: inherit; font-size: 13px; color: #4f4b44; cursor: pointer;
+  }
+.figma-app .mobile-tabs button[aria-selected="true"]{ background: #e9eadb; color: #145c37; font-weight: 600; }
+.figma-app .mobile-tabs button:focus-visible, .figma-app .mobile-edit-pill:focus-visible{ outline: 2px solid #145c37; outline-offset: 2px; }
+.figma-app .mobile-edit-pill{
+    display: inline-flex; align-items: center; position: fixed; left: 50%; bottom: 96px; z-index: 21; transform: translateX(-50%);
+    min-height: 48px; padding: 0 20px; border: 0; border-radius: 999px; background: #145c37; color: #fff;
+    font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: 0 10px 30px rgba(37, 46, 37, .2);
+  }}
+.figma-app .editor-form label, .figma-app .event-form label, .figma-app .add-event label{ display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
+.figma-app .editor-form label > input, .figma-app .editor-form label > textarea, .figma-app .editor-form label > select, .figma-app .editor-form label > .input-with-icon, .figma-app .event-form label > input, .figma-app .event-form label > textarea, .figma-app .add-event label > input{ flex: 1 1 100%; width: 100%; }
+@media (max-width: 767px){.figma-app .editor-header{ display: grid; grid-template-columns: 1fr auto; align-items: center; }
+.figma-app .editor-brand .editor-divider, .figma-app .editor-brand strong, .figma-app .editor-brand .draft-badge{ display: none; }
+.figma-app .editor-header-actions{ grid-column: 1 / -1; display: flex; width: 100%; gap: 8px; }
+.figma-app .editor-header-actions .save-status{ flex: 1 1 auto; justify-content: center; min-width: 0; }
+.figma-app .editor-header-actions .editor-publish{ flex: none; }}
+.figma-app .editor-pages nav .section-select{ min-height: 56px; padding: 8px 12px; border: 0; border-radius: 0; background: transparent; }
+.figma-app button.btn.small:not(.danger){ min-height: 44px; padding: 0 16px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; cursor: pointer; }
+@media (max-width: 767px){.figma-app .editor-pages nav{ display: grid; grid-template-columns: 1fr; gap: 0; overflow: visible; }
+.figma-app .editor-pages nav .section-row{ min-width: 0; }}
+.figma-app .editor-pages nav .section-select{ flex: 1 1 auto; width: auto; }
+.figma-app button.btn.small:not(.danger){ display: inline-flex; align-items: center; justify-content: center; }
+.figma-app .editor-pages button.mobile-only.btn{ display: none; }
+.figma-app .editor-form label > input[type="checkbox"], .figma-app .event-form label > input[type="checkbox"]{ flex: none; width: 20px; height: 20px; min-height: 0; padding: 0; accent-color: #145c37; }
+.figma-app .save-status{ white-space: nowrap; }
+@media (max-width: 767px){.figma-app .editor-pages button.mobile-only.btn{ display: inline-flex; margin-top: 16px; }
+.figma-app .save-status{ white-space: normal; }}

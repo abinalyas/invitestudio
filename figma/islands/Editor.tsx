@@ -14,6 +14,17 @@ import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch } f
 import { useBridgeVersion } from "./extras";
 
 type SectionKey = "home" | "story" | "functions" | "gallery" | "rsvp";
+type MobileTab = "sections" | "preview" | "edit";
+const mobileTabs: Array<{ key: MobileTab; label: string; icon: IconName }> = [
+  { key: "sections", label: "Sections", icon: "layers" },
+  { key: "preview", label: "Preview", icon: "eye" },
+  { key: "edit", label: "Edit", icon: "edit" }
+];
+
+// Phone layout: one panel at a time, starting with the invitation.
+function isPhone(): boolean {
+  return typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+}
 type SectionItem = { key: SectionKey; label: string; icon: IconName; sectionId?: string };
 
 const sections: SectionItem[] = [
@@ -71,6 +82,8 @@ export function EditorPage() {
   const [device, setDevice] = useState<Device>("desktop");
   const [active, setActive] = useState<SectionKey>("home");
   const [designsOpen, setDesignsOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
+  const [picked, setPicked] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -111,12 +124,20 @@ export function EditorPage() {
       .composedPath()
       .find((item): item is HTMLElement => item instanceof HTMLElement && Boolean(item.dataset?.section));
     const key = node ? previewSectionToKey[node.dataset.section ?? ""] : undefined;
-    if (key) setActive(key);
+    if (key) {
+      setActive(key);
+      if (isPhone()) setPicked(true);
+    }
   }
 
   // Selecting a section in the rail scrolls the preview to it.
   function choose(key: SectionKey) {
     setActive(key);
+    setPicked(false);
+    if (isPhone()) {
+      setMobileTab("edit");
+      return;
+    }
     const item = sections.find(section => section.key === key);
     const target = key === "home" ? "hero" : item?.sectionId;
     if (target) {
@@ -174,8 +195,8 @@ export function EditorPage() {
         </div>
       </header>
 
-      <div className="editor-workspace">
-        <aside className="editor-pages" aria-label="Sections">
+      <div className="editor-workspace" data-tab={mobileTab}>
+        <aside className="editor-pages" id="panel-sections" aria-label="Sections">
           <div className="editor-panel-heading">
             <h2>Sections</h2>
           </div>
@@ -233,9 +254,10 @@ export function EditorPage() {
               </div>
             ) : null}
           </div>
+          <button type="button" className="btn small mobile-only" onClick={() => bridge.openAdvanced()}>Advanced editing</button>
         </aside>
 
-        <section className="editor-canvas-area">
+        <section className="editor-canvas-area" id="panel-preview">
           <div className={`editor-browser ${device}`}>
             <div className="browser-bar">
               <span className="browser-dots">
@@ -249,7 +271,7 @@ export function EditorPage() {
           </div>
         </section>
 
-        <aside className="editor-controls" aria-labelledby="editing-heading">
+        <aside className="editor-controls" id="panel-edit" aria-labelledby="editing-heading">
           <p className="editing-kicker">Editing</p>
           <h2 id="editing-heading">{activeItem.label}</h2>
 
@@ -308,6 +330,29 @@ export function EditorPage() {
           {active === "rsvp" ? <RsvpPanel snap={snap} /> : null}
         </aside>
       </div>
+
+      {mobileTab === "preview" && picked ? (
+        <button type="button" className="mobile-edit-pill" onClick={() => { setMobileTab("edit"); setPicked(false); }}>
+          Edit {activeItem.label}
+        </button>
+      ) : null}
+
+      <nav className="mobile-tabs" role="tablist" aria-label="Editor views">
+        {mobileTabs.map(tab => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            id={`tab-${tab.key}`}
+            aria-selected={mobileTab === tab.key}
+            aria-controls={`panel-${tab.key}`}
+            onClick={() => { setMobileTab(tab.key); setPicked(false); }}
+          >
+            <Icon name={tab.icon} size={20} />
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </nav>
     </main>
   );
 }
