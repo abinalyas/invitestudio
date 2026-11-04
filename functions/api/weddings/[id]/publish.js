@@ -10,6 +10,7 @@ import {
   readJson,
   success
 } from '../../../_shared/api.js';
+import { isLaunchTemplate } from '../../../_shared/templates.js';
 
 export async function onRequest(context) {
   const { request, env, params } = context;
@@ -36,6 +37,9 @@ export async function onRequest(context) {
       });
     }
     const current = await getWedding(env, params.id);
+    if (!isLaunchTemplate(current.template_id)) {
+      throw new ApiError('This design is no longer available. Choose another template before publishing.', 422, 'TEMPLATE_UNAVAILABLE');
+    }
     if (!current.title?.trim()) {
       throw new ApiError('Add a title before publishing.', 422, 'VALIDATION_ERROR', {
         title: 'Required before publishing.'

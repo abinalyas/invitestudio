@@ -5,6 +5,7 @@ import {
   fail,
   getWedding,
   getWeddingChildren,
+  noContent,
   optionsResponse,
   requireEditAccess,
   readJson,
@@ -26,6 +27,17 @@ export async function onRequest(context) {
         getWeddingChildren(env, id)
       ]);
       return success(request, env, { wedding, ...children });
+    }
+
+    if (request.method === 'DELETE') {
+      // Permanent. The private links, photo records, events, payments and RSVPs of this
+      // draft are removed by cascading foreign keys, and its public address stops working
+      // at once. Stored files are removed when media storage is added (Phase 5).
+      await db(env, `weddings?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: { Prefer: 'return=minimal' }
+      });
+      return noContent(request, env);
     }
 
     if (request.method !== 'PATCH') {

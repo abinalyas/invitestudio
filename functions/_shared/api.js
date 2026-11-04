@@ -1,3 +1,5 @@
+import { isLaunchTemplate } from './templates.js';
+
 const encoder = new TextEncoder();
 
 export class ApiError extends Error {
@@ -24,6 +26,13 @@ function corsHeaders(request, env) {
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin'
   };
+}
+
+export function noContent(request, env) {
+  return new Response(null, {
+    status: 204,
+    headers: { ...corsHeaders(request, env), 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
+  });
 }
 
 export function optionsResponse(request, env) {
@@ -125,10 +134,40 @@ function stringField(input, key, max, fields) {
   return input[key].trim();
 }
 
+// Upper bounds for JSON fields, in bytes of their JSON text. A field over its limit is
+// refused with 422 (not a generic 413), so the client can explain what to change.
+const JSON_FIELD_LIMITS = Object.freeze({
+  theme: 8 * 1024,
+  preferences: 16 * 1024,
+  culturalPreferences: 8 * 1024,
+  content: 256 * 1024,
+  sections: 32 * 1024,
+  introSettings: 16 * 1024,
+  animationSettings: 8 * 1024
+});
+
+// Media is not stored in invitation JSON. Any data: URL is refused, wherever it is nested.
+function containsDataUrl(value) {
+  if (typeof value === 'string') return /^data:/i.test(value.trim());
+  if (Array.isArray(value)) return value.some(containsDataUrl);
+  if (value && typeof value === 'object') return Object.values(value).some(containsDataUrl);
+  return false;
+}
+
 function jsonField(input, key, fields) {
   if (input[key] === undefined) return undefined;
   if (typeof input[key] !== 'object' || input[key] === null) {
     fields[key] = 'Must be a JSON object or array.';
+    return undefined;
+  }
+  if (containsDataUrl(input[key])) {
+    fields[key] = 'Images and audio cannot be saved in an invitation yet. Remove them and try again.';
+    return undefined;
+  }
+  const size = new TextEncoder().encode(JSON.stringify(input[key])).length;
+  const limit = JSON_FIELD_LIMITS[key];
+  if (limit && size > limit) {
+    fields[key] = `This section is too large to save (${Math.ceil(size / 1024)} KB; the limit is ${Math.floor(limit / 1024)} KB).`;
     return undefined;
   }
   return input[key];
@@ -240,6 +279,12 @@ export function validateWeddingInput(input, { create = false } = {}) {
   for (const [source, target, max] of mappings) {
     const value = stringField(input, source, max, fields);
     if (value !== undefined) output[target] = value;
+  }
+
+  // Only explicitly registered designs can be chosen. Unknown or unlisted IDs are refused,
+  // never drawn with a fallback design.
+  if (output.template_id !== undefined && !isLaunchTemplate(output.template_id)) {
+    fields.templateId = 'Choose an available design.';
   }
 
   for (const key of ['name', 'title', 'templateId']) {

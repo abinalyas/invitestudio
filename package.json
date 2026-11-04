@@ -4,11 +4,12 @@
   "version": "1.0.0",
   "scripts": {
     "test:e2e": "playwright test",
-    "test:unit": "node --test tests/unit/api.test.mjs",
+    "test:unit": "node --test tests/unit/*.test.mjs",
     "test:qa": "node qa-regression.js",
     "test:cloud": "playwright test -c playwright.cloud.config.js",
     "build:figma": "node figma/build.mjs",
-    "check:figma": "tsc -p figma/tsconfig.json"
+    "check:figma": "tsc -p figma/tsconfig.json",
+    "gen:templates": "node scripts/generate-template-registry.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
