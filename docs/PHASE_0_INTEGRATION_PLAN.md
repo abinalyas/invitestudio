@@ -106,7 +106,7 @@ Each step is a separate commit on `feature/figma-make-frontend-integration`. No 
 
 | Item | Status | How to verify | Who approves |
 |---|---|---|---|
-| Migrations 202610210001–202611030003 applied to the live Supabase project | **Unknown** | Supabase dashboard → SQL editor: `select to_regclass('public.weddings'), to_regclass('public.edit_tokens'), to_regclass('public.templates');` and `select count(*) from public.templates;` (expect ≥ 88 seeded rows if migration 3 ran). Or Supabase CLI `supabase migration list` against the linked project. | Project owner |
+| Migrations 202610210001–202611030003 applied to the live Supabase project | **Unknown** | Supabase dashboard → SQL editor: `select to_regclass('public.weddings'), to_regclass('public.edit_tokens'), to_regclass('public.templates');` and `select count(*) from public.templates;` (expect 84 rows: 12 from migration 1 plus 72 from migration 3, verified on a fresh database). Or Supabase CLI `supabase migration list` against the linked project. | Project owner |
 | `wedding_events` has no rows | Unknown | Query in section 3. | Project owner |
 | Pages Function environment (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGIN`) configured | Unknown | Cloudflare Pages settings. | Project owner |
 | Figma Make export | **Not in repository** | Provide the export (zip or repository path). | Project owner |
