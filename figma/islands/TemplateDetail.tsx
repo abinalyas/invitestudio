@@ -43,7 +43,6 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
   ]
   const included = [
     ["layers", "Multi-section wedding website"],
-    ["people", "RSVP with guest management"],
     ["calendar", "Event details (multiple functions)"],
     ["gallery", "Photo gallery"],
     ["pin", "Travel & stay information"],

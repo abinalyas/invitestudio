@@ -181,7 +181,7 @@ export const plans = [
     features: [
       "Premium templates",
       "Custom domain (optional)",
-      "RSVP & guest management",
+      "Event details & travel information",
       "Photo gallery & more",
     ],
   },
@@ -205,7 +205,7 @@ export const faqs = [
   ],
   [
     "Can I collect RSVPs from my guests?",
-    "Yes. Guests can RSVP online, choose meals, and share dietary needs from any device.",
+    "Not yet. Online RSVPs are not available. Your invitation can show your events, directions and travel details today.",
   ],
   [
     "Can I customise the design and content?",

@@ -664,9 +664,13 @@
     return base || 'our-wedding';
   }
 
-  function slugProblem(slug) {
+  // Same limit as the server (SLUG_MAX_LENGTH in functions/_shared/api.js).
+  const SLUG_MAX_LENGTH = 60;
+
+  // A live invitation may keep its own longer address; only a new address must fit the limit.
+  function slugProblem(slug, ownAddress = '') {
     if (!slug) return 'Choose a web address for your invitation.';
-    if (slug.length > 60) return 'Keep the web address to 60 characters or fewer.';
+    if (slug.length > SLUG_MAX_LENGTH && slug !== ownAddress) return `Keep the web address to ${SLUG_MAX_LENGTH} characters or fewer.`;
     if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) return 'Use lowercase letters, numbers and single hyphens only.';
     if (RESERVED_SLUG_WORDS.has(slug)) return 'That web address is reserved. Choose another.';
     return '';
@@ -716,14 +720,14 @@
   function canPublish(project, session) {
     if (session.busy || session.checking) return false;
     if (project.cloudStatus !== 'saved') return false;
-    if (slugProblem(session.typed)) return false;
+    if (slugProblem(session.typed, project.publicSlug)) return false;
     if (isLive(project) && !session.changing && session.typed === project.publicSlug) return true;
     if (session.changing && !session.confirmed) return false;
     return Boolean(session.availability && session.availability.available);
   }
 
   function slugStatusText(project, session) {
-    const problem = slugProblem(session.typed);
+    const problem = slugProblem(session.typed, project.publicSlug);
     if (problem) return { tone: 'bad', text: problem };
     if (session.checking) return { tone: 'muted', text: 'Checking availability…' };
     if (isLive(project) && session.typed === project.publicSlug) return { tone: 'ok', text: 'This is the live address of your invitation.' };
@@ -822,7 +826,7 @@
     clearTimeout(availabilityTimer);
     const session = publishSession;
     const typed = session.typed;
-    if (slugProblem(typed) || !project.cloudId || !tokenFor(project.cloudId) || !window.inviteStudioApi?.enabled) {
+    if (slugProblem(typed, project.publicSlug) || !project.cloudId || !tokenFor(project.cloudId) || !window.inviteStudioApi?.enabled) {
       updateDialogWithoutRepaint(project);
       return;
     }

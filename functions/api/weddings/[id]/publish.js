@@ -2,6 +2,7 @@ import {
   ApiError,
   assertUuid,
   RESERVED_SLUGS,
+  SLUG_MAX_LENGTH,
   db,
   fail,
   getWedding,
@@ -26,7 +27,7 @@ export async function onRequest(context) {
       throw new ApiError('A current wedding version is required.', 422, 'VERSION_REQUIRED');
     }
     const slug = typeof body.slug === 'string' ? body.slug.trim().toLowerCase() : '';
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 120) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
       throw new ApiError('Choose a URL slug using lowercase letters, numbers and hyphens.', 422, 'VALIDATION_ERROR', {
         slug: 'Invalid slug format.'
       });
@@ -37,6 +38,13 @@ export async function onRequest(context) {
       });
     }
     const current = await getWedding(env, params.id);
+    // A live invitation may keep an address longer than the limit (set before it existed).
+    // Only a new or moved address must respect the limit.
+    if (slug !== current.slug && slug.length > SLUG_MAX_LENGTH) {
+      throw new ApiError(`Keep the web address to ${SLUG_MAX_LENGTH} characters or fewer.`, 422, 'VALIDATION_ERROR', {
+        slug: `Keep the web address to ${SLUG_MAX_LENGTH} characters or fewer.`
+      });
+    }
     if (!isLaunchTemplate(current.template_id)) {
       throw new ApiError('This design is no longer available. Choose another template before publishing.', 422, 'TEMPLATE_UNAVAILABLE');
     }
@@ -63,16 +71,28 @@ export async function onRequest(context) {
         slug: 'Choose another slug.'
       });
     }
-    const rows = await db(env, `weddings?id=eq.${params.id}&version=eq.${body.version}`, {
-      method: 'PATCH',
-      headers: { Prefer: 'return=representation' },
-      body: JSON.stringify({
-        slug,
-        status: 'published',
-        visibility: 'public',
-        published_at: new Date().toISOString()
-      })
-    });
+    let rows;
+    try {
+      rows = await db(env, `weddings?id=eq.${params.id}&version=eq.${body.version}`, {
+        method: 'PATCH',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify({
+          slug,
+          status: 'published',
+          visibility: 'public',
+          published_at: new Date().toISOString()
+        })
+      });
+    } catch (error) {
+      // Two websites can pass the availability check at the same moment. The database
+      // unique constraint decides the winner; the loser gets a conflict, not a server error.
+      if (error?.databaseCode === '23505') {
+        throw new ApiError('That public URL is already in use.', 409, 'SLUG_CONFLICT', {
+          slug: 'Choose another slug.'
+        });
+      }
+      throw error;
+    }
     if (!rows?.[0]) {
       throw new ApiError('That slug may already be in use or the draft changed. Reload and try again.', 409, 'PUBLISH_CONFLICT');
     }
