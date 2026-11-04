@@ -182,7 +182,6 @@ export const plans = [
       "Premium templates",
       "Custom domain (optional)",
       "Event details & travel information",
-      "Photo gallery & more",
     ],
   },
   {

@@ -48,8 +48,7 @@ export function HomePage() {
             </h1>
             <p className="lead">
               Beautiful, interactive wedding invitations with
-              <br className="desktop-only" /> animations, events, travel details,
-              galleries and more.
+              <br className="desktop-only" /> animations, events and travel details.
             </p>
             <div className="hero-buttons">
               <button className="button" type="button" onClick={() => bridge.startCreate("Wedding")}>
@@ -249,8 +248,8 @@ export function HomePage() {
               "Directions, parking and stays for each event",
             ],
             [
-              "gallery",
-              "Photo gallery",
+              "heart",
+              "Your story",
               "Tell your story through your favourite moments",
             ],
             [
