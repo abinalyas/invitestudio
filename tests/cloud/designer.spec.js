@@ -142,3 +142,64 @@ test('gallery stays off with an honest empty state and no upload control', async
   await expect(page.locator('.editor-controls input[type="file"]')).toHaveCount(0);
   await expect(page.locator('.invitation-canvas')).not.toContainText('Photos will be added here');
 });
+
+test('events are added and edited with their own travel details, and persist', async ({ page }) => {
+  await openDesigner(page, 2);
+  const eventName = `Sangeet ${randomUUID().slice(0, 4)}`;
+  await page.getByRole('button', { name: /^Events/ }).click();
+  await page.getByLabel('Add an event').fill(eventName);
+  await page.getByRole('button', { name: 'Add event' }).click();
+
+  await page.getByLabel('Venue').fill('The Garden Hall');
+  await page.getByLabel('Directions link').fill('https://maps.example.com/garden-hall');
+  await page.getByLabel(/^Parking/).fill('Parking behind the hall');
+  await expect(page.locator('.invitation-canvas')).toContainText(eventName, { timeout: 2000 });
+  await expect(page.locator('.invitation-canvas')).toContainText('The Garden Hall', { timeout: 2000 });
+  await expect(page.locator('.invitation-canvas')).toContainText('Parking behind the hall', { timeout: 2000 });
+  await waitSaved(page);
+
+  await page.reload();
+  await page.getByRole('button', { name: /^Events/ }).click();
+  await page.getByRole('button', { name: new RegExp(eventName) }).click();
+  await expect(page.getByLabel('Venue')).toHaveValue('The Garden Hall', { timeout: 15000 });
+  await expect(page.getByLabel('Directions link')).toHaveValue('https://maps.example.com/garden-hall');
+  await expect(page.getByLabel(/^Parking/)).toHaveValue('Parking behind the hall');
+
+  await page.getByLabel('Show this event on the invitation').uncheck();
+  await waitSaved(page);
+  await expect(page.locator('.invitation-canvas')).not.toContainText(eventName);
+});
+
+test('removing an event asks first, then removes it from the list and the invitation', async ({ page }) => {
+  await openDesigner(page, 3);
+  const eventName = `Haldi ${randomUUID().slice(0, 4)}`;
+  await page.getByRole('button', { name: /^Events/ }).click();
+  await page.getByLabel('Add an event').fill(eventName);
+  await page.getByRole('button', { name: 'Add event' }).click();
+  await waitSaved(page);
+
+  await page.getByRole('button', { name: 'Remove event' }).click();
+  await expect(page.getByRole('group', { name: new RegExp(`Remove ${eventName}`) })).toBeVisible();
+  await page.getByRole('button', { name: 'Keep event' }).click();
+  await expect(page.getByLabel('Venue')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Remove event' }).click();
+  await page.getByRole('button', { name: 'Remove event' }).last().click();
+  await expect(page.getByRole('button', { name: new RegExp(eventName) })).toHaveCount(0);
+  await waitSaved(page);
+  await expect(page.locator('.invitation-canvas')).not.toContainText(eventName);
+});
+
+test('RSVP preference is saved, and guests are told responses are not open yet', async ({ page }) => {
+  await openDesigner(page, 4);
+  await page.getByRole('button', { name: /^RSVP/ }).click();
+  await expect(page.getByText(/guest responses are not live yet/i).first()).toBeVisible();
+  await page.getByLabel('Response form at launch').selectOption('contact');
+  await waitSaved(page);
+
+  await page.reload();
+  await page.getByRole('button', { name: /^RSVP/ }).click();
+  await expect(page.getByLabel('Response form at launch')).toHaveValue('contact', { timeout: 15000 });
+  await expect(page.locator('.invitation-canvas')).toContainText('Guest responses are not open yet.');
+  await expect(page.locator('.invitation-canvas').getByRole('button', { name: 'RSVP' })).toHaveCount(0);
+});

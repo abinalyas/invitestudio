@@ -8,9 +8,9 @@
 //   scrolls the preview to it. Both stay in step.
 // - Only supported content is editable here. Palette, typography and layout belong to
 //   the template. Photos stay disabled until persistent photo storage exists.
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
 import { Icon, IconName, Logo } from "./shared";
-import { bridge, Device, EditorFields, EditorSnapshot } from "./bridge";
+import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch } from "./bridge";
 import { useBridgeVersion } from "./extras";
 
 type SectionKey = "home" | "story" | "functions" | "gallery" | "rsvp";
@@ -303,14 +303,184 @@ export function EditorPage() {
             </div>
           ) : null}
 
-          {active === "functions" || active === "gallery" || active === "rsvp" ? (
-            <div className="editor-form">
-              <p className="tiny muted">This section's details are still edited under Advanced editing.</p>
-              <button type="button" className="btn small" onClick={() => bridge.openAdvanced()}>Open advanced editing</button>
-            </div>
-          ) : null}
+          {active === "functions" ? <EventsPanel snap={snap} /> : null}
+          {active === "gallery" ? <GalleryPanel snap={snap} /> : null}
+          {active === "rsvp" ? <RsvpPanel snap={snap} /> : null}
         </aside>
       </div>
     </main>
+  );
+}
+
+// Events carry their own travel details: directions, parking, stays and access.
+// Structured per event so broader travel information can be added later.
+function EventsPanel({ snap }: { snap: EditorSnapshot }) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const trimmed = name.trim();
+
+  function add(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!trimmed) return;
+    const id = bridge.addEvent(trimmed);
+    setName("");
+    setOpenId(id);
+  }
+
+  return (
+    <div className="editor-form events-panel">
+      <p className="tiny muted">Each event has its own date, venue and travel details. Events appear on the invitation in the order you add them.</p>
+      {snap.events.length === 0 ? <p className="empty-state">No events yet. Add the first celebration below.</p> : null}
+      <ul className="event-list">
+        {snap.events.map(item => (
+          <li key={item.id} className="event-item">
+            <button
+              type="button"
+              className="event-toggle"
+              aria-expanded={openId === item.id}
+              onClick={() => setOpenId(openId === item.id ? null : item.id)}
+            >
+              <strong>{item.title || "Untitled event"}</strong>
+              <small>{item.visible ? [item.date, item.venue].filter(Boolean).join(" · ") || "Details to add" : "Hidden from guests"}</small>
+            </button>
+            {openId === item.id ? (
+              <EventForm
+                key={item.id}
+                item={item}
+                onRemove={() => {
+                  bridge.removeEvent(item.id);
+                  setOpenId(null);
+                }}
+              />
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      <form className="add-event" onSubmit={add}>
+        <label>
+          Add an event
+          <input value={name} placeholder="e.g. Sangeet" onChange={event => setName(event.target.value)} />
+        </label>
+        <button type="submit" className="btn small" disabled={!trimmed}>Add event</button>
+      </form>
+    </div>
+  );
+}
+
+function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const change = (patch: EventPatch) => bridge.updateEvent(item.id, patch);
+
+  return (
+    <div className="event-form">
+      <label className="visibility-field">
+        <input type="checkbox" checked={item.visible} onChange={event => change({ visible: event.target.checked })} />
+        Show this event on the invitation
+      </label>
+      <label>
+        Event name
+        <input value={item.title} onChange={event => change({ title: event.target.value })} />
+      </label>
+      <div className="two-up">
+        <label>
+          Date
+          <input type="date" value={item.date} onChange={event => change({ date: event.target.value })} />
+        </label>
+        <label>
+          Start time
+          <input value={item.time} placeholder="4:00 PM" onChange={event => change({ time: event.target.value })} />
+        </label>
+      </div>
+      <label>
+        End time <span className="optional">(optional)</span>
+        <input value={item.endTime} placeholder="7:00 PM" onChange={event => change({ endTime: event.target.value })} />
+      </label>
+      <label>
+        Venue
+        <input value={item.venue} onChange={event => change({ venue: event.target.value })} />
+      </label>
+      <label>
+        Description <span className="optional">(optional)</span>
+        <textarea rows={2} value={item.description} onChange={event => change({ description: event.target.value })} />
+      </label>
+      <label>
+        Dress code <span className="optional">(optional)</span>
+        <input value={item.dressCode} onChange={event => change({ dressCode: event.target.value })} />
+      </label>
+
+      <fieldset className="travel-fields">
+        <legend>Travel details <span className="optional">(optional)</span></legend>
+        <label>
+          Directions link
+          <input
+            type="url"
+            value={item.directionsUrl}
+            placeholder="https://maps.google.com/…"
+            onChange={event => change({ directionsUrl: event.target.value })}
+          />
+        </label>
+        <label>
+          Parking
+          <textarea rows={2} value={item.parking} onChange={event => change({ parking: event.target.value })} />
+        </label>
+        <label>
+          Travel and accommodation
+          <textarea rows={2} value={item.accommodation} onChange={event => change({ accommodation: event.target.value })} />
+        </label>
+        <label>
+          Accessibility
+          <textarea rows={2} value={item.accessibility} onChange={event => change({ accessibility: event.target.value })} />
+        </label>
+      </fieldset>
+
+      {confirming ? (
+        <div className="confirm-remove" role="group" aria-label={`Remove ${item.title || "this event"}`}>
+          <p>Remove “{item.title || "this event"}”? It will be removed from the invitation. This cannot be undone.</p>
+          <div className="confirm-actions">
+            <button type="button" className="btn small danger" onClick={onRemove}>Remove event</button>
+            <button type="button" className="btn small" onClick={() => setConfirming(false)}>Keep event</button>
+          </div>
+        </div>
+      ) : (
+        <button type="button" className="link-danger" onClick={() => setConfirming(true)}>Remove event</button>
+      )}
+    </div>
+  );
+}
+
+// Photos need persistent storage, which does not exist yet. The empty state says so.
+function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
+  return (
+    <div className="editor-form">
+      <p className="empty-state">{snap.galleryCount ? `${snap.galleryCount} photos` : "No photos yet."}</p>
+      <p className="tiny muted">Photo uploads unlock when photo storage is available. Until then, your invitation has no gallery section.</p>
+    </div>
+  );
+}
+
+const rsvpOptions: Array<[string, string]> = [
+  ["count", "RSVP with guest count"],
+  ["rsvp", "RSVP only"],
+  ["contact", "Contact details only"],
+  ["none", "No response form"]
+];
+
+// The preference is stored for launch. Guest responses are not collected today.
+function RsvpPanel({ snap }: { snap: EditorSnapshot }) {
+  return (
+    <div className="editor-form">
+      <div className="notice" role="note">
+        <strong>Guest responses are not live yet.</strong>
+        <p className="tiny">You can choose how the response form will work at launch. Nothing is collected from guests today.</p>
+      </div>
+      <label>
+        Response form at launch
+        <select value={snap.rsvp} onChange={event => bridge.setRsvp(event.target.value)}>
+          {rsvpOptions.map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+      </label>
+    </div>
   );
 }

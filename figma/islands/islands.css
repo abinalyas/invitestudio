@@ -85,3 +85,31 @@
 .editor-form label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
 .editor-form input, .editor-form textarea { min-height: 44px; padding: 10px 12px; border: 1px solid #8a8276; border-radius: 8px; background: #fff; font: inherit; font-weight: 400; }
 .editor-form textarea { min-height: 96px; resize: vertical; }
+
+/* D3 stage 2: events with travel details, gallery and RSVP panels. */
+.empty-state { margin: 0; padding: 14px 16px; border-radius: 10px; background: #f7f1e9; color: #4f4b44; font-size: 15px; }
+.event-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.event-item { border: 1px solid #ded9d0; border-radius: 12px; background: #fff; overflow: hidden; }
+.event-toggle { display: grid; gap: 2px; width: 100%; min-height: 56px; padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
+.event-toggle small { font-size: 13px; color: #6b6760; }
+.event-form { display: grid; gap: 14px; padding: 4px 14px 16px; border-top: 1px solid #ded9d0; }
+.event-form label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+.event-form input, .event-form textarea, .add-event input { min-height: 44px; padding: 10px 12px; border: 1px solid #8a8276; border-radius: 8px; background: #fff; font: inherit; font-weight: 400; }
+.event-form textarea { min-height: 72px; resize: vertical; }
+.two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.travel-fields { display: grid; gap: 12px; margin: 0; padding: 14px; border: 1px solid #ded9d0; border-radius: 12px; }
+.travel-fields legend { padding: 0 6px; font-family: "Playfair Display", Georgia, serif; font-size: 18px; }
+.link-danger { justify-self: start; min-height: 44px; padding: 0 2px; border: 0; background: transparent; color: #9b5147; font: inherit; text-decoration: underline; cursor: pointer; }
+.confirm-remove { display: grid; gap: 10px; padding: 12px; border-radius: 10px; background: #f6e9e6; color: #7a3a33; font-size: 14px; }
+.confirm-remove p { margin: 0; }
+.confirm-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn.danger { border-color: #9b5147; background: #9b5147; color: #fff; }
+.add-event { display: grid; gap: 10px; padding-top: 6px; border-top: 1px solid #ded9d0; }
+.add-event label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+.add-event button:disabled { opacity: .5; cursor: not-allowed; }
+.notice { display: grid; gap: 4px; padding: 14px 16px; border-radius: 10px; background: #f7f1e9; color: #4f4b44; font-size: 15px; }
+.notice p { margin: 0; }
+.editor-form select { min-height: 44px; padding: 10px 12px; border: 1px solid #8a8276; border-radius: 8px; background: #fff; font: inherit; font-weight: 400; }
+@media (max-width: 480px) { .two-up { grid-template-columns: 1fr; } }
+.design-picker > button.btn { justify-self: start; min-height: 44px; padding: 0 16px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; cursor: pointer; }
+.design-picker > button.btn:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }

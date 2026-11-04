@@ -19,7 +19,7 @@ const checks = [
   ['Photo save failure rolls back in-memory state', () => { if (!js.includes('if(!save()){p.photos=previous;return}')) throw Error('upload rollback missing'); }],
   ['Demo publish action cannot create a false published status', () => { if (!js.includes('function simulatePublish(){toast(\'Publishing is not available yet.') || js.includes("p.status='Published (demo)'")) throw Error('misleading demo publish state remains'); }],
   ['Publishing unavailability is clearly explained', () => { if (!js.includes('You can’t publish a live website yet.') || !js.includes('This preview is not a public link') || !js.includes('guests can’t submit real RSVPs yet.')) throw Error('publish availability message missing'); }],
-  ['RSVP limitation is explicit', () => { if (!js.includes('RSVP preview only — backend not connected')) throw Error('RSVP limitation text missing'); }],
+  ['RSVP limitation is explicit', () => { if (!js.includes('Guest responses are not open yet.') || js.includes('RSVP preview only')) throw Error('RSVP limitation text missing'); }],
   ['Section add/reorder/hide controls exist', () => { for (const fn of ['addCustomSection','moveSection','toggleSection']) if (!js.includes('function '+fn+'(')) throw Error(fn+' missing'); }],
   ['Function add/reorder/hide/duplicate controls exist', () => { for (const fn of ['addFunction','moveFunction','toggleFunction','duplicateFunction']) if (!js.includes('function '+fn+'(')) throw Error(fn+' missing'); }],
   ['Onboarding can skip optional details', () => { if (!js.includes('Skip for now') || !js.includes('setupStepNames')) throw Error('optional onboarding skip missing'); }],
