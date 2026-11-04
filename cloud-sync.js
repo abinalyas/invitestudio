@@ -76,7 +76,7 @@
   function privateEditLink(project) {
     const token = project?.cloudId ? tokenFor(project.cloudId) : '';
     if (!project?.cloudId || !token || !window.location?.origin) return '';
-    return `${window.location.origin}/edit/${encodeURIComponent(token)}`;
+    return `${window.location.origin}/edit#${encodeURIComponent(token)}`;
   }
 
   const editTokenPattern = /^[A-Za-z0-9_-]{32,256}$/;
