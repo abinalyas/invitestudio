@@ -27,5 +27,5 @@ export const LAUNCH_CATEGORY = 'Wedding';
 
 export function launchTemplateIds() {
   const { templates } = readCatalogue();
-  return [...new Set(templates.filter(template => template.category === LAUNCH_CATEGORY).map(template => template.id))];
+  return [...new Set(templates.filter(template => template.category === LAUNCH_CATEGORY && !template.review).map(template => template.id))];
 }

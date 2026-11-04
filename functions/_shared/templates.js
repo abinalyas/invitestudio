@@ -30,7 +30,6 @@ export const LAUNCH_TEMPLATE_IDS = Object.freeze([
   'ganesh-blessing',
   'chooda-crimson',
   'baraat-procession',
-  'kerala-kasavu',
   'kerala-monsoon',
   'south-temple',
   'south-mogra',

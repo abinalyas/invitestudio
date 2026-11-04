@@ -68,10 +68,21 @@ test('defect 2: the server registry is exactly the launch catalogue (regenerate 
   assert.equal(new Set(LAUNCH_TEMPLATE_IDS).size, LAUNCH_TEMPLATE_IDS.length);
 });
 
-test('defect 2: every design in the catalogue is either launch-scoped or deliberately held back', () => {
+test('defect 2: every design is launch-scoped, or deliberately held back (under review, or not a wedding)', () => {
   const { templates } = readCatalogue();
   const held = templates.filter(template => !isLaunchTemplate(template.id));
-  for (const template of held) assert.notEqual(template.category, 'Wedding', template.id);
+  for (const template of held) {
+    assert.ok(template.review === true || template.category !== 'Wedding', template.id);
+  }
+});
+
+test('review designs render but cannot be created until approved', () => {
+  const { templates } = readCatalogue();
+  const kerala = templates.find(template => template.id === 'kerala-kasavu');
+  assert.equal(kerala.review, true);
+  assert.equal(kerala.motif, 'kerala-kasavu');
+  assert.equal(isLaunchTemplate('kerala-kasavu'), false);
+  assert.throws(() => validateWeddingInput({ title: 'Couple', templateId: 'kerala-kasavu' }, { create: true }));
 });
 
 test('defect 2: every design used by the Figma islands is registered', () => {
