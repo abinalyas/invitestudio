@@ -1,5 +1,6 @@
 // Web address (slug) behaviour: availability, suggestions, duplicates, preservation when
 // editing, and the guarded change of a live address. See docs/SLUGS.md.
+const { completeSetupSteps } = require('../support/setup');
 const { test, expect } = require('@playwright/test');
 const { randomUUID } = require('node:crypto');
 
@@ -130,7 +131,7 @@ test.describe('publishing dialog', () => {
     await page.evaluate(() => startCreate('Wedding'));
     await page.locator('#projectTitle').fill(`Dialog ${randomUUID().slice(0, 6)}`);
     await page.locator('#projectDate').fill('2027-01-20');
-    await page.getByRole('button', { name: /create my preview/i }).click();
+    await completeSetupSteps(page);
     await expect.poll(() => page.evaluate(() => (JSON.parse(localStorage.getItem('invitestudio-projects') || '[]')[0] || {}).cloudStatus), { timeout: 20000 }).toBe('saved');
 
     await page.evaluate(() => openPublish());
@@ -151,7 +152,7 @@ test.describe('publishing dialog', () => {
     await page.evaluate(() => startCreate('Wedding'));
     await page.locator('#projectTitle').fill(`Change ${randomUUID().slice(0, 6)}`);
     await page.locator('#projectDate').fill('2027-01-20');
-    await page.getByRole('button', { name: /create my preview/i }).click();
+    await completeSetupSteps(page);
     await expect.poll(() => page.evaluate(() => (JSON.parse(localStorage.getItem('invitestudio-projects') || '[]')[0] || {}).cloudStatus), { timeout: 20000 }).toBe('saved');
     const firstSlug = unique();
     await page.evaluate(() => openPublish());

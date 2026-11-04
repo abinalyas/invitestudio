@@ -68,7 +68,7 @@ test('Kerala stays out of the offered catalogue until it is approved', async ({ 
 test('unsupported launch controls are gone from setup and the advanced editor', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => startCreate('Wedding'));
-  await page.evaluate(() => { state.setupStep = 3; render(); });
+  await page.evaluate(() => { state.setupStep = 2; render(); });
   await expect(page.locator('#prefRsvp')).toHaveCount(1, { timeout: 15000 });
   await expect(page.locator('#prefPalette, #prefTypography, #prefLayout, #accentColor')).toHaveCount(0);
 
@@ -88,7 +88,7 @@ test('unsupported launch controls are gone from setup and the advanced editor', 
 test('the RSVP preference (setup) and event editing (advanced editor) remain', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => startCreate('Wedding'));
-  await page.evaluate(() => { state.setupStep = 3; render(); });
+  await page.evaluate(() => { state.setupStep = 2; render(); });
   await expect(page.locator('#prefRsvp')).toHaveCount(1, { timeout: 15000 });
   await page.evaluate(() => { ensureProject(); save(); state.editorMode = 'advanced'; state.page = 'editor'; state.editorTab = 'Events / Functions'; render(); });
   await expect(page.getByRole('button', { name: /add custom function/i })).toBeVisible({ timeout: 15000 });

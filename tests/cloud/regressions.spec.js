@@ -1,5 +1,6 @@
 // Regression tests for the three D0 defects. Each test states the correct behaviour
 // and was run against the code before its fix (see docs/DEFECTS_D0.md).
+const { completeSetupSteps } = require('../support/setup');
 const { test, expect } = require('@playwright/test');
 const { Client } = require('pg');
 const { randomUUID } = require('node:crypto');
@@ -43,7 +44,7 @@ async function createWebsiteInBrowser(page, title) {
   await page.evaluate(() => startCreate('Wedding'));
   await page.locator('#projectTitle').fill(title);
   await page.locator('#projectDate').fill('2027-01-20');
-  await page.getByRole('button', { name: /create my preview/i }).click();
+  await completeSetupSteps(page);
   await expect.poll(() => projectField(page, title, 'cloudStatus'), { timeout: 20000 }).toBe('saved');
 }
 
@@ -53,7 +54,7 @@ test.describe('D0 defect 1: intro media must not break saving', () => {
   test('intro image and music uploads are locked until media storage exists', async ({ page }) => {
     const title = `Intro Locked ${randomUUID().slice(0, 6)}`;
     await createWebsiteInBrowser(page, title);
-    await page.evaluate(() => { state.editorMode = 'advanced'; state.editorTab = 'Theme'; render(); });
+    await page.evaluate(() => { state.editorMode = 'advanced'; state.editorTab = 'Theme'; state.mobileEditorView = 'edit'; render(); });
     await expect(page.locator('.editor-control', { hasText: 'Intro image' }).locator('input[type="file"]')).toBeDisabled();
     await expect(page.locator('.editor-control', { hasText: 'Optional intro music' }).locator('input[type="file"]')).toBeDisabled();
   });

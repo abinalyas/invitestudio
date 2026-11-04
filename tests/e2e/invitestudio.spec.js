@@ -1,3 +1,4 @@
+const { completeSetupSteps } = require('../support/setup');
 const { test, expect } = require('@playwright/test');
 
 test.beforeEach(async ({ page }) => {
@@ -12,7 +13,7 @@ test('homepage starts a short personalised-preview journey', async ({ page }) =>
   await expect(page.getByRole('heading', { name: /create your invitation/i })).toBeVisible();
   await page.locator('#projectTitle').fill('Mira & Arun');
   await page.locator('#projectDate').fill('2027-01-20');
-  await page.getByRole('button', { name: /create my preview/i }).click();
+  await completeSetupSteps(page);
   await expect(page.getByText(/your first preview is ready/i)).toBeVisible();
   await expect(page.locator('main')).toContainText('Mira & Arun');
 });
@@ -21,7 +22,7 @@ test('intro style changes to a compatible signature transition', async ({ page }
   await page.evaluate(() => { startCreate('Wedding'); });
   await page.locator('#projectTitle').fill('Mira & Arun');
   await page.locator('#projectDate').fill('2027-01-20');
-  await page.getByRole('button', { name: /create my preview/i }).click();
+  await completeSetupSteps(page);
   // The designer is the default editor now; this test covers the advanced editor's intro controls.
   await page.evaluate(() => { state.editorMode = 'advanced'; state.editorTab = 'Theme'; state.mobileEditorView = 'edit'; render(); });
   const style = page.locator('.editor-panel select').first();
@@ -50,7 +51,7 @@ test('preview and publish dialog provide an honest path back to the invitation',
   await page.evaluate(() => { startCreate('Wedding'); });
   await page.locator('#projectTitle').fill('Mira & Arun');
   await page.locator('#projectDate').fill('2027-01-20');
-  await page.getByRole('button', { name: /create my preview/i }).click();
+  await completeSetupSteps(page);
   await page.evaluate(() => { state.page = 'preview'; state.device = 'mobile'; render(); });
   await expect(page.locator('main')).toContainText('Mira & Arun');
   await page.getByRole('button', { name: 'Publish', exact: true }).click();

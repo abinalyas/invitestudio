@@ -1,6 +1,7 @@
 // End-to-end journey through the real UI and the real cloud stack:
 // create -> edit -> save -> reload and continue -> preview -> publish -> share ->
 // public page -> edit after publishing -> take offline.
+const { completeSetupSteps } = require('../support/setup');
 const { test, expect } = require('@playwright/test');
 const { randomUUID } = require('node:crypto');
 
@@ -27,8 +28,8 @@ test('create, edit, save, publish, share, edit after publishing, and take offlin
   await page.evaluate(() => startCreate('Wedding'));
   await page.locator('#projectTitle').fill(title);
   await page.locator('#projectDate').fill('2027-01-20');
-  await page.getByRole('button', { name: /create my preview/i }).click();
-  await expect(page.getByText(/your first preview is ready/i)).toBeVisible();
+  await completeSetupSteps(page);
+  await expect.poll(() => page.evaluate(() => state.page)).toBe('editor');
   await expect.poll(async () => (await savedStatus(page, title))?.cloudStatus, { timeout: 20000 }).toBe('saved');
 
   // 2. Edit a detail and let autosave persist it. Wait for the save that carries it.

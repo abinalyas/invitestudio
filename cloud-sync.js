@@ -380,6 +380,7 @@
   }
 
   function paintStatus(project) {
+    if (typeof window.paintSetupStatus === 'function') window.paintSetupStatus();
     // Figma islands subscribe to save status; tell them whenever it may have changed.
     if (typeof window.notifyInviteStudioChange === 'function') window.notifyInviteStudioChange();
     const status = document.querySelector('.status');

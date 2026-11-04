@@ -1,5 +1,6 @@
 // A change made just before the page is reloaded or closed must reach the server.
 // Autosave waits briefly before sending; the flush on page hide sends it immediately.
+const { completeSetupSteps } = require('../support/setup');
 const { test, expect } = require('@playwright/test');
 const { Client } = require('pg');
 
@@ -18,7 +19,7 @@ test('an edit made moments before reloading is saved, not lost', async ({ page }
   await page.evaluate(() => startCreate('Wedding'));
   await page.locator('#projectTitle').fill(title);
   await page.locator('#projectDate').fill('2027-01-20');
-  await page.getByRole('button', { name: /create my preview/i }).click();
+  await completeSetupSteps(page);
   await expect.poll(() => page.evaluate(projectTitle => {
     const projects = JSON.parse(localStorage.getItem('invitestudio-projects') || '[]');
     return projects.find(project => project.title === projectTitle)?.cloudStatus ?? null;

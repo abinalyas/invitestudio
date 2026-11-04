@@ -1,6 +1,7 @@
 // Browser test for the cloud create path. The first create response is dropped in
 // transit after the server has committed it. The client must retry with the same
 // Idempotency-Key, and exactly one draft must exist afterwards.
+const { completeSetupSteps } = require('../support/setup');
 const { test, expect } = require('@playwright/test');
 const { Client } = require('pg');
 
@@ -34,7 +35,7 @@ test('a lost create response does not create a duplicate draft', async ({ page }
   await page.evaluate(() => startCreate('Wedding'));
   await page.locator('#projectTitle').fill(title);
   await page.locator('#projectDate').fill('2027-01-20');
-  await page.getByRole('button', { name: /create my preview/i }).click();
+  await completeSetupSteps(page);
 
   await expect.poll(() => keys.length, { timeout: 20000 }).toBeGreaterThanOrEqual(2);
   expect(new Set(keys).size).toBe(1);
@@ -69,7 +70,7 @@ test('text typed while a slow create is in flight is kept and saved', async ({ p
   await page.waitForTimeout(3500);
   await expect(page.locator('#projectTitle')).toHaveValue(title);
   await page.locator('#projectDate').fill('2027-01-20');
-  await page.getByRole('button', { name: /create my preview/i }).click();
+  await completeSetupSteps(page);
 
   await expect.poll(() => page.evaluate(projectTitle => {
     const projects = JSON.parse(localStorage.getItem('invitestudio-projects') || '[]');
