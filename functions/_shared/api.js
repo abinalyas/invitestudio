@@ -433,6 +433,15 @@ function publicGallery(gallery) {
   };
 }
 
+// Paths and words that a public invitation must never take, so that /s/, /api/ and
+// future app routes cannot be shadowed by a couple's slug. Mirrored in the browser
+// for early feedback; the server list is authoritative.
+export const RESERVED_SLUGS = Object.freeze(new Set([
+  'api', 'admin', 'edit', 's', 'w', 'assets', 'static', 'public', 'login',
+  'signup', 'dashboard', 'templates', 'pricing', 'privacy', 'terms',
+  'support', 'help', 'www', 'mail', 'root', 'null', 'undefined'
+]));
+
 export function publicWeddingProjection(wedding) {
   const intro = wedding.intro_settings && typeof wedding.intro_settings === 'object'
     ? wedding.intro_settings

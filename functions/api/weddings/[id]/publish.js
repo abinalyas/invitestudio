@@ -1,6 +1,7 @@
 import {
   ApiError,
   assertUuid,
+  RESERVED_SLUGS,
   db,
   fail,
   getWedding,
@@ -27,6 +28,11 @@ export async function onRequest(context) {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 120) {
       throw new ApiError('Choose a URL slug using lowercase letters, numbers and hyphens.', 422, 'VALIDATION_ERROR', {
         slug: 'Invalid slug format.'
+      });
+    }
+    if (RESERVED_SLUGS.has(slug)) {
+      throw new ApiError('That web address is reserved. Choose another.', 422, 'VALIDATION_ERROR', {
+        slug: 'This address is reserved.'
       });
     }
     const current = await getWedding(env, params.id);
