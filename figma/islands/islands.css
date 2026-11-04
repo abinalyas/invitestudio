@@ -49,3 +49,39 @@
   .editor-empty { padding: 56px 0; }
   .editor-empty h1 { font-size: 30px; }
 }
+
+/* D3 designer. Section rail, visibility switches, save status and design picker.
+   Every control here has a working action behind it. */
+.editor-workspace { grid-template-columns: 270px minmax(0, 1fr) 360px; }
+.section-row { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #ded9d0; }
+.section-row.active { background: #e9eadb; }
+.section-select { flex: 1; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
+.section-select strong { display: block; font-weight: 600; }
+.section-select small { display: block; font-size: 13px; color: #6b6760; }
+.section-row.is-hidden .section-select strong { color: #6b6760; }
+.section-select:focus-visible, .visibility-switch input:focus-visible + span, .design-option:focus-visible, .save-status button:focus-visible, .editor-form button:focus-visible, .visibility-field input:focus-visible, .editor-advanced:focus-visible, .editor-publish:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }
+.visibility-switch { position: relative; display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; margin-right: 6px; cursor: pointer; }
+.visibility-switch input { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.visibility-switch span { position: relative; width: 40px; height: 22px; border-radius: 999px; background: #8a8276; transition: background .2s; }
+.visibility-switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.visibility-switch input:checked + span { background: #145c37; }
+.visibility-switch input:checked + span::after { transform: translateX(18px); }
+.design-picker { display: grid; gap: 10px; margin-top: 20px; padding: 14px 12px 0; border-top: 1px solid #ded9d0; }
+.design-current { display: grid; gap: 2px; }
+.design-list { display: grid; gap: 8px; max-height: 340px; overflow: auto; padding-right: 4px; }
+.design-option { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px; border: 2px solid transparent; border-radius: 10px; background: #fff; font: inherit; text-align: left; cursor: pointer; }
+.design-option.selected { border-color: #145c37; }
+.design-option img, .design-thumb-empty { flex: none; width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #f7f1e9; }
+.save-status { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 1px solid #ded9d0; border-radius: 999px; background: #fff; font-size: 14px; color: #4f4b44; }
+.save-status.save-saved { color: #2f6b45; }
+.save-status.save-error, .save-status.save-conflict { color: #9b5147; border-color: #9b5147; }
+.save-status.save-offline { color: #6b6760; }
+.save-status button { min-height: 36px; padding: 0 12px; border: 1px solid #145c37; border-radius: 8px; background: #fff; color: #145c37; font: inherit; cursor: pointer; }
+.editing-kicker { margin: 0; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #86681c; }
+.visibility-field { display: flex; align-items: center; gap: 10px; min-height: 44px; margin: 12px 0 4px; font-size: 15px; }
+.visibility-field input { width: 20px; height: 20px; accent-color: #145c37; }
+.optional { color: #6b6760; font-weight: 400; }
+.editor-form { display: grid; gap: 14px; margin-top: 14px; }
+.editor-form label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+.editor-form input, .editor-form textarea { min-height: 44px; padding: 10px 12px; border: 1px solid #8a8276; border-radius: 8px; background: #fff; font: inherit; font-weight: 400; }
+.editor-form textarea { min-height: 96px; resize: vertical; }
