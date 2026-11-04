@@ -37,6 +37,50 @@
       : null;
   }
 
+  const RSVP_OPTIONS = ['count', 'rsvp', 'contact', 'none'];
+  const EVENT_FIELDS = ['title', 'date', 'time', 'endTime', 'venue', 'description', 'dressCode', 'directionsUrl', 'parking', 'accommodation', 'accessibility', 'visible'];
+
+  // Launch designs only: the same registry the setup wizard offers.
+  function launchDesigns() {
+    return templates
+      .filter(t => t.category === 'Wedding' && !t.review)
+      .map(t => ({ id: t.id, name: t.name, style: t.style || '', image: t.image || '' }));
+  }
+
+  // Derived from the cloud status. "saved" appears only after the server confirms the change.
+  function saveStateFor(p) {
+    if (!navigator.onLine) return 'offline';
+    if (!window.inviteStudioApi?.enabled) return 'local';
+    const status = p.cloudStatus;
+    if (status === 'creating') return 'creating';
+    if (status === 'saving') return 'saving';
+    if (status === 'pending') return 'pending';
+    if (status === 'retrying') return 'retrying';
+    if (status === 'saved') return 'saved';
+    if (status === 'conflict') return 'conflict';
+    if (status === 'error') return 'error';
+    if (!p.cloudId && !status) return 'creating';
+    return 'local';
+  }
+
+  function normaliseEvent(f) {
+    return {
+      id: f.id,
+      title: f.title || '',
+      date: f.date || '',
+      time: f.time || '',
+      endTime: f.endTime || '',
+      venue: f.venue || '',
+      description: f.description || '',
+      dressCode: f.dressCode || '',
+      directionsUrl: f.directionsUrl || '',
+      parking: f.parking || '',
+      accommodation: f.accommodation || '',
+      accessibility: f.accessibility || '',
+      visible: f.visible !== false
+    };
+  }
+
   function buildSnapshot() {
     const p = project();
     const prefs = (p && p.preferences) || {};
@@ -47,21 +91,26 @@
     return {
       available: Boolean(p),
       title: p?.title || '',
-      pretitle: prefs.pretitle || 'THE WEDDING OF',
+      pretitle: prefs.pretitle || '',
       date: p?.date || '',
       location: p?.location || '',
-      buttonLabel: prefs.buttonLabel || 'RSVP Now',
-      storyTitle: prefs.storyTitle || 'Our Story',
+      message: p?.message || '',
+      hosts: p?.hosts || '',
+      storyTitle: prefs.storyTitle || '',
       storyCopy: p?.story || '',
-      heroImageUrl: prefs.heroImageUrl || '',
       templateId: p?.templateId || '',
+      templateName: p ? tpl(p.templateId).name : '',
       publishStatus: p?.publishStatus || 'draft',
       published: p?.publishStatus === 'published',
       publicSlug: p?.publicSlug || '',
       publicUrl: publicUrlFor(p),
+      saveState: p ? saveStateFor(p) : 'local',
       saveLabel: p ? (typeof cloudSaveLabel === 'function' ? cloudSaveLabel(p) : 'Saved on this device') : '',
       saveFailed: Boolean(state.saveFailed),
-      sections
+      sections,
+      events: (p?.functions || []).map(normaliseEvent),
+      rsvp: prefs.rsvp || 'count',
+      galleryCount: (p?.photos || []).length
     };
   }
 
@@ -80,6 +129,9 @@
 
   // Called by cloud-sync whenever save status or project data changes.
   window.notifyInviteStudioChange = notify;
+  // Going offline or back online changes the save state shown to the couple.
+  window.addEventListener('online', notify);
+  window.addEventListener('offline', notify);
 
   function invitationShadow(host) {
     if (!host.shadowRoot) {
@@ -116,15 +168,79 @@
       if ('pretitle' in patch) prefs.pretitle = patch.pretitle;
       if ('date' in patch) p.date = patch.date || '';
       if ('location' in patch) p.location = patch.location || '';
-      if ('buttonLabel' in patch) prefs.buttonLabel = patch.buttonLabel;
+      if ('message' in patch) p.message = patch.message || '';
+      if ('hosts' in patch) p.hosts = patch.hosts || '';
       if ('storyTitle' in patch) prefs.storyTitle = patch.storyTitle;
       if ('storyCopy' in patch) p.story = patch.storyCopy;
-      if ('heroImageUrl' in patch) {
-        // Hero images are gated until media storage exists: nothing is written.
-      }
       p.preferences = prefs;
       p.updated = 'Just now';
       save();
+      notify();
+    },
+
+    addEvent(title) {
+      const p = project();
+      if (!p) return '';
+      if (!Array.isArray(p.functions)) p.functions = [];
+      const id = crypto.randomUUID();
+      p.functions.push({
+        id, title: String(title || '').trim() || 'New event', date: '', time: '', endTime: '', venue: '',
+        description: '', dressCode: '', directionsUrl: '', parking: '', accommodation: '', accessibility: '', visible: true
+      });
+      p.updated = 'Just now';
+      save();
+      notify();
+      return id;
+    },
+
+    updateEvent(eventId, patch) {
+      const p = project();
+      const item = (p?.functions || []).find(x => x.id === eventId);
+      if (!item) return;
+      for (const key of EVENT_FIELDS) {
+        if (!(key in patch)) continue;
+        item[key] = key === 'visible' ? Boolean(patch.visible) : String(patch[key] ?? '');
+      }
+      p.updated = 'Just now';
+      save();
+      notify();
+    },
+
+    removeEvent(eventId) {
+      const p = project();
+      if (!p) return;
+      p.functions = (p.functions || []).filter(x => x.id !== eventId);
+      p.updated = 'Just now';
+      save();
+      notify();
+    },
+
+    setRsvp(value) {
+      const p = project();
+      if (!p || !RSVP_OPTIONS.includes(value)) return;
+      p.preferences = { ...(p.preferences || {}), rsvp: value };
+      p.updated = 'Just now';
+      save();
+      notify();
+    },
+
+    // Only the design changes. Names, dates, story, events and visibility are kept.
+    setTemplate(templateId) {
+      const p = project();
+      if (!p || !launchDesigns().some(d => d.id === templateId)) return;
+      p.templateId = templateId;
+      state.selectedTemplate = templateId;
+      p.updated = 'Just now';
+      save();
+      notify();
+    },
+
+    designs() {
+      return launchDesigns();
+    },
+
+    retrySave() {
+      if (typeof window.retryCloudSave === 'function') window.retryCloudSave();
       notify();
     },
 
@@ -235,6 +351,11 @@
   window.InviteStudioBridge = Object.freeze(bridge);
 
   // Route matching. Returns the island kind and props, or null for the existing screens.
+  let restoreRequested = false;
+  function hasCurrentDraft() {
+    try { return Boolean(JSON.parse(localStorage.getItem('invitestudio-current-draft') || 'null')); } catch { return false; }
+  }
+
   window.inviteStudioIslandRoute = function inviteStudioIslandRoute() {
     if (!window.InviteStudioFigma) return null;
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
@@ -243,6 +364,12 @@
       // Advanced editing is the existing full editor, which has no island.
       if (state.editorMode === 'advanced' && project()) return null;
       if (project()) return { kind: 'editor' };
+      // A reload of the designer address reopens the draft this browser was editing.
+      if (!restoreRequested && hasCurrentDraft() && typeof window.continueLastDraft === 'function') {
+        restoreRequested = true;
+        window.continueLastDraft();
+        return null;
+      }
       return { kind: 'detail', props: { templateId: Number(editorMatch[1]) } };
     }
     const detailMatch = path.match(/^\/templates\/(\d+)$/);

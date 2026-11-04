@@ -7,28 +7,68 @@
 
 export type Device = "desktop" | "tablet" | "mobile";
 
+// Save state is derived from the cloud status, never guessed. "saved" means the
+// server has confirmed the latest change.
+export type SaveState =
+  | "offline"
+  | "creating"
+  | "saving"
+  | "pending"
+  | "retrying"
+  | "saved"
+  | "local"
+  | "error"
+  | "conflict";
+
 export type EditorFields = {
   title: string;
   pretitle: string;
   date: string;
   location: string;
-  buttonLabel: string;
+  message: string;
+  hosts: string;
   storyTitle: string;
   storyCopy: string;
-  heroImageUrl: string;
 };
+
+// Per-event details. Travel is part of each event (directions, parking, stays,
+// access), so broader travel information can later be added without a new page.
+export type EventItem = {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  endTime: string;
+  venue: string;
+  description: string;
+  dressCode: string;
+  directionsUrl: string;
+  parking: string;
+  accommodation: string;
+  accessibility: string;
+  visible: boolean;
+};
+
+export type EventPatch = Partial<Omit<EventItem, "id">>;
+
+export type Design = { id: string; name: string; style: string; image: string };
 
 export type EditorSnapshot = EditorFields & {
   available: boolean;
   templateId: string;
+  templateName: string;
   publishStatus: string;
   published: boolean;
   publicSlug: string;
   publicUrl: string | null;
+  saveState: SaveState;
   saveLabel: string;
   saveFailed: boolean;
-  // Visibility of the sections that the Figma pages map to: story, functions, gallery, rsvp.
+  // Visibility of the sections on the invitation: hero, welcome, story, functions, gallery, rsvp.
   sections: Record<string, boolean>;
+  events: EventItem[];
+  rsvp: string;
+  galleryCount: number;
 };
 
 export type RecoveryCard = { title: string; status: string; error: string };
@@ -39,7 +79,14 @@ export interface InviteStudioBridge {
   version(): number;
   update(patch: Partial<EditorFields>): void;
   setSectionVisible(sectionId: string, visible: boolean): void;
+  addEvent(title: string): string;
+  updateEvent(eventId: string, patch: EventPatch): void;
+  removeEvent(eventId: string): void;
+  setRsvp(value: string): void;
+  setTemplate(templateId: string): void;
+  designs(): Design[];
   saveNow(): void;
+  retrySave(): void;
   renderInvitation(host: HTMLElement, device: Device): void;
   createDraft(backendTemplateId: string, templateNumber: number): void;
   startCreate(category: string): void;
@@ -70,7 +117,14 @@ export const bridge = {
   version: () => host().version(),
   update: (patch: Partial<EditorFields>) => host().update(patch),
   setSectionVisible: (sectionId: string, visible: boolean) => host().setSectionVisible(sectionId, visible),
+  addEvent: (title: string) => host().addEvent(title),
+  updateEvent: (eventId: string, patch: EventPatch) => host().updateEvent(eventId, patch),
+  removeEvent: (eventId: string) => host().removeEvent(eventId),
+  setRsvp: (value: string) => host().setRsvp(value),
+  setTemplate: (templateId: string) => host().setTemplate(templateId),
+  designs: () => host().designs(),
   saveNow: () => host().saveNow(),
+  retrySave: () => host().retrySave(),
   renderInvitation: (element: HTMLElement, device: Device) => host().renderInvitation(element, device),
   createDraft: (backendTemplateId: string, templateNumber: number) => host().createDraft(backendTemplateId, templateNumber),
   startCreate: (category: string) => host().startCreate(category),

@@ -37,7 +37,7 @@ async function useTemplate(page, number) {
   await expect(page.getByRole('heading', { name: EXPECTED_TEMPLATES[number].name })).toBeVisible({ timeout: 15000 });
   await page.getByRole('button', { name: /use this template/i }).click();
   await expect(page).toHaveURL(new RegExp(`/editor/${number}$`), { timeout: 15000 });
-  await expect(page.getByRole('button', { name: /advanced editing/i })).toBeVisible();
+  await expect(page.locator('button', { hasText: /advanced editing/i }).first()).toBeAttached();
 }
 
 test('the home design renders, and only weddings are offered at launch', async ({ page }) => {
@@ -67,7 +67,7 @@ test('each Figma design maps to its backend template when a website is created',
   for (const number of Object.keys(EXPECTED_TEMPLATES)) {
     await useTemplate(page, Number(number));
     const title = `Mapped ${number} ${randomUUID().slice(0, 6)}`;
-    await page.getByLabel('Couple names').fill(title);
+    await page.getByLabel('Couple or celebration names').fill(title);
     await expect.poll(async () => (await dbQuery('select template_id from weddings where title = $1', [title])).length, { timeout: 20000 }).toBe(1);
     const [row] = await dbQuery('select template_id from weddings where title = $1', [title]);
     expect(row.template_id).toBe(EXPECTED_TEMPLATES[number].backend);
@@ -77,10 +77,10 @@ test('each Figma design maps to its backend template when a website is created',
 test('editor fields save to the cloud draft and the save status follows', async ({ page }) => {
   await useTemplate(page, 1);
   const title = `Fields ${randomUUID().slice(0, 6)}`;
-  await page.getByLabel('Couple names').fill(title);
+  await page.getByLabel('Couple or celebration names').fill(title);
   await page.getByLabel('Location').fill('Kochi, Kerala');
   await page.getByLabel('Date').fill('2027-02-14');
-  await expect(page.getByRole('button', { name: /saved/i })).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
 
   await expect.poll(async () => (await dbQuery('select title, location, event_date::text as event_date from weddings where title = $1', [title]))[0]?.event_date ?? null, { timeout: 20000 }).toBe('2027-02-14');
   const [row] = await dbQuery('select title, location from weddings where title = $1', [title]);
@@ -90,7 +90,7 @@ test('editor fields save to the cloud draft and the save status follows', async 
 test('the canvas shows the real invitation, and the story toggle hides it on the invitation', async ({ page }) => {
   await useTemplate(page, 2);
   const title = `Canvas ${randomUUID().slice(0, 6)}`;
-  await page.getByLabel('Couple names').fill(title);
+  await page.getByLabel('Couple or celebration names').fill(title);
   await expect(page.locator('.invitation-canvas')).toContainText(title, { timeout: 15000 });
 
   await page.getByRole('button', { name: 'Our Story' }).click();
@@ -104,9 +104,9 @@ test('the canvas shows the real invitation, and the story toggle hides it on the
 test('hero images are locked until media storage exists, and no image preference is saved', async ({ page }) => {
   await useTemplate(page, 3);
   const title = `Hero ${randomUUID().slice(0, 6)}`;
-  await page.getByLabel('Couple names').fill(title);
-  await expect(page.getByRole('button', { name: /saved/i })).toBeVisible({ timeout: 20000 });
-  await expect(page.getByLabel('Image')).toBeDisabled();
+  await page.getByLabel('Couple or celebration names').fill(title);
+  await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
+  await expect(page.getByLabel('Image')).toHaveCount(0);
   await expect(page.getByText(/unlock when photo storage is available/i)).toBeVisible();
   const [row] = await dbQuery(`select preferences->>'heroImageUrl' as url from weddings where title = $1`, [title]);
   expect(row.url).toBeNull();
@@ -115,13 +115,13 @@ test('hero images are locked until media storage exists, and no image preference
 test('returning to the site offers to continue the draft', async ({ page }) => {
   await useTemplate(page, 4);
   const title = `Continue ${randomUUID().slice(0, 6)}`;
-  await page.getByLabel('Couple names').fill(title);
-  await expect(page.getByRole('button', { name: /saved/i })).toBeVisible({ timeout: 20000 });
+  await page.getByLabel('Couple or celebration names').fill(title);
+  await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
   await page.goto('/');
   const banner = page.getByRole('region', { name: /continue your draft/i });
   await expect(banner).toBeVisible({ timeout: 15000 });
   await banner.getByRole('button', { name: /continue editing/i }).click();
-  await expect(page.getByLabel('Couple names')).toHaveValue(title, { timeout: 15000 });
+  await expect(page.getByLabel('Couple or celebration names')).toHaveValue(title, { timeout: 15000 });
 });
 
 test('advanced editing opens the full editor, and the designer view returns', async ({ page }) => {
@@ -129,15 +129,15 @@ test('advanced editing opens the full editor, and the designer view returns', as
   await page.getByRole('button', { name: /advanced editing/i }).click();
   await expect(page.locator('.editor-rail')).toBeVisible({ timeout: 15000 });
   await page.getByRole('button', { name: /designer view/i }).click();
-  await expect(page.getByLabel('Couple names')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByLabel('Couple or celebration names')).toBeVisible({ timeout: 15000 });
 });
 
 test('the editor publishes through the existing dialog and the link is shared', async ({ page }) => {
   await useTemplate(page, 6);
   const title = `Publish ${randomUUID().slice(0, 6)}`;
   const slug = `figma-${randomUUID().slice(0, 6)}`;
-  await page.getByLabel('Couple names').fill(title);
-  await expect(page.getByRole('button', { name: /saved/i })).toBeVisible({ timeout: 20000 });
+  await page.getByLabel('Couple or celebration names').fill(title);
+  await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
   await page.getByRole('button', { name: 'Publish', exact: true }).click();
   await page.locator('#publishSlug').fill(slug);
   await page.getByRole('button', { name: 'Publish invitation' }).click();

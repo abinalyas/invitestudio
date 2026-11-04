@@ -875,3 +875,109 @@
 .figma-app .occasion-chip{ font-size: 13px; padding: 9px 12px; }
 .figma-app .editor-empty{ padding: 56px 0; }
 .figma-app .editor-empty h1{ font-size: 30px; }}
+.figma-app .editor-workspace{ grid-template-columns: 270px minmax(0, 1fr) 360px; }
+.figma-app .section-row{ display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #ded9d0; }
+.figma-app .section-row.active{ background: #e9eadb; }
+.figma-app .section-select{ flex: 1; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
+.figma-app .section-select strong{ display: block; font-weight: 600; }
+.figma-app .section-select small{ display: block; font-size: 13px; color: #6b6760; }
+.figma-app .section-row.is-hidden .section-select strong{ color: #6b6760; }
+.figma-app .section-select:focus-visible, .figma-app .visibility-switch input:focus-visible + span, .figma-app .design-option:focus-visible, .figma-app .save-status button:focus-visible, .figma-app .editor-form button:focus-visible, .figma-app .visibility-field input:focus-visible, .figma-app .editor-advanced:focus-visible, .figma-app .editor-publish:focus-visible{ outline: 2px solid #145c37; outline-offset: 2px; }
+.figma-app .visibility-switch{ position: relative; display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; margin-right: 6px; cursor: pointer; }
+.figma-app .visibility-switch input{ position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.figma-app .visibility-switch span{ position: relative; width: 40px; height: 22px; border-radius: 999px; background: #8a8276; transition: background .2s; }
+.figma-app .visibility-switch span::after{ content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.figma-app .visibility-switch input:checked + span{ background: #145c37; }
+.figma-app .visibility-switch input:checked + span::after{ transform: translateX(18px); }
+.figma-app .design-picker{ display: grid; gap: 10px; margin-top: 20px; padding: 14px 12px 0; border-top: 1px solid #ded9d0; }
+.figma-app .design-current{ display: grid; gap: 2px; }
+.figma-app .design-list{ display: grid; gap: 8px; max-height: 340px; overflow: auto; padding-right: 4px; }
+.figma-app .design-option{ display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px; border: 2px solid transparent; border-radius: 10px; background: #fff; font: inherit; text-align: left; cursor: pointer; }
+.figma-app .design-option.selected{ border-color: #145c37; }
+.figma-app .design-option img, .figma-app .design-thumb-empty{ flex: none; width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #f7f1e9; }
+.figma-app .save-status{ display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 1px solid #ded9d0; border-radius: 999px; background: #fff; font-size: 14px; color: #4f4b44; }
+.figma-app .save-status.save-saved{ color: #2f6b45; }
+.figma-app .save-status.save-error, .figma-app .save-status.save-conflict{ color: #9b5147; border-color: #9b5147; }
+.figma-app .save-status.save-offline{ color: #6b6760; }
+.figma-app .save-status button{ min-height: 36px; padding: 0 12px; border: 1px solid #145c37; border-radius: 8px; background: #fff; color: #145c37; font: inherit; cursor: pointer; }
+.figma-app .editing-kicker{ margin: 0; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #86681c; }
+.figma-app .visibility-field{ display: flex; align-items: center; gap: 10px; min-height: 44px; margin: 12px 0 4px; font-size: 15px; }
+.figma-app .visibility-field input{ width: 20px; height: 20px; accent-color: #145c37; }
+.figma-app .optional{ color: #6b6760; font-weight: 400; }
+.figma-app .editor-form{ display: grid; gap: 14px; margin-top: 14px; }
+.figma-app .editor-form label{ display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+.figma-app .editor-form input, .figma-app .editor-form textarea{ min-height: 44px; padding: 10px 12px; border: 1px solid #8a8276; border-radius: 8px; background: #fff; font: inherit; font-weight: 400; }
+.figma-app .editor-form textarea{ min-height: 96px; resize: vertical; }
+.figma-app .empty-state{ margin: 0; padding: 14px 16px; border-radius: 10px; background: #f7f1e9; color: #4f4b44; font-size: 15px; }
+.figma-app .event-list{ display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.figma-app .event-item{ border: 1px solid #ded9d0; border-radius: 12px; background: #fff; overflow: hidden; }
+.figma-app .event-toggle{ display: grid; gap: 2px; width: 100%; min-height: 56px; padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
+.figma-app .event-toggle small{ font-size: 13px; color: #6b6760; }
+.figma-app .event-form{ display: grid; gap: 14px; padding: 4px 14px 16px; border-top: 1px solid #ded9d0; }
+.figma-app .event-form label{ display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+.figma-app .event-form input, .figma-app .event-form textarea, .figma-app .add-event input{ min-height: 44px; padding: 10px 12px; border: 1px solid #8a8276; border-radius: 8px; background: #fff; font: inherit; font-weight: 400; }
+.figma-app .event-form textarea{ min-height: 72px; resize: vertical; }
+.figma-app .two-up{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.figma-app .travel-fields{ display: grid; gap: 12px; margin: 0; padding: 14px; border: 1px solid #ded9d0; border-radius: 12px; }
+.figma-app .travel-fields legend{ padding: 0 6px; font-family: "Playfair Display", Georgia, serif; font-size: 18px; }
+.figma-app .link-danger{ justify-self: start; min-height: 44px; padding: 0 2px; border: 0; background: transparent; color: #9b5147; font: inherit; text-decoration: underline; cursor: pointer; }
+.figma-app .confirm-remove{ display: grid; gap: 10px; padding: 12px; border-radius: 10px; background: #f6e9e6; color: #7a3a33; font-size: 14px; }
+.figma-app .confirm-remove p{ margin: 0; }
+.figma-app .confirm-actions{ display: flex; flex-wrap: wrap; gap: 8px; }
+.figma-app .btn.danger{ border-color: #9b5147; background: #9b5147; color: #fff; }
+.figma-app .add-event{ display: grid; gap: 10px; padding-top: 6px; border-top: 1px solid #ded9d0; }
+.figma-app .add-event label{ display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+.figma-app .add-event button:disabled{ opacity: .5; cursor: not-allowed; }
+.figma-app .notice{ display: grid; gap: 4px; padding: 14px 16px; border-radius: 10px; background: #f7f1e9; color: #4f4b44; font-size: 15px; }
+.figma-app .notice p{ margin: 0; }
+.figma-app .editor-form select{ min-height: 44px; padding: 10px 12px; border: 1px solid #8a8276; border-radius: 8px; background: #fff; font: inherit; font-weight: 400; }
+@media (max-width: 480px){.figma-app .two-up{ grid-template-columns: 1fr; }}
+.figma-app .design-picker > button.btn{ justify-self: start; min-height: 44px; padding: 0 16px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; cursor: pointer; }
+.figma-app .design-picker > button.btn:focus-visible{ outline: 2px solid #145c37; outline-offset: 2px; }
+.figma-app .mobile-tabs, .figma-app .mobile-only, .figma-app .mobile-edit-pill{ display: none; }
+@media (max-width: 767px){.figma-app .editor-header{ flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
+.figma-app .editor-brand{ min-width: 0; flex: 1 1 auto; }
+.figma-app .editor-brand strong{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.figma-app .device-switcher, .figma-app .editor-advanced, .figma-app .editor-header-actions > .editor-action:not(.editor-advanced){ display: none; }
+.figma-app .editor-header-actions{ gap: 8px; }
+.figma-app .save-status{ min-height: 40px; padding: 0 10px; font-size: 13px; }
+.figma-app .editor-workspace{ display: block; min-height: 0; padding: 12px 12px 104px; }
+.figma-app .editor-workspace > .editor-pages, .figma-app .editor-workspace > .editor-canvas-area, .figma-app .editor-workspace > .editor-controls{ display: none; }
+.figma-app .editor-workspace[data-tab="sections"] > .editor-pages, .figma-app .editor-workspace[data-tab="preview"] > .editor-canvas-area, .figma-app .editor-workspace[data-tab="edit"] > .editor-controls{ display: block; }
+.figma-app .editor-canvas-area{ overflow: visible; padding: 0; }
+.figma-app .editor-browser, .figma-app .editor-browser.tablet, .figma-app .editor-browser.mobile{ max-width: 100%; }
+.figma-app .mobile-only{ display: inline-flex; margin-top: 16px; }
+.figma-app .editor-controls, .figma-app .editor-pages{ border-radius: 14px; }
+.figma-app .mobile-tabs{
+    display: grid; grid-template-columns: repeat(3, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    gap: 4px; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: #fffdf8; border-top: 1px solid #ded9d0;
+  }
+.figma-app .mobile-tabs button{
+    display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 56px; padding: 4px;
+    border: 0; border-radius: 12px; background: transparent; font: inherit; font-size: 13px; color: #4f4b44; cursor: pointer;
+  }
+.figma-app .mobile-tabs button[aria-selected="true"]{ background: #e9eadb; color: #145c37; font-weight: 600; }
+.figma-app .mobile-tabs button:focus-visible, .figma-app .mobile-edit-pill:focus-visible{ outline: 2px solid #145c37; outline-offset: 2px; }
+.figma-app .mobile-edit-pill{
+    display: inline-flex; align-items: center; position: fixed; left: 50%; bottom: 96px; z-index: 21; transform: translateX(-50%);
+    min-height: 48px; padding: 0 20px; border: 0; border-radius: 999px; background: #145c37; color: #fff;
+    font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: 0 10px 30px rgba(37, 46, 37, .2);
+  }}
+.figma-app .editor-form label, .figma-app .event-form label, .figma-app .add-event label{ display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
+.figma-app .editor-form label > input, .figma-app .editor-form label > textarea, .figma-app .editor-form label > select, .figma-app .editor-form label > .input-with-icon, .figma-app .event-form label > input, .figma-app .event-form label > textarea, .figma-app .add-event label > input{ flex: 1 1 100%; width: 100%; }
+@media (max-width: 767px){.figma-app .editor-header{ display: grid; grid-template-columns: 1fr auto; align-items: center; }
+.figma-app .editor-brand .editor-divider, .figma-app .editor-brand strong, .figma-app .editor-brand .draft-badge{ display: none; }
+.figma-app .editor-header-actions{ grid-column: 1 / -1; display: flex; width: 100%; gap: 8px; }
+.figma-app .editor-header-actions .save-status{ flex: 1 1 auto; justify-content: center; min-width: 0; }
+.figma-app .editor-header-actions .editor-publish{ flex: none; }}
+.figma-app .editor-pages nav .section-select{ min-height: 56px; padding: 8px 12px; border: 0; border-radius: 0; background: transparent; }
+.figma-app button.btn.small:not(.danger){ min-height: 44px; padding: 0 16px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; cursor: pointer; }
+@media (max-width: 767px){.figma-app .editor-pages nav{ display: grid; grid-template-columns: 1fr; gap: 0; overflow: visible; }
+.figma-app .editor-pages nav .section-row{ min-width: 0; }}
+.figma-app .editor-pages nav .section-select{ flex: 1 1 auto; width: auto; }
+.figma-app button.btn.small:not(.danger){ display: inline-flex; align-items: center; justify-content: center; }
+.figma-app .editor-pages button.mobile-only.btn{ display: none; }
+.figma-app .editor-form label > input[type="checkbox"], .figma-app .event-form label > input[type="checkbox"]{ flex: none; width: 20px; height: 20px; min-height: 0; padding: 0; accent-color: #145c37; }
+.figma-app .save-status{ white-space: nowrap; }
+@media (max-width: 767px){.figma-app .editor-pages button.mobile-only.btn{ display: inline-flex; margin-top: 16px; }
+.figma-app .save-status{ white-space: normal; }}

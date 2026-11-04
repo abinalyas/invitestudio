@@ -1,0 +1,260 @@
+// Designer (D3) behaviour against the real cloud stack: editing, preview sync, section
+// selection, visibility, template changes, save status and honest empty states.
+const { test, expect } = require('@playwright/test');
+const { Client } = require('pg');
+const { randomUUID } = require('node:crypto');
+
+const DB_URL = 'postgres://postgres@127.0.0.1:54329/invitestudio';
+
+const TEMPLATE_NAMES = {
+  1: 'Forest Elegance',
+  2: 'Kerala Traditions',
+  3: 'Spring Blossom',
+  4: 'Evening Soirée',
+  5: 'Coastal Romance',
+  6: 'Modern Minimal',
+  7: 'Lotus Reverie'
+};
+
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
+});
+
+async function dbQuery(sql, params) {
+  const db = new Client({ connectionString: DB_URL });
+  await db.connect();
+  try {
+    return (await db.query(sql, params)).rows;
+  } finally {
+    await db.end();
+  }
+}
+
+async function openDesigner(page, number) {
+  await page.goto(`/templates/${number}`);
+  await expect(page.getByRole('heading', { name: TEMPLATE_NAMES[number] })).toBeVisible({ timeout: 15000 });
+  await page.getByRole('button', { name: /use this template/i }).click();
+  await expect(page).toHaveURL(new RegExp(`/editor/${number}$`), { timeout: 15000 });
+  await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
+}
+
+async function waitSaved(page) {
+  await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
+}
+
+test('a field edit updates the preview at once and survives a reload', async ({ page }) => {
+  await openDesigner(page, 3);
+  const message = `We cannot wait ${randomUUID().slice(0, 6)}`;
+  await page.getByLabel('Welcome message').fill(message);
+  await expect(page.locator('.invitation-canvas')).toContainText(message, { timeout: 2000 });
+  await waitSaved(page);
+
+  await page.reload();
+  await expect(page.getByLabel('Welcome message')).toHaveValue(message, { timeout: 15000 });
+  await expect(page.locator('.invitation-canvas')).toContainText(message, { timeout: 15000 });
+});
+
+test('a click on a section in the preview selects it, and the list selects the preview section', async ({ page }) => {
+  await openDesigner(page, 2);
+  await page.locator('.invitation-canvas [data-section="story"]').click();
+  await expect(page.getByRole('button', { name: /our story/i })).toHaveAttribute('aria-current', 'true');
+  await expect(page.getByRole('heading', { name: 'Our story', level: 2 })).toBeVisible();
+
+  await page.getByRole('button', { name: /^Events/ }).click();
+  await expect(page.getByRole('button', { name: /^Events/ })).toHaveAttribute('aria-current', 'true');
+  await expect(page.getByRole('heading', { name: 'Events', level: 2 })).toBeVisible();
+});
+
+test('a hidden section stays hidden after saving and reloading, and leaves the guest navigation', async ({ page }) => {
+  await openDesigner(page, 4);
+  await expect(page.locator('.invitation-canvas')).toContainText('OUR STORY');
+  await page.getByLabel('Show Our story on the invitation').uncheck();
+  await waitSaved(page);
+  await expect(page.locator('.invitation-canvas')).not.toContainText('OUR STORY');
+
+  await page.reload();
+  await expect(page.getByLabel('Show Our story on the invitation')).not.toBeChecked({ timeout: 15000 });
+  await expect(page.locator('.invitation-canvas')).not.toContainText('OUR STORY');
+});
+
+test('changing design keeps every detail that was entered', async ({ page }) => {
+  await openDesigner(page, 1);
+  const title = `Keep ${randomUUID().slice(0, 6)}`;
+  await page.getByLabel('Couple or celebration names').fill(title);
+  await page.getByLabel('Date').fill('2027-03-14');
+  await page.getByLabel('Location').fill('Kochi, Kerala');
+  await page.getByLabel('Welcome message').fill('Together with our families.');
+  await page.getByRole('button', { name: /our story/i }).click();
+  await page.getByLabel('Your story').fill('We met on a train.');
+  await waitSaved(page);
+  const [before] = await dbQuery('select template_id from weddings where title = $1', [title]);
+  expect(before.template_id).toBe('romantic-garden-wedding');
+
+  await page.getByRole('button', { name: 'Change design' }).click();
+  await page.locator('.design-option').nth(4).click();
+  await waitSaved(page);
+
+  const [after] = await dbQuery('select template_id, location from weddings where title = $1', [title]);
+  expect(after.template_id).not.toBe('romantic-garden-wedding');
+  expect(after.location).toBe('Kochi, Kerala');
+  await expect(page.locator('.invitation-canvas')).toContainText(title);
+
+  await page.reload();
+  await expect(page.getByLabel('Couple or celebration names')).toHaveValue(title, { timeout: 15000 });
+  await expect(page.getByLabel('Location')).toHaveValue('Kochi, Kerala');
+  await expect(page.getByLabel('Date')).toHaveValue('2027-03-14');
+  await expect(page.getByLabel('Welcome message')).toHaveValue('Together with our families.');
+  await page.getByRole('button', { name: /our story/i }).click();
+  await expect(page.getByLabel('Your story')).toHaveValue('We met on a train.');
+});
+
+test('the save status says offline while disconnected, and saved only once the server confirms', async ({ page, context }) => {
+  await openDesigner(page, 5);
+  await page.getByLabel('Couple or celebration names').fill(`Offline ${randomUUID().slice(0, 6)}`);
+  await waitSaved(page);
+
+  await context.setOffline(true);
+  await expect(page.locator('[data-save-state="offline"]')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('[data-save-state="offline"]')).toContainText(/kept on this device/i);
+  const message = `Offline note ${randomUUID().slice(0, 6)}`;
+  await page.getByLabel('Welcome message').fill(message);
+  await expect(page.locator('.invitation-canvas')).toContainText(message, { timeout: 2000 });
+
+  await context.setOffline(false);
+  await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 30000 });
+  await page.reload();
+  await expect(page.getByLabel('Welcome message')).toHaveValue(message, { timeout: 15000 });
+});
+
+test('pre-title and hosts appear on the invitation, and no unused button label is offered', async ({ page }) => {
+  await openDesigner(page, 6);
+  await page.getByLabel('Pre-title').fill('The wedding of');
+  await page.getByLabel('Hosts').fill('With the families of Meera and Arjun');
+  await expect(page.locator('.invitation-canvas')).toContainText('The wedding of', { timeout: 2000 });
+  await expect(page.locator('.invitation-canvas')).toContainText('With the families of Meera and Arjun', { timeout: 2000 });
+  await expect(page.getByLabel(/button label/i)).toHaveCount(0);
+});
+
+test('gallery stays off with an honest empty state and no upload control', async ({ page }) => {
+  await openDesigner(page, 7);
+  await page.getByRole('button', { name: /^Gallery/ }).click();
+  await expect(page.getByText(/photo storage is available/i)).toBeVisible();
+  await expect(page.locator('.editor-controls input[type="file"]')).toHaveCount(0);
+  await expect(page.locator('.invitation-canvas')).not.toContainText('Photos will be added here');
+});
+
+test('events are added and edited with their own travel details, and persist', async ({ page }) => {
+  await openDesigner(page, 2);
+  const eventName = `Sangeet ${randomUUID().slice(0, 4)}`;
+  await page.getByRole('button', { name: /^Events/ }).click();
+  await page.getByLabel('Add an event').fill(eventName);
+  await page.getByRole('button', { name: 'Add event' }).click();
+
+  await page.getByLabel('Venue').fill('The Garden Hall');
+  await page.getByLabel('Directions link').fill('https://maps.example.com/garden-hall');
+  await page.getByLabel(/^Parking/).fill('Parking behind the hall');
+  await expect(page.locator('.invitation-canvas')).toContainText(eventName, { timeout: 2000 });
+  await expect(page.locator('.invitation-canvas')).toContainText('The Garden Hall', { timeout: 2000 });
+  await expect(page.locator('.invitation-canvas')).toContainText('Parking behind the hall', { timeout: 2000 });
+  await waitSaved(page);
+
+  await page.reload();
+  await page.getByRole('button', { name: /^Events/ }).click();
+  await page.getByRole('button', { name: new RegExp(eventName) }).click();
+  await expect(page.getByLabel('Venue')).toHaveValue('The Garden Hall', { timeout: 15000 });
+  await expect(page.getByLabel('Directions link')).toHaveValue('https://maps.example.com/garden-hall');
+  await expect(page.getByLabel(/^Parking/)).toHaveValue('Parking behind the hall');
+
+  await page.getByLabel('Show this event on the invitation').uncheck();
+  await waitSaved(page);
+  await expect(page.locator('.invitation-canvas')).not.toContainText(eventName);
+});
+
+test('removing an event asks first, then removes it from the list and the invitation', async ({ page }) => {
+  await openDesigner(page, 3);
+  const eventName = `Haldi ${randomUUID().slice(0, 4)}`;
+  await page.getByRole('button', { name: /^Events/ }).click();
+  await page.getByLabel('Add an event').fill(eventName);
+  await page.getByRole('button', { name: 'Add event' }).click();
+  await waitSaved(page);
+
+  await page.getByRole('button', { name: 'Remove event' }).click();
+  await expect(page.getByRole('group', { name: new RegExp(`Remove ${eventName}`) })).toBeVisible();
+  await page.getByRole('button', { name: 'Keep event' }).click();
+  await expect(page.getByLabel('Venue')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Remove event' }).click();
+  await page.getByRole('button', { name: 'Remove event' }).last().click();
+  await expect(page.getByRole('button', { name: new RegExp(eventName) })).toHaveCount(0);
+  await waitSaved(page);
+  await expect(page.locator('.invitation-canvas')).not.toContainText(eventName);
+});
+
+test('RSVP preference is saved, and guests are told responses are not open yet', async ({ page }) => {
+  await openDesigner(page, 4);
+  await page.getByRole('button', { name: /^RSVP/ }).click();
+  await expect(page.getByText(/guest responses are not live yet/i).first()).toBeVisible();
+  await page.getByLabel('Response form at launch').selectOption('contact');
+  await waitSaved(page);
+
+  await page.reload();
+  await page.getByRole('button', { name: /^RSVP/ }).click();
+  await expect(page.getByLabel('Response form at launch')).toHaveValue('contact', { timeout: 15000 });
+  await expect(page.locator('.invitation-canvas')).toContainText('Guest responses are not open yet.');
+  await expect(page.locator('.invitation-canvas').getByRole('button', { name: 'RSVP' })).toHaveCount(0);
+});
+
+test.describe('designer on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+
+  test('the phone opens on the invitation, with three clear views', async ({ page }) => {
+    await openDesigner(page, 5);
+    await expect(page.getByRole('tab', { name: 'Preview' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('.invitation-canvas')).toBeVisible();
+    await expect(page.getByLabel('Welcome message')).not.toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Sections' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Edit' })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test('tapping a section in the preview offers its editor; the offer opens the Edit view', async ({ page }) => {
+    await openDesigner(page, 6);
+    await page.locator('.invitation-canvas [data-section="story"]').click();
+    const pill = page.getByRole('button', { name: /^Edit Our story$/ });
+    await expect(pill).toBeVisible();
+    await pill.click();
+    await expect(page.getByRole('tab', { name: 'Edit' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('heading', { name: 'Our story', level: 2 })).toBeVisible();
+    await expect(page.getByLabel('Your story')).toBeVisible();
+  });
+
+  test('choosing a section in the list opens its editor, and edits show on the invitation', async ({ page }) => {
+    await openDesigner(page, 7);
+    await page.getByRole('tab', { name: 'Sections' }).click();
+    await page.getByRole('button', { name: /our story/i }).click();
+    await expect(page.getByRole('tab', { name: 'Edit' })).toHaveAttribute('aria-selected', 'true');
+    const text = `Phone edit ${randomUUID().slice(0, 6)}`;
+    await page.getByLabel('Your story').fill(text);
+    await waitSaved(page);
+    await page.getByRole('tab', { name: 'Preview' }).click();
+    await expect(page.locator('.invitation-canvas')).toContainText(text);
+  });
+});
+
+test.describe('setup on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('the four setup steps fit on one row with no sideways scrolling', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => { localStorage.clear(); startCreate('Wedding'); });
+    await expect(page.locator('#projectTitle')).toBeVisible({ timeout: 15000 });
+    const sidebar = await page.locator('.flow-sidebar').evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+    expect(sidebar.scroll).toBeLessThanOrEqual(sidebar.client);
+    const steps = page.locator('.flow-sidebar .flow-step');
+    await expect(steps).toHaveCount(4);
+    const tops = await steps.evaluateAll(items => new Set(items.map(item => Math.round(item.getBoundingClientRect().top))).size);
+    expect(tops).toBe(1);
+    await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth).then(overflow => expect(overflow).toBeLessThanOrEqual(0));
+  });
+});
