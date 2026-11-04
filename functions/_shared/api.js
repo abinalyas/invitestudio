@@ -421,6 +421,17 @@ function publicFunctions(list) {
     ));
 }
 
+function publicSection(section) {
+  const visible = section.visible !== false;
+  const out = {
+    id: typeof section.id === 'string' ? section.id.slice(0, 80) : '',
+    title: typeof section.title === 'string' ? section.title.slice(0, 180) : undefined,
+    visible
+  };
+  if (visible && typeof section.content === 'string') out.content = section.content.slice(0, 10000);
+  return out;
+}
+
 function publicGallery(gallery) {
   const photos = Array.isArray(gallery?.photos) ? gallery.photos : [];
   return {
@@ -450,8 +461,10 @@ export function publicWeddingProjection(wedding) {
     ? wedding.animation_settings
     : {};
   const content = wedding.content && typeof wedding.content === 'object' ? wedding.content : {};
+  // Every section is returned with its visibility, so hidden sections stay hidden
+  // when the public page falls back to defaults. Hidden content is removed.
   const sections = Array.isArray(wedding.sections)
-    ? wedding.sections.filter(section => section && typeof section === 'object' && section.visible !== false)
+    ? wedding.sections.filter(section => section && typeof section === 'object').map(publicSection)
     : [];
   return {
     slug: wedding.slug,

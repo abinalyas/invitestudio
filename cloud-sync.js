@@ -10,6 +10,7 @@
   const draftReferenceKey = 'invitestudio-current-draft';
   const projectMeta = new WeakMap();
   const maxRetries = 5;
+  const PUBLISH_LABELS = { draft: 'Draft', published: 'Published', unpublished: 'Unpublished', archived: 'Archived' };
 
   function metaFor(project) {
     let meta = projectMeta.get(project);
@@ -312,8 +313,11 @@
     if (!wedding) return;
     project.cloudId = wedding.id;
     project.cloudVersion = wedding.version;
-    project.cloudStatus = wedding.status || 'draft';
-    project.status = wedding.status === 'published' ? 'Published' : 'Draft';
+    // Publish state is kept apart from save state (cloudStatus holds saving/saved/...).
+    project.publishStatus = wedding.status || 'draft';
+    project.publicSlug = wedding.slug || project.publicSlug || null;
+    project.published = wedding.status === 'published';
+    project.status = PUBLISH_LABELS[wedding.status] || 'Draft';
     project.updated = wedding.updated_at || 'Just now';
     project.name = wedding.name || project.name;
     project.category = wedding.category || project.category;
@@ -615,6 +619,13 @@
     const originalRender = window.render;
     const originalDuplicateProject = window.duplicateProject;
     originalLoad();
+    // Public invitations are read-only: no editor, no drafts, and no edit tokens are read.
+    const publicSlug = typeof window.parsePublicSlug === 'function' ? window.parsePublicSlug() : null;
+    if (publicSlug !== null) {
+      state.page = 'public';
+      window.loadPublicInvitation(publicSlug);
+      return;
+    }
     if (!draftReference()) {
       const cloudProject = state.projects.find(project => project.cloudId);
       if (cloudProject) rememberDraftReference(cloudProject);
