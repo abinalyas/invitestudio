@@ -45,6 +45,12 @@ export async function onRequest(context) {
         title: 'Required before publishing.'
       });
     }
+    // Changing the address of a live invitation breaks the old link. Make the couple confirm it.
+    if (current.status === 'published' && current.slug && current.slug !== slug && body.confirmSlugChange !== true) {
+      throw new ApiError('Changing a live web address stops the old link working. Confirm the change to continue.', 409, 'SLUG_CHANGE_CONFIRMATION_REQUIRED', {
+        slug: 'Confirm that the old address will stop working.'
+      });
+    }
     const slugQuery = new URLSearchParams({
       select: 'id',
       slug: `eq.${slug}`,

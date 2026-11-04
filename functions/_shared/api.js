@@ -572,3 +572,46 @@ export function assertUuid(value) {
     throw new ApiError('Invalid wedding ID.', 400, 'INVALID_ID');
   }
 }
+
+// ---- Public web addresses (slugs) -----------------------------------------------------
+
+export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export function normaliseSlug(value) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : '';
+}
+
+// Returns a user-facing reason, or null when the format is acceptable.
+export function slugFormatProblem(slug) {
+  if (!slug) return 'Choose a web address for your invitation.';
+  if (slug.length > 60) return 'Keep the web address to 60 characters or fewer.';
+  if (!SLUG_PATTERN.test(slug)) return 'Use lowercase letters, numbers and single hyphens only.';
+  if (RESERVED_SLUGS.has(slug)) return 'That web address is reserved. Choose another.';
+  return null;
+}
+
+// True when another wedding already uses the slug. The draft being edited is excluded,
+// so its own address is never reported as taken.
+export async function slugTaken(env, weddingId, slug) {
+  const query = new URLSearchParams({ select: 'id', slug: `eq.${slug}`, limit: '1' });
+  if (weddingId) query.set('id', `neq.${weddingId}`);
+  const rows = await db(env, `weddings?${query}`);
+  return Boolean(rows?.length);
+}
+
+// Availability for the couple's typed address, plus up to three free alternatives.
+export async function slugAvailability(env, weddingId, slug) {
+  const problem = slugFormatProblem(slug);
+  if (problem) return { slug, available: false, reason: 'invalid', message: problem, suggestions: [] };
+  if (!(await slugTaken(env, weddingId, slug))) {
+    return { slug, available: true, reason: null, message: 'This web address is available.', suggestions: [] };
+  }
+  const suggestions = [];
+  for (let n = 2; n <= 8 && suggestions.length < 3; n += 1) {
+    const candidate = `${slug}-${n}`.slice(0, 60);
+    if (candidate.length <= 60 && !slugFormatProblem(candidate) && !(await slugTaken(env, weddingId, candidate))) {
+      suggestions.push(candidate);
+    }
+  }
+  return { slug, available: false, reason: 'taken', message: 'That web address is already in use.', suggestions };
+}

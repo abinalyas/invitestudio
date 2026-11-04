@@ -66,11 +66,17 @@
         headers: { Authorization: `Bearer ${editToken}` }
       });
     },
-    publishWedding(id, editToken, version, slug) {
+    publishWedding(id, editToken, version, slug, options = {}) {
+      const body = { version, slug, ...(options.confirmSlugChange ? { confirmSlugChange: true } : {}) };
       return request(`/weddings/${encodeURIComponent(id)}/publish`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${editToken}` },
-        body: JSON.stringify({ version, slug })
+        body: JSON.stringify(body)
+      });
+    },
+    checkSlugAvailability(id, editToken, slug) {
+      return request(`/weddings/${encodeURIComponent(id)}/slug-availability?slug=${encodeURIComponent(slug)}`, {
+        headers: { Authorization: `Bearer ${editToken}` }
       });
     },
     unpublishWedding(id, editToken, version) {

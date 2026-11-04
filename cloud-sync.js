@@ -644,8 +644,8 @@
   };
 
   // ---- Publishing (cloud drafts) -------------------------------------------------
-  // The server is authoritative for slugs and reserved words; this list mirrors
-  // RESERVED_SLUGS in functions/_shared/api.js for immediate feedback only.
+  // The server is authoritative for slugs (format, reserved words, availability and the
+  // live-address confirmation). This dialog checks early and explains the outcome.
   const RESERVED_SLUG_WORDS = new Set([
     'api', 'admin', 'edit', 's', 'w', 'assets', 'static', 'public', 'login', 'signup',
     'dashboard', 'templates', 'pricing', 'privacy', 'terms', 'support', 'help', 'www',
@@ -683,46 +683,169 @@
     return PUBLISH_LABELS[project.publishStatus] || 'Draft';
   }
 
-  function paintPublishDialog(project, notice = {}) {
-    const published = project.publishStatus === 'published';
-    const slug = notice.slug || project.publicSlug || suggestSlug(project.title || project.name);
-    const saved = project.cloudStatus === 'saved';
-    const busy = Boolean(notice.busy);
-    const link = publicLinkFor(project.publicSlug || slug);
-    const note = !saved && !busy
-      ? '<p class="tiny" role="status" style="color:#79766f;margin:8px 0 0">Saving your latest changes first. You can publish as soon as they are saved.</p>'
-      : '';
-    const error = notice.error
-      ? `<p class="tiny" role="alert" style="color:#9b5147;margin:10px 0 0">${escapeText(notice.error)}</p>`
-      : '';
-    const success = notice.success
-      ? `<p class="tiny" role="status" style="color:#4f6b4a;margin:10px 0 0">Your invitation is live. Share the link below.</p>`
-      : '';
-    const liveLink = published && project.publicSlug
-      ? `<div style="margin-top:14px;background:#f2eee6;border-radius:9px;padding:12px"><div class="tiny muted">Public link</div><a href="${escapeText(link)}" target="_blank" rel="noopener" style="word-break:break-all">${escapeText(link)}</a><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" data-copy-public-link>Copy link</button></div></div>`
-      : '';
-    const primary = published ? 'Update live page' : 'Publish invitation';
-    const html = `<div class="eyebrow">Share your invitation</div>
-      <h2 id="modal-title">${published ? 'Your invitation is live' : 'Publish your invitation'}</h2>
-      <p class="muted">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>. Guests can only see the invitation after you publish it.</p>
-      <label class="tiny muted" for="publishSlug" style="display:block;margin-top:14px">Web address</label>
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="tiny muted">${escapeText(window.location.origin)}/s/</span><input id="publishSlug" type="text" value="${escapeText(slug)}" maxlength="60" autocomplete="off" spellcheck="false" style="flex:1;min-width:160px;padding:9px 10px;border:1px solid #d9d0c2;border-radius:8px" ${busy ? 'disabled' : ''}></div>
-      ${note}${error}${success}${liveLink}
-      <div class="modal-actions" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-        <button class="btn" type="button" data-publish-close>Close</button>
-        ${published ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}
-        <button class="btn dark" type="button" data-publish-submit ${busy || !saved ? 'disabled' : ''}>${busy ? 'Publishing…' : primary}</button>
-      </div>`;
-    renderModal(html);
-    const root = document.querySelector('#modal-root');
-    root.querySelector('[data-publish-close]')?.addEventListener('click', () => closeModal());
-    root.querySelector('[data-publish-submit]')?.addEventListener('click', () => publishFromDialog(project));
-    root.querySelector('[data-unpublish]')?.addEventListener('click', () => unpublishFromDialog(project));
-    root.querySelector('[data-copy-public-link]')?.addEventListener('click', () => copyPublicLink(link));
-  }
-
   function escapeText(value) {
     return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // Dialog session: the address being typed, its availability, and whether a live address
+  // is being changed. Kept per dialog opening.
+  let publishSession = null;
+  let availabilityTimer = null;
+
+  function newPublishSession(project) {
+    const current = project.publicSlug || '';
+    return {
+      projectId: project.id,
+      typed: current || suggestSlug(project.title || project.name),
+      changing: false,
+      confirmed: false,
+      availability: null,      // { available, message, suggestions } once checked
+      checking: false,
+      busy: false,
+      error: '',
+      success: false
+    };
+  }
+
+  function isLive(project) {
+    return project.publishStatus === 'published';
+  }
+
+  // Whether the Publish button may be used right now.
+  function canPublish(project, session) {
+    if (session.busy || session.checking) return false;
+    if (project.cloudStatus !== 'saved') return false;
+    if (slugProblem(session.typed)) return false;
+    if (isLive(project) && !session.changing && session.typed === project.publicSlug) return true;
+    if (session.changing && !session.confirmed) return false;
+    return Boolean(session.availability && session.availability.available);
+  }
+
+  function slugStatusText(project, session) {
+    const problem = slugProblem(session.typed);
+    if (problem) return { tone: 'bad', text: problem };
+    if (session.checking) return { tone: 'muted', text: 'Checking availability…' };
+    if (isLive(project) && session.typed === project.publicSlug) return { tone: 'ok', text: 'This is the live address of your invitation.' };
+    if (!session.availability) return { tone: 'muted', text: 'We will check that this address is free.' };
+    if (session.availability.available) return { tone: 'ok', text: 'This address is available.' };
+    return { tone: 'bad', text: session.availability.message || 'That web address is already in use.' };
+  }
+
+  function paintPublishDialog(project, notice = {}) {
+    if (!publishSession || publishSession.projectId !== project.id) publishSession = newPublishSession(project);
+    const session = publishSession;
+    if (notice.error !== undefined) session.error = notice.error;
+    if (notice.success !== undefined) session.success = notice.success;
+    const live = isLive(project);
+    const status = slugStatusText(project, session);
+    const toneColor = { ok: '#2f6b45', bad: '#9b5147', muted: '#6b6760' }[status.tone];
+    const suggestions = session.availability && !session.availability.available && session.availability.suggestions?.length
+      ? `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap" role="group" aria-label="Available alternatives">${session.availability.suggestions.map(s => `<button class="btn small" type="button" data-use-suggestion="${escapeText(s)}">${escapeText(s)}</button>`).join('')}</div>`
+      : '';
+    const notSaved = project.cloudStatus !== 'saved'
+      ? '<p class="tiny" role="status" style="color:#6b6760;margin:8px 0 0">Saving your latest changes first. You can publish as soon as they are saved.</p>'
+      : '';
+    const liveBlock = live && !session.changing
+      ? `<div style="margin-top:14px;background:#f2eee6;border-radius:9px;padding:12px"><div class="tiny muted">Current public link</div><a href="${escapeText(publicLinkFor(project.publicSlug))}" target="_blank" rel="noopener" style="word-break:break-all">${escapeText(publicLinkFor(project.publicSlug))}</a><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" data-copy-public-link>Copy link</button><button class="btn small" type="button" data-change-address>Change web address</button></div></div>`
+      : '';
+    const changeWarning = session.changing
+      ? `<div role="alert" style="margin-top:14px;background:#f7ebe8;border:1px solid #e3c2bb;border-radius:9px;padding:12px;font-size:14px"><strong>The old address will stop working.</strong><p style="margin:6px 0 0">Guests who have <span>${escapeText(publicLinkFor(project.publicSlug))}</span> will see "not available". Share the new link with them.</p><label style="display:flex;gap:8px;align-items:flex-start;margin-top:10px"><input type="checkbox" data-confirm-change ${session.confirmed ? 'checked' : ''}> <span>I understand the old link will stop working.</span></label></div>`
+      : '';
+    const error = session.error ? `<p class="tiny" role="alert" style="color:#9b5147;margin:10px 0 0">${escapeText(session.error)}</p>` : '';
+    const success = session.success ? '<p class="tiny" role="status" style="color:#2f6b45;margin:10px 0 0">Your invitation is live. Share the link below.</p>' : '';
+    const primary = live ? (session.changing ? 'Change address and update' : 'Update live page') : 'Publish invitation';
+    const addressField = live && !session.changing
+      ? ''
+      : `<label class="tiny muted" for="publishSlug" style="display:block;margin-top:14px">Web address</label>
+         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="tiny muted">${escapeText(window.location.origin)}/s/</span><input id="publishSlug" type="text" value="${escapeText(session.typed)}" maxlength="60" autocomplete="off" spellcheck="false" aria-describedby="slug-status" style="flex:1;min-width:160px;padding:9px 10px;border:1px solid #8a8276;border-radius:8px" ${session.busy ? 'disabled' : ''}></div>
+         <p id="slug-status" aria-live="polite" class="tiny" style="color:${toneColor};margin:6px 0 0">${escapeText(status.text)}</p>${suggestions}`;
+    renderModal(`<div class="eyebrow">Share your invitation</div>
+      <h2 id="modal-title">${live ? 'Your invitation is live' : 'Publish your invitation'}</h2>
+      <p class="muted">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>. Guests can only see the invitation after you publish it.</p>
+      ${addressField}${changeWarning}${notSaved}${error}${success}${liveBlock}
+      <div class="modal-actions" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn" type="button" data-publish-close>Close</button>
+        ${live ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}
+        <button class="btn dark" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${session.busy ? 'Publishing…' : primary}</button>
+      </div>`);
+    wirePublishDialog(project);
+  }
+
+  function wirePublishDialog(project) {
+    const root = document.querySelector('#modal-root');
+    root.querySelector('[data-publish-close]')?.addEventListener('click', () => { publishSession = null; closeModal(); });
+    root.querySelector('[data-publish-submit]')?.addEventListener('click', () => publishFromDialog(project));
+    root.querySelector('[data-unpublish]')?.addEventListener('click', () => unpublishFromDialog(project));
+    root.querySelector('[data-copy-public-link]')?.addEventListener('click', () => copyPublicLink(publicLinkFor(project.publicSlug)));
+    root.querySelector('[data-change-address]')?.addEventListener('click', () => {
+      publishSession.changing = true;
+      publishSession.confirmed = false;
+      publishSession.typed = project.publicSlug;
+      publishSession.availability = null;
+      paintPublishDialog(project, {});
+    });
+    root.querySelector('[data-confirm-change]')?.addEventListener('change', event => {
+      publishSession.confirmed = event.target.checked;
+      paintPublishDialog(project, {});
+    });
+    root.querySelectorAll('[data-use-suggestion]').forEach(button => button.addEventListener('click', () => {
+      publishSession.typed = button.getAttribute('data-use-suggestion');
+      publishSession.availability = null;
+      paintPublishDialog(project, {});
+      checkAddressSoon(project);
+    }));
+    const input = root.querySelector('#publishSlug');
+    input?.addEventListener('input', () => {
+      publishSession.typed = input.value.trim().toLowerCase();
+      publishSession.availability = null;
+      updateDialogWithoutRepaint(project);
+      checkAddressSoon(project);
+    });
+  }
+
+  // Updates only the status line and the button while typing, so the input keeps focus.
+  function updateDialogWithoutRepaint(project) {
+    const root = document.querySelector('#modal-root');
+    const status = slugStatusText(project, publishSession);
+    const line = root?.querySelector('#slug-status');
+    if (line) {
+      line.textContent = status.text;
+      line.style.color = { ok: '#2f6b45', bad: '#9b5147', muted: '#6b6760' }[status.tone];
+    }
+    const button = root?.querySelector('[data-publish-submit]');
+    if (button) button.disabled = !canPublish(project, publishSession);
+    root?.querySelectorAll('[data-use-suggestion]').forEach(element => element.remove());
+  }
+
+  function checkAddressSoon(project) {
+    clearTimeout(availabilityTimer);
+    const session = publishSession;
+    const typed = session.typed;
+    if (slugProblem(typed) || !project.cloudId || !tokenFor(project.cloudId) || !window.inviteStudioApi?.enabled) {
+      updateDialogWithoutRepaint(project);
+      return;
+    }
+    if (isLive(project) && typed === project.publicSlug) {
+      session.availability = { available: true, message: '', suggestions: [] };
+      updateDialogWithoutRepaint(project);
+      return;
+    }
+    availabilityTimer = setTimeout(async () => {
+      session.checking = true;
+      updateDialogWithoutRepaint(project);
+      try {
+        const result = await window.inviteStudioApi.checkSlugAvailability(project.cloudId, tokenFor(project.cloudId), typed);
+        if (publishSession !== session || session.typed !== typed) return;
+        session.availability = result;
+      } catch {
+        if (publishSession === session && session.typed === typed) {
+          session.availability = { available: false, message: 'We could not check this address. Try again in a moment.', suggestions: [] };
+        }
+      } finally {
+        if (publishSession === session) session.checking = false;
+        if (publishSession === session && session.typed === typed) paintPublishDialog(project, {});
+      }
+    }, 350);
   }
 
   async function copyPublicLink(link) {
@@ -735,25 +858,27 @@
   }
 
   function publishErrorMessage(error) {
-    if (error.code === 'SLUG_CONFLICT' || error.fields?.slug) return { error: error.fields?.slug || 'That web address is already in use. Choose another.' };
-    if (error.code === 'PUBLISH_CONFLICT' || error.code === 'VERSION_CONFLICT') return { error: 'This draft changed elsewhere. Reload the page before publishing.' };
-    if (error.code === 'VALIDATION_ERROR') return { error: error.message || 'Please correct the web address.' };
-    return { error: 'Publishing did not complete. Your draft is safe; try again in a moment.' };
+    if (error.code === 'SLUG_CHANGE_CONFIRMATION_REQUIRED') return 'Confirm that the old address will stop working.';
+    if (error.code === 'SLUG_CONFLICT') return 'That web address is already in use. Choose another.';
+    if (error.code === 'PUBLISH_CONFLICT' || error.code === 'VERSION_CONFLICT') return 'This draft changed elsewhere. Reload the page before publishing.';
+    if (error.code === 'TEMPLATE_UNAVAILABLE') return 'This design is no longer available. Choose another template before publishing.';
+    if (error.fields?.slug) return error.fields.slug;
+    if (error.code === 'VALIDATION_ERROR') return error.message || 'Please correct the web address.';
+    return 'Publishing did not complete. Your draft is safe; try again in a moment.';
   }
 
   async function publishFromDialog(project) {
-    const typed = (document.querySelector('#publishSlug')?.value || '').trim().toLowerCase();
-    const problem = slugProblem(typed);
-    if (problem) return paintPublishDialog(project, { error: problem, slug: typed });
-    if (project.cloudStatus !== 'saved') {
-      return paintPublishDialog(project, { error: 'Your latest changes are still saving. Try again in a moment.', slug: typed });
-    }
-    paintPublishDialog(project, { busy: true, slug: typed });
+    const session = publishSession;
+    if (!session || !canPublish(project, session)) return;
+    session.busy = true;
+    session.error = '';
+    paintPublishDialog(project, {});
     try {
-      const result = await window.inviteStudioApi.publishWedding(project.cloudId, tokenFor(project.cloudId), project.cloudVersion, typed);
+      const options = session.changing && session.confirmed ? { confirmSlugChange: true } : {};
+      const result = await window.inviteStudioApi.publishWedding(project.cloudId, tokenFor(project.cloudId), project.cloudVersion, session.typed, options);
       project.publishStatus = 'published';
       project.published = true;
-      project.publicSlug = typed;
+      project.publicSlug = session.typed;
       project.status = 'Published';
       project.cloudVersion = result.wedding?.version || project.cloudVersion;
       project.cloudStatus = 'saved';
@@ -761,10 +886,20 @@
       project.cloudError = '';
       localSave();
       paintStatus(project);
-      paintPublishDialog(project, { success: true, slug: typed });
+      session.busy = false;
+      session.changing = false;
+      session.confirmed = false;
+      session.success = true;
+      paintPublishDialog(project, {});
       toast('Your invitation is live.');
     } catch (error) {
-      paintPublishDialog(project, { ...publishErrorMessage(error), slug: typed });
+      session.busy = false;
+      session.error = publishErrorMessage(error);
+      if (error.code === 'SLUG_CONFLICT') {
+        session.availability = { available: false, message: 'That web address is already in use.', suggestions: [] };
+        checkAddressSoon(project);
+      }
+      paintPublishDialog(project, {});
     }
   }
 
@@ -779,10 +914,12 @@
       project.cloudStatus = 'saved';
       localSave();
       paintStatus(project);
+      publishSession = null;
       paintPublishDialog(project, {});
       toast('The invitation is offline. Its web address is kept for you.');
-    } catch (error) {
-      paintPublishDialog(project, { error: 'The invitation could not be taken offline. Try again in a moment.' });
+    } catch {
+      publishSession.error = 'The invitation could not be taken offline. Try again in a moment.';
+      paintPublishDialog(project, {});
     }
   }
 
