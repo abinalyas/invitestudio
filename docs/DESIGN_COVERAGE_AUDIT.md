@@ -127,11 +127,12 @@ the advanced editor.
 2. **No way to delete a project.** The dashboard has open, duplicate and preview, but no
    delete. The architecture requires project deletion and a retention policy before
    production.
-3. **Database-only templates render with the wrong design.** The migrations seed about 50
-   template IDs that have no frontend definition (for example `kerala-kasavu`,
-   `south-temple`). `tpl()` falls back to the first catalogue entry, so a draft created
-   with one of these IDs would render as "Timeless Romance". **Priority: high.** Either
-   restrict selectable templates to ones with a design, or deactivate the unused rows.
+3. **Templates are not explicitly registered.** `tpl()` fell back to the first catalogue
+   entry for any unknown ID, so an unavailable design rendered as "Timeless Romance", and the
+   server accepted any active database template, including non-wedding designs. **Fixed in D0**
+   (see `docs/DEFECTS_D0.md`). *Correction:* an earlier version of this audit said about 47
+   database templates had no frontend design. That came from reading 37 of the 94 catalogue
+   designs. Every seeded database row has a catalogue design.
 
 ### 4.2 Conflicts that need a product decision
 
@@ -177,7 +178,7 @@ from the card they chose.
 | Figma design | Tags | Mapped backend template | Backend style and palette | Suitability | Next step |
 |---|---|---|---|---|---|
 | 1 Forest Elegance | Floral, Modern | `romantic-garden-wedding` | Botanical; sage and taupe | Fair | Design the invitation itself, using the Forest imagery and palette |
-| 2 Kerala Traditions | Traditional, Regional | `ivory-heirloom` | Classic; ivory and grey-green | **Poor (temporary)** | Commission a Kerala design: traditional motifs, kasavu-style border, gold-on-white palette. Not an approved mapping |
+| 2 Kerala Traditions | Traditional, Regional | `ivory-heirloom` (temporary) | Classic; ivory and grey-green | **Poor (temporary)** | Redesign Kerala as a distinct template. The catalogue already has `kerala-kasavu` (kasavu ivory, temple gold, deep green palette) and `kerala-monsoon`; both are placeholder-quality and need design review. Not an approved mapping |
 | 3 Spring Blossom | Floral, Romantic | `soft-pastels-wedding` | Romantic; blush and lilac | Good | Confirm palette and motifs against the Spring imagery |
 | 4 Evening Soirée | Modern, Elegant | `black-tie-wedding` | Luxury; dark with gold | Good, but dark invitations need a contrast check for text | Accessibility check on dark palette |
 | 5 Coastal Romance | Destination, Minimal | `destination-wedding` | Nature; sea-green and sand | Good | Confirm imagery; check coastal motifs exist |
@@ -187,10 +188,12 @@ from the card they chose.
 
 ### 5.2 Catalogue coverage gaps
 
-- The frontend catalogue has 37 designs. 15 are in the Wedding category, and 10 of those
-  carry the "General" tradition. There are no designs for specific wedding traditions in the
-  catalogue (the database has Kerala, South Indian, Christian, Muslim and Sikh IDs with
-  no visual design).
+- The frontend catalogue has 94 designs, generated partly from code (see `scripts/template-catalogue.mjs`).
+  50 are in the Wedding category, which is the launch scope. They include traditional
+  designs: Kerala (`kerala-kasavu` "Kasavu & Jasmine", `kerala-monsoon` "Monsoon Promise"),
+  South Indian (`south-temple`, `south-mogra`), and North Indian Hindu, Christian, Sikh, Muslim
+  and Interfaith designs. Quality of these designs is not reviewed yet; the audit's earlier
+  statement that no tradition designs exist was wrong (see §5.1 correction).
 - The occasions list has nine categories. Only weddings have a mapped design set in the
   export. Engagement, Baptism, Birthday, Anniversary, Graduation, Baby shower, Bridal
   shower, Housewarming and others have catalogue entries but no coherent design family.
