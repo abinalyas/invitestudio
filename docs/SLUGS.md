@@ -34,3 +34,31 @@ Verified against the code before any change. Only the missing parts were impleme
 
 The availability endpoint requires the website's edit token. An anonymous visitor cannot use it to
 probe which addresses exist.
+
+## Limits and conflicts (Phase 4A)
+
+- **One length limit: 60 characters.** The editor (`slugProblem` in `cloud-sync.js`), the
+  server (`SLUG_MAX_LENGTH` in `functions/_shared/api.js`) and the suggestions use the same value.
+  A unit test keeps the two in step.
+- **Existing live addresses are kept.** A live invitation may keep a longer address that was
+  published before the limit existed. Republishing it unchanged is allowed. Moving it to a new
+  address must respect the limit.
+- **Concurrent publishing.** The availability check can race. The database unique constraint
+  decides the winner. The loser receives `409 SLUG_CONFLICT` with a field error, never a
+  server error.
+- **Database length constraint: not yet added.** It waits for the production pre-check below.
+
+### Production pre-check (read-only, to run before any length constraint)
+
+```sql
+begin read only;
+select count(*) as slugs_over_60 from public.weddings where char_length(slug) > 60;
+select id, status, char_length(slug) as length, slug
+  from public.weddings
+ where char_length(slug) > 60
+ order by length desc;
+commit;
+```
+
+Run with the service role or a read-only database role. The anonymous key cannot read
+`weddings` (row-level security), so it must not be used for this check.

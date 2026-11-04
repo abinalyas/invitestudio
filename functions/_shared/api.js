@@ -104,7 +104,10 @@ export async function db(env, path, options = {}) {
   }
   if (!response.ok) {
     console.error('InviteStudio database request failed', response.status);
-    throw new ApiError('Database operation failed.', 502, 'DATABASE_ERROR');
+    const error = new ApiError('Database operation failed.', 502, 'DATABASE_ERROR');
+    // PostgREST error code (for example 23505, unique violation). Used to map known conflicts.
+    error.databaseCode = data && typeof data === 'object' ? data.code : undefined;
+    throw error;
   }
   return data;
 }
@@ -396,10 +399,14 @@ export async function requireEditAccess(request, env, weddingId) {
   return requireEditToken(env, editTokenFromRequest(request), weddingId);
 }
 
+// Edit links last 90 days from issue. Changing this changes every new link.
+export const EDIT_TOKEN_LIFETIME_DAYS = 90;
+const EDIT_TOKEN_LIFETIME_MS = EDIT_TOKEN_LIFETIME_DAYS * 24 * 60 * 60 * 1000;
+
 export async function issueEditToken(env, weddingId, metadata = {}) {
   const editToken = randomEditToken();
   const tokenHash = await hashEditToken(editToken);
-  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 90).toISOString();
+  const expiresAt = new Date(Date.now() + EDIT_TOKEN_LIFETIME_MS).toISOString();
   await db(env, 'edit_tokens', {
     method: 'POST',
     headers: { Prefer: 'return=minimal' },
@@ -577,6 +584,9 @@ export function assertUuid(value) {
 
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+// One limit for every address: the editor, the server and the availability checks.
+export const SLUG_MAX_LENGTH = 60;
+
 export function normaliseSlug(value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : '';
 }
@@ -584,7 +594,7 @@ export function normaliseSlug(value) {
 // Returns a user-facing reason, or null when the format is acceptable.
 export function slugFormatProblem(slug) {
   if (!slug) return 'Choose a web address for your invitation.';
-  if (slug.length > 60) return 'Keep the web address to 60 characters or fewer.';
+  if (slug.length > SLUG_MAX_LENGTH) return `Keep the web address to ${SLUG_MAX_LENGTH} characters or fewer.`;
   if (!SLUG_PATTERN.test(slug)) return 'Use lowercase letters, numbers and single hyphens only.';
   if (RESERVED_SLUGS.has(slug)) return 'That web address is reserved. Choose another.';
   return null;
@@ -608,8 +618,8 @@ export async function slugAvailability(env, weddingId, slug) {
   }
   const suggestions = [];
   for (let n = 2; n <= 8 && suggestions.length < 3; n += 1) {
-    const candidate = `${slug}-${n}`.slice(0, 60);
-    if (candidate.length <= 60 && !slugFormatProblem(candidate) && !(await slugTaken(env, weddingId, candidate))) {
+    const candidate = `${slug}-${n}`.slice(0, SLUG_MAX_LENGTH);
+    if (candidate.length <= SLUG_MAX_LENGTH && !slugFormatProblem(candidate) && !(await slugTaken(env, weddingId, candidate))) {
       suggestions.push(candidate);
     }
   }

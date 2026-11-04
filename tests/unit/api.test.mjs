@@ -1,9 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
+  EDIT_TOKEN_LIFETIME_DAYS,
+  SLUG_MAX_LENGTH,
   json,
   publicWeddingProjection,
   requireEditToken,
+  slugFormatProblem,
   validateWeddingInput
 } from '../../functions/_shared/api.js';
 
@@ -105,4 +109,38 @@ test('validation rejects unsupported fields and malformed event dates', () => {
     () => validateWeddingInput({ title: 'Ok', templateId: 'eternal', functions: [{ title: 'Bad', date: '20-01-2027' }] }, { create: true }),
     error => error.code === 'VALIDATION_ERROR' && Boolean(error.fields['functions[0].date'])
   );
+});
+
+test('one address limit of 60 characters, enforced by the server', () => {
+  assert.equal(SLUG_MAX_LENGTH, 60);
+  assert.equal(slugFormatProblem('a'.repeat(60)), null);
+  assert.match(slugFormatProblem('a'.repeat(61)), /60 characters or fewer/);
+});
+
+test('the editor uses the same 60-character limit as the server', () => {
+  const client = readFileSync(new URL('../../cloud-sync.js', import.meta.url), 'utf8');
+  assert.match(client, /const SLUG_MAX_LENGTH = 60;/);
+  assert.doesNotMatch(client, /slug\.length > 60/);
+});
+
+test('edit links last 90 days', () => {
+  assert.equal(EDIT_TOKEN_LIFETIME_DAYS, 90);
+});
+
+test('marketing copy makes no RSVP claim the product does not yet support, and no testimonial', () => {
+  const sources = ['figma/islands/shared.tsx', 'figma/islands/Home.tsx', 'figma/islands/TemplateDetail.tsx'].map(
+    file => readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8')
+  ).join('\n');
+  for (const claim of ['Collect RSVPs', 'Guests can RSVP online', 'RSVP & guest management', 'choose meals', 'RSVP experience', 'Neha']) {
+    assert.equal(sources.includes(claim), false, `unsupported copy remains: ${claim}`);
+  }
+});
+
+test('marketing copy makes no photo gallery claim while photo storage does not exist', () => {
+  const sources = ['figma/islands/shared.tsx', 'figma/islands/Home.tsx', 'figma/islands/TemplateDetail.tsx'].map(
+    file => readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8')
+  ).join('\n');
+  for (const pattern of [/photo gallery/i, /\bgalleries\b/i, /photo storage is (?:live|available now)/i]) {
+    assert.equal(pattern.test(sources), false, `unsupported gallery copy matches ${pattern}`);
+  }
 });

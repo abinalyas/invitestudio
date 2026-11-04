@@ -48,8 +48,7 @@ export function HomePage() {
             </h1>
             <p className="lead">
               Beautiful, interactive wedding invitations with
-              <br className="desktop-only" /> animations, RSVPs, events,
-              galleries and more.
+              <br className="desktop-only" /> animations, events and travel details.
             </p>
             <div className="hero-buttons">
               <button className="button" type="button" onClick={() => bridge.startCreate("Wedding")}>
@@ -123,8 +122,8 @@ export function HomePage() {
             ],
             [
               "people",
-              "Manage your guests",
-              "Collect RSVPs, meal choices and event attendance",
+              "Guest information",
+              "Event times, venues, directions and travel details for your guests",
             ],
             [
               "device",
@@ -245,12 +244,12 @@ export function HomePage() {
             ],
             [
               "people",
-              "RSVP & guest management",
-              "Collect responses and keep track easily",
+              "Travel & event details",
+              "Directions, parking and stays for each event",
             ],
             [
-              "gallery",
-              "Photo gallery",
+              "heart",
+              "Your story",
               "Tell your story through your favourite moments",
             ],
             [
@@ -334,28 +333,6 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="testimonial shell">
-        <img
-          src="https://images.unsplash.com/photo-1633104502699-b2ecf0fee294?auto=format&fit=crop&w=900&q=85"
-          alt="A newlywed couple in traditional wedding attire"
-        />
-        <div className="quote">
-          <span>“</span>
-          <blockquote>
-            “InviteStudio made it so easy to create our wedding website.
-            <br />
-            Our guests loved the design and the RSVP experience!”
-          </blockquote>
-          <cite>— Neha &amp; Aditya</cite>
-        </div>
-        <div className="slider-controls">
-          <i className="active" />
-          <i />
-          <i />
-          <button aria-label="Previous testimonial">‹</button>
-          <button aria-label="Next testimonial">›</button>
-        </div>
-      </section>
 
       <section className="section shell faq">
         <div className="section-heading row">
