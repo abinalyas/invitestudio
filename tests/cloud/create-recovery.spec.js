@@ -52,3 +52,36 @@ test('a lost create response does not create a duplicate draft', async ({ page }
     await db.end();
   }
 });
+
+test('text typed while a slow create is in flight is kept and saved', async ({ page }) => {
+  const title = `Slow Create ${Date.now()}`;
+  await page.route('**/api/weddings', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    return route.continue();
+  });
+  await page.goto('/');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await page.evaluate(() => startCreate('Wedding'));
+  await page.locator('#projectTitle').fill(title);
+  // The create response lands while the form still holds the typed title.
+  await page.waitForTimeout(3500);
+  await expect(page.locator('#projectTitle')).toHaveValue(title);
+  await page.locator('#projectDate').fill('2027-01-20');
+  await page.getByRole('button', { name: /create my preview/i }).click();
+
+  await expect.poll(() => page.evaluate(projectTitle => {
+    const projects = JSON.parse(localStorage.getItem('invitestudio-projects') || '[]');
+    return projects.find(project => project.title === projectTitle)?.cloudStatus ?? null;
+  }, title), { timeout: 20000 }).toBe('saved');
+
+  const db = new Client({ connectionString: DB_URL });
+  await db.connect();
+  try {
+    const rows = await db.query('select id from weddings where title = $1', [title]);
+    expect(rows.rowCount).toBe(1);
+  } finally {
+    await db.end();
+  }
+});

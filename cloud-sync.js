@@ -515,7 +515,10 @@
       project.cloudStatus = isCurrent ? 'saved' : 'pending';
       project.cloudSavedAt = isCurrent ? Date.now() : project.cloudSavedAt;
       localSave();
-      render();
+      // Targeted refresh only: a full render() would rebuild the setup form and wipe
+      // anything the user is typing while the create request was in flight.
+      paintStatus(project);
+      decorateRecoveryUi(project);
       if (!isCurrent) queueCloudSave(project);
     } catch (error) {
       // A replay that is too old cannot be recovered with the same key.
@@ -526,7 +529,8 @@
       if (attempt < maxRetries && shouldRetry(error)) {
         meta.retryTimer = setTimeout(() => createCloudDraft(project, attempt + 1), retryDelay(attempt + 1));
       } else {
-        render();
+        paintStatus(project);
+        decorateRecoveryUi(project);
         if (window.toast) toast('Cloud draft could not be created. Your local draft is still available.');
       }
     } finally {
