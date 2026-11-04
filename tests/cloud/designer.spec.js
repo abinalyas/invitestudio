@@ -258,3 +258,56 @@ test.describe('setup on a phone', () => {
     await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth).then(overflow => expect(overflow).toBeLessThanOrEqual(0));
   });
 });
+
+test('the default copy is THE WEDDING OF and Our Story, and clearing a field returns to it', async ({ page }) => {
+  await openDesigner(page, 2);
+  await expect(page.getByLabel('Pre-title')).toHaveValue('THE WEDDING OF');
+  await expect(page.locator('.invitation-canvas')).toContainText('THE WEDDING OF');
+  await page.getByRole('button', { name: /our story/i }).click();
+  await expect(page.getByLabel('Section heading')).toHaveValue('Our Story');
+  await expect(page.locator('.invitation-canvas h3', { hasText: 'Our Story' })).toHaveCount(1);
+
+  await page.getByLabel('Section heading').fill('');
+  await waitSaved(page);
+  await expect(page.locator('.invitation-canvas h3', { hasText: 'Our Story' })).toHaveCount(1);
+});
+
+test('quick-add uses the setup presets, and custom events still work', async ({ page }) => {
+  await openDesigner(page, 3);
+  await page.getByRole('button', { name: /^Events/ }).click();
+  await expect(page.getByRole('button', { name: '+ Reception' })).toBeVisible();
+  await page.getByRole('button', { name: '+ Reception' }).click();
+  await expect(page.getByRole('button', { name: /^Reception/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: '+ Reception' })).toHaveCount(0);
+  await waitSaved(page);
+  await expect(page.locator('.invitation-canvas')).toContainText('Reception');
+
+  const custom = `Custom ${randomUUID().slice(0, 4)}`;
+  await page.getByLabel('Add an event').fill(custom);
+  await page.getByRole('button', { name: 'Add event' }).click();
+  await expect(page.getByRole('button', { name: new RegExp(custom) })).toBeVisible();
+});
+
+test('edits made while offline reach the server after reconnecting', async ({ page, context }) => {
+  await openDesigner(page, 4);
+  const title = `Sync ${randomUUID().slice(0, 6)}`;
+  await page.getByLabel('Couple or celebration names').fill(title);
+  await waitSaved(page);
+
+  await context.setOffline(true);
+  await page.getByLabel('Location').fill('Offline Hall, Kochi');
+  await page.getByRole('button', { name: /our story/i }).click();
+  await page.getByLabel('Show Our story on the invitation').uncheck();
+  await expect(page.locator('[data-save-state="offline"]')).toBeVisible({ timeout: 5000 });
+
+  await context.setOffline(false);
+  await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 30000 });
+  await expect.poll(async () => {
+    const [row] = await dbQuery('select location, sections from weddings where title = $1', [title]);
+    return row ? { location: row.location, story: row.sections?.find(s => s.id === 'story')?.visible } : null;
+  }, { timeout: 30000 }).toEqual({ location: 'Offline Hall, Kochi', story: false });
+
+  await page.reload();
+  await page.getByRole('button', { name: /our story/i }).click();
+  await expect(page.getByLabel('Show Our story on the invitation')).not.toBeChecked({ timeout: 15000 });
+});

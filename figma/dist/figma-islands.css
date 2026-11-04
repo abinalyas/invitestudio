@@ -981,3 +981,8 @@
 .figma-app .save-status{ white-space: nowrap; }
 @media (max-width: 767px){.figma-app .editor-pages button.mobile-only.btn{ display: inline-flex; margin-top: 16px; }
 .figma-app .save-status{ white-space: normal; }}
+.figma-app .preset-chips{ display: grid; gap: 8px; }
+.figma-app .preset-chips p{ margin: 0; }
+.figma-app .preset-chip{ min-height: 44px; padding: 0 14px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.figma-app .preset-chip:focus-visible{ outline: 2px solid #145c37; outline-offset: 2px; }
+.figma-app .preset-chips{ justify-items: start; }

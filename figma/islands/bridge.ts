@@ -85,6 +85,7 @@ export interface InviteStudioBridge {
   setRsvp(value: string): void;
   setTemplate(templateId: string): void;
   designs(): Design[];
+  eventPresets(): string[];
   saveNow(): void;
   retrySave(): void;
   renderInvitation(host: HTMLElement, device: Device): void;
@@ -123,6 +124,7 @@ export const bridge = {
   setRsvp: (value: string) => host().setRsvp(value),
   setTemplate: (templateId: string) => host().setTemplate(templateId),
   designs: () => host().designs(),
+  eventPresets: () => host().eventPresets(),
   saveNow: () => host().saveNow(),
   retrySave: () => host().retrySave(),
   renderInvitation: (element: HTMLElement, device: Device) => host().renderInvitation(element, device),
