@@ -27,8 +27,9 @@
 
   window.inviteStudioApi = Object.freeze({
     enabled,
-    createWedding(input) {
-      return request('/weddings', { method: 'POST', body: JSON.stringify(input) });
+    createWedding(input, idempotencyKey) {
+      const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {};
+      return request('/weddings', { method: 'POST', headers, body: JSON.stringify(input) });
     },
     getWedding(id, editToken) {
       return request(`/weddings/${encodeURIComponent(id)}`, {
@@ -36,13 +37,21 @@
       });
     },
     getWeddingByEditToken(editToken) {
-      return request(`/edit-links/${encodeURIComponent(editToken)}`);
+      return request('/edit-links', { method: 'POST', body: JSON.stringify({ token: editToken }) });
     },
-    updateWedding(id, editToken, patch) {
+    // keepalive lets a save started while the page is closing or hidden finish.
+    updateWedding(id, editToken, patch, options = {}) {
       return request(`/weddings/${encodeURIComponent(id)}`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${editToken}` },
-        body: JSON.stringify(patch)
+        body: JSON.stringify(patch),
+        keepalive: options.keepalive === true
+      });
+    },
+    deleteWedding(id, editToken) {
+      return request(`/weddings/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${editToken}` }
       });
     },
     regenerateEditToken(id, editToken) {
@@ -57,11 +66,17 @@
         headers: { Authorization: `Bearer ${editToken}` }
       });
     },
-    publishWedding(id, editToken, version, slug) {
+    publishWedding(id, editToken, version, slug, options = {}) {
+      const body = { version, slug, ...(options.confirmSlugChange ? { confirmSlugChange: true } : {}) };
       return request(`/weddings/${encodeURIComponent(id)}/publish`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${editToken}` },
-        body: JSON.stringify({ version, slug })
+        body: JSON.stringify(body)
+      });
+    },
+    checkSlugAvailability(id, editToken, slug) {
+      return request(`/weddings/${encodeURIComponent(id)}/slug-availability?slug=${encodeURIComponent(slug)}`, {
+        headers: { Authorization: `Bearer ${editToken}` }
       });
     },
     unpublishWedding(id, editToken, version) {

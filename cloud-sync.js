@@ -10,6 +10,7 @@
   const draftReferenceKey = 'invitestudio-current-draft';
   const projectMeta = new WeakMap();
   const maxRetries = 5;
+  const PUBLISH_LABELS = { draft: 'Draft', published: 'Published', unpublished: 'Unpublished', archived: 'Archived' };
 
   function metaFor(project) {
     let meta = projectMeta.get(project);
@@ -76,37 +77,29 @@
   function privateEditLink(project) {
     const token = project?.cloudId ? tokenFor(project.cloudId) : '';
     if (!project?.cloudId || !token || !window.location?.origin) return '';
-    return `${window.location.origin}/edit/${encodeURIComponent(token)}`;
+    return `${window.location.origin}/edit#${encodeURIComponent(token)}`;
   }
 
+  const editTokenPattern = /^[A-Za-z0-9_-]{32,256}$/;
+
+  // Accepts the canonical fragment form (/edit#<token>) and the legacy path form
+  // (/edit/<token>). Query-string forms are not accepted. The address bar is
+  // cleaned before anything else runs, and a malformed value returns null
+  // instead of throwing, so the app always boots.
   function parsePrivateEditLink() {
     if (!window.location) return null;
     const url = new URL(window.location.href);
-    const query = new URLSearchParams(url.search);
-    const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
-    let id = query.get('draft') || query.get('wedding') || query.get('id') || hash.get('edit');
-    let token = query.get('token') || query.get('editToken') || hash.get('token');
-    const packed = query.get('edit') || hash.get('editLink');
-    if ((!id || !token) && packed) {
-      const separator = packed.indexOf('.');
-      if (separator > 0) {
-        id = id || packed.slice(0, separator);
-        token = token || packed.slice(separator + 1);
-      }
+    const legacy = url.pathname.match(/^\/edit\/([^/]+)\/?$/i);
+    const atEditPath = /^\/edit\/?$/i.test(url.pathname);
+    if (!legacy && !atEditPath) return null;
+    let token = url.hash.replace(/^#/, '');
+    if (legacy) {
+      try { token = decodeURIComponent(legacy[1]); } catch { token = ''; }
     }
-    const pathToken = url.pathname.match(/\/edit\/([^/]+)$/i)?.[1];
-    if (!token && pathToken) {
-      try { token = decodeURIComponent(pathToken); } catch { return null; }
-    }
-    if ((!id && !token) || (id && !/^[0-9a-f-]{36}$/i.test(id)) || token.length < 32 || token.length > 256) return null;
-
-    // Never leave a raw edit token in the address bar after accepting a link.
     try {
-      ['draft', 'wedding', 'id', 'token', 'editToken', 'edit'].forEach(key => query.delete(key));
-      const cleanPath = pathToken ? '/' : url.pathname;
-      window.history.replaceState({}, document.title, `${cleanPath}${query.toString() ? `?${query}` : ''}`);
+      window.history.replaceState({}, document.title, '/');
     } catch { /* history may be unavailable in an embedded preview */ }
-    return { id, token };
+    return editTokenPattern.test(token) ? { token } : null;
   }
 
   function recoveredProject(id) {
@@ -131,24 +124,9 @@
     };
   }
 
+  // Events are restored from wedding.content.functions by mergeServerWedding().
+  // Only photo metadata is merged here.
   function mergeRecoveredChildren(project, result) {
-    if (Array.isArray(result?.events) && !project.functions?.length) {
-      project.functions = result.events.map(event => ({
-        id: event.id || crypto.randomUUID(),
-        title: event.title || 'Event',
-        date: event.event_date || '',
-        time: event.start_time || '',
-        endTime: event.end_time || '',
-        venue: event.venue || '',
-        description: event.description || '',
-        dressCode: event.dress_code || '',
-        directionsUrl: event.directions_url || '',
-        parking: event.parking || '',
-        accommodation: event.accommodation || '',
-        accessibility: event.accessibility || '',
-        visible: event.visible !== false
-      }));
-    }
     if (Array.isArray(result?.photos)) project.galleryMetadata = result.photos;
   }
 
@@ -164,9 +142,7 @@
       return;
     }
     try {
-      const result = link.id
-        ? await window.inviteStudioApi.getWedding(link.id, link.token)
-        : await window.inviteStudioApi.getWeddingByEditToken(link.token);
+      const result = await window.inviteStudioApi.getWeddingByEditToken(link.token);
       const id = result.wedding.id;
       rememberToken(id, link.token);
       const project = recoveredProject(id);
@@ -186,7 +162,6 @@
       render();
       toast('Private draft recovered — continue editing where you left off.');
     } catch (error) {
-      if (error.code === 'EDIT_TOKEN_INVALID' && link.id) forgetToken(link.id);
       state.recoveryStatus = 'error';
       state.recoveryError = error.message || 'This private edit link is no longer available.';
       render();
@@ -311,6 +286,23 @@
     };
   }
 
+  // Image and audio data URLs are never sent to the server: they are too large for a
+  // save and are not stored in the database. Media stays on this device until media
+  // storage exists. Hero images are not sent either; that control is gated too.
+  function transferableIntro(intro) {
+    const out = {};
+    for (const [key, value] of Object.entries(intro && typeof intro === 'object' ? intro : {})) {
+      if (typeof value === 'string' && /^data:/i.test(value.trim())) continue;
+      out[key] = value;
+    }
+    return out;
+  }
+
+  function transferablePreferences(preferences) {
+    const { heroImageUrl, ...rest } = preferences && typeof preferences === 'object' ? preferences : {};
+    return rest;
+  }
+
   function cloudPayload(project) {
     return {
       name: project.name || project.title || 'Untitled wedding',
@@ -324,10 +316,10 @@
       hosts: project.hosts || '',
       locale: project.locale || 'English',
       theme: project.theme || {},
-      preferences: project.preferences || {},
+      preferences: transferablePreferences(project.preferences),
       culturalPreferences: project.culturalPreferences || {},
       sections: project.sections || [],
-      introSettings: project.introSettings || {},
+      introSettings: transferableIntro(project.introSettings),
       animationSettings: project.animationSettings || {},
       functions: project.functions || [],
       gallery: galleryPayload(project)
@@ -338,8 +330,11 @@
     if (!wedding) return;
     project.cloudId = wedding.id;
     project.cloudVersion = wedding.version;
-    project.cloudStatus = wedding.status || 'draft';
-    project.status = wedding.status === 'published' ? 'Published' : 'Draft';
+    // Publish state is kept apart from save state (cloudStatus holds saving/saved/...).
+    project.publishStatus = wedding.status || 'draft';
+    project.publicSlug = wedding.slug || project.publicSlug || null;
+    project.published = wedding.status === 'published';
+    project.status = PUBLISH_LABELS[wedding.status] || 'Draft';
     project.updated = wedding.updated_at || 'Just now';
     project.name = wedding.name || project.name;
     project.category = wedding.category || project.category;
@@ -355,7 +350,10 @@
     project.preferences = wedding.preferences || project.preferences || {};
     project.culturalPreferences = wedding.cultural_preferences || project.culturalPreferences || {};
     project.sections = wedding.sections || project.sections || [];
-    project.introSettings = wedding.intro_settings || project.introSettings || {};
+    // Local-only media (data URLs) is kept when the server copy is merged in.
+    const localMedia = Object.fromEntries(Object.entries(project.introSettings || {})
+      .filter(([, value]) => typeof value === 'string' && /^data:/i.test(value.trim())));
+    project.introSettings = { ...(wedding.intro_settings || {}), ...localMedia };
     project.animationSettings = wedding.animation_settings || project.animationSettings || {};
     const content = wedding.content && typeof wedding.content === 'object' ? wedding.content : {};
     if (Array.isArray(content.functions)) project.functions = content.functions;
@@ -382,6 +380,9 @@
   }
 
   function paintStatus(project) {
+    if (typeof window.paintSetupStatus === 'function') window.paintSetupStatus();
+    // Figma islands subscribe to save status; tell them whenever it may have changed.
+    if (typeof window.notifyInviteStudioChange === 'function') window.notifyInviteStudioChange();
     const status = document.querySelector('.status');
     if (!status || !project || typeof window.cloudSaveLabel !== 'function') return;
     status.setAttribute('aria-label', window.cloudSaveLabel(project));
@@ -443,6 +444,18 @@
     meta.timer = setTimeout(() => syncProject(project), delay);
   }
 
+  // Sends any unsaved change right away when the page is closed, reloaded or hidden,
+  // so a change made just before leaving is not lost to the autosave delay.
+  function flushPendingCloudSaves() {
+    for (const project of state.projects) {
+      if (project.cloudStatus !== 'pending' || !project.cloudId || !tokenFor(project.cloudId)) continue;
+      const meta = metaFor(project);
+      clearTimeout(meta.timer);
+      clearTimeout(meta.retryTimer);
+      syncProject(project, { keepalive: true });
+    }
+  }
+
   function scheduleCloudSave(project) {
     markDirty(project);
     queueCloudSave(project);
@@ -456,7 +469,7 @@
     return Math.min(15000, 1000 * (2 ** Math.max(0, attempt - 1)));
   }
 
-  async function syncProject(project) {
+  async function syncProject(project, options = {}) {
     if (!project?.cloudId || !tokenFor(project.cloudId) || !window.inviteStudioApi?.enabled) return;
     const meta = metaFor(project);
     if (meta.inFlight) {
@@ -474,7 +487,8 @@
       const result = await window.inviteStudioApi.updateWedding(
         project.cloudId,
         tokenFor(project.cloudId),
-        { version, ...payload }
+        { version, ...payload },
+        { keepalive: options.keepalive === true }
       );
       const isCurrent = meta.revision === revisionAtRequest;
       if (isCurrent) mergeServerWedding(project, result.wedding);
@@ -513,12 +527,19 @@
     const meta = metaFor(project);
     if (meta.inFlight) return;
     const revisionAtCreate = meta.revision;
+    // One key per creation attempt, persisted with the project so retries and
+    // reloads reuse it. The server treats a repeated key as the same creation.
+    if (!project.createRequestId) project.createRequestId = crypto.randomUUID();
     meta.inFlight = true;
     project.cloudStatus = 'creating';
     localSave();
     paintStatus(project);
     try {
-      const result = await window.inviteStudioApi.createWedding(JSON.parse(JSON.stringify(cloudPayload(project))));
+      const result = await window.inviteStudioApi.createWedding(
+        JSON.parse(JSON.stringify(cloudPayload(project))),
+        project.createRequestId
+      );
+      project.createRequestId = null;
       const oldId = project.id;
       project.id = result.wedding.id;
       project.cloudId = result.wedding.id;
@@ -534,16 +555,22 @@
       project.cloudStatus = isCurrent ? 'saved' : 'pending';
       project.cloudSavedAt = isCurrent ? Date.now() : project.cloudSavedAt;
       localSave();
-      render();
+      // Targeted refresh only: a full render() would rebuild the setup form and wipe
+      // anything the user is typing while the create request was in flight.
+      paintStatus(project);
+      decorateRecoveryUi(project);
       if (!isCurrent) queueCloudSave(project);
     } catch (error) {
+      // A replay that is too old cannot be recovered with the same key.
+      if (error.code === 'CREATE_REPLAY_EXPIRED') project.createRequestId = null;
       project.cloudStatus = shouldRetry(error) && attempt < maxRetries ? 'retrying' : 'local';
       project.cloudError = error.message;
       localSave();
       if (attempt < maxRetries && shouldRetry(error)) {
         meta.retryTimer = setTimeout(() => createCloudDraft(project, attempt + 1), retryDelay(attempt + 1));
       } else {
-        render();
+        paintStatus(project);
+        decorateRecoveryUi(project);
         if (window.toast) toast('Cloud draft could not be created. Your local draft is still available.');
       }
     } finally {
@@ -553,6 +580,10 @@
 
   async function hydrateCloudProjects() {
     if (!window.inviteStudioApi?.enabled) return;
+    // Resume a creation that was interrupted by a reload or a closed tab.
+    for (const project of state.projects.filter(item => !item.cloudId && item.createRequestId)) {
+      createCloudDraft(project);
+    }
     for (const project of state.projects.filter(item => item.cloudId)) {
       const token = tokenFor(project.cloudId);
       if (!token) {
@@ -613,6 +644,378 @@
     queueCloudSave(project, 0);
   };
 
+  // ---- Publishing (cloud drafts) -------------------------------------------------
+  // The server is authoritative for slugs (format, reserved words, availability and the
+  // live-address confirmation). This dialog checks early and explains the outcome.
+  const RESERVED_SLUG_WORDS = new Set([
+    'api', 'admin', 'edit', 's', 'w', 'assets', 'static', 'public', 'login', 'signup',
+    'dashboard', 'templates', 'pricing', 'privacy', 'terms', 'support', 'help', 'www',
+    'mail', 'root', 'null', 'undefined'
+  ]);
+
+  function suggestSlug(title) {
+    const base = String(title || '')
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60)
+      .replace(/-+$/, '');
+    return base || 'our-wedding';
+  }
+
+  function slugProblem(slug) {
+    if (!slug) return 'Choose a web address for your invitation.';
+    if (slug.length > 60) return 'Keep the web address to 60 characters or fewer.';
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) return 'Use lowercase letters, numbers and single hyphens only.';
+    if (RESERVED_SLUG_WORDS.has(slug)) return 'That web address is reserved. Choose another.';
+    return '';
+  }
+
+  function publicLinkFor(slug) {
+    return `${window.location.origin}/s/${slug}`;
+  }
+
+  function findCloudProject(projectId) {
+    return state.projects.find(project => project.cloudId === projectId || project.id === projectId) || null;
+  }
+
+  function publishStatusLabel(project) {
+    return PUBLISH_LABELS[project.publishStatus] || 'Draft';
+  }
+
+  function escapeText(value) {
+    return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // Dialog session: the address being typed, its availability, and whether a live address
+  // is being changed. Kept per dialog opening.
+  let publishSession = null;
+  let availabilityTimer = null;
+
+  function newPublishSession(project) {
+    const current = project.publicSlug || '';
+    return {
+      projectId: project.id,
+      typed: current || suggestSlug(project.title || project.name),
+      changing: false,
+      confirmed: false,
+      availability: null,      // { available, message, suggestions } once checked
+      checking: false,
+      busy: false,
+      error: '',
+      success: false
+    };
+  }
+
+  function isLive(project) {
+    return project.publishStatus === 'published';
+  }
+
+  // Whether the Publish button may be used right now.
+  function canPublish(project, session) {
+    if (session.busy || session.checking) return false;
+    if (project.cloudStatus !== 'saved') return false;
+    if (slugProblem(session.typed)) return false;
+    if (isLive(project) && !session.changing && session.typed === project.publicSlug) return true;
+    if (session.changing && !session.confirmed) return false;
+    return Boolean(session.availability && session.availability.available);
+  }
+
+  function slugStatusText(project, session) {
+    const problem = slugProblem(session.typed);
+    if (problem) return { tone: 'bad', text: problem };
+    if (session.checking) return { tone: 'muted', text: 'Checking availability…' };
+    if (isLive(project) && session.typed === project.publicSlug) return { tone: 'ok', text: 'This is the live address of your invitation.' };
+    if (!session.availability) return { tone: 'muted', text: 'We will check that this address is free.' };
+    if (session.availability.available) return { tone: 'ok', text: 'This address is available.' };
+    return { tone: 'bad', text: session.availability.message || 'That web address is already in use.' };
+  }
+
+  function paintPublishDialog(project, notice = {}) {
+    if (!publishSession || publishSession.projectId !== project.id) publishSession = newPublishSession(project);
+    const session = publishSession;
+    if (notice.error !== undefined) session.error = notice.error;
+    if (notice.success !== undefined) session.success = notice.success;
+    const live = isLive(project);
+    const status = slugStatusText(project, session);
+    const toneColor = { ok: '#2f6b45', bad: '#9b5147', muted: '#6b6760' }[status.tone];
+    const suggestions = session.availability && !session.availability.available && session.availability.suggestions?.length
+      ? `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap" role="group" aria-label="Available alternatives">${session.availability.suggestions.map(s => `<button class="btn small" type="button" data-use-suggestion="${escapeText(s)}">${escapeText(s)}</button>`).join('')}</div>`
+      : '';
+    const notSaved = project.cloudStatus !== 'saved'
+      ? '<p class="tiny" role="status" style="color:#6b6760;margin:8px 0 0">Saving your latest changes first. You can publish as soon as they are saved.</p>'
+      : '';
+    const liveBlock = live && !session.changing
+      ? `<div style="margin-top:14px;background:#f2eee6;border-radius:9px;padding:12px"><div class="tiny muted">Current public link</div><a href="${escapeText(publicLinkFor(project.publicSlug))}" target="_blank" rel="noopener" style="word-break:break-all">${escapeText(publicLinkFor(project.publicSlug))}</a><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" data-copy-public-link>Copy link</button><button class="btn small" type="button" data-change-address>Change web address</button></div></div>`
+      : '';
+    const changeWarning = session.changing
+      ? `<div role="alert" style="margin-top:14px;background:#f7ebe8;border:1px solid #e3c2bb;border-radius:9px;padding:12px;font-size:14px"><strong>The old address will stop working.</strong><p style="margin:6px 0 0">Guests who have <span>${escapeText(publicLinkFor(project.publicSlug))}</span> will see "not available". Share the new link with them.</p><label style="display:flex;gap:8px;align-items:flex-start;margin-top:10px"><input type="checkbox" data-confirm-change ${session.confirmed ? 'checked' : ''}> <span>I understand the old link will stop working.</span></label></div>`
+      : '';
+    const error = session.error ? `<p class="tiny" role="alert" style="color:#9b5147;margin:10px 0 0">${escapeText(session.error)}</p>` : '';
+    const success = session.success ? '<p class="tiny" role="status" style="color:#2f6b45;margin:10px 0 0">Your invitation is live. Share the link below.</p>' : '';
+    const primary = live ? (session.changing ? 'Change address and update' : 'Update live page') : 'Publish invitation';
+    const addressField = live && !session.changing
+      ? ''
+      : `<label class="tiny muted" for="publishSlug" style="display:block;margin-top:14px">Web address</label>
+         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="tiny muted">${escapeText(window.location.origin)}/s/</span><input id="publishSlug" type="text" value="${escapeText(session.typed)}" maxlength="60" autocomplete="off" spellcheck="false" aria-describedby="slug-status" style="flex:1;min-width:160px;padding:9px 10px;border:1px solid #8a8276;border-radius:8px" ${session.busy ? 'disabled' : ''}></div>
+         <p id="slug-status" aria-live="polite" class="tiny" style="color:${toneColor};margin:6px 0 0">${escapeText(status.text)}</p>${suggestions}`;
+    renderModal(`<div class="eyebrow">Share your invitation</div>
+      <h2 id="modal-title">${live ? 'Your invitation is live' : 'Publish your invitation'}</h2>
+      <p class="muted">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>. Guests can only see the invitation after you publish it.</p>
+      ${addressField}${changeWarning}${notSaved}${error}${success}${liveBlock}
+      <div class="modal-actions" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn" type="button" data-publish-close>Close</button>
+        ${live ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}
+        <button class="btn dark" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${session.busy ? 'Publishing…' : primary}</button>
+      </div>`);
+    wirePublishDialog(project);
+  }
+
+  function wirePublishDialog(project) {
+    const root = document.querySelector('#modal-root');
+    root.querySelector('[data-publish-close]')?.addEventListener('click', () => { publishSession = null; closeModal(); });
+    root.querySelector('[data-publish-submit]')?.addEventListener('click', () => publishFromDialog(project));
+    root.querySelector('[data-unpublish]')?.addEventListener('click', () => unpublishFromDialog(project));
+    root.querySelector('[data-copy-public-link]')?.addEventListener('click', () => copyPublicLink(publicLinkFor(project.publicSlug)));
+    root.querySelector('[data-change-address]')?.addEventListener('click', () => {
+      publishSession.changing = true;
+      publishSession.confirmed = false;
+      publishSession.typed = project.publicSlug;
+      publishSession.availability = null;
+      paintPublishDialog(project, {});
+    });
+    root.querySelector('[data-confirm-change]')?.addEventListener('change', event => {
+      publishSession.confirmed = event.target.checked;
+      paintPublishDialog(project, {});
+    });
+    root.querySelectorAll('[data-use-suggestion]').forEach(button => button.addEventListener('click', () => {
+      publishSession.typed = button.getAttribute('data-use-suggestion');
+      publishSession.availability = null;
+      paintPublishDialog(project, {});
+      checkAddressSoon(project);
+    }));
+    const input = root.querySelector('#publishSlug');
+    input?.addEventListener('input', () => {
+      publishSession.typed = input.value.trim().toLowerCase();
+      publishSession.availability = null;
+      updateDialogWithoutRepaint(project);
+      checkAddressSoon(project);
+    });
+  }
+
+  // Updates only the status line and the button while typing, so the input keeps focus.
+  function updateDialogWithoutRepaint(project) {
+    const root = document.querySelector('#modal-root');
+    const status = slugStatusText(project, publishSession);
+    const line = root?.querySelector('#slug-status');
+    if (line) {
+      line.textContent = status.text;
+      line.style.color = { ok: '#2f6b45', bad: '#9b5147', muted: '#6b6760' }[status.tone];
+    }
+    const button = root?.querySelector('[data-publish-submit]');
+    if (button) button.disabled = !canPublish(project, publishSession);
+    root?.querySelectorAll('[data-use-suggestion]').forEach(element => element.remove());
+  }
+
+  function checkAddressSoon(project) {
+    clearTimeout(availabilityTimer);
+    const session = publishSession;
+    const typed = session.typed;
+    if (slugProblem(typed) || !project.cloudId || !tokenFor(project.cloudId) || !window.inviteStudioApi?.enabled) {
+      updateDialogWithoutRepaint(project);
+      return;
+    }
+    if (isLive(project) && typed === project.publicSlug) {
+      session.availability = { available: true, message: '', suggestions: [] };
+      updateDialogWithoutRepaint(project);
+      return;
+    }
+    availabilityTimer = setTimeout(async () => {
+      session.checking = true;
+      updateDialogWithoutRepaint(project);
+      try {
+        const result = await window.inviteStudioApi.checkSlugAvailability(project.cloudId, tokenFor(project.cloudId), typed);
+        if (publishSession !== session || session.typed !== typed) return;
+        session.availability = result;
+      } catch {
+        if (publishSession === session && session.typed === typed) {
+          session.availability = { available: false, message: 'We could not check this address. Try again in a moment.', suggestions: [] };
+        }
+      } finally {
+        if (publishSession === session) session.checking = false;
+        if (publishSession === session && session.typed === typed) paintPublishDialog(project, {});
+      }
+    }, 350);
+  }
+
+  async function copyPublicLink(link) {
+    try {
+      await navigator.clipboard.writeText(link);
+      toast('Link copied. Share it with your guests.');
+    } catch {
+      window.prompt('Copy your invitation link:', link);
+    }
+  }
+
+  function publishErrorMessage(error) {
+    if (error.code === 'SLUG_CHANGE_CONFIRMATION_REQUIRED') return 'Confirm that the old address will stop working.';
+    if (error.code === 'SLUG_CONFLICT') return 'That web address is already in use. Choose another.';
+    if (error.code === 'PUBLISH_CONFLICT' || error.code === 'VERSION_CONFLICT') return 'This draft changed elsewhere. Reload the page before publishing.';
+    if (error.code === 'TEMPLATE_UNAVAILABLE') return 'This design is no longer available. Choose another template before publishing.';
+    if (error.fields?.slug) return error.fields.slug;
+    if (error.code === 'VALIDATION_ERROR') return error.message || 'Please correct the web address.';
+    return 'Publishing did not complete. Your draft is safe; try again in a moment.';
+  }
+
+  async function publishFromDialog(project) {
+    const session = publishSession;
+    if (!session || !canPublish(project, session)) return;
+    session.busy = true;
+    session.error = '';
+    paintPublishDialog(project, {});
+    try {
+      const options = session.changing && session.confirmed ? { confirmSlugChange: true } : {};
+      const result = await window.inviteStudioApi.publishWedding(project.cloudId, tokenFor(project.cloudId), project.cloudVersion, session.typed, options);
+      project.publishStatus = 'published';
+      project.published = true;
+      project.publicSlug = session.typed;
+      project.status = 'Published';
+      project.cloudVersion = result.wedding?.version || project.cloudVersion;
+      project.cloudStatus = 'saved';
+      project.cloudSavedAt = Date.now();
+      project.cloudError = '';
+      localSave();
+      paintStatus(project);
+      session.busy = false;
+      session.changing = false;
+      session.confirmed = false;
+      session.success = true;
+      paintPublishDialog(project, {});
+      toast('Your invitation is live.');
+    } catch (error) {
+      session.busy = false;
+      session.error = publishErrorMessage(error);
+      if (error.code === 'SLUG_CONFLICT') {
+        session.availability = { available: false, message: 'That web address is already in use.', suggestions: [] };
+        checkAddressSoon(project);
+      }
+      paintPublishDialog(project, {});
+    }
+  }
+
+  async function unpublishFromDialog(project) {
+    if (!window.confirm('Take this invitation offline? Guests will no longer see it. You can publish it again later.')) return;
+    try {
+      const result = await window.inviteStudioApi.unpublishWedding(project.cloudId, tokenFor(project.cloudId), project.cloudVersion);
+      project.publishStatus = 'unpublished';
+      project.published = false;
+      project.status = 'Unpublished';
+      project.cloudVersion = result.wedding?.version || project.cloudVersion;
+      project.cloudStatus = 'saved';
+      localSave();
+      paintStatus(project);
+      publishSession = null;
+      paintPublishDialog(project, {});
+      toast('The invitation is offline. Its web address is kept for you.');
+    } catch {
+      publishSession.error = 'The invitation could not be taken offline. Try again in a moment.';
+      paintPublishDialog(project, {});
+    }
+  }
+
+  // ---- Deleting a website -----------------------------------------------------------
+  // Permanent. The cloud copy is removed with its private links, photo records, events,
+  // payments and RSVPs (cascading foreign keys). Its public address stops working at once.
+  // This device's copy, token and draft reference are removed too. Nothing is removed
+  // until the couple confirms, and nothing is removed if the server refuses.
+  function removeLocalWebsite(project) {
+    const index = state.projects.indexOf(project);
+    if (index >= 0) state.projects.splice(index, 1);
+    const meta = metaFor(project);
+    clearTimeout(meta.timer);
+    clearTimeout(meta.retryTimer);
+    if (project.cloudId) forgetToken(project.cloudId);
+    const reference = draftReference();
+    if (reference && (reference.localId === project.id || (project.cloudId && reference.cloudId === project.cloudId))) {
+      try { localStorage.removeItem(draftReferenceKey); } catch { /* best effort */ }
+    }
+    if (state.currentId === project.id) state.currentId = null;
+    localSave();
+  }
+
+  async function performWebsiteDelete(project) {
+    const errorBox = document.querySelector('#delete-website-error');
+    const fail = message => { if (errorBox) errorBox.textContent = message; };
+    if (!project.cloudId) {
+      removeLocalWebsite(project);
+      closeModal();
+      state.page = 'dashboard';
+      render();
+      toast('Website deleted from this device.');
+      return;
+    }
+    const token = tokenFor(project.cloudId);
+    if (!token || !window.inviteStudioApi?.enabled) {
+      fail('This website\'s private link is not on this device, so its cloud copy cannot be deleted from here. Nothing has been deleted.');
+      return;
+    }
+    try {
+      await window.inviteStudioApi.deleteWedding(project.cloudId, token);
+    } catch (error) {
+      if (error.status === 404) {
+        // Already gone on the server: finish the local cleanup.
+      } else if (error.status === 401 || error.status === 403) {
+        fail('This private link is no longer valid, so the website cannot be deleted from here. Nothing has been deleted.');
+        return;
+      } else {
+        fail('The website could not be deleted right now. Check your connection and try again. Nothing has been deleted.');
+        return;
+      }
+    }
+    removeLocalWebsite(project);
+    closeModal();
+    state.page = 'dashboard';
+    render();
+    toast('Website permanently deleted.');
+  }
+
+  function confirmDeleteWebsite(project) {
+    if (!project) return;
+    const name = escapeText(project.title || project.name || 'this website');
+    const publicNote = project.publishStatus === 'published'
+      ? '<p class="tiny" style="color:#9b5147;margin:8px 0 0">Its public address will stop working straight away.</p>'
+      : '';
+    renderModal(`<div class="eyebrow">Delete website</div>
+      <h2 id="modal-title">Delete \u201c${name}\u201d?</h2>
+      <p class="muted">This permanently removes the invitation, its private edit links and its RSVP and photo records. It cannot be undone.</p>
+      ${publicNote}
+      <p id="delete-website-error" role="alert" class="tiny" style="color:#9b5147;margin:10px 0 0"></p>
+      <div class="modal-actions" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:18px">
+        <button class="btn" type="button" data-delete-cancel>Keep it</button>
+        <button class="btn dark" type="button" data-delete-confirm>Delete permanently</button>
+      </div>`);
+    const root = document.querySelector('#modal-root');
+    root.querySelector('[data-delete-cancel]')?.addEventListener('click', () => closeModal());
+    root.querySelector('[data-delete-confirm]')?.addEventListener('click', () => performWebsiteDelete(project));
+  }
+
+  window.deleteProjectFromDashboard = function deleteProjectFromDashboard(projectId) {
+    confirmDeleteWebsite(state.projects.find(project => project.id === projectId || project.cloudId === projectId) || null);
+  };
+
+  // Opens the cloud publish dialog. Returns false when the API is not enabled, so
+  // the caller can show the local-only message instead.
+  window.openCloudPublish = function openCloudPublish(project) {
+    if (!window.inviteStudioApi?.enabled) return false;
+    if (!project?.cloudId || !tokenFor(project.cloudId)) {
+      renderModal(`<div class="eyebrow">Share your invitation</div><h2 id="modal-title">Almost ready</h2><p class="muted">Your draft is still being saved to the cloud. Publishing becomes available as soon as it is saved.</p><div class="modal-actions"><button class="btn dark" type="button" onclick="closeModal()">Got it</button></div>`);
+      return true;
+    }
+    paintPublishDialog(project, {});
+    return true;
+  };
+
   window.createCloudDraftForProject = function createCloudDraftForProject(project) {
     return createCloudDraft(project);
   };
@@ -624,6 +1027,13 @@
     const originalRender = window.render;
     const originalDuplicateProject = window.duplicateProject;
     originalLoad();
+    // Public invitations are read-only: no editor, no drafts, and no edit tokens are read.
+    const publicSlug = typeof window.parsePublicSlug === 'function' ? window.parsePublicSlug() : null;
+    if (publicSlug !== null) {
+      state.page = 'public';
+      window.loadPublicInvitation(publicSlug);
+      return;
+    }
     if (!draftReference()) {
       const cloudProject = state.projects.find(project => project.cloudId);
       if (cloudProject) rememberDraftReference(cloudProject);
@@ -666,6 +1076,11 @@
       setTimeout(() => createCloudDraft(copy), 0);
     };
 
+    window.flushInviteStudioSaves = flushPendingCloudSaves;
+    window.addEventListener('pagehide', flushPendingCloudSaves);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') flushPendingCloudSaves();
+    });
     render();
     if (privateLink) {
       recoverFromPrivateLink(privateLink);

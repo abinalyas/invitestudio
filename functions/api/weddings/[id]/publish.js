@@ -1,6 +1,7 @@
 import {
   ApiError,
   assertUuid,
+  RESERVED_SLUGS,
   db,
   fail,
   getWedding,
@@ -9,6 +10,7 @@ import {
   readJson,
   success
 } from '../../../_shared/api.js';
+import { isLaunchTemplate } from '../../../_shared/templates.js';
 
 export async function onRequest(context) {
   const { request, env, params } = context;
@@ -29,10 +31,24 @@ export async function onRequest(context) {
         slug: 'Invalid slug format.'
       });
     }
+    if (RESERVED_SLUGS.has(slug)) {
+      throw new ApiError('That web address is reserved. Choose another.', 422, 'VALIDATION_ERROR', {
+        slug: 'This address is reserved.'
+      });
+    }
     const current = await getWedding(env, params.id);
+    if (!isLaunchTemplate(current.template_id)) {
+      throw new ApiError('This design is no longer available. Choose another template before publishing.', 422, 'TEMPLATE_UNAVAILABLE');
+    }
     if (!current.title?.trim()) {
       throw new ApiError('Add a title before publishing.', 422, 'VALIDATION_ERROR', {
         title: 'Required before publishing.'
+      });
+    }
+    // Changing the address of a live invitation breaks the old link. Make the couple confirm it.
+    if (current.status === 'published' && current.slug && current.slug !== slug && body.confirmSlugChange !== true) {
+      throw new ApiError('Changing a live web address stops the old link working. Confirm the change to continue.', 409, 'SLUG_CHANGE_CONFIRMATION_REQUIRED', {
+        slug: 'Confirm that the old address will stop working.'
       });
     }
     const slugQuery = new URLSearchParams({

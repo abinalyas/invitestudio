@@ -1,3 +1,5 @@
+import { isLaunchTemplate } from './templates.js';
+
 const encoder = new TextEncoder();
 
 export class ApiError extends Error {
@@ -26,6 +28,13 @@ function corsHeaders(request, env) {
   };
 }
 
+export function noContent(request, env) {
+  return new Response(null, {
+    status: 204,
+    headers: { ...corsHeaders(request, env), 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
+  });
+}
+
 export function optionsResponse(request, env) {
   return new Response(null, { status: 204, headers: corsHeaders(request, env) });
 }
@@ -36,6 +45,11 @@ export function json(request, env, body, status = 200, extraHeaders = {}) {
     headers: {
       ...corsHeaders(request, env),
       'Content-Type': 'application/json; charset=utf-8',
+      // Responses can carry edit access or private draft data: never cache them,
+      // never sniff them, and never leak the page URL in a Referer header.
+      'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'no-referrer',
       ...extraHeaders
     }
   });
@@ -120,10 +134,40 @@ function stringField(input, key, max, fields) {
   return input[key].trim();
 }
 
+// Upper bounds for JSON fields, in bytes of their JSON text. A field over its limit is
+// refused with 422 (not a generic 413), so the client can explain what to change.
+const JSON_FIELD_LIMITS = Object.freeze({
+  theme: 8 * 1024,
+  preferences: 16 * 1024,
+  culturalPreferences: 8 * 1024,
+  content: 256 * 1024,
+  sections: 32 * 1024,
+  introSettings: 16 * 1024,
+  animationSettings: 8 * 1024
+});
+
+// Media is not stored in invitation JSON. Any data: URL is refused, wherever it is nested.
+function containsDataUrl(value) {
+  if (typeof value === 'string') return /^data:/i.test(value.trim());
+  if (Array.isArray(value)) return value.some(containsDataUrl);
+  if (value && typeof value === 'object') return Object.values(value).some(containsDataUrl);
+  return false;
+}
+
 function jsonField(input, key, fields) {
   if (input[key] === undefined) return undefined;
   if (typeof input[key] !== 'object' || input[key] === null) {
     fields[key] = 'Must be a JSON object or array.';
+    return undefined;
+  }
+  if (containsDataUrl(input[key])) {
+    fields[key] = 'Images and audio cannot be saved in an invitation yet. Remove them and try again.';
+    return undefined;
+  }
+  const size = new TextEncoder().encode(JSON.stringify(input[key])).length;
+  const limit = JSON_FIELD_LIMITS[key];
+  if (limit && size > limit) {
+    fields[key] = `This section is too large to save (${Math.ceil(size / 1024)} KB; the limit is ${Math.floor(limit / 1024)} KB).`;
     return undefined;
   }
   return input[key];
@@ -237,6 +281,12 @@ export function validateWeddingInput(input, { create = false } = {}) {
     if (value !== undefined) output[target] = value;
   }
 
+  // Only explicitly registered designs can be chosen. Unknown or unlisted IDs are refused,
+  // never drawn with a fallback design.
+  if (output.template_id !== undefined && !isLaunchTemplate(output.template_id)) {
+    fields.templateId = 'Choose an available design.';
+  }
+
   for (const key of ['name', 'title', 'templateId']) {
     const value = input[key];
     if (typeof value === 'string' && !value.trim()) {
@@ -346,7 +396,7 @@ export async function requireEditAccess(request, env, weddingId) {
   return requireEditToken(env, editTokenFromRequest(request), weddingId);
 }
 
-export async function issueEditToken(env, weddingId) {
+export async function issueEditToken(env, weddingId, metadata = {}) {
   const editToken = randomEditToken();
   const tokenHash = await hashEditToken(editToken);
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 90).toISOString();
@@ -358,7 +408,8 @@ export async function issueEditToken(env, weddingId) {
       token_hash: tokenHash,
       token_hint: `${editToken.slice(0, 6)}…`,
       purpose: 'edit',
-      expires_at: expiresAt
+      expires_at: expiresAt,
+      metadata
     })
   });
   return { editToken, editTokenExpiresAt: expiresAt, tokenHash };
@@ -388,21 +439,64 @@ export async function getWedding(env, id) {
   return rows[0];
 }
 
+// content.functions is the single event source (see docs/PHASE_0_INTEGRATION_PLAN.md).
+// The wedding_events table is retained but intentionally not read or written.
 export async function getWeddingChildren(env, id) {
-  const [events, photos] = await Promise.all([
-    db(env, `wedding_events?${new URLSearchParams({
-      select: 'id,title,event_date,start_time,end_time,venue,description,dress_code,directions_url,parking,accommodation,accessibility,visible,sort_order,metadata',
-      wedding_id: `eq.${id}`,
-      order: 'sort_order.asc,event_date.asc,start_time.asc'
-    })}`),
-    db(env, `wedding_photos?${new URLSearchParams({
-      select: 'id,storage_path,alt,width,height,sort_order,metadata',
-      wedding_id: `eq.${id}`,
-      order: 'sort_order.asc,created_at.asc'
-    })}`)
-  ]);
-  return { events: events || [], photos: photos || [] };
+  const photos = await db(env, `wedding_photos?${new URLSearchParams({
+    select: 'id,storage_path,alt,width,height,sort_order,metadata',
+    wedding_id: `eq.${id}`,
+    order: 'sort_order.asc,created_at.asc'
+  })}`);
+  return { photos: photos || [] };
 }
+
+const PUBLIC_FUNCTION_FIELDS = [
+  'id', 'title', 'date', 'time', 'endTime', 'venue', 'description', 'dressCode',
+  'directionsUrl', 'parking', 'accommodation', 'accessibility'
+];
+
+// Allowlist: hidden events and any unexpected keys are dropped; nothing private
+// (owner, tokens, storage paths, drafts) can reach a public response.
+function publicFunctions(list) {
+  if (!Array.isArray(list)) return [];
+  return list
+    .filter(item => item && typeof item === 'object' && item.visible !== false)
+    .map(item => Object.fromEntries(
+      PUBLIC_FUNCTION_FIELDS.filter(key => item[key] !== undefined).map(key => [key, item[key]])
+    ));
+}
+
+function publicSection(section) {
+  const visible = section.visible !== false;
+  const out = {
+    id: typeof section.id === 'string' ? section.id.slice(0, 80) : '',
+    title: typeof section.title === 'string' ? section.title.slice(0, 180) : undefined,
+    visible
+  };
+  if (visible && typeof section.content === 'string') out.content = section.content.slice(0, 10000);
+  return out;
+}
+
+function publicGallery(gallery) {
+  const photos = Array.isArray(gallery?.photos) ? gallery.photos : [];
+  return {
+    preference: typeof gallery?.preference === 'string' ? gallery.preference : '',
+    photos: photos.map(photo => ({
+      alt: typeof photo?.alt === 'string' ? photo.alt : '',
+      width: Number.isInteger(photo?.width) ? photo.width : null,
+      height: Number.isInteger(photo?.height) ? photo.height : null
+    }))
+  };
+}
+
+// Paths and words that a public invitation must never take, so that /s/, /api/ and
+// future app routes cannot be shadowed by a couple's slug. Mirrored in the browser
+// for early feedback; the server list is authoritative.
+export const RESERVED_SLUGS = Object.freeze(new Set([
+  'api', 'admin', 'edit', 's', 'w', 'assets', 'static', 'public', 'login',
+  'signup', 'dashboard', 'templates', 'pricing', 'privacy', 'terms',
+  'support', 'help', 'www', 'mail', 'root', 'null', 'undefined'
+]));
 
 export function publicWeddingProjection(wedding) {
   const intro = wedding.intro_settings && typeof wedding.intro_settings === 'object'
@@ -411,8 +505,13 @@ export function publicWeddingProjection(wedding) {
   const animation = wedding.animation_settings && typeof wedding.animation_settings === 'object'
     ? wedding.animation_settings
     : {};
+  const content = wedding.content && typeof wedding.content === 'object' ? wedding.content : {};
+  // Every section is returned with its visibility, so hidden sections stay hidden
+  // when the public page falls back to defaults. Hidden content is removed.
+  const sections = Array.isArray(wedding.sections)
+    ? wedding.sections.filter(section => section && typeof section === 'object').map(publicSection)
+    : [];
   return {
-    id: wedding.id,
     slug: wedding.slug,
     template_id: wedding.template_id,
     name: wedding.name,
@@ -425,8 +524,11 @@ export function publicWeddingProjection(wedding) {
     hosts: wedding.hosts,
     locale: wedding.locale,
     theme: wedding.theme,
-    content: wedding.content,
-    sections: wedding.sections,
+    content: {
+      functions: publicFunctions(content.functions),
+      gallery: publicGallery(content.gallery)
+    },
+    sections,
     intro_settings: {
       enabled: intro.enabled,
       style: intro.style,
@@ -444,8 +546,72 @@ export function publicWeddingProjection(wedding) {
   };
 }
 
+// Optional client-generated key that makes draft creation safe to retry. The raw
+// key is never stored; only its SHA-256 hash is kept in the creation token's
+// metadata (see docs/PHASE_0_INTEGRATION_PLAN.md, D7).
+export const CREATE_REPLAY_WINDOW_MS = 1000 * 60 * 60 * 24;
+
+export function idempotencyKeyFromRequest(request) {
+  const key = request.headers.get('Idempotency-Key');
+  if (key === null) return null;
+  if (!/^[A-Za-z0-9-]{16,128}$/.test(key)) {
+    throw new ApiError('Invalid Idempotency-Key header.', 400, 'INVALID_IDEMPOTENCY_KEY');
+  }
+  return key;
+}
+
+// Looks up a previous creation made with the same key. The filter is built by hand
+// because URLSearchParams would percent-encode the JSON path operator.
+export async function findCreateReplay(env, keyHash) {
+  const rows = await db(env, `edit_tokens?select=wedding_id,created_at&metadata->>createRequestHash=eq.${keyHash}&order=created_at.desc&limit=1`);
+  return rows?.[0] || null;
+}
+
 export function assertUuid(value) {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)) {
     throw new ApiError('Invalid wedding ID.', 400, 'INVALID_ID');
   }
+}
+
+// ---- Public web addresses (slugs) -----------------------------------------------------
+
+export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export function normaliseSlug(value) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : '';
+}
+
+// Returns a user-facing reason, or null when the format is acceptable.
+export function slugFormatProblem(slug) {
+  if (!slug) return 'Choose a web address for your invitation.';
+  if (slug.length > 60) return 'Keep the web address to 60 characters or fewer.';
+  if (!SLUG_PATTERN.test(slug)) return 'Use lowercase letters, numbers and single hyphens only.';
+  if (RESERVED_SLUGS.has(slug)) return 'That web address is reserved. Choose another.';
+  return null;
+}
+
+// True when another wedding already uses the slug. The draft being edited is excluded,
+// so its own address is never reported as taken.
+export async function slugTaken(env, weddingId, slug) {
+  const query = new URLSearchParams({ select: 'id', slug: `eq.${slug}`, limit: '1' });
+  if (weddingId) query.set('id', `neq.${weddingId}`);
+  const rows = await db(env, `weddings?${query}`);
+  return Boolean(rows?.length);
+}
+
+// Availability for the couple's typed address, plus up to three free alternatives.
+export async function slugAvailability(env, weddingId, slug) {
+  const problem = slugFormatProblem(slug);
+  if (problem) return { slug, available: false, reason: 'invalid', message: problem, suggestions: [] };
+  if (!(await slugTaken(env, weddingId, slug))) {
+    return { slug, available: true, reason: null, message: 'This web address is available.', suggestions: [] };
+  }
+  const suggestions = [];
+  for (let n = 2; n <= 8 && suggestions.length < 3; n += 1) {
+    const candidate = `${slug}-${n}`.slice(0, 60);
+    if (candidate.length <= 60 && !slugFormatProblem(candidate) && !(await slugTaken(env, weddingId, candidate))) {
+      suggestions.push(candidate);
+    }
+  }
+  return { slug, available: false, reason: 'taken', message: 'That web address is already in use.', suggestions };
 }

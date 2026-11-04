@@ -1,0 +1,51 @@
+/* Styles for components the Figma export does not contain (occasions, recovery,
+   empty editor, browse link). Written in the design's own palette and type scale. */
+:root {
+  --ink: #0b2f20;
+  --green: #145c37;
+  --green-dark: #083a23;
+  --pale: #f7f1e9;
+  --cream: #fbf7f2;
+  --gold: #a67d24;
+  --line: #ded9d0;
+  /* Accessible tokens approved in D1 (docs/DESIGN_SYSTEM.md, section 2). */
+  --gold-text: #86681c;
+  --muted-text: #6b6760;
+  --line-strong: #8a8276;
+  --success: #2f6b45;
+}
+.occasion-strip { padding: 40px 0 8px; text-align: center; }
+.occasion-chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 16px; }
+.occasion-chip {
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px;
+  border: 1px solid var(--line); border-radius: 999px; background: #fffefa; color: var(--ink);
+  font: inherit; font-size: 14px; cursor: pointer;
+}
+.occasion-chip:hover, .occasion-chip:focus-visible { border-color: var(--green); outline: none; box-shadow: 0 0 0 3px #145c3720; }
+.recovery-banner {
+  display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;
+  margin: 18px auto 0; max-width: 1120px; padding: 18px 20px;
+  background: #f3eee5; border: 1px solid #dfd4c5; border-radius: 12px; color: var(--ink);
+}
+.recovery-banner strong { display: block; font-family: "Playfair Display", Georgia, serif; font-size: 22px; font-weight: 500; }
+.recovery-banner p { margin: 4px 0 0; font-size: 13px; color: #5f5a52; }
+.recovery-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.recovery-error { color: #9b5147 !important; }
+.editor-empty { padding: 96px 0; text-align: center; max-width: 620px; }
+.editor-empty h1 { font-family: "Playfair Display", Georgia, serif; font-weight: 500; font-size: 40px; margin: 8px 0 12px; }
+.page-toggle { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.browse-all { padding: 18px 0 0; text-align: right; }
+.figma-canvas { min-height: 420px; }
+/* The design hides file inputs inside the image control; this field is a URL input. */
+.image-control > div { display: grid; gap: 10px; }
+.image-control label:has(input[type="url"]) { display: block; padding: 0; margin: 0; border: 0; background: none; border-radius: 0; font-size: 13px; cursor: text; }
+.image-control label input[type="url"] { display: block; width: 100%; margin-top: 6px; padding: 9px 10px; border: 1px solid var(--line-strong); border-radius: 8px; font: inherit; font-size: 14px; background: #fffefa; }
+.image-control label input[type="url"]:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
+@media (max-width: 480px) {
+  .recovery-banner { padding: 16px; }
+  .recovery-actions { width: 100%; }
+  .recovery-actions .button { flex: 1; text-align: center; }
+  .occasion-chip { font-size: 13px; padding: 9px 12px; }
+  .editor-empty { padding: 56px 0; }
+  .editor-empty h1 { font-size: 30px; }
+}

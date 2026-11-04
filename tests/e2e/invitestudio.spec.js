@@ -1,3 +1,4 @@
+const { completeSetupSteps } = require('../support/setup');
 const { test, expect } = require('@playwright/test');
 
 test.beforeEach(async ({ page }) => {
@@ -7,12 +8,12 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('homepage starts a short personalised-preview journey', async ({ page }) => {
-  await expect(page.getByRole('heading', { name: /make the moment|find the feeling|invite.*moment/i })).toBeVisible();
-  await page.getByRole('button', { name: /start with a preview/i }).click();
+  await expect(page.getByRole('heading', { name: /create a wedding|make the moment|find the feeling|invite.*moment/i })).toBeVisible();
+  await page.getByRole('button', { name: /start your invitation/i }).click();
   await expect(page.getByRole('heading', { name: /create your invitation/i })).toBeVisible();
   await page.locator('#projectTitle').fill('Mira & Arun');
   await page.locator('#projectDate').fill('2027-01-20');
-  await page.getByRole('button', { name: /create my preview/i }).click();
+  await completeSetupSteps(page);
   await expect(page.getByText(/your first preview is ready/i)).toBeVisible();
   await expect(page.locator('main')).toContainText('Mira & Arun');
 });
@@ -21,8 +22,9 @@ test('intro style changes to a compatible signature transition', async ({ page }
   await page.evaluate(() => { startCreate('Wedding'); });
   await page.locator('#projectTitle').fill('Mira & Arun');
   await page.locator('#projectDate').fill('2027-01-20');
-  await page.getByRole('button', { name: /create my preview/i }).click();
-  await page.evaluate(() => { state.editorTab = 'Theme'; state.mobileEditorView = 'edit'; render(); });
+  await completeSetupSteps(page);
+  // The designer is the default editor now; this test covers the advanced editor's intro controls.
+  await page.evaluate(() => { state.editorMode = 'advanced'; state.editorTab = 'Theme'; state.mobileEditorView = 'edit'; render(); });
   const style = page.locator('.editor-panel select').first();
   const transition = page.locator('#intro-transition-select');
   await expect(style).toBeVisible();
@@ -49,7 +51,7 @@ test('preview and publish dialog provide an honest path back to the invitation',
   await page.evaluate(() => { startCreate('Wedding'); });
   await page.locator('#projectTitle').fill('Mira & Arun');
   await page.locator('#projectDate').fill('2027-01-20');
-  await page.getByRole('button', { name: /create my preview/i }).click();
+  await completeSetupSteps(page);
   await page.evaluate(() => { state.page = 'preview'; state.device = 'mobile'; render(); });
   await expect(page.locator('main')).toContainText('Mira & Arun');
   await page.getByRole('button', { name: 'Publish', exact: true }).click();
@@ -67,3 +69,17 @@ for (const width of [320, 375, 390, 768, 1280]) {
     expect(overflow).toBe(false);
   });
 }
+
+test('malformed private link does not break the app', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?draft=3f2c1a9e-8b7d-4c6e-9f10-2a3b4c5d6e7f');
+  await expect(page.getByRole('heading', { name: /create a wedding|make the moment|find the feeling|invite.*moment/i })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('new visitors do not receive a demo draft', async ({ page }) => {
+  await page.goto('/');
+  const stored = await page.evaluate(() => localStorage.getItem('invitestudio-projects'));
+  expect(stored === null || !stored.includes('Meera & Abin')).toBe(true);
+});

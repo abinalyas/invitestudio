@@ -1,6 +1,20 @@
-# InviteStudio frontend prototype
+# InviteStudio
 
-Standalone frontend prototype for InviteStudio. No backend is connected; project drafts and demo images use this browser's local storage.
+A wedding-invitation website builder. The editor is a static site. Cloud drafts, publishing and public invitations run on Cloudflare Pages Functions backed by Supabase. See `docs/PHASE_0_INTEGRATION_PLAN.md` for the architecture and decisions.
+
+Without cloud configuration, drafts stay in the browser.
+
+## Tests
+
+```bash
+npm install
+npm run test:unit    # backend and security unit tests
+npm run test:qa      # source-level checks
+npm run test:e2e     # local browser checks
+npm run test:cloud   # cloud stack: Pages Functions + Postgres + test shim
+```
+
+`test:cloud` starts a local Postgres from the embedded binaries, applies the repository migrations to a fresh database, and runs `wrangler pages dev`. It never uses a real Supabase project. Set `CHROMIUM_PATH` to use a pre-installed Chromium.
 
 ## Run locally
 
