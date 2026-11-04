@@ -79,34 +79,26 @@
     return `${window.location.origin}/edit/${encodeURIComponent(token)}`;
   }
 
+  const editTokenPattern = /^[A-Za-z0-9_-]{32,256}$/;
+
+  // Accepts the canonical fragment form (/edit#<token>) and the legacy path form
+  // (/edit/<token>). Query-string forms are not accepted. The address bar is
+  // cleaned before anything else runs, and a malformed value returns null
+  // instead of throwing, so the app always boots.
   function parsePrivateEditLink() {
     if (!window.location) return null;
     const url = new URL(window.location.href);
-    const query = new URLSearchParams(url.search);
-    const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
-    let id = query.get('draft') || query.get('wedding') || query.get('id') || hash.get('edit');
-    let token = query.get('token') || query.get('editToken') || hash.get('token');
-    const packed = query.get('edit') || hash.get('editLink');
-    if ((!id || !token) && packed) {
-      const separator = packed.indexOf('.');
-      if (separator > 0) {
-        id = id || packed.slice(0, separator);
-        token = token || packed.slice(separator + 1);
-      }
+    const legacy = url.pathname.match(/^\/edit\/([^/]+)\/?$/i);
+    const atEditPath = /^\/edit\/?$/i.test(url.pathname);
+    if (!legacy && !atEditPath) return null;
+    let token = url.hash.replace(/^#/, '');
+    if (legacy) {
+      try { token = decodeURIComponent(legacy[1]); } catch { token = ''; }
     }
-    const pathToken = url.pathname.match(/\/edit\/([^/]+)$/i)?.[1];
-    if (!token && pathToken) {
-      try { token = decodeURIComponent(pathToken); } catch { return null; }
-    }
-    if ((!id && !token) || (id && !/^[0-9a-f-]{36}$/i.test(id)) || token.length < 32 || token.length > 256) return null;
-
-    // Never leave a raw edit token in the address bar after accepting a link.
     try {
-      ['draft', 'wedding', 'id', 'token', 'editToken', 'edit'].forEach(key => query.delete(key));
-      const cleanPath = pathToken ? '/' : url.pathname;
-      window.history.replaceState({}, document.title, `${cleanPath}${query.toString() ? `?${query}` : ''}`);
+      window.history.replaceState({}, document.title, '/');
     } catch { /* history may be unavailable in an embedded preview */ }
-    return { id, token };
+    return editTokenPattern.test(token) ? { token } : null;
   }
 
   function recoveredProject(id) {
@@ -164,9 +156,7 @@
       return;
     }
     try {
-      const result = link.id
-        ? await window.inviteStudioApi.getWedding(link.id, link.token)
-        : await window.inviteStudioApi.getWeddingByEditToken(link.token);
+      const result = await window.inviteStudioApi.getWeddingByEditToken(link.token);
       const id = result.wedding.id;
       rememberToken(id, link.token);
       const project = recoveredProject(id);
@@ -186,7 +176,6 @@
       render();
       toast('Private draft recovered — continue editing where you left off.');
     } catch (error) {
-      if (error.code === 'EDIT_TOKEN_INVALID' && link.id) forgetToken(link.id);
       state.recoveryStatus = 'error';
       state.recoveryError = error.message || 'This private edit link is no longer available.';
       render();

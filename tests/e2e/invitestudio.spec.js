@@ -67,3 +67,17 @@ for (const width of [320, 375, 390, 768, 1280]) {
     expect(overflow).toBe(false);
   });
 }
+
+test('malformed private link does not break the app', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/?draft=3f2c1a9e-8b7d-4c6e-9f10-2a3b4c5d6e7f');
+  await expect(page.getByRole('heading', { name: /make the moment|find the feeling|invite.*moment/i })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('new visitors do not receive a demo draft', async ({ page }) => {
+  await page.goto('/');
+  const stored = await page.evaluate(() => localStorage.getItem('invitestudio-projects'));
+  expect(stored === null || !stored.includes('Meera & Abin')).toBe(true);
+});
