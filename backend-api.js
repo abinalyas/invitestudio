@@ -48,6 +48,12 @@
         keepalive: options.keepalive === true
       });
     },
+    deleteWedding(id, editToken) {
+      return request(`/weddings/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${editToken}` }
+      });
+    },
     regenerateEditToken(id, editToken) {
       return request(`/weddings/${encodeURIComponent(id)}/edit-token`, {
         method: 'POST',

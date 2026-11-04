@@ -17,7 +17,6 @@
   let activeIsland = null;
   let activeHost = null;
   let styleText = null;
-  const photoUrl = /^https:\/\/images\.unsplash\.com\//;
   const defaultSectionIds = ['hero', 'welcome', 'story', 'functions', 'gallery', 'rsvp'];
   const defaultSections = () => [
     { id: 'hero', title: 'Hero', visible: true },
@@ -121,9 +120,7 @@
       if ('storyTitle' in patch) prefs.storyTitle = patch.storyTitle;
       if ('storyCopy' in patch) p.story = patch.storyCopy;
       if ('heroImageUrl' in patch) {
-        const value = (patch.heroImageUrl || '').trim();
-        if (!value) delete prefs.heroImageUrl;
-        else if (photoUrl.test(value)) prefs.heroImageUrl = value;
+        // Hero images are gated until media storage exists: nothing is written.
       }
       p.preferences = prefs;
       p.updated = 'Just now';
@@ -229,8 +226,9 @@
       if (typeof continueLastDraft === 'function') continueLastDraft();
     },
 
+    // Launch scope is weddings only. Other occasions are held back until their designs exist.
     categories() {
-      return categories.map(([name, emoji]) => [name, emoji]);
+      return categories.filter(([name]) => name === 'Wedding').map(([name, emoji]) => [name, emoji]);
     }
   };
 

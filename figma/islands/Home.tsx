@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Icon, IconName, Logo, faqs, plans, templates, galleryTemplates } from "./shared";
 import { bridge } from "./bridge";
-import { OccasionStrip, RecoveryBanner } from "./extras";
+import { RecoveryBanner } from "./extras";
 export function HomePage() {
   const [yearly, setYearly] = useState(true)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -108,7 +108,6 @@ export function HomePage() {
         </div>
       </section>
 
-      <OccasionStrip />
       <section className="benefit-strip" id="features">
         <div className="shell benefit-grid">
           {[

@@ -27,14 +27,12 @@ const pages: PageItem[] = [
   { icon: "pin", label: "Travel" }
 ];
 
-const unsplashImage = /^https:\/\/images\.unsplash\.com\//;
 
 export function EditorPage() {
   useBridgeVersion();
   const snap = bridge.snapshot();
   const [device, setDevice] = useState<Device>("desktop");
   const [activePage, setActivePage] = useState("Home");
-  const [imageNotice, setImageNotice] = useState("");
   const canvasRef = useRef<HTMLDivElement>(null);
   const page = pages.find(item => item.label === activePage) ?? pages[0];
 
@@ -217,26 +215,13 @@ export function EditorPage() {
           <div className="image-control">
             <strong>Hero image</strong>
             <div>
-              {snap.heroImageUrl ? <img src={snap.heroImageUrl} alt="" /> : null}
               <label>
-                Image link
-                <input
-                  type="url"
-                  placeholder="https://images.unsplash.com/…"
-                  defaultValue={snap.heroImageUrl}
-                  onBlur={event => {
-                    const value = event.target.value.trim();
-                    if (value && !unsplashImage.test(value)) {
-                      setImageNotice("Use an Unsplash image link until photo uploads arrive.");
-                      return;
-                    }
-                    setImageNotice("");
-                    set({ heroImageUrl: value });
-                  }}
-                />
+                Image
+                <input type="text" value="Template image" disabled aria-describedby="hero-image-note" />
               </label>
-              {imageNotice ? <p className="tiny recovery-error" role="alert">{imageNotice}</p> : null}
-              <p className="tiny muted">Photo uploads are part of the upcoming media release.</p>
+              <p id="hero-image-note" className="tiny muted">
+                Hero images unlock when photo storage is available. Your template's image is used for now.
+              </p>
             </div>
           </div>
         </aside>

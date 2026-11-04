@@ -286,6 +286,23 @@
     };
   }
 
+  // Image and audio data URLs are never sent to the server: they are too large for a
+  // save and are not stored in the database. Media stays on this device until media
+  // storage exists. Hero images are not sent either; that control is gated too.
+  function transferableIntro(intro) {
+    const out = {};
+    for (const [key, value] of Object.entries(intro && typeof intro === 'object' ? intro : {})) {
+      if (typeof value === 'string' && /^data:/i.test(value.trim())) continue;
+      out[key] = value;
+    }
+    return out;
+  }
+
+  function transferablePreferences(preferences) {
+    const { heroImageUrl, ...rest } = preferences && typeof preferences === 'object' ? preferences : {};
+    return rest;
+  }
+
   function cloudPayload(project) {
     return {
       name: project.name || project.title || 'Untitled wedding',
@@ -299,10 +316,10 @@
       hosts: project.hosts || '',
       locale: project.locale || 'English',
       theme: project.theme || {},
-      preferences: project.preferences || {},
+      preferences: transferablePreferences(project.preferences),
       culturalPreferences: project.culturalPreferences || {},
       sections: project.sections || [],
-      introSettings: project.introSettings || {},
+      introSettings: transferableIntro(project.introSettings),
       animationSettings: project.animationSettings || {},
       functions: project.functions || [],
       gallery: galleryPayload(project)
@@ -333,7 +350,10 @@
     project.preferences = wedding.preferences || project.preferences || {};
     project.culturalPreferences = wedding.cultural_preferences || project.culturalPreferences || {};
     project.sections = wedding.sections || project.sections || [];
-    project.introSettings = wedding.intro_settings || project.introSettings || {};
+    // Local-only media (data URLs) is kept when the server copy is merged in.
+    const localMedia = Object.fromEntries(Object.entries(project.introSettings || {})
+      .filter(([, value]) => typeof value === 'string' && /^data:/i.test(value.trim())));
+    project.introSettings = { ...(wedding.intro_settings || {}), ...localMedia };
     project.animationSettings = wedding.animation_settings || project.animationSettings || {};
     const content = wedding.content && typeof wedding.content === 'object' ? wedding.content : {};
     if (Array.isArray(content.functions)) project.functions = content.functions;
@@ -765,6 +785,86 @@
       paintPublishDialog(project, { error: 'The invitation could not be taken offline. Try again in a moment.' });
     }
   }
+
+  // ---- Deleting a website -----------------------------------------------------------
+  // Permanent. The cloud copy is removed with its private links, photo records, events,
+  // payments and RSVPs (cascading foreign keys). Its public address stops working at once.
+  // This device's copy, token and draft reference are removed too. Nothing is removed
+  // until the couple confirms, and nothing is removed if the server refuses.
+  function removeLocalWebsite(project) {
+    const index = state.projects.indexOf(project);
+    if (index >= 0) state.projects.splice(index, 1);
+    const meta = metaFor(project);
+    clearTimeout(meta.timer);
+    clearTimeout(meta.retryTimer);
+    if (project.cloudId) forgetToken(project.cloudId);
+    const reference = draftReference();
+    if (reference && (reference.localId === project.id || (project.cloudId && reference.cloudId === project.cloudId))) {
+      try { localStorage.removeItem(draftReferenceKey); } catch { /* best effort */ }
+    }
+    if (state.currentId === project.id) state.currentId = null;
+    localSave();
+  }
+
+  async function performWebsiteDelete(project) {
+    const errorBox = document.querySelector('#delete-website-error');
+    const fail = message => { if (errorBox) errorBox.textContent = message; };
+    if (!project.cloudId) {
+      removeLocalWebsite(project);
+      closeModal();
+      state.page = 'dashboard';
+      render();
+      toast('Website deleted from this device.');
+      return;
+    }
+    const token = tokenFor(project.cloudId);
+    if (!token || !window.inviteStudioApi?.enabled) {
+      fail('This website\'s private link is not on this device, so its cloud copy cannot be deleted from here. Nothing has been deleted.');
+      return;
+    }
+    try {
+      await window.inviteStudioApi.deleteWedding(project.cloudId, token);
+    } catch (error) {
+      if (error.status === 404) {
+        // Already gone on the server: finish the local cleanup.
+      } else if (error.status === 401 || error.status === 403) {
+        fail('This private link is no longer valid, so the website cannot be deleted from here. Nothing has been deleted.');
+        return;
+      } else {
+        fail('The website could not be deleted right now. Check your connection and try again. Nothing has been deleted.');
+        return;
+      }
+    }
+    removeLocalWebsite(project);
+    closeModal();
+    state.page = 'dashboard';
+    render();
+    toast('Website permanently deleted.');
+  }
+
+  function confirmDeleteWebsite(project) {
+    if (!project) return;
+    const name = escapeText(project.title || project.name || 'this website');
+    const publicNote = project.publishStatus === 'published'
+      ? '<p class="tiny" style="color:#9b5147;margin:8px 0 0">Its public address will stop working straight away.</p>'
+      : '';
+    renderModal(`<div class="eyebrow">Delete website</div>
+      <h2 id="modal-title">Delete \u201c${name}\u201d?</h2>
+      <p class="muted">This permanently removes the invitation, its private edit links and its RSVP and photo records. It cannot be undone.</p>
+      ${publicNote}
+      <p id="delete-website-error" role="alert" class="tiny" style="color:#9b5147;margin:10px 0 0"></p>
+      <div class="modal-actions" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:18px">
+        <button class="btn" type="button" data-delete-cancel>Keep it</button>
+        <button class="btn dark" type="button" data-delete-confirm>Delete permanently</button>
+      </div>`);
+    const root = document.querySelector('#modal-root');
+    root.querySelector('[data-delete-cancel]')?.addEventListener('click', () => closeModal());
+    root.querySelector('[data-delete-confirm]')?.addEventListener('click', () => performWebsiteDelete(project));
+  }
+
+  window.deleteProjectFromDashboard = function deleteProjectFromDashboard(projectId) {
+    confirmDeleteWebsite(state.projects.find(project => project.id === projectId || project.cloudId === projectId) || null);
+  };
 
   // Opens the cloud publish dialog. Returns false when the API is not enabled, so
   // the caller can show the local-only message instead.

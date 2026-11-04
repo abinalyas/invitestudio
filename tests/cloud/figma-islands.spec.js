@@ -40,10 +40,12 @@ async function useTemplate(page, number) {
   await expect(page.getByRole('button', { name: /advanced editing/i })).toBeVisible();
 }
 
-test('the home design renders with its primary action and the occasion choices', async ({ page }) => {
+test('the home design renders, and only weddings are offered at launch', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: /create a wedding/i })).toBeVisible({ timeout: 15000 });
-  await expect(page.getByRole('region', { name: /choose an occasion/i }).getByRole('button', { name: 'Wedding', exact: true })).toBeVisible();
+  // Launch scope is weddings only (docs/PRODUCT_DECISIONS.md, section 4): no other occasion is offered.
+  await expect(page.getByRole('region', { name: /choose an occasion/i })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /birthday|baptism|engagement/i })).toHaveCount(0);
 });
 
 test('the primary action opens the existing setup flow', async ({ page }) => {
@@ -99,22 +101,15 @@ test('the canvas shows the real invitation, and the story toggle hides it on the
   }, { timeout: 20000 }).toBe(false);
 });
 
-test('a hero image must be an approved Unsplash link, and it reaches the invitation', async ({ page }) => {
+test('hero images are locked until media storage exists, and no image preference is saved', async ({ page }) => {
   await useTemplate(page, 3);
   const title = `Hero ${randomUUID().slice(0, 6)}`;
   await page.getByLabel('Couple names').fill(title);
-  await page.getByLabel('Image link').fill('https://example.com/not-allowed.jpg');
-  await page.getByLabel('Image link').blur();
-  await expect(page.getByText(/use an unsplash image link/i)).toBeVisible();
-
-  const approved = 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=85';
-  await page.getByLabel('Image link').fill(approved);
-  await page.getByLabel('Image link').blur();
-  await expect.poll(async () => {
-    const [row] = await dbQuery(`select preferences->>'heroImageUrl' as url from weddings where title = $1`, [title]);
-    return row?.url ?? null;
-  }, { timeout: 20000 }).toBe(approved);
-  await expect(page.locator('.invitation-canvas img').first()).toHaveAttribute('src', approved);
+  await expect(page.getByRole('button', { name: /saved/i })).toBeVisible({ timeout: 20000 });
+  await expect(page.getByLabel('Image')).toBeDisabled();
+  await expect(page.getByText(/unlock when photo storage is available/i)).toBeVisible();
+  const [row] = await dbQuery(`select preferences->>'heroImageUrl' as url from weddings where title = $1`, [title]);
+  expect(row.url).toBeNull();
 });
 
 test('returning to the site offers to continue the draft', async ({ page }) => {
