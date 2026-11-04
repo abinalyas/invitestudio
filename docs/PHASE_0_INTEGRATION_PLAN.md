@@ -1,6 +1,6 @@
 # Phase 0 — Frontend-to-backend integration plan
 
-Status: approved direction, implementation in progress on branch `feature/figma-make-frontend-integration`.
+Status: decisions D1–D8 implemented on branch `feature/figma-make-frontend-integration`. Steps 1–4 and 6 of section 5 are complete. Step 5 (Figma Make) is blocked on the export. Nothing is merged to `main` or deployed.
 Supersedes the discovery notes in `docs/FRONTEND-BACKEND-INTEGRATION-MAP.md` and the status in `docs/FRONTEND_BACKEND_INTEGRATION_PLAN.md` (which still says Phase 2 is in progress).
 
 This document records what the code does today, the decisions taken, the audit evidence behind them, and what remains unverified. It does not claim that any production service has been changed.
@@ -112,6 +112,40 @@ Each step is a separate commit on `feature/figma-make-frontend-integration`. No 
 | Figma Make export | **Not in repository** | Provide the export (zip or repository path). | Project owner |
 
 **Pending database changes (none applied):** none are required for this plan. The unique index for create idempotency (section 4.5) is an optional future migration and would be proposed separately before any application.
+
+## 8. Progress and current test status
+
+Commits on `feature/figma-make-frontend-integration`, in order:
+
+| Commit | Area |
+|---|---|
+| `6aa65b4` | Phase 0 plan (this document) |
+| `077e9f9` | Fix: malformed private links no longer blank the app; stale device-only copy corrected; demo draft seed removed |
+| `8a0748c` | Backend: single event source; token-free URLs (POST edit-links); strict public projection; no-store headers |
+| `884fcc7` | Backend and client: idempotent draft creation (D7) |
+| `e05377a` | Test: cloud-mode suite against Pages Functions and migrated Postgres |
+| `a11cf73` | Fix: typed input kept while a cloud create completes |
+| `2cb6514` | Security: fragment private links (D5), strict routing, CSP and headers (D8) |
+| `629cba7` | Public: link-preview metadata for `/s/<slug>`; reserved slugs |
+| `1e2ce6a` | Public: read-only invitation page; publish status model |
+| `7bc536f` | Fix: pending edits are saved when the page is hidden or reloaded |
+| `08d9ec0` | Publish: publish, update and take offline from the editor; end-to-end journey test |
+
+Test suites (all run from the repository root):
+
+- `npm run test:unit` — backend projection, headers, validation, security headers (node:test).
+- `npm run test:qa` — source-level checks (46).
+- `npm run test:e2e` — local browser checks (10).
+- `npm run test:cloud` — 34 browser and API tests against the real Pages Functions, a migrated Postgres and a PostgREST-compatible test shim.
+
+Known limitations, carried forward:
+
+- The cloud suite uses the test shim, not Supabase. Migrations are verified on a fresh database only. Live project status is unverified (section 6).
+- Photos are not uploaded yet (Phase 5). Gallery images are not shown on the public page.
+- The public page still shows the RSVP control in its preview wording until Phase 7.
+- `script-src` keeps `'unsafe-inline'` (111 inline handlers).
+- Idempotent creation has a narrow race for simultaneous identical requests (section 4.5).
+- Private-link email delivery (Phase 3.3) is not implemented.
 
 ## 7. Known stale documents
 
