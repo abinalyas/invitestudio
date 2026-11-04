@@ -621,6 +621,161 @@
     queueCloudSave(project, 0);
   };
 
+  // ---- Publishing (cloud drafts) -------------------------------------------------
+  // The server is authoritative for slugs and reserved words; this list mirrors
+  // RESERVED_SLUGS in functions/_shared/api.js for immediate feedback only.
+  const RESERVED_SLUG_WORDS = new Set([
+    'api', 'admin', 'edit', 's', 'w', 'assets', 'static', 'public', 'login', 'signup',
+    'dashboard', 'templates', 'pricing', 'privacy', 'terms', 'support', 'help', 'www',
+    'mail', 'root', 'null', 'undefined'
+  ]);
+
+  function suggestSlug(title) {
+    const base = String(title || '')
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60)
+      .replace(/-+$/, '');
+    return base || 'our-wedding';
+  }
+
+  function slugProblem(slug) {
+    if (!slug) return 'Choose a web address for your invitation.';
+    if (slug.length > 60) return 'Keep the web address to 60 characters or fewer.';
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) return 'Use lowercase letters, numbers and single hyphens only.';
+    if (RESERVED_SLUG_WORDS.has(slug)) return 'That web address is reserved. Choose another.';
+    return '';
+  }
+
+  function publicLinkFor(slug) {
+    return `${window.location.origin}/s/${slug}`;
+  }
+
+  function findCloudProject(projectId) {
+    return state.projects.find(project => project.cloudId === projectId || project.id === projectId) || null;
+  }
+
+  function publishStatusLabel(project) {
+    return PUBLISH_LABELS[project.publishStatus] || 'Draft';
+  }
+
+  function paintPublishDialog(project, notice = {}) {
+    const published = project.publishStatus === 'published';
+    const slug = notice.slug || project.publicSlug || suggestSlug(project.title || project.name);
+    const saved = project.cloudStatus === 'saved';
+    const busy = Boolean(notice.busy);
+    const link = publicLinkFor(project.publicSlug || slug);
+    const note = !saved && !busy
+      ? '<p class="tiny" role="status" style="color:#79766f;margin:8px 0 0">Saving your latest changes first. You can publish as soon as they are saved.</p>'
+      : '';
+    const error = notice.error
+      ? `<p class="tiny" role="alert" style="color:#9b5147;margin:10px 0 0">${escapeText(notice.error)}</p>`
+      : '';
+    const success = notice.success
+      ? `<p class="tiny" role="status" style="color:#4f6b4a;margin:10px 0 0">Your invitation is live. Share the link below.</p>`
+      : '';
+    const liveLink = published && project.publicSlug
+      ? `<div style="margin-top:14px;background:#f2eee6;border-radius:9px;padding:12px"><div class="tiny muted">Public link</div><a href="${escapeText(link)}" target="_blank" rel="noopener" style="word-break:break-all">${escapeText(link)}</a><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" data-copy-public-link>Copy link</button></div></div>`
+      : '';
+    const primary = published ? 'Update live page' : 'Publish invitation';
+    const html = `<div class="eyebrow">Share your invitation</div>
+      <h2 id="modal-title">${published ? 'Your invitation is live' : 'Publish your invitation'}</h2>
+      <p class="muted">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>. Guests can only see the invitation after you publish it.</p>
+      <label class="tiny muted" for="publishSlug" style="display:block;margin-top:14px">Web address</label>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="tiny muted">${escapeText(window.location.origin)}/s/</span><input id="publishSlug" type="text" value="${escapeText(slug)}" maxlength="60" autocomplete="off" spellcheck="false" style="flex:1;min-width:160px;padding:9px 10px;border:1px solid #d9d0c2;border-radius:8px" ${busy ? 'disabled' : ''}></div>
+      ${note}${error}${success}${liveLink}
+      <div class="modal-actions" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn" type="button" data-publish-close>Close</button>
+        ${published ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}
+        <button class="btn dark" type="button" data-publish-submit ${busy || !saved ? 'disabled' : ''}>${busy ? 'Publishing…' : primary}</button>
+      </div>`;
+    renderModal(html);
+    const root = document.querySelector('#modal-root');
+    root.querySelector('[data-publish-close]')?.addEventListener('click', () => closeModal());
+    root.querySelector('[data-publish-submit]')?.addEventListener('click', () => publishFromDialog(project));
+    root.querySelector('[data-unpublish]')?.addEventListener('click', () => unpublishFromDialog(project));
+    root.querySelector('[data-copy-public-link]')?.addEventListener('click', () => copyPublicLink(link));
+  }
+
+  function escapeText(value) {
+    return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  async function copyPublicLink(link) {
+    try {
+      await navigator.clipboard.writeText(link);
+      toast('Link copied. Share it with your guests.');
+    } catch {
+      window.prompt('Copy your invitation link:', link);
+    }
+  }
+
+  function publishErrorMessage(error) {
+    if (error.code === 'SLUG_CONFLICT' || error.fields?.slug) return { error: error.fields?.slug || 'That web address is already in use. Choose another.' };
+    if (error.code === 'PUBLISH_CONFLICT' || error.code === 'VERSION_CONFLICT') return { error: 'This draft changed elsewhere. Reload the page before publishing.' };
+    if (error.code === 'VALIDATION_ERROR') return { error: error.message || 'Please correct the web address.' };
+    return { error: 'Publishing did not complete. Your draft is safe; try again in a moment.' };
+  }
+
+  async function publishFromDialog(project) {
+    const typed = (document.querySelector('#publishSlug')?.value || '').trim().toLowerCase();
+    const problem = slugProblem(typed);
+    if (problem) return paintPublishDialog(project, { error: problem, slug: typed });
+    if (project.cloudStatus !== 'saved') {
+      return paintPublishDialog(project, { error: 'Your latest changes are still saving. Try again in a moment.', slug: typed });
+    }
+    paintPublishDialog(project, { busy: true, slug: typed });
+    try {
+      const result = await window.inviteStudioApi.publishWedding(project.cloudId, tokenFor(project.cloudId), project.cloudVersion, typed);
+      project.publishStatus = 'published';
+      project.published = true;
+      project.publicSlug = typed;
+      project.status = 'Published';
+      project.cloudVersion = result.wedding?.version || project.cloudVersion;
+      project.cloudStatus = 'saved';
+      project.cloudSavedAt = Date.now();
+      project.cloudError = '';
+      localSave();
+      paintStatus(project);
+      paintPublishDialog(project, { success: true, slug: typed });
+      toast('Your invitation is live.');
+    } catch (error) {
+      paintPublishDialog(project, { ...publishErrorMessage(error), slug: typed });
+    }
+  }
+
+  async function unpublishFromDialog(project) {
+    if (!window.confirm('Take this invitation offline? Guests will no longer see it. You can publish it again later.')) return;
+    try {
+      const result = await window.inviteStudioApi.unpublishWedding(project.cloudId, tokenFor(project.cloudId), project.cloudVersion);
+      project.publishStatus = 'unpublished';
+      project.published = false;
+      project.status = 'Unpublished';
+      project.cloudVersion = result.wedding?.version || project.cloudVersion;
+      project.cloudStatus = 'saved';
+      localSave();
+      paintStatus(project);
+      paintPublishDialog(project, {});
+      toast('The invitation is offline. Its web address is kept for you.');
+    } catch (error) {
+      paintPublishDialog(project, { error: 'The invitation could not be taken offline. Try again in a moment.' });
+    }
+  }
+
+  // Opens the cloud publish dialog. Returns false when the API is not enabled, so
+  // the caller can show the local-only message instead.
+  window.openCloudPublish = function openCloudPublish(project) {
+    if (!window.inviteStudioApi?.enabled) return false;
+    if (!project?.cloudId || !tokenFor(project.cloudId)) {
+      renderModal(`<div class="eyebrow">Share your invitation</div><h2 id="modal-title">Almost ready</h2><p class="muted">Your draft is still being saved to the cloud. Publishing becomes available as soon as it is saved.</p><div class="modal-actions"><button class="btn dark" type="button" onclick="closeModal()">Got it</button></div>`);
+      return true;
+    }
+    paintPublishDialog(project, {});
+    return true;
+  };
+
   window.createCloudDraftForProject = function createCloudDraftForProject(project) {
     return createCloudDraft(project);
   };
