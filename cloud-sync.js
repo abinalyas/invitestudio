@@ -360,6 +360,8 @@
   }
 
   function paintStatus(project) {
+    // Figma islands subscribe to save status; tell them whenever it may have changed.
+    if (typeof window.notifyInviteStudioChange === 'function') window.notifyInviteStudioChange();
     const status = document.querySelector('.status');
     if (!status || !project || typeof window.cloudSaveLabel !== 'function') return;
     status.setAttribute('aria-label', window.cloudSaveLabel(project));
@@ -836,6 +838,7 @@
       setTimeout(() => createCloudDraft(copy), 0);
     };
 
+    window.flushInviteStudioSaves = flushPendingCloudSaves;
     window.addEventListener('pagehide', flushPendingCloudSaves);
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') flushPendingCloudSaves();
