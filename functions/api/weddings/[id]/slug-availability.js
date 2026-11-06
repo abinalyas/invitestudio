@@ -1,7 +1,9 @@
 import {
   ApiError,
+  SLUG_CHANGE_LIMIT,
   assertUuid,
   fail,
+  getWedding,
   normaliseSlug,
   optionsResponse,
   requireEditAccess,
@@ -21,7 +23,12 @@ export async function onRequest(context) {
     assertUuid(params.id);
     await requireEditAccess(request, env, params.id);
     const slug = normaliseSlug(new URL(request.url).searchParams.get('slug') || '');
-    return success(request, env, await slugAvailability(env, params.id, slug));
+    const result = await slugAvailability(env, params.id, slug);
+    // The address-change allowance of this wedding, so the editor can warn before the limit is reached.
+    const wedding = await getWedding(env, params.id);
+    const used = Number(wedding.slug_change_count) || 0;
+    result.change_limit = { used, max: SLUG_CHANGE_LIMIT, remaining: Math.max(0, SLUG_CHANGE_LIMIT - used) };
+    return success(request, env, result);
   } catch (error) {
     return fail(request, env, error);
   }
