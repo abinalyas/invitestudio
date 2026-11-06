@@ -7,8 +7,10 @@ import {
   fail,
   getWedding,
   optionsResponse,
+  publishErrorFrom,
   requireEditAccess,
   readJson,
+  rpc,
   success
 } from '../../../_shared/api.js';
 import { isLaunchTemplate } from '../../../_shared/templates.js';
@@ -18,6 +20,7 @@ export async function onRequest(context) {
   if (request.method === 'OPTIONS') return optionsResponse(request, env);
   try {
     assertUuid(params.id);
+    // Authorization first: the edit token must be valid and bound to this wedding. Nothing below runs otherwise.
     await requireEditAccess(request, env, params.id);
     if (request.method !== 'POST') {
       throw new ApiError('Method not allowed.', 405, 'METHOD_NOT_ALLOWED');
@@ -71,33 +74,27 @@ export async function onRequest(context) {
         slug: 'Choose another slug.'
       });
     }
-    let rows;
+
+    // The database is the authority for the change: version, availability, reservations (historical addresses),
+    // the confirmation, the ten-change limit and the atomic claim. The wedding id comes from the verified route,
+    // never from the body. The direct PATCH of weddings.slug is no longer used.
+    let data;
     try {
-      rows = await db(env, `weddings?id=eq.${params.id}&version=eq.${body.version}`, {
-        method: 'PATCH',
-        headers: { Prefer: 'return=representation' },
-        body: JSON.stringify({
-          slug,
-          status: 'published',
-          visibility: 'public',
-          published_at: new Date().toISOString()
-        })
+      data = await rpc(env, 'publish_wedding_slug', {
+        p_wedding_id: params.id,
+        p_version: body.version,
+        p_slug: slug,
+        p_confirm_slug_change: body.confirmSlugChange === true
       });
     } catch (error) {
-      // Two websites can pass the availability check at the same moment. The database
-      // unique constraint decides the winner; the loser gets a conflict, not a server error.
-      if (error?.databaseCode === '23505') {
-        throw new ApiError('That public URL is already in use.', 409, 'SLUG_CONFLICT', {
-          slug: 'Choose another slug.'
-        });
-      }
-      throw error;
+      throw publishErrorFrom(error);
     }
-    if (!rows?.[0]) {
+    const wedding = Array.isArray(data) ? data[0] : data;
+    if (!wedding?.id) {
       throw new ApiError('That slug may already be in use or the draft changed. Reload and try again.', 409, 'PUBLISH_CONFLICT');
     }
     return success(request, env, {
-      wedding: rows[0],
+      wedding,
       publicUrl: `/s/${slug}`
     });
   } catch (error) {

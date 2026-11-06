@@ -94,11 +94,42 @@ function pgError(error) {
   return new HttpError(500, error.code || 'XX000', error.message);
 }
 
+// PostgREST-style RPC: POST /rest/v1/rpc/<name> with a JSON object of named arguments. Raised refusals (P0001)
+// become 400 and unique violations 409, as PostgREST reports them.
+function rpcError(error) {
+  if (error.code === '23505') return new HttpError(409, error.code, error.message);
+  if (error.code && /^(P0001|22|23|42)/.test(error.code)) return new HttpError(400, error.code, error.message);
+  return new HttpError(500, error.code || 'XX000', error.message);
+}
+
 export async function startRestShim({ url, port }) {
   const pool = new pg.Pool({ connectionString: url, max: 5 });
 
+  async function handleRpc(req, res, name) {
+    if (req.method !== 'POST') throw new HttpError(405, 'PGRST000', 'rpc requires POST');
+    const fn = ident(name);
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    const text = Buffer.concat(chunks).toString('utf8');
+    const args = text ? JSON.parse(text) : {};
+    const names = Object.keys(args);
+    if (!names.every(key => IDENT.test(key))) throw new HttpError(400, 'PGRST100', 'invalid argument name');
+    const values = names.map(key => coerce(args[key]));
+    const call = names.map((key, index) => `${key} := $${index + 1}`).join(', ');
+    const sql = `select coalesce(json_agg(t), '[]'::json) as data from (select * from public.${fn}(${call})) t`;
+    let result;
+    try {
+      result = await pool.query(sql, values);
+    } catch (error) {
+      throw rpcError(error);
+    }
+    return sendJson(res, 200, result.rows[0]?.data ?? []);
+  }
+
   async function handle(req, res) {
     const reqUrl = new URL(req.url, `http://127.0.0.1:${port}`);
+    const rpcMatch = reqUrl.pathname.match(/^\/rest\/v1\/rpc\/([a-z_][a-z0-9_]*)$/);
+    if (rpcMatch) return handleRpc(req, res, rpcMatch[1]);
     const match = reqUrl.pathname.match(/^\/rest\/v1\/([a-z_][a-z0-9_]*)$/);
     if (!match) throw new HttpError(404, 'PGRST125', 'unknown resource');
     const table = ident(match[1]);

@@ -1,4 +1,4 @@
-import { db, requireSupabase } from '../_shared/api.js';
+import { db, requireSupabase, rpc } from '../_shared/api.js';
 import { SECURITY_HEADERS } from '../_shared/security.js';
 
 // Public invitation entry point: /s/<slug>. Serves the application shell with
@@ -49,6 +49,26 @@ export async function onRequest(context) {
   } catch {
     // A failed lookup must not break the page; serve the shell as not available.
     summary = null;
+  }
+
+  // A historical address (reserved to a wedding that is published under another address) redirects to the current
+  // address with 302 Found, which is a TEMPORARY redirect. It is deliberately not 301: the same wedding may return
+  // to one of its own earlier addresses, and a cached 301 would send visitors to the wrong one. Anything else is
+  // served as before.
+  if (!summary && SLUG.test(slug)) {
+    let target = null;
+    try {
+      const rows = await rpc(env, 'resolve_public_slug', { p_slug: slug });
+      const row = Array.isArray(rows) ? rows[0] : rows;
+      if (row?.kind === 'redirect' && row.target_slug && SLUG.test(row.target_slug)) target = row.target_slug;
+    } catch {
+      target = null;
+    }
+    if (target) {
+      const redirectHeaders = new Headers({ Location: `/s/${target}`, 'Cache-Control': 'no-cache' });
+      for (const [name, value] of Object.entries(SECURITY_HEADERS)) redirectHeaders.set(name, value);
+      return new Response(null, { status: 302, headers: redirectHeaders });
+    }
   }
 
   const url = new URL(request.url);

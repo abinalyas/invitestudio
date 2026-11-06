@@ -112,6 +112,68 @@ export async function db(env, path, options = {}) {
   return data;
 }
 
+// Calls a Supabase RPC with the service key, as db() does. On failure it keeps PostgREST's SQLSTATE (databaseCode)
+// and message (databaseMessage) so the caller can map a known database refusal to an API response.
+export async function rpc(env, name, args) {
+  const supabase = requireSupabase(env);
+  const response = await fetch(`${supabase.url}/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    headers: {
+      apikey: supabase.key,
+      Authorization: `Bearer ${supabase.key}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(args)
+  });
+  const text = await response.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
+  }
+  if (!response.ok) {
+    console.error('InviteStudio database RPC failed', name, response.status);
+    const error = new ApiError('Database operation failed.', 502, 'DATABASE_ERROR');
+    error.databaseCode = data && typeof data === 'object' ? data.code : undefined;
+    error.databaseMessage = data && typeof data === 'object' ? String(data.message || '') : '';
+    throw error;
+  }
+  return data;
+}
+
+// Maps a publish_wedding_slug refusal to the API response. The database is the authority for slugs; the
+// messages are the RPC's own refusal names, and 23505 is the transition trigger's ownership refusal.
+// Anything else is returned unchanged (a 502 DATABASE_ERROR from rpc()).
+export const SLUG_CHANGE_LIMIT = 10;
+
+export function publishErrorFrom(error) {
+  if (!(error instanceof ApiError) || error.code !== 'DATABASE_ERROR') return error;
+  const message = error.databaseMessage || '';
+  if (message.includes('VALIDATION_ERROR')) {
+    return new ApiError('Choose a URL slug using lowercase letters, numbers and hyphens.', 422, 'VALIDATION_ERROR', {
+      slug: 'Invalid slug format.'
+    });
+  }
+  if (message.includes('PUBLISH_CONFLICT')) {
+    return new ApiError('That slug may already be in use or the draft changed. Reload and try again.', 409, 'PUBLISH_CONFLICT');
+  }
+  if (message.includes('SLUG_CONFLICT') || error.databaseCode === '23505') {
+    return new ApiError('That public URL is already in use.', 409, 'SLUG_CONFLICT', { slug: 'Choose another slug.' });
+  }
+  if (message.includes('SLUG_CHANGE_CONFIRMATION_REQUIRED')) {
+    return new ApiError('Changing a live web address stops the old link working. Confirm the change to continue.', 409, 'SLUG_CHANGE_CONFIRMATION_REQUIRED', {
+      slug: 'Confirm that the old address will stop working.'
+    });
+  }
+  if (message.includes('SLUG_CHANGE_LIMIT_REACHED')) {
+    return new ApiError(`This website has used all ${SLUG_CHANGE_LIMIT} web address changes.`, 422, 'SLUG_CHANGE_LIMIT_REACHED', {
+      slug: 'The web address cannot be changed again.'
+    });
+  }
+  return error;
+}
+
 export async function readJson(request) {
   const contentLength = Number(request.headers.get('Content-Length') || 0);
   if (contentLength > 1024 * 1024) {
@@ -396,7 +458,11 @@ export async function requireEditToken(env, token, weddingId = undefined) {
 }
 
 export async function requireEditAccess(request, env, weddingId) {
-  return requireEditToken(env, editTokenFromRequest(request), weddingId);
+  const record = await requireEditToken(env, editTokenFromRequest(request), weddingId);
+  if (String(record.wedding_id).toLowerCase() !== String(weddingId).toLowerCase()) {
+    throw new ApiError('This edit token is invalid or expired.', 403, 'EDIT_TOKEN_INVALID');
+  }
+  return record;
 }
 
 // Edit links last 90 days from issue. Changing this changes every new link.
@@ -600,21 +666,36 @@ export function slugFormatProblem(slug) {
   return null;
 }
 
-// True when another wedding already uses the slug. The draft being edited is excluded,
-// so its own address is never reported as taken.
-export async function slugTaken(env, weddingId, slug) {
+// True when another wedding is LIVE on the slug. The draft being edited is excluded.
+export async function slugLiveElsewhere(env, weddingId, slug) {
   const query = new URLSearchParams({ select: 'id', slug: `eq.${slug}`, limit: '1' });
   if (weddingId) query.set('id', `neq.${weddingId}`);
   const rows = await db(env, `weddings?${query}`);
   return Boolean(rows?.length);
 }
 
+// True when the slug is reserved to another wedding, or to nobody (a deleted wedding's address).
+// A reservation owned by this wedding is its own history and is not taken.
+export async function slugReservedElsewhere(env, weddingId, slug) {
+  const query = new URLSearchParams({ select: 'wedding_id', slug: `eq.${slug}`, limit: '1' });
+  const rows = await db(env, `slug_reservations?${query}`);
+  const row = rows?.[0];
+  if (!row) return false;
+  return row.wedding_id !== (weddingId || null);
+}
+
+export async function slugTaken(env, weddingId, slug) {
+  return (await slugLiveElsewhere(env, weddingId, slug)) || (await slugReservedElsewhere(env, weddingId, slug));
+}
+
 // Availability for the couple's typed address, plus up to three free alternatives.
 export async function slugAvailability(env, weddingId, slug) {
   const problem = slugFormatProblem(slug);
-  if (problem) return { slug, available: false, reason: 'invalid', message: problem, suggestions: [] };
-  if (!(await slugTaken(env, weddingId, slug))) {
-    return { slug, available: true, reason: null, message: 'This web address is available.', suggestions: [] };
+  if (problem) return { slug, available: false, reason: 'invalid', retired: false, message: problem, suggestions: [] };
+  const live = await slugLiveElsewhere(env, weddingId, slug);
+  const reserved = !live && (await slugReservedElsewhere(env, weddingId, slug));
+  if (!live && !reserved) {
+    return { slug, available: true, reason: null, retired: false, message: 'This web address is available.', suggestions: [] };
   }
   const suggestions = [];
   for (let n = 2; n <= 8 && suggestions.length < 3; n += 1) {
@@ -623,5 +704,11 @@ export async function slugAvailability(env, weddingId, slug) {
       suggestions.push(candidate);
     }
   }
-  return { slug, available: false, reason: 'taken', message: 'That web address is already in use.', suggestions };
+  if (live) {
+    return { slug, available: false, reason: 'taken', retired: false, message: 'That web address is already in use.', suggestions };
+  }
+  return {
+    slug, available: false, reason: 'retired', retired: true,
+    message: 'This web address was used by another website and cannot be reused.', suggestions
+  };
 }
