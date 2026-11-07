@@ -403,6 +403,7 @@
     const host = document.querySelector('.figma-island-host');
     if (!host || !window.InviteStudioFigma) return;
     activeHost = host;
+    host.dataset.island = route.kind; // lets the page scale the editor differently from the marketing pages
     activeIsland = window.InviteStudioFigma.mount(route.kind, host, route.props || {});
   };
 
