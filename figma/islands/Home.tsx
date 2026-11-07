@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Icon, IconName, Logo, faqs, plans, templates, galleryTemplates } from "./shared";
 import { bridge } from "./bridge";
 import { RecoveryBanner } from "./extras";
+import { TemplateStrip } from "./TemplateStrip";
 export function HomePage() {
   const [yearly, setYearly] = useState(true)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -158,29 +159,7 @@ export function HomePage() {
             View all templates <Icon name="arrow" size={18} />
           </a>
         </div>
-        <div className="template-grid">
-          {templates.map((template) => (
-            <button
-              className="template-card"
-              key={template.names}
-              aria-label={`Preview ${template.names} template`}
-            >
-              <img src={template.image} alt="" />
-              <span className="shade" />
-              <strong>{template.names.replace(" & ", "\n&\n")}</strong>
-              <span className="card-play">
-                <Icon name="play" size={15} />
-              </span>
-              <small>ARE GETTING MARRIED</small>
-            </button>
-          ))}
-        </div>
-        <div className="dots">
-          <i className="active" />
-          <i />
-          <i />
-          <i />
-        </div>
+        <TemplateStrip />
       </section>
 
       <section className="section shell how" id="how">

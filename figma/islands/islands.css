@@ -187,3 +187,18 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
 .preset-chip { min-height: 44px; padding: 0 14px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
 .preset-chip:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }
 .preset-chips { justify-items: start; }
+
+/* Home: horizontal template strip (TemplateStrip.tsx). */
+.strip { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; overscroll-behavior-x: contain; cursor: grab; margin: 0 calc(50% - 50vw); padding: 10px 0 24px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); user-select: none; }
+.strip::-webkit-scrollbar { display: none; }
+.strip:active { cursor: grabbing; }
+.strip-track { display: flex; gap: 28px; width: max-content; padding: 0 14px; }
+.strip-item { flex: none; width: 190px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: inherit; text-decoration: none; }
+.strip-item[data-wave="1"] { margin-top: 48px; }
+.strip-card { display: block; width: 100%; aspect-ratio: 260 / 440; border-radius: 16px; overflow: hidden; background: #ddd; box-shadow: 0 14px 34px rgba(30,36,30,.16); transition: transform .25s, box-shadow .25s; }
+.strip-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.strip-item:hover .strip-card, .strip-item:focus-visible .strip-card { transform: translateY(-5px); box-shadow: 0 22px 44px rgba(30,36,30,.22); }
+.strip-item:focus-visible { outline: 2px solid #145c37; outline-offset: 6px; border-radius: 16px; }
+.strip-name { font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #6b6a64; text-align: center; }
+@media (min-width: 760px) { .strip-item { width: 230px; } .strip-item[data-wave="1"] { margin-top: 64px; } }
+@media (prefers-reduced-motion: reduce) { .strip-card { transition: none; } .strip-item:hover .strip-card { transform: none; } }
