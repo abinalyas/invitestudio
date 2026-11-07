@@ -7,9 +7,10 @@ import { HomePage } from "./Home";
 import { TemplatesPage } from "./Templates";
 import { TemplateDetailPage } from "./TemplateDetail";
 import { EditorPage } from "./Editor";
+import { SetupPage } from "./Setup";
 import figmaCss from "../dist/figma-islands.css";
 
-export type IslandKind = "home" | "templates" | "detail" | "editor";
+export type IslandKind = "home" | "templates" | "detail" | "editor" | "setup";
 export type IslandProps = { templateId?: number };
 export type Island = { unmount(): void };
 
@@ -29,6 +30,8 @@ function screen(kind: IslandKind, props: IslandProps): React.ReactElement {
       return <TemplateDetailPage templateId={props.templateId ?? 1} />;
     case "editor":
       return <EditorPage />;
+    case "setup":
+      return <SetupPage />;
   }
 }
 

@@ -5,6 +5,18 @@
 // installs (figma-host.js). That keeps cloud-sync, publishing and the invitation
 // renderer as the single implementations.
 
+// The setup wizard keeps its fields in the screen and hands them over when a step is finished.
+export type SetupFields = {
+  title: string;
+  date: string;
+  location: string;
+  message: string;
+  story: string;
+  hosts: string;
+  templateId: string;
+};
+export type SetupStatus = { canFinish: boolean; offer: boolean; saveLine: string };
+
 export type Device = "desktop" | "tablet" | "mobile";
 
 // Save state is derived from the cloud status, never guessed. "saved" means the
@@ -94,6 +106,12 @@ export interface InviteStudioBridge {
   createDraft(backendTemplateId: string, templateNumber: number, sampleNames?: string): void;
   startCreate(category: string): void;
   openPreview(): void;
+  setupDefaults(): { templateId: string };
+  commitSetup(fields: SetupFields): boolean;
+  renderDraft(host: HTMLElement, fields: SetupFields, fallbackTitle: string): void;
+  setupStatus(): SetupStatus;
+  keepLocal(): void;
+  finishSetup(): void;
   previewTemplate(backendTemplateId: string): void;
   openPublish(): void;
   openAdvanced(): void;
@@ -134,6 +152,12 @@ export const bridge = {
   createDraft: (backendTemplateId: string, templateNumber: number, sampleNames?: string) => host().createDraft(backendTemplateId, templateNumber, sampleNames),
   startCreate: (category: string) => host().startCreate(category),
   openPreview: () => host().openPreview(),
+  setupDefaults: () => host().setupDefaults(),
+  commitSetup: (fields: SetupFields) => host().commitSetup(fields),
+  renderDraft: (element: HTMLElement, fields: SetupFields, fallbackTitle: string) => host().renderDraft(element, fields, fallbackTitle),
+  setupStatus: () => host().setupStatus(),
+  keepLocal: () => host().keepLocal(),
+  finishSetup: () => host().finishSetup(),
   previewTemplate: (backendTemplateId: string) => host().previewTemplate(backendTemplateId),
   openPublish: () => host().openPublish(),
   openAdvanced: () => host().openAdvanced(),
