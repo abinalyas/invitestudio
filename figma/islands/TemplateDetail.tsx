@@ -1,54 +1,13 @@
-// Template detail screen from the Figma Make export (App.tsx lines 317-515).
+// Template detail screen. Everything shown comes from galleryTemplates in shared.tsx, so the page
+// only claims what the template and the editor really do.
 import { useState } from "react";
-import { Icon, IconName, Logo, backendTemplateIds, galleryTemplates, styleOptions } from "./shared";
+import { Icon, Logo, backendTemplateIds, editableItems, galleryTemplates, guestSections } from "./shared";
 import { bridge } from "./bridge";
 export function TemplateDetailPage({ templateId }: { templateId: number }) {
   const template =
     galleryTemplates.find((item) => item.id === templateId) ??
     galleryTemplates[0]
-  const [activePage, setActivePage] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
-
-  const detailHero =
-    template.id === 1
-      ? "https://images.unsplash.com/photo-1785336872719-2e338088a4b6?auto=format&fit=crop&w=1600&q=90"
-      : template.image
-  // Scene templates carry their own artwork, so every page tile shows it rather than stock photos.
-  const own = "scene" in template && template.scene
-  const pagePreviews = own ? ["Home", "Our Story", "Events", "Gallery", "RSVP", "Travel"].map((label) => ({ label, image: template.image })) : [
-    { label: "Home", image: detailHero },
-    {
-      label: "Our Story",
-      image:
-        "https://images.unsplash.com/photo-1633104502699-b2ecf0fee294?auto=format&fit=crop&w=700&q=80",
-    },
-    {
-      label: "Events",
-      image:
-        "https://images.unsplash.com/photo-1710587384897-b1390bd46cc6?auto=format&fit=crop&w=700&q=80",
-    },
-    {
-      label: "Gallery",
-      image:
-        "https://images.unsplash.com/photo-1754782921180-674165dec130?auto=format&fit=crop&w=700&q=80",
-    },
-    {
-      label: "RSVP",
-      image:
-        "https://images.unsplash.com/photo-1599366279015-524df1ed5d5c?auto=format&fit=crop&w=700&q=80",
-    },
-    {
-      label: "Travel",
-      image:
-        "https://images.unsplash.com/photo-1572973304710-1f646f145fba?auto=format&fit=crop&w=700&q=80",
-    },
-  ]
-  const included = [
-    ["layers", "Multi-section wedding website"],
-    ["calendar", "Event details (multiple functions)"],
-    ["pin", "Travel & stay information"],
-    ["device", "Works on all devices"],
-  ] as const
 
   return (
     <main className="detail-page">
@@ -78,19 +37,6 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
         </div>
       </header>
 
-      <div className="detail-botanical detail-botanical-top">
-        <i />
-        <i />
-        <i />
-        <i />
-      </div>
-      <div className="detail-botanical detail-botanical-bottom">
-        <i />
-        <i />
-        <i />
-        <i />
-      </div>
-
       <div className="gallery-shell detail-content">
         <nav className="detail-breadcrumb" aria-label="Breadcrumb">
           <a href="/templates">←</a>
@@ -101,68 +47,24 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
 
         <div className="detail-layout">
           <div className="detail-showcase">
-            <div className="site-preview">
-              <img src={pagePreviews[activePage].image} alt="" />
-              <span className="site-preview-shade" />
-              <div className="site-preview-nav">
-                <span>{template.names}</span>
-                <div>
-                  <span>Our Story</span>
-                  <span>Events</span>
-                  <span>Travel</span>
-                  <span>RSVP</span>
-                </div>
+            <div className="phone-stage" style={{ background: `${template.palette[0]}55` }}>
+              <div className="phone-frame">
+                <img src={template.phone} alt={`The ${template.title} cover, shown with example names`} />
               </div>
-              <div className="site-preview-copy">
-                <small>The wedding of</small>
-                <h1>{template.names.replace(" & ", "\n&\n")}</h1>
-                <i />
-                <p>24 AUG 2026</p>
-                <span>KOCHI, KERALA</span>
-              </div>
-              <a
-                className="preview-site-button"
-                href={detailHero}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Icon name="play" size={17} /> Preview live site
-              </a>
             </div>
-
-            <section className="template-pages">
-              <h2>Pages in this template</h2>
-              <div className="page-thumbnails">
-                {pagePreviews.map((page, index) => (
-                  <button
-                    className={activePage === index ? "active" : ""}
-                    key={page.label}
-                    onClick={() => setActivePage(index)}
-                  >
-                    <span>
-                      <img src={page.image} alt="" />
-                    </span>
-                    {page.label}
-                  </button>
-                ))}
-              </div>
-            </section>
+            <p className="detail-note">
+              The cover with example names. Your own details fill the template.
+            </p>
           </div>
 
           <aside className="detail-info">
-            <span className="popular-badge">
-              <Icon name="sparkle" size={17} /> Popular
-            </span>
+            <span className="section-kicker">Wedding invitation</span>
             <h1>{template.title}</h1>
-            <p>
-              A timeless and elegant design with thoughtful details, perfect for
-              a modern celebration that feels uniquely yours.
-            </p>
+            <p>{template.tagline}</p>
             <div className="detail-tags">
               {template.tags.map((tag) => (
                 <span key={tag}>{tag}</span>
               ))}
-              <span>Elegant</span>
             </div>
             <div className="detail-actions">
               <button
@@ -172,27 +74,49 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
                 <Icon name="edit" size={19} />
                 Use this template
               </button>
-              <a
+              <button
                 className="button outline"
-                href={detailHero}
-                target="_blank"
-                rel="noreferrer"
+                onClick={() => bridge.previewTemplate(template.backendId)}
               >
                 <Icon name="eye" size={20} /> Live preview
-              </a>
+              </button>
+            </div>
+
+            <div className="detail-block">
+              <h2>Opening</h2>
+              <p className="detail-lead">{template.opening.name}</p>
+              <p>{template.opening.text}</p>
+            </div>
+
+            <div className="detail-block">
+              <h2>Colours</h2>
+              <div className="swatches">
+                {template.palette.map((colour) => (
+                  <span key={colour} className="swatch" style={{ background: colour }} title={colour} />
+                ))}
+              </div>
+              <p>The colours and fonts are set by the design. You change the content, not the look.</p>
             </div>
 
             <div className="included-panel">
-              <h2>What’s included</h2>
-              <ul>
-                {included.map(([icon, label]) => (
+              <h2>What you can edit</h2>
+              <ul className="check-list">
+                {editableItems.map((label) => (
                   <li key={label}>
-                    <Icon name={icon} size={23} />
-                    <span>{label}</span>
                     <Icon name="check" size={19} />
+                    <span>{label}</span>
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div className="included-panel">
+              <h2>What your guests see</h2>
+              <ol className="guest-sections">
+                {guestSections.map((label) => (
+                  <li key={label}>{label}</li>
+                ))}
+              </ol>
             </div>
           </aside>
         </div>
@@ -200,4 +124,3 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
     </main>
   )
 }
-

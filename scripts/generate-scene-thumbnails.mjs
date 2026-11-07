@@ -1,7 +1,8 @@
 // Renders each scene template's cover with the real renderer and writes the catalogue thumbnail
 // to assets/templates/<id>.png (a phone sized cover on a palette coloured card), plus
 // assets/templates/<id>-wide.jpg: the artwork alone, without text, for the template gallery
-// (the gallery overlays the couple's names itself).
+// (the gallery overlays the couple's names itself), plus assets/templates/<id>-phone.jpg: the cover
+// as a phone shaped picture for the home page strip and the template detail page.
 // Run `npm run thumbs:scenes` after changing scene-templates.js, scene-templates.css or the catalogue entries.
 import { createServer } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -39,6 +40,7 @@ for (const t of scenes) {
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(300);
   const cover = (await page.locator('.sx-cover').screenshot()).toString('base64');
+  writeFileSync(join(root, t.image.replace(/\.png$/, '-phone.jpg').replace(/^\//, '')), await page.locator('.sx-cover').screenshot({ type: 'jpeg', quality: 88 }));
   await page.close();
   const wide = await browser.newPage({ viewport: { width: 400, height: 275 }, deviceScaleFactor: 3 });
   await wide.goto(`${base}/`);

@@ -230,143 +230,106 @@ export function Logo() {
   )
 }
 
-export const galleryTemplates = [
-  {
-    id: 1,
-    title: "Forest Elegance",
-    names: "Aisha & Rohan",
-    tags: ["Floral", "Modern"],
-    popularity: 98,
-    image:
-      "https://images.unsplash.com/photo-1612538946625-382e2c4a1da3?auto=format&fit=crop&w=900&q=85",
-  },
-  {
-    id: 2,
-    title: "Kerala Traditions",
-    names: "Meera & Arjun",
-    tags: ["Traditional", "Regional"],
-    popularity: 94,
-    image:
-      "https://images.unsplash.com/photo-1572973304710-1f646f145fba?auto=format&fit=crop&w=900&q=85",
-  },
-  {
-    id: 3,
-    title: "Spring Blossom",
-    names: "Diya & Karthik",
-    tags: ["Floral", "Romantic"],
-    popularity: 91,
-    image:
-      "https://images.unsplash.com/photo-1774093280188-5114e6a6a3e3?auto=format&fit=crop&w=900&q=85",
-  },
-  {
-    id: 4,
-    title: "Evening Soirée",
-    names: "Ananya & Vivek",
-    tags: ["Modern", "Elegant"],
-    popularity: 89,
-    image:
-      "https://images.unsplash.com/photo-1770394944750-a48252e7ba7a?auto=format&fit=crop&w=900&q=85",
-  },
-  {
-    id: 5,
-    title: "Coastal Romance",
-    names: "Rhea & Ishan",
-    tags: ["Destination", "Minimal"],
-    popularity: 86,
-    image:
-      "https://images.unsplash.com/photo-1571043281665-9debfed10719?auto=format&fit=crop&w=900&q=85",
-  },
-  {
-    id: 6,
-    title: "Modern Minimal",
-    names: "Nandini & Karan",
-    tags: ["Minimal", "Elegant"],
-    popularity: 82,
-    image:
-      "https://images.unsplash.com/photo-1599366279015-524df1ed5d5c?auto=format&fit=crop&w=900&q=85",
-  },
-  {
-    id: 7,
-    title: "Lotus Reverie",
-    names: "Sowmya & Adith",
-    tags: ["Traditional", "Floral"],
-    popularity: 79,
-    image:
-      "https://images.unsplash.com/photo-1599559564334-5810cb49934a?auto=format&fit=crop&w=900&q=85",
-  },
-  {
-    id: 8,
-    title: "Destination Hills",
-    names: "Elena & Mark",
-    tags: ["Modern", "Destination"],
-    popularity: 76,
-    image:
-      "https://images.unsplash.com/photo-1764145045070-02d766d3ad4f?auto=format&fit=crop&w=900&q=85",
-  },
+// The templates offered for now: the four scene templates. The facts below come from the template
+// catalogue in index.html and the scene renderer (scene-templates.js); change them together.
+export type GalleryTemplate = {
+  id: number // the number in /templates/<id>
+  backendId: string // the template id saved with a wedding (public.templates.id)
+  title: string
+  names: string // example names shown on the gallery card
+  tagline: string
+  tags: string[]
+  opening: { name: string; text: string }
+  palette: string[]
+  image: string // artwork for the gallery cards
+  phone: string // the real cover, phone shaped (npm run thumbs:scenes)
+}
+
+const sceneStory =
+  "A full-length invitation told in scenes. Each section fades in as your guests scroll. Guests who prefer reduced motion see it without the animation."
+
+export const galleryTemplates: GalleryTemplate[] = [
   {
     id: 9,
+    backendId: "savanna-sunset",
     title: "Savanna Sunset",
     names: "Daniel & Amelia",
-    tags: ["Destination", "Modern"],
-    popularity: 99,
-    scene: true,
+    tagline: "Golden dunes, acacia silhouettes and a script title at sunset.",
+    tags: ["Nature", "Sunset"],
+    opening: { name: "Scene story", text: sceneStory },
+    palette: ["#f4a95a", "#8f5b57", "#3a1c12"],
     image: "/assets/templates/savanna-sunset-wide.jpg",
+    phone: "/assets/templates/savanna-sunset-phone.jpg",
   },
   {
     id: 10,
+    backendId: "palmera-beach",
     title: "Palmera Beach",
     names: "Olivia & Ethan",
-    tags: ["Destination", "Floral"],
-    popularity: 97,
-    scene: true,
+    tagline: "A sunlit beach inside an arch, framed by palms and hibiscus.",
+    tags: ["Nature", "Beach"],
+    opening: { name: "Scene story", text: sceneStory },
+    palette: ["#fbf1dd", "#3f9aa5", "#1c4f57"],
     image: "/assets/templates/palmera-beach-wide.jpg",
+    phone: "/assets/templates/palmera-beach-phone.jpg",
   },
   {
     id: 11,
+    backendId: "curtain-call",
     title: "Curtain Call",
     names: "Clara & Noah",
-    tags: ["Traditional", "Elegant"],
-    popularity: 95,
-    scene: true,
+    tagline: "Theatre curtains that open on tap to reveal the invitation.",
+    tags: ["Classic", "Theatre"],
+    opening: {
+      name: "Curtain open",
+      text: "The invitation starts behind closed curtains. Guests tap to open them and the invitation is revealed.",
+    },
+    palette: ["#efe3c5", "#a89972", "#3a3226"],
     image: "/assets/templates/curtain-call-wide.jpg",
+    phone: "/assets/templates/curtain-call-phone.jpg",
   },
   {
     id: 12,
+    backendId: "lunaria-moon",
     title: "Lunaria",
     names: "Idris & Margot",
-    tags: ["Floral", "Romantic"],
-    popularity: 93,
-    scene: true,
+    tagline: "Dusty blue linen, a moon and an arch of leaves and water lilies.",
+    tags: ["Botanical", "Moonlit"],
+    opening: { name: "Scene story", text: sceneStory },
+    palette: ["#a6b6c9", "#6f8b78", "#1f2b3d"],
     image: "/assets/templates/lunaria-moon-wide.jpg",
+    phone: "/assets/templates/lunaria-moon-phone.jpg",
   },
 ]
 
-export const styleOptions = [
-  ["Traditional", 12],
-  ["Modern", 10],
-  ["Floral", 10],
-  ["Minimal", 7],
-  ["Regional", 6],
-  ["Destination", 5],
+// What a couple can change on any of these templates, and what guests see. Taken from the editor
+// and from scene-templates.js. Features that are not available yet are deliberately not listed.
+export const editableItems = [
+  "Names, date and location, with a map link",
+  "A welcome message and who is hosting",
+  "Your story, with your own title",
+  "An event schedule: times, venues, dress code and directions",
+  "Show or hide any section",
+  "Publish at your own web address",
 ] as const
 
+export const guestSections = [
+  "Cover with your names and date",
+  "Welcome and venue",
+  "Your story (when you add one)",
+  "Schedule (when you add events)",
+  "Save the date",
+] as const
 
-// Figma design id -> active backend template id. Every target is a frontend catalogue
-// entry and is seeded in supabase/migrations (see docs/PHASE_0_INTEGRATION_PLAN.md).
-// Kerala Traditions has no regional design in the catalogue, so it uses the closest
-// classic design; the backend list is the only place to change this mapping.
-export const backendTemplateIds: Record<number, string> = {
-  1: "romantic-garden-wedding",      // Forest Elegance (Floral, Modern)
-  2: "ivory-heirloom",               // Kerala Traditions (Traditional, Regional)
-  3: "soft-pastels-wedding",         // Spring Blossom (Floral, Romantic)
-  4: "black-tie-wedding",            // Evening Soiree (Modern, Elegant)
-  5: "destination-wedding",          // Coastal Romance (Destination, Minimal)
-  6: "modern-minimal-wedding",       // Modern Minimal (Minimal, Elegant)
-  7: "contemporary-floral-wedding",  // Lotus Reverie (Traditional, Floral)
-  8: "contemporary-editorial-wedding", // Destination Hills (Modern, Destination)
-  // Scene templates (scene-templates.js): drawn by their own renderer, not the shared layout.
-  9: "savanna-sunset",                // Savanna Sunset (Destination, Modern)
-  10: "palmera-beach",                // Palmera Beach (Destination, Floral)
-  11: "curtain-call",                 // Curtain Call (Traditional, Elegant)
-  12: "lunaria-moon"                  // Lunaria (Floral, Romantic)
-};
+// Style filters for the gallery: each template's main style (its first tag), counted.
+export const styleOptions: [string, number][] = Object.entries(
+  galleryTemplates
+    .map((template) => template.tags[0])
+    .reduce<Record<string, number>>((counts, tag) => ({ ...counts, [tag]: (counts[tag] ?? 0) + 1 }), {}),
+)
+
+// Template number -> the template id saved with the wedding. Each id is a row in public.templates
+// (supabase/migrations/202611070001_scene_templates.sql) and is allowed in functions/_shared/templates.js.
+export const backendTemplateIds: Record<number, string> = Object.fromEntries(
+  galleryTemplates.map((template) => [template.id, template.backendId]),
+)

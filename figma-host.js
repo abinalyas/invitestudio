@@ -312,6 +312,11 @@
       render();
     },
 
+    // The real template with example content, in the existing preview dialog.
+    previewTemplate(backendTemplateId) {
+      previewTemplate(backendTemplateId);
+    },
+
     openPublish() {
       openPublish();
     },

@@ -126,7 +126,7 @@ export function TemplateStrip() {
               aria-label={`View ${t.title} template`}
             >
               <span className="strip-card">
-                <img src={t.image} alt="" loading="lazy" draggable={false} width={160} height={338} />
+                <img src={t.phone} alt="" loading="lazy" draggable={false} width={160} height={338} />
               </span>
               <span className="strip-name">{t.title}</span>
             </a>
