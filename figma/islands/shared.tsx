@@ -300,6 +300,36 @@ export const galleryTemplates: GalleryTemplate[] = [
     image: "/assets/templates/lunaria-moon-wide.jpg",
     phone: "/assets/templates/lunaria-moon-phone.jpg",
   },
+  {
+    id: 13,
+    backendId: "modern-heritage",
+    title: "Modern Heritage",
+    names: "Daniel & Amelia",
+    tagline: "Ivory paper, deep green and gold botanical details, with a live countdown to the day.",
+    tags: ["Classic", "Heritage"],
+    opening: {
+      name: "Countdown",
+      text: "The cover shows your crest and a live countdown to your date. Guests scroll through your story, details and schedule.",
+    },
+    palette: ["#f4eedf", "#a58b62", "#34493a"],
+    image: "/assets/templates/modern-heritage-wide.jpg",
+    phone: "/assets/templates/modern-heritage-phone.jpg",
+  },
+  {
+    id: 14,
+    backendId: "minimalist",
+    title: "Minimalist",
+    names: "Daniel & Amelia",
+    tagline: "Quiet editorial layout: large serif names, one olive accent and plenty of space.",
+    tags: ["Modern", "Editorial"],
+    opening: {
+      name: "Countdown",
+      text: "A calm cover with your names set large and a live countdown to your date. Guests scroll through your story, the day and the schedule.",
+    },
+    palette: ["#faf9f6", "#5c6350", "#292929"],
+    image: "/assets/templates/minimalist-wide.jpg",
+    phone: "/assets/templates/minimalist-phone.jpg",
+  },
 ]
 
 // What a couple can change on any of these templates, and what guests see. Taken from the editor

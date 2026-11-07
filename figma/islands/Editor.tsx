@@ -348,6 +348,7 @@ export function EditorPage() {
           {active === "functions" ? <EventsPanel snap={snap} /> : null}
           {active === "gallery" ? <GalleryPanel snap={snap} /> : null}
           {active === "rsvp" ? <RsvpPanel snap={snap} /> : null}
+          <WordingPanel snap={snap} section={active} />
         </aside>
       </div>
 
@@ -374,6 +375,27 @@ export function EditorPage() {
         ))}
       </nav>
     </main>
+  );
+}
+
+// Wording the template lets a couple change for this section. Empty fields keep the template's own wording,
+// shown as the hint. Only templates that publish wording keys (their manifest) show this.
+function WordingPanel({ snap, section }: { snap: EditorSnapshot; section: SectionKey }) {
+  const fields = snap.copyFields.filter(field => field.section === section);
+  if (!fields.length) return null;
+  return (
+    <details className="editor-wording">
+      <summary>Wording</summary>
+      <p className="tiny muted">Change the template's own text for this section. Leave a field empty to keep the original.</p>
+      <div className="editor-form">
+        {fields.map(field => (
+          <label key={field.key}>
+            {field.label}
+            <input value={field.value} maxLength={field.max} placeholder={field.fallback} onChange={event => bridge.setCopy(field.key, event.target.value)} />
+          </label>
+        ))}
+      </div>
+    </details>
   );
 }
 

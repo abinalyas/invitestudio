@@ -1,0 +1,144 @@
+<!--part:header-->
+<div class="announcement"><span>{{upper:copy:announce}}</span></div>
+<header class="site-header">
+  <button class="brand" type="button" data-scroll-to="home" aria-label="{{names}} home">
+    <svg viewBox="0 0 300 180" role="img" aria-label="{{ia}}<!--if ib--> and {{ib}}<!--/if--> monogram"><text x="150" y="112" text-anchor="middle" fill="#34493A" font-family="Georgia,serif" font-size="105" letter-spacing="-12">{{ia}}<!--if ib--><tspan fill="#A58B62" font-style="italic" font-size="55">&amp;</tspan><tspan dx="-8">{{ib}}</tspan><!--/if--></text></svg>
+  </button>
+  <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false"><span></span><span></span></button>
+  <nav class="main-nav" data-nav aria-label="Main navigation">
+    <button type="button" data-scroll-to="home">{{copy:nav_home}}</button>
+    <!--if story--><button type="button" data-scroll-to="story">{{copy:nav_story}}</button><!--/if-->
+    <!--if welcome--><button type="button" data-scroll-to="details">{{copy:nav_details}}</button><!--/if-->
+    <!--if events--><button type="button" data-scroll-to="schedule">{{copy:nav_schedule}}</button><!--/if-->
+    <!--if show_venue--><button type="button" data-scroll-to="venue">{{copy:nav_venue}}</button><!--/if-->
+    <button type="button" data-scroll-to="rsvp">{{copy:nav_rsvp}}</button>
+  </nav>
+  <!--if date--><button class="nav-date" type="button" data-scroll-to="rsvp">{{date_num}}</button><!--/if-->
+</header>
+
+<!--part:hero-->
+<section class="hero paper" data-tpl-section="home" data-section="hero">
+  <img class="corner corner-tl" src="/templates/modern-heritage/assets/botanical-corner.svg" alt="">
+  <img class="corner corner-tr" src="/templates/modern-heritage/assets/botanical-corner.svg" alt="">
+  <img class="corner corner-bl" src="/templates/modern-heritage/assets/botanical-corner.svg" alt="">
+  <img class="corner corner-br" src="/templates/modern-heritage/assets/botanical-corner.svg" alt="">
+  <div class="hero-inner">
+    <p class="eyebrow">{{upper:copy:eyebrow}}</p>
+    <svg class="hero-crest" viewBox="0 0 420 500" fill="none" role="img" aria-label="{{names}} crest">
+      <g stroke="#A58B62" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M210 35 C95 35 45 128 55 245 C65 350 135 420 210 455 C285 420 355 350 365 245 C375 128 325 35 210 35Z"/><path d="M210 57 C118 57 70 139 80 242 C90 332 148 395 210 428 C272 395 330 332 340 242 C350 139 302 57 210 57Z" stroke-dasharray="2 7"/><path d="M210 80 C165 125 145 175 150 240 C155 305 178 345 210 375 C242 345 265 305 270 240 C275 175 255 125 210 80Z" opacity=".45"/></g>
+      <g fill="#899582" stroke="#34493A" stroke-width="1.1"><path d="M95 300 Q60 260 65 225 Q105 240 111 280Z"/><path d="M105 330 Q60 310 45 275 Q90 275 115 310Z"/><path d="M325 300 Q360 260 355 225 Q315 240 309 280Z"/><path d="M315 330 Q360 310 375 275 Q330 275 305 310Z"/><path d="M113 168 Q82 130 92 100 Q130 121 130 155Z"/><path d="M307 168 Q338 130 328 100 Q290 121 290 155Z"/></g>
+      <g stroke="#899582" stroke-width="1.4" fill="none"><path d="M100 350 Q70 300 95 240 Q105 210 130 185 M320 350 Q350 300 325 240 Q315 210 290 185"/><path d="M95 240l-20-12m31-10 18-18m-25 65-22-3m233-22 20-12m-31-10-18-18m25 65 22-3"/></g>
+      <text x="210" y="215" text-anchor="middle" fill="#34493A" font-family="Georgia,serif" font-size="72" letter-spacing="-8">{{ia}}<!--if ib--><tspan fill="#A58B62" font-style="italic" font-size="40">&amp;</tspan><tspan dx="-4">{{ib}}</tspan><!--/if--></text>
+      <path d="M145 245H275" stroke="#A58B62"/>
+      <!--if date--><text x="210" y="282" text-anchor="middle" fill="#433B32" font-family="Georgia,serif" font-size="17" letter-spacing="4">{{date_num}}</text><!--/if-->
+      <text x="210" y="312" text-anchor="middle" fill="#899582" font-family="Georgia,serif" font-size="{{crest_size}}" letter-spacing="3">{{upper:names}}</text>
+    </svg>
+    <p class="invitation-line">{{hosts_line}}</p>
+    <h1<!--if long_names--> data-long<!--/if-->>{{a}}<!--if b--> <span>&amp;</span> {{b}}<!--/if--></h1>
+    <img class="flourish" src="/templates/modern-heritage/assets/botanical-divider.svg" alt="">
+    <p class="hero-copy">{{upper:copy:invite_line}}</p>
+    <div class="hero-meta">
+      <div><span class="meta-icon" aria-hidden="true">✳</span><div><strong>{{date_long}}</strong><!--if date--><small>{{weekday}}</small><!--/if--></div></div>
+      <!--if has_venue--><i></i>
+      <div><span class="meta-icon" aria-hidden="true">⌖</span><div><strong>{{venue}}</strong><!--if place--><small>{{place}}</small><!--/if--></div></div><!--/if-->
+    </div>
+    <!--if welcome--><button class="button button-dark" type="button" data-scroll-to="details">{{copy:cta}} <span aria-hidden="true">↗</span></button><!--/if-->
+  </div>
+  <!--if date--><div class="countdown-wrap" aria-label="{{copy:countdown_title}}">
+    <p class="eyebrow">{{upper:copy:countdown_title}}</p>
+    <div class="countdown" data-countdown="{{date_iso}}">
+      <div><strong data-cd="days">—</strong><span>Days</span></div>
+      <div><strong data-cd="hours">—</strong><span>Hours</span></div>
+      <div><strong data-cd="minutes">—</strong><span>Minutes</span></div>
+      <div><strong data-cd="seconds">—</strong><span>Seconds</span></div>
+    </div>
+  </div><!--/if-->
+</section>
+
+<!--part:story-->
+<section class="story section paper" data-tpl-section="story" data-section="story">
+  <div class="section-kicker">{{upper:copy:story_kicker}}</div>
+  <h2>{{em:copy:story_title}}</h2>
+  <img class="flourish" src="/templates/modern-heritage/assets/botanical-divider.svg" alt="">
+  <div class="story-layout">
+    <div class="story-art story-books" aria-hidden="true"><div class="book book-one"></div><div class="book book-two"></div><div class="book book-three"></div></div>
+    <div class="story-copy">
+      <p class="lead">{{copy:story_lead}}</p>
+      <!--each story_paras--><p>{{.}}</p><!--/each-->
+      <p class="signature">{{copy:story_signoff}} <em>{{names}}</em></p>
+    </div>
+    <div class="story-art story-leaves"><img src="/templates/modern-heritage/assets/botanical-corner.svg" alt=""></div>
+  </div>
+</section>
+
+<!--part:welcome-->
+<section class="details section section-green" data-tpl-section="details" data-section="welcome">
+  <div class="section-kicker">{{upper:copy:details_kicker}}</div>
+  <h2>{{em:copy:details_title}}</h2>
+  <img class="flourish" src="/templates/modern-heritage/assets/botanical-divider.svg" alt="">
+  <div class="detail-grid">
+    <article class="detail-item"><div class="detail-icon" aria-hidden="true">✳</div><p class="detail-label">{{copy:label_date}}</p><h3>{{date_long}}</h3><!--if date--><p>{{weekday}}</p><!--/if--></article>
+    <!--if has_venue--><article class="detail-item"><div class="detail-icon" aria-hidden="true">⌖</div><p class="detail-label">{{copy:label_ceremony}}</p><h3>{{venue}}</h3><!--if place--><p>{{place}}</p><!--/if--></article><!--/if-->
+    <article class="detail-item"><div class="detail-icon" aria-hidden="true">◷</div><p class="detail-label">{{copy:label_time}}</p><h3>{{time_text}}</h3></article>
+  </div>
+  <img class="detail-divider" src="/templates/modern-heritage/assets/botanical-divider.svg" alt="">
+  <p class="details-note">{{closing_note}}</p>
+</section>
+<!--if has_venue--><section class="venue section paper" data-tpl-section="venue" data-section="welcome">
+  <div class="section-kicker">{{upper:copy:venue_kicker}}</div>
+  <h2>{{em:copy:venue_title}}</h2>
+  <img class="flourish" src="/templates/modern-heritage/assets/botanical-divider.svg" alt="">
+  <div class="venue-card">
+    <div class="venue-copy">
+      <p class="eyebrow">{{upper:copy:venue_eyebrow}}</p>
+      <h3>{{venue}}</h3>
+      <!--if place--><p>{{place}}</p><!--/if-->
+      <!--if map_url--><a class="button button-outline" href="{{map_url}}" target="_blank" rel="noopener">{{copy:directions}} <span aria-hidden="true">↗</span></a><!--/if-->
+    </div>
+    <div class="venue-art">
+      <svg viewBox="0 0 220 220" role="img" aria-label="{{names}}"><circle cx="110" cy="110" r="101" fill="none" stroke="#A58B62" stroke-width="2"/><circle cx="110" cy="110" r="92" fill="none" stroke="#A58B62" stroke-dasharray="1 5"/><text x="110" y="{{stamp_y}}" text-anchor="middle" fill="#34493A" font-family="Georgia,serif" font-size="48">{{ia}}<!--if ib-->&amp;{{ib}}<!--/if--></text><path d="M65 108H155" stroke="#A58B62"/><!--if date--><text x="110" y="133" text-anchor="middle" fill="#433B32" font-family="Georgia,serif" font-size="13" letter-spacing="2">{{date_num}}</text><!--/if--><text x="110" y="158" text-anchor="middle" fill="#899582" font-family="Georgia,serif" font-size="9" letter-spacing="2">WITH LOVE</text></svg>
+    </div>
+  </div>
+  <p class="venue-note">{{copy:venue_note}}</p>
+</section><!--/if-->
+
+<!--part:functions-->
+<section class="schedule section paper" data-tpl-section="schedule" data-section="functions">
+  <div class="section-kicker">{{upper:copy:schedule_kicker}}</div>
+  <h2>{{em:copy:schedule_title}}</h2>
+  <img class="flourish" src="/templates/modern-heritage/assets/botanical-divider.svg" alt="">
+  <div class="timeline" style="--n:{{events_count}}">
+    <!--each events--><article><span class="timeline-dot"></span><!--if when--><small>{{upper:when}}</small><!--/if--><h3>{{title}}</h3><!--if venue--><p>{{venue}}</p><!--/if--></article><!--/each-->
+  </div>
+</section>
+
+<!--part:gallery-->
+<section class="gallery section section-green" data-tpl-section="gallery" data-section="gallery">
+  <div class="section-kicker">{{upper:copy:gallery_kicker}}</div>
+  <h2>{{em:copy:gallery_title}}</h2>
+  <img class="flourish" src="/templates/modern-heritage/assets/botanical-divider.svg" alt="">
+  <div class="photo-grid">
+    <!--each photos--><figure><img src="{{src}}" alt="{{alt}}" loading="lazy"></figure><!--/each-->
+  </div>
+</section>
+
+<!--part:rsvp-->
+<section class="rsvp section paper" data-tpl-section="rsvp" data-section="rsvp">
+  <div class="rsvp-frame">
+    <div class="section-kicker">{{upper:copy:rsvp_kicker}}</div>
+    <h2>{{em:copy:rsvp_title}}</h2>
+    <img class="flourish" src="/templates/modern-heritage/assets/botanical-divider.svg" alt="">
+    <p class="section-intro">{{copy:rsvp_intro}}</p>
+    <p class="rsvp-status" role="note">{{copy:rsvp_status}}</p>
+  </div>
+</section>
+
+<!--part:footer-->
+<footer class="site-footer">
+  <svg class="footer-mono" viewBox="0 0 300 180" aria-hidden="true"><text x="150" y="112" text-anchor="middle" fill="#d7c8aa" font-family="Georgia,serif" font-size="105" letter-spacing="-12">{{ia}}<!--if ib--><tspan font-style="italic" font-size="55">&amp;</tspan><tspan dx="-8">{{ib}}</tspan><!--/if--></text></svg>
+  <p class="footer-names">{{a}}<!--if b--> <span>&amp;</span> {{b}}<!--/if--></p>
+  <p class="footer-line">{{footer_line}}</p>
+  <img class="footer-flourish" src="/templates/modern-heritage/assets/botanical-divider.svg" alt="">
+  <button type="button" class="footer-back" data-scroll-to="home">{{copy:footer_back}} ↑</button>
+  <small>{{upper:copy:footer_made}}</small>
+</footer>

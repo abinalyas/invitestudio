@@ -11,6 +11,7 @@
     "check:figma": "tsc -p figma/tsconfig.json",
     "gen:templates": "node scripts/generate-template-registry.mjs",
     "build:scene-css": "node scripts/inline-scene-css.mjs",
+    "build:templates": "node scripts/build-templates.mjs",
     "thumbs:scenes": "node scripts/generate-scene-thumbnails.mjs"
   },
   "devDependencies": {
