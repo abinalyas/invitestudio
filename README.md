@@ -77,6 +77,20 @@ browser bundle.
 - `QA-TEST-MATRIX.md` records what is verified vs. pending.
 - `BACKEND-INTEGRATION-CONTRACT.md` proposes the data model, endpoints, error shape and security requirements for backend implementation.
 
+## Scene templates
+
+Savanna Sunset, Palmera Beach, Curtain Call and Lunaria are full length, phone shaped designs drawn by
+`scene-templates.js` instead of the shared layout. A catalogue entry opts in with a `scene` key, and
+`sitePreview()` hands those projects to `window.renderSceneTemplate()`. The couple's names, date,
+location, message, story, events and section switches all feed the design; guest responses stay
+"not open yet", as for every other design.
+
+- Styles live in `scene-templates.css` and are copied inline into `index.html` (the editor preview is a
+  shadow root that only copies inline styles). Run `npm run build:scene-css` after editing the file.
+- Catalogue thumbnails are rendered from the real renderer: `npm run thumbs:scenes`.
+- After adding a design, run `npm run gen:templates` and apply a migration that inserts its id into
+  `public.templates` (see `supabase/migrations/202611070001_scene_templates.sql`).
+
 ## Important limitations
 
 - The 13 regression checks are source-level checks, not a browser end-to-end suite.

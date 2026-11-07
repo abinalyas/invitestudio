@@ -9,7 +9,9 @@
     "test:cloud": "playwright test -c playwright.cloud.config.js",
     "build:figma": "node figma/build.mjs",
     "check:figma": "tsc -p figma/tsconfig.json",
-    "gen:templates": "node scripts/generate-template-registry.mjs"
+    "gen:templates": "node scripts/generate-template-registry.mjs",
+    "build:scene-css": "node scripts/inline-scene-css.mjs",
+    "thumbs:scenes": "node scripts/generate-scene-thumbnails.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
