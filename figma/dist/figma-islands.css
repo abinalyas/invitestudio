@@ -986,3 +986,43 @@
 .figma-app .preset-chip{ min-height: 44px; padding: 0 14px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
 .figma-app .preset-chip:focus-visible{ outline: 2px solid #145c37; outline-offset: 2px; }
 .figma-app .preset-chips{ justify-items: start; }
+.figma-app .strip{ overflow-x: auto; overflow-y: hidden; scrollbar-width: none; overscroll-behavior-x: contain; cursor: grab; margin: 0 calc(50% - 50vw); padding: 10px 0 24px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); user-select: none; }
+.figma-app .strip::-webkit-scrollbar{ display: none; }
+.figma-app .strip:active{ cursor: grabbing; }
+.figma-app .strip-track{ display: flex; gap: 24px; width: max-content; padding: 0 14px; }
+.figma-app .strip-item{ flex: none; width: 140px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: inherit; text-decoration: none; }
+.figma-app .strip-item[data-wave="1"]{ margin-top: 48px; }
+.figma-app .strip-card{ display: block; width: 100%; aspect-ratio: 9 / 19; border-radius: 22px; overflow: hidden; background: #ddd; box-shadow: 0 22px 44px -18px rgba(62,16,22,.32), 0 0 0 1px rgba(43,35,32,.06); transition: transform .2s ease-out; }
+.figma-app .strip-card img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+.figma-app .strip-item:hover .strip-card, .figma-app .strip-item:focus-visible .strip-card{ transform: translateY(-3px); }
+.figma-app .strip-item:focus-visible{ outline: 2px solid #145c37; outline-offset: 6px; border-radius: 26px; }
+.figma-app .strip-name{ font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #6b6a64; text-align: center; }
+@media (min-width: 760px){.figma-app .strip-item{ width: 160px; }
+.figma-app .strip-item[data-wave="1"]{ margin-top: 64px; }}
+@media (prefers-reduced-motion: reduce){.figma-app .strip-card{ transition: none; }
+.figma-app .strip-item:hover .strip-card{ transform: none; }}
+.figma-app .home-page .section{ padding-block: 96px; }
+.figma-app .home-page .how{ padding-top: 96px; }
+.figma-app .home-page .feature-panel{ margin-block: 48px; }
+.figma-app .home-page .pricing{ padding-bottom: 72px; }
+.figma-app .home-page .faq{ padding-block: 72px; }
+.figma-app .home-page .cta{ margin-block: 48px 24px; }
+@media (max-width: 760px){.figma-app .home-page .section{ padding-block: 64px; }
+.figma-app .home-page .how{ padding-top: 64px; }
+.figma-app .home-page .feature-panel{ margin-block: 32px; }
+.figma-app .home-page .faq{ padding-block: 48px; }}
+.figma-app .hero .hero-art{ background: none; overflow: visible; }
+.figma-app .hero .hero-art::before, .figma-app .hero .hero-art::after{ display: none; }
+.figma-app .hero-envelope{ position: absolute; z-index: 2; left: 6%; top: 68px; width: 73%; max-width: 640px; height: auto; filter: drop-shadow(0 28px 40px rgba(60, 50, 30, .22)); }
+.figma-app .hero-deco{ position: absolute; inset: 0; pointer-events: none; }
+.figma-app .deco{ position: absolute; height: auto; display: block; z-index: 4; }
+.figma-app .deco-floral-left{ left: -3%; top: 380px; width: 11%; max-width: 190px; min-width: 110px; }
+.figma-app .deco-floral-right{ right: -1.5%; top: -2px; width: 13%; max-width: 230px; min-width: 120px; }
+.figma-app .deco-fabric{ right: 0; bottom: 0; width: 31%; max-width: 480px; z-index: 1; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 22%); mask-image: linear-gradient(90deg, transparent 0, #000 22%); }
+.figma-app .deco-petals{ left: 44%; top: 390px; width: 6%; max-width: 90px; min-width: 52px; opacity: .95; }
+@media (max-width: 900px){.figma-app .hero .hero-art{ height: 420px; }
+.figma-app .hero-envelope{ left: 50%; transform: translateX(-50%); top: 24px; width: min(92%, 520px); }
+.figma-app .deco-floral-left{ top: auto; bottom: 10px; left: -6%; width: 22%; }
+.figma-app .deco-floral-right{ width: 24%; min-width: 0; }
+.figma-app .deco-fabric{ width: 52%; }
+.figma-app .deco-petals{ left: 12%; top: auto; bottom: 120px; width: 12%; }}

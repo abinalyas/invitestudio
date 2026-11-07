@@ -3,15 +3,22 @@ import { useState } from "react";
 import { Icon, IconName, Logo, faqs, plans, templates, galleryTemplates } from "./shared";
 import { bridge } from "./bridge";
 import { RecoveryBanner } from "./extras";
+import { TemplateStrip } from "./TemplateStrip";
 export function HomePage() {
   const [yearly, setYearly] = useState(true)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <main>
+    <main className="home-page">
       <RecoveryBanner />
       <section className="hero">
+        <div className="hero-deco" aria-hidden="true">
+          <img className="deco deco-floral-left" src="/assets/hero/floral-cluster-left.webp" alt="" width={394} height={425} />
+          <img className="deco deco-floral-right" src="/assets/hero/floral-cluster-right.webp" alt="" width={374} height={323} />
+          <img className="deco deco-petals" src="/assets/hero/scattered-petals.webp" alt="" width={189} height={174} />
+          <img className="deco deco-fabric" src="/assets/hero/ivory-fabric-drape.webp" alt="" width={474} height={412} />
+        </div>
         <header className="site-header shell">
           <Logo />
           <button
@@ -74,35 +81,15 @@ export function HomePage() {
             </div>
           </div>
 
-          <div
-            className="hero-art"
-            aria-label="Floral wedding invitation in a green envelope"
-          >
-            <span className="hero-petal petal-one" />
-            <span className="hero-petal petal-two" />
-            <span className="hero-petal petal-three" />
-            <div className="hero-botanical botanical-one">
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-            </div>
-            <div className="invitation-card">
-              <div className="card-flower top-left" />
-              <div className="card-flower top-right" />
-              <span className="tiny-mark">
-                A <i>&amp;</i> R
-              </span>
-              <p>Aisha &amp; Rohan</p>
-              <span className="card-date">18 · 02 · 2025</span>
-              <small>ARE GETTING MARRIED</small>
-            </div>
-            <div className="envelope">
-              <div className="seal">
-                <span />
-              </div>
-            </div>
+          <div className="hero-art">
+            <img
+              className="hero-envelope"
+              src="/assets/hero/hero-envelope-invitation.webp"
+              alt="Floral wedding invitation in a green envelope"
+              width={853}
+              height={738}
+              fetchPriority="high"
+            />
           </div>
         </div>
       </section>
@@ -158,29 +145,7 @@ export function HomePage() {
             View all templates <Icon name="arrow" size={18} />
           </a>
         </div>
-        <div className="template-grid">
-          {templates.map((template) => (
-            <button
-              className="template-card"
-              key={template.names}
-              aria-label={`Preview ${template.names} template`}
-            >
-              <img src={template.image} alt="" />
-              <span className="shade" />
-              <strong>{template.names.replace(" & ", "\n&\n")}</strong>
-              <span className="card-play">
-                <Icon name="play" size={15} />
-              </span>
-              <small>ARE GETTING MARRIED</small>
-            </button>
-          ))}
-        </div>
-        <div className="dots">
-          <i className="active" />
-          <i />
-          <i />
-          <i />
-        </div>
+        <TemplateStrip />
       </section>
 
       <section className="section shell how" id="how">
