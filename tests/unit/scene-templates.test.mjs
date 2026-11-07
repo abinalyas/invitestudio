@@ -113,3 +113,15 @@ test('a template without a scene key is not handled by this renderer', () => {
   assert.equal(isSceneTemplate({ id: 'eternal' }), false);
   assert.equal(isSceneTemplate(sceneTemplates[0]), true);
 });
+
+test('the template gallery lists every scene template and maps it to its catalogue id', () => {
+  const shared = readFileSync(join(root, 'figma/islands/shared.tsx'), 'utf8');
+  const mapped = Object.fromEntries([...shared.matchAll(/^\s+(\d+): "([a-z0-9-]+)"/gm)].map(match => [match[2], Number(match[1])]));
+  const gallery = shared.slice(shared.indexOf('export const galleryTemplates'), shared.indexOf('export const styleOptions'));
+  for (const template of sceneTemplates) {
+    assert.ok(mapped[template.id], `${template.id} must be in backendTemplateIds (figma/islands/shared.tsx)`);
+    const entry = gallery.match(new RegExp(`id: ${mapped[template.id]},[\\s\\S]*?image:\\s*"([^"]+)"`));
+    assert.ok(entry, `${template.id} must be in galleryTemplates with id ${mapped[template.id]}`);
+    assert.ok(existsSync(join(root, entry[1].replace(/^\//, ''))), `gallery thumbnail missing for ${template.id}: ${entry[1]}`);
+  }
+});

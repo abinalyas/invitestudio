@@ -303,6 +303,42 @@ export const galleryTemplates = [
     image:
       "https://images.unsplash.com/photo-1764145045070-02d766d3ad4f?auto=format&fit=crop&w=900&q=85",
   },
+  {
+    id: 9,
+    title: "Savanna Sunset",
+    names: "Daniel & Amelia",
+    tags: ["Destination", "Modern"],
+    popularity: 99,
+    scene: true,
+    image: "/assets/templates/savanna-sunset-wide.jpg",
+  },
+  {
+    id: 10,
+    title: "Palmera Beach",
+    names: "Olivia & Ethan",
+    tags: ["Destination", "Floral"],
+    popularity: 97,
+    scene: true,
+    image: "/assets/templates/palmera-beach-wide.jpg",
+  },
+  {
+    id: 11,
+    title: "Curtain Call",
+    names: "Clara & Noah",
+    tags: ["Traditional", "Elegant"],
+    popularity: 95,
+    scene: true,
+    image: "/assets/templates/curtain-call-wide.jpg",
+  },
+  {
+    id: 12,
+    title: "Lunaria",
+    names: "Idris & Margot",
+    tags: ["Floral", "Romantic"],
+    popularity: 93,
+    scene: true,
+    image: "/assets/templates/lunaria-moon-wide.jpg",
+  },
 ]
 
 export const styleOptions = [
@@ -327,5 +363,10 @@ export const backendTemplateIds: Record<number, string> = {
   5: "destination-wedding",          // Coastal Romance (Destination, Minimal)
   6: "modern-minimal-wedding",       // Modern Minimal (Minimal, Elegant)
   7: "contemporary-floral-wedding",  // Lotus Reverie (Traditional, Floral)
-  8: "contemporary-editorial-wedding" // Destination Hills (Modern, Destination)
+  8: "contemporary-editorial-wedding", // Destination Hills (Modern, Destination)
+  // Scene templates (scene-templates.js): drawn by their own renderer, not the shared layout.
+  9: "savanna-sunset",                // Savanna Sunset (Destination, Modern)
+  10: "palmera-beach",                // Palmera Beach (Destination, Floral)
+  11: "curtain-call",                 // Curtain Call (Traditional, Elegant)
+  12: "lunaria-moon"                  // Lunaria (Floral, Romantic)
 };

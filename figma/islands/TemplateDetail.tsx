@@ -13,7 +13,9 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
     template.id === 1
       ? "https://images.unsplash.com/photo-1785336872719-2e338088a4b6?auto=format&fit=crop&w=1600&q=90"
       : template.image
-  const pagePreviews = [
+  // Scene templates carry their own artwork, so every page tile shows it rather than stock photos.
+  const own = "scene" in template && template.scene
+  const pagePreviews = own ? ["Home", "Our Story", "Events", "Gallery", "RSVP", "Travel"].map((label) => ({ label, image: template.image })) : [
     { label: "Home", image: detailHero },
     {
       label: "Our Story",
