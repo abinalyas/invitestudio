@@ -330,6 +330,21 @@ export const galleryTemplates: GalleryTemplate[] = [
     image: "/assets/templates/minimalist-wide.jpg",
     phone: "/assets/templates/minimalist-phone.jpg",
   },
+  {
+    id: 15,
+    backendId: "cinematic",
+    title: "Cinematic",
+    names: "Daniel & Amelia",
+    tagline: "A dark, film-like invitation: big names, a golden countdown and quiet scenes.",
+    tags: ["Modern", "Cinematic"],
+    opening: {
+      name: "Countdown",
+      text: "A dark cover with your names set large and a live countdown to your date. Guests scroll through your story, the day and the schedule.",
+    },
+    palette: ["#171615", "#b59a72", "#f5f0e8"],
+    image: "/assets/templates/cinematic-wide.jpg",
+    phone: "/assets/templates/cinematic-phone.jpg",
+  },
 ]
 
 // What a couple can change on any of these templates, and what guests see. Taken from the editor

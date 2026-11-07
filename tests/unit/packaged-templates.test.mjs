@@ -50,7 +50,7 @@ for (const { manifest, parts, css } of list) {
     const engine = readFileSync(join(root, 'packaged-templates.js'), 'utf8');
     const used = new Set([...markup.matchAll(/copy:(\w+)/g), ...engine.matchAll(/copy\("(\w+)"\)/g)].map(m => m[1]));
     for (const key of [...markup.matchAll(/copy:(\w+)/g)].map(m => m[1])) assert.ok(manifest.copy[key], `${key} is used in the markup but not in the manifest`);
-    for (const key of Object.keys(manifest.copy)) assert.ok(used.has(key) || engine.includes(`"${key}"`), `${key} is in the manifest but never used`);
+    for (const key of Object.keys(manifest.copy)) assert.ok(used.has(key) || engine.includes(`"${key}"`) || (manifest.captionKeys || []).includes(key), `${key} is in the manifest but never used`);
     for (const [key, def] of Object.entries(manifest.copy)) {
       assert.ok(def.label && def.default && def.max > 0 && def.section, key);
       assert.ok(def.default.length <= def.max, `${key} default is longer than its limit`);
@@ -97,7 +97,7 @@ for (const { manifest, parts, css } of list) {
     const { renderPackagedTemplate } = renderer();
     const out = renderPackagedTemplate({ title: 'Sam' }, { id, packaged: id });
     assert.doesNotMatch(out, /\{\{|<!--|undefined|null|NaN|\[object/);
-    assert.match(out, /Date to be announced/);
+    assert.match(out, /date to be announced/i);
     for (const hidden of ['story', 'functions', 'gallery']) assert.doesNotMatch(out, new RegExp(`data-section="${hidden}"`), `${hidden} is left out when empty`);
     assert.doesNotMatch(out, /data-countdown/, 'no countdown without a date');
     assert.doesNotMatch(out, /Get directions/, 'no directions without a place');
@@ -134,7 +134,7 @@ for (const { manifest, parts, css } of list) {
     assert.match(uni, /ആ/);
     assert.match(uni, /É/);
     const feb = renderPackagedTemplate({ title: 'A & B', date: '2027-02-31' }, t);
-    assert.match(feb, /Date to be announced/, 'an impossible date is treated as no date');
+    assert.match(feb, /date to be announced/i, 'an impossible date is treated as no date');
   });
 
   test(`${id}: wording overrides apply, are trimmed, and fall back when empty`, () => {

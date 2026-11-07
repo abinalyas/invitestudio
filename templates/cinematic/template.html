@@ -1,0 +1,108 @@
+<!--part:header-->
+<header class="site-header">
+  <button class="monogram" type="button" data-scroll-to="home" aria-label="{{names}} home">{{ia}}<!--if ib--><span>&amp;</span>{{ib}}<!--/if--></button>
+  <button class="menu-toggle" type="button" data-menu-toggle aria-label="Toggle navigation" aria-expanded="false">MENU <i></i></button>
+  <nav class="nav" data-nav aria-label="Main navigation">
+    <!--if story--><button type="button" data-scroll-to="story">{{copy:nav_story}}</button><!--/if-->
+    <!--if show_gallery--><button type="button" data-scroll-to="moments">{{copy:nav_moments}}</button><!--/if-->
+    <!--if date--><button type="button" data-scroll-to="day">{{copy:nav_day}}</button><!--/if-->
+    <!--if show_venue--><button type="button" data-scroll-to="venue">{{copy:nav_venue}}</button><!--/if-->
+    <button class="nav-rsvp" type="button" data-scroll-to="rsvp">{{copy:nav_rsvp}} <span aria-hidden="true">↗</span></button>
+  </nav>
+</header>
+
+<!--part:hero-->
+<section class="hero scene" data-tpl-section="home" data-section="hero">
+  <!--if hero_photo--><img class="hero-image" src="{{hero_photo}}" alt=""><!--else--><div class="hero-backdrop" aria-hidden="true"><span>{{ia}}<!--if ib-->&amp;{{ib}}<!--/if--></span></div><!--/if-->
+  <div class="hero-shade"></div>
+  <div class="hero-copy">
+    <p class="eyebrow">{{upper:copy:eyebrow}}</p>
+    <h1<!--if long_names--> data-long<!--/if-->>{{a}}<!--if b--> <i>&amp;</i><br>{{b}}<!--/if--></h1>
+    <div class="hero-rule"></div>
+    <p class="hero-date">{{upper:date_long}}</p>
+    <!--if has_venue--><p class="hero-place">{{upper:venue}}<!--if place--><br>{{upper:place}}<!--/if--></p><!--/if-->
+  </div>
+  <!--if welcome--><button class="scroll-cue" type="button" data-scroll-to="invitation"><span>{{upper:copy:scroll_cue}}</span><i></i></button><!--/if-->
+</section>
+<!--if date--><section class="date-scene" data-tpl-section="day" data-section="hero">
+  <div class="date-content">
+    <p class="eyebrow">{{upper:copy:date_eyebrow}}</p>
+    <p class="date-pretitle">{{upper:copy:date_pretitle}}</p>
+    <h2>{{date_num}}</h2>
+    <div class="countdown" data-countdown="{{date_iso}}" aria-label="Countdown">
+      <div><strong data-cd="days">—</strong><span>DAYS</span></div><i></i>
+      <div><strong data-cd="hours">—</strong><span>HOURS</span></div><i></i>
+      <div><strong data-cd="minutes">—</strong><span>MINUTES</span></div><i></i>
+      <div><strong data-cd="seconds">—</strong><span>SECONDS</span></div>
+    </div>
+    <p class="date-foot">{{upper:weekday}}<!--if place_or_venue--> · {{upper:place_or_venue}}<!--/if--></p>
+  </div>
+</section><!--/if-->
+
+<!--part:welcome-->
+<section class="opening-note" data-tpl-section="invitation" data-section="welcome">
+  <p class="eyebrow">{{upper:copy:note_eyebrow}}</p>
+  <h2>{{em:copy:note_title}}</h2>
+  <p class="note-copy">{{closing_note}}</p>
+</section>
+<!--if show_venue--><section class="venue-scene" data-tpl-section="venue" data-section="welcome">
+  <div class="venue-photo"><!--if venue_photo--><img src="{{venue_photo}}" alt=""><!--else--><div class="venue-backdrop" aria-hidden="true"><span>{{ia}}<!--if ib-->&amp;{{ib}}<!--/if--></span></div><!--/if--></div>
+  <div class="venue-copy">
+    <p class="eyebrow">{{upper:copy:venue_eyebrow}}</p>
+    <h2>{{em:copy:venue_title}}</h2>
+    <h3>{{venue}}</h3>
+    <!--if place--><p>{{place}}</p><!--/if-->
+    <!--if map_url--><a class="outline-link" href="{{map_url}}" target="_blank" rel="noopener noreferrer">{{upper:copy:directions}} <span aria-hidden="true">↗</span></a><!--/if-->
+  </div>
+</section><!--/if-->
+
+<!--part:story-->
+<section class="story scene"<!--if story_photo--> data-photo<!--/if--> data-tpl-section="story" data-section="story">
+  <!--if story_photo--><div class="story-image image-frame"><img src="{{story_photo}}" alt=""></div><!--/if-->
+  <div class="story-copy">
+    <p class="eyebrow">{{upper:copy:story_eyebrow}}</p>
+    <h2>{{em:copy:story_title}}</h2>
+    <!--each story_paras--><p>{{.}}</p><!--/each-->
+    <p class="handwritten">{{copy:story_signoff}} {{names}}</p>
+  </div>
+  <span class="scene-caption">{{upper:copy:story_caption}}</span>
+</section>
+<section class="wide-scene" data-section="story">
+  <!--if hero_photo--><img src="{{hero_photo}}" alt=""><!--/if-->
+  <div class="wide-overlay"><p class="eyebrow">{{upper:copy:banner_eyebrow}}</p><h2>{{copy:banner_title}}</h2></div>
+</section>
+
+<!--part:functions-->
+<section class="celebration section-light" data-tpl-section="schedule" data-section="functions">
+  <div class="section-top"><p class="eyebrow">{{upper:copy:schedule_eyebrow}}</p><h2>{{em:copy:schedule_title}}</h2><p class="section-intro">{{copy:schedule_intro}}</p></div>
+  <div class="timeline" style="--n:{{events_count}}">
+    <!--each events--><div class="timeline-row"><span>{{n}}</span><h3>{{title}}</h3><p><!--if venue-->{{venue}}<!--/if--></p><!--if when--><small>{{upper:when}}</small><!--/if--></div><!--/each-->
+  </div>
+</section>
+
+<!--part:gallery-->
+<section class="moments section-dark" data-tpl-section="moments" data-section="gallery">
+  <div class="section-top"><p class="eyebrow">{{upper:copy:gallery_eyebrow}}</p><h2>{{em:copy:gallery_title}}</h2><p class="section-intro">{{copy:gallery_intro}}</p></div>
+  <div class="gallery">
+    <!--each photos--><figure><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph">Your photo</span><!--/if--><!--if caption--><figcaption>{{upper:caption}}</figcaption><!--/if--></figure><!--/each-->
+  </div>
+</section>
+
+<!--part:rsvp-->
+<section class="final-scene" data-tpl-section="rsvp" data-section="rsvp">
+  <!--if hero_photo--><img class="final-photo" src="{{hero_photo}}" alt=""><!--else--><div class="final-backdrop" aria-hidden="true"></div><!--/if-->
+  <div class="final-shade"></div>
+  <div class="final-copy">
+    <p class="eyebrow">{{upper:copy:rsvp_eyebrow}}</p>
+    <h2>{{em:copy:rsvp_title}}</h2>
+    <p class="final-line">{{upper:footer_names}}<!--if date--> · {{upper:date_long}}<!--/if--></p>
+    <p class="final-status" role="note">{{copy:rsvp_status}}</p>
+  </div>
+</section>
+
+<!--part:footer-->
+<footer class="site-footer">
+  <button class="footer-mark" type="button" data-scroll-to="home" aria-label="Back to the top">{{ia}}<!--if ib--> <i>&amp;</i> {{ib}}<!--/if--></button>
+  <p>{{upper:copy:footer_line}}<!--if place_or_venue--> · {{upper:place_or_venue}}<!--/if--></p>
+  <button class="back-top" type="button" data-scroll-to="home">{{upper:copy:footer_back}} ↑</button>
+</footer>

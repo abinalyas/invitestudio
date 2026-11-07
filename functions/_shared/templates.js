@@ -62,6 +62,7 @@ export const LAUNCH_TEMPLATE_IDS = Object.freeze([
   'lunaria-moon',
   'modern-heritage',
   'minimalist',
+  'cinematic',
 ]);
 
 export function isLaunchTemplate(id) {
