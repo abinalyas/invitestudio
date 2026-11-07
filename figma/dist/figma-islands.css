@@ -1092,8 +1092,8 @@
 .figma-app .setup-steps button.active{ border-color: #145c37; background: #fff; color: #0f2e1d; box-shadow: 0 8px 22px -14px rgba(20, 92, 55, .5); }
 .figma-app .setup-steps button.active .step-number{ background: #145c37; color: #fff; }
 .figma-app .setup-steps button.done .step-number{ background: #dfe9df; color: #145c37; }
-.figma-app .setup-grid{ display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr); grid-template-areas: "card preview" "actions preview"; column-gap: 28px; row-gap: 18px; align-items: start; }
-.figma-app .setup-grid:not(.has-preview){ grid-template-columns: minmax(0, 760px); grid-template-areas: "card" "actions"; }
+.figma-app .setup-grid{ display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr); grid-template-areas: "card preview" "actions preview"; grid-template-rows: auto minmax(0, 1fr); column-gap: 28px; row-gap: 18px; align-items: start; }
+.figma-app .setup-grid:not(.has-preview){ grid-template-columns: minmax(0, 760px); grid-template-areas: "card" "actions"; grid-template-rows: auto; }
 .figma-app .setup-card{ grid-area: card; padding: 32px; border: 1px solid #e8e1d9; border-radius: 22px; background: rgba(255, 253, 249, .9); box-shadow: 0 18px 40px -28px rgba(62, 16, 22, .3); }
 .figma-app .setup-card h2{ margin: 0; color: var(--ink); font-size: 30px; font-weight: 500; }
 .figma-app .setup-intro{ margin: 8px 0 22px; color: #5c625e; font-size: 14px; line-height: 1.55; }
@@ -1142,7 +1142,7 @@
 .figma-app .setup-screen::-webkit-scrollbar{ display: none; }
 .figma-app .setup-preview-note{ margin: 14px 4px 0; color: #6b6a64; font-size: 12.5px; line-height: 1.5; text-align: center; }
 @media (max-width: 900px){.figma-app .setup-steps{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.figma-app .setup-grid, .figma-app .setup-grid:not(.has-preview){ grid-template-columns: minmax(0, 1fr); grid-template-areas: "card" "preview" "actions"; }
+.figma-app .setup-grid, .figma-app .setup-grid:not(.has-preview){ grid-template-columns: minmax(0, 1fr); grid-template-areas: "card" "preview" "actions"; grid-template-rows: auto; }
 .figma-app .setup-grid:not(.has-preview){ grid-template-areas: "card" "actions"; }
 .figma-app .setup-preview{ position: static; padding: 16px; }
 .figma-app .setup-device{ height: 560px; min-height: 0; }

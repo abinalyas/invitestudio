@@ -316,8 +316,8 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
 .setup-steps button.active .step-number { background: #145c37; color: #fff; }
 .setup-steps button.done .step-number { background: #dfe9df; color: #145c37; }
 
-.setup-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr); grid-template-areas: "card preview" "actions preview"; column-gap: 28px; row-gap: 18px; align-items: start; }
-.setup-grid:not(.has-preview) { grid-template-columns: minmax(0, 760px); grid-template-areas: "card" "actions"; }
+.setup-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr); grid-template-areas: "card preview" "actions preview"; grid-template-rows: auto minmax(0, 1fr); column-gap: 28px; row-gap: 18px; align-items: start; }
+.setup-grid:not(.has-preview) { grid-template-columns: minmax(0, 760px); grid-template-areas: "card" "actions"; grid-template-rows: auto; }
 .setup-card { grid-area: card; padding: 32px; border: 1px solid #e8e1d9; border-radius: 22px; background: rgba(255, 253, 249, .9); box-shadow: 0 18px 40px -28px rgba(62, 16, 22, .3); }
 .setup-card h2 { margin: 0; color: var(--ink); font-size: 30px; font-weight: 500; }
 .setup-intro { margin: 8px 0 22px; color: #5c625e; font-size: 14px; line-height: 1.55; }
@@ -373,7 +373,7 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
 @media (max-width: 900px) {
   .setup-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* One column: the form, then the preview, then Continue at the very bottom. */
-  .setup-grid, .setup-grid:not(.has-preview) { grid-template-columns: minmax(0, 1fr); grid-template-areas: "card" "preview" "actions"; }
+  .setup-grid, .setup-grid:not(.has-preview) { grid-template-columns: minmax(0, 1fr); grid-template-areas: "card" "preview" "actions"; grid-template-rows: auto; }
   .setup-grid:not(.has-preview) { grid-template-areas: "card" "actions"; }
   .setup-preview { position: static; padding: 16px; }
   .setup-device { height: 560px; min-height: 0; }
