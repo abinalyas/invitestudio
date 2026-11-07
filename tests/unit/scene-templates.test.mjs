@@ -131,5 +131,6 @@ test('the designs offered in the app (index.html) are the same ones the gallery 
   const offered = [...html.match(/const offeredTemplateIds=\[([^\]]*)\]/)[1].matchAll(/'([a-z0-9-]+)'/g)].map(match => match[1]).sort();
   const listed = [...shared.matchAll(/^\s+backendId: "([^"]+)"/gm)].map(match => match[1]).sort();
   assert.deepEqual(offered, listed);
-  assert.deepEqual(offered, sceneTemplates.map(template => template.id).sort());
+  const designed = readCatalogue().templates.filter(template => template.scene || template.packaged).map(template => template.id).sort();
+  assert.deepEqual(offered, designed);
 });

@@ -63,6 +63,8 @@ export type EventItem = {
 
 export type EventPatch = Partial<Omit<EventItem, "id">>;
 
+export type CopyField = { key: string; label: string; section: string; max: number; fallback: string; value: string };
+
 export type Design = { id: string; name: string; style: string; image: string };
 
 export type EditorSnapshot = EditorFields & {
@@ -81,6 +83,8 @@ export type EditorSnapshot = EditorFields & {
   events: EventItem[];
   rsvp: string;
   galleryCount: number;
+  // Wording the template lets the couple change (empty for templates without it).
+  copyFields: CopyField[];
   // What the invitation shows while a field is empty (used as the field's hint).
   shown: { title: string; message: string; hosts: string; date: string };
 };
@@ -93,6 +97,7 @@ export interface InviteStudioBridge {
   version(): number;
   update(patch: Partial<EditorFields>): void;
   setSectionVisible(sectionId: string, visible: boolean): void;
+  setCopy(key: string, text: string): void;
   addEvent(title: string): string;
   updateEvent(eventId: string, patch: EventPatch): void;
   removeEvent(eventId: string): void;
@@ -139,6 +144,7 @@ export const bridge = {
   version: () => host().version(),
   update: (patch: Partial<EditorFields>) => host().update(patch),
   setSectionVisible: (sectionId: string, visible: boolean) => host().setSectionVisible(sectionId, visible),
+  setCopy: (key: string, text: string) => host().setCopy(key, text),
   addEvent: (title: string) => host().addEvent(title),
   updateEvent: (eventId: string, patch: EventPatch) => host().updateEvent(eventId, patch),
   removeEvent: (eventId: string) => host().removeEvent(eventId),

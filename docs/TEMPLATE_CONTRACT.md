@@ -335,3 +335,17 @@ Run automatically for every template, in CI, on its `sample.json` and on edge ca
 - **Copy limits:** how long may each copy key be?
 - **Names with "&" inside a single name** (for example a business or a family): do we need a manual "second name" field?
 - **Reception row:** should a template list a reception only when the couple adds one, or does a template always offer a reception slot?
+
+## 15. Pilot findings (Modern Heritage, implemented)
+
+The first template is built to this contract; what changed against the plan:
+
+- **Package**: `templates/modern-heritage/{manifest.json,template.html,template.css,sample.json,assets/}`. `npm run build:templates` writes `templates/templates.generated.js` and the inline `packaged-templates-css` block in `index.html` (same reason as the scene CSS: the editor preview is a shadow root). Renderer: `packaged-templates.js`. Shared behaviour: `template-widgets.js` (countdown, menu, scroll-to).
+- **The designer writes ordinary page CSS and markup.** The build scopes every selector under `.tpl-mh` and prefixes every class (`.button` becomes `.mh-button`). The prefix matters: the editor copies the app's own styles into the preview, and generic names such as `.eyebrow` or `.hero-copy` were picking up their rules.
+- **Container queries, not media queries**: `@container` and `cqw` replace the reference's `@media` and `vw`, so the phone frame in the editor lays out like a real phone. `position: fixed` and `100vh` are not used. The root uses `overflow: clip` so the sticky header still works.
+- **Baked-in text in artwork is templated**: the monogram, crest and stamp SVGs are inline and take initials, the numeric date and the names. The church line art is replaced by the stamp (a church only fits one couple).
+- **Sections**: the venue card is part of `welcome` (with the details band). `story`, `functions` and `gallery` are left out when empty; so are the countdown (no date) and the directions button (no place). Menu links follow what is shown.
+- **RSVP**: the reference's mail form is replaced by a "not open yet" note until responses exist.
+- **Wording**: `content.copy` is stored, validated (key pattern, 300 characters, 60 keys) and returned on the public page. Each manifest copy key carries a `section`, and the editor shows a "Wording" panel per section. Empty wording means the template's own text.
+- **Not in the pilot**: scroll-reveal animations, photo slots (gallery shows the couple's photos in a plain grid), time zones (the countdown counts to local midnight of the date), map embeds (link only).
+- **Colours**: the reference's gold and muted text failed 4.5:1 on ivory, so text colours were darkened; the quality gate (`tests/unit/packaged-templates.test.mjs`) checks every text/background pair, scoping, markup safety, escaping, the minimal-content and long-name cases, and that the built files are current.

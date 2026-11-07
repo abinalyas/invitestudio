@@ -39,6 +39,7 @@
       // An empty list means the couple has not customised sections: use the editor's defaults.
       sections: Array.isArray(wedding.sections) && wedding.sections.length ? wedding.sections : undefined,
       functions: Array.isArray(content.functions) ? content.functions : [],
+      copy: content.copy && typeof content.copy === 'object' ? content.copy : {},
       photos: [],
       introSettings: wedding.intro_settings || {},
       animationSettings: wedding.animation_settings || {},

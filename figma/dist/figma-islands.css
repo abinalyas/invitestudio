@@ -1150,3 +1150,6 @@
 .figma-app .setup-actions .button{ flex: 1 1 auto; }}
 @media (max-width: 480px){.figma-app .setup-steps{ gap: 8px; }
 .figma-app .setup-steps button{ padding: 0 12px; gap: 8px; font-size: 13px; }}
+.figma-app .editor-wording{margin-top:20px;border-top:1px solid var(--line,#e2ddd3);padding-top:14px}
+.figma-app .editor-wording summary{cursor:pointer;font-weight:600;font-size:15px;padding:6px 0}
+.figma-app .editor-wording .editor-form{margin-top:12px}

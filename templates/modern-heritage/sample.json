@@ -1,0 +1,14 @@
+{
+  "title": "Meera & Abin",
+  "date": "2027-08-24",
+  "location": "St. Athanasius Jacobite Syrian Church, Puthencruz, Kerala",
+  "message": "It would mean the world to have you with us.",
+  "hosts": "Together with their families",
+  "story": "Some stories are written in grand gestures. Others unfold in quiet conversations, familiar smiles, and the little moments that become everything.\n\nWe are grateful for the people who have been part of our journey, and we cannot wait to begin this next chapter surrounded by family and friends.",
+  "functions": [
+    { "title": "Guest arrival", "date": "2027-08-24", "time": "10:00 AM", "venue": "We look forward to welcoming you.", "visible": true },
+    { "title": "Wedding ceremony", "date": "2027-08-24", "time": "11:00 AM", "venue": "St. Athanasius Jacobite Syrian Church", "visible": true },
+    { "title": "Blessings & celebration", "date": "2027-08-24", "time": "1:00 PM", "venue": "More details will be shared soon.", "visible": true }
+  ],
+  "photos": []
+}

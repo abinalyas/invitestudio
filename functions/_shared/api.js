@@ -242,7 +242,7 @@ const allowedFields = new Set([
   'name', 'category', 'templateId', 'title', 'date', 'eventDate', 'location',
   'message', 'story', 'hosts', 'locale', 'theme', 'preferences',
   'culturalPreferences', 'content', 'sections', 'introSettings',
-  'animationSettings', 'functions', 'gallery'
+  'animationSettings', 'functions', 'gallery', 'copy'
 ]);
 
 function validDate(value) {
@@ -298,6 +298,35 @@ function validateFunctions(value, fields) {
       visible: event.visible !== false
     };
   }).filter(Boolean);
+}
+
+// Wording the couple changed on a packaged template: { key: text }. Keys are the template manifest's
+// copy keys; an empty text means "use the template's own wording" and is not stored.
+const COPY_KEY = /^[a-z][a-z0-9_]{0,39}$/;
+function validateCopy(value, fields) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    fields.copy = 'Wording must be an object.';
+    return {};
+  }
+  const out = {};
+  for (const [key, text] of Object.entries(value)) {
+    if (!COPY_KEY.test(key) || typeof text !== 'string') {
+      fields.copy = 'Wording must map names to text.';
+      return {};
+    }
+    if (text.trim()) out[key] = text.trim().slice(0, 300);
+  }
+  if (Object.keys(out).length > 60) fields.copy = 'Too many wording changes.';
+  return out;
+}
+
+function publicCopy(value) {
+  const out = {};
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return out;
+  for (const [key, text] of Object.entries(value).slice(0, 60)) {
+    if (COPY_KEY.test(key) && typeof text === 'string' && text.trim()) out[key] = text.trim().slice(0, 300);
+  }
+  return out;
 }
 
 function validateGallery(value, fields) {
@@ -388,7 +417,8 @@ export function validateWeddingInput(input, { create = false } = {}) {
     : {};
   if (input.functions !== undefined) content.functions = validateFunctions(input.functions, fields);
   if (input.gallery !== undefined) content.gallery = validateGallery(input.gallery, fields);
-  if (input.functions !== undefined || input.gallery !== undefined) output.content = content;
+  if (input.copy !== undefined) content.copy = validateCopy(input.copy, fields);
+  if (input.functions !== undefined || input.gallery !== undefined || input.copy !== undefined) output.content = content;
 
   if (create) {
     if (!output.template_id) fields.templateId = 'A template is required.';
@@ -599,7 +629,8 @@ export function publicWeddingProjection(wedding) {
     theme: wedding.theme,
     content: {
       functions: publicFunctions(content.functions),
-      gallery: publicGallery(content.gallery)
+      gallery: publicGallery(content.gallery),
+      copy: publicCopy(content.copy)
     },
     sections,
     intro_settings: {
