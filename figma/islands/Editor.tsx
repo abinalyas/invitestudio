@@ -79,7 +79,7 @@ function sectionHint(key: SectionKey, snap: EditorSnapshot): string {
 export function EditorPage() {
   useBridgeVersion();
   const snap = bridge.snapshot();
-  const [device, setDevice] = useState<Device>("desktop");
+  const [device, setDevice] = useState<Device>("mobile");
   const [active, setActive] = useState<SectionKey>("home");
   const [designsOpen, setDesignsOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
@@ -258,15 +258,18 @@ export function EditorPage() {
         </aside>
 
         <section className="editor-canvas-area" id="panel-preview">
-          <div className={`editor-browser ${device}`}>
-            <div className="browser-bar">
-              <span className="browser-dots">
-                <i />
-                <i />
-                <i />
-              </span>
-              <span className="browser-address">▣ {addressLabel}</span>
-            </div>
+          <div className={`device-frame ${device}`}>
+            {device === "desktop" ? (
+              <div className="browser-bar">
+                <span className="browser-dots">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <span className="browser-address">▣ {addressLabel}</span>
+              </div>
+            ) : null}
+            {/* The invitation scrolls inside the frame, like on a real device, not with the page. */}
             <div className="editor-site figma-canvas" ref={canvasRef} onClick={selectFromPreview} />
           </div>
         </section>

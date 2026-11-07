@@ -1045,3 +1045,22 @@
 @media (max-width: 900px){.figma-app .detail-showcase{ position: static; }
 .figma-app .phone-stage{ min-height: 0; padding: 28px 16px; }
 .figma-app .phone-frame{ width: min(260px, 70%); }}
+.figma-app .editor-canvas-area{ display: flex; flex-direction: column; align-items: center; padding: 0 0 18px; overflow: hidden; }
+.figma-app .device-frame{ --frame-h: min(760px, calc(100vh / var(--z, 1) - 150px)); position: relative; display: flex; flex-direction: column; flex: none; box-sizing: border-box; width: 100%; height: var(--frame-h); min-height: 420px; overflow: hidden; background: #fffaf4; box-shadow: 0 22px 44px -18px rgba(62, 16, 22, .32), 0 0 0 1px rgba(43, 35, 32, .06); }
+.figma-app .device-frame .editor-site{ flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.figma-app .device-frame.desktop{ max-width: 820px; border-radius: 14px; }
+.figma-app .device-frame.tablet{ max-width: 560px; padding: 14px; border-radius: 30px; background: #1d1f1c; }
+.figma-app .device-frame.tablet .editor-site{ border-radius: 18px; }
+.figma-app .device-frame.tablet::before{ content: ""; position: absolute; left: 50%; top: 5px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: #444843; }
+.figma-app .device-frame.mobile{ width: 414px; max-width: 100%; padding: 12px; border-radius: 46px; background: #1d1f1c; }
+.figma-app .device-frame.mobile .editor-site{ border-radius: 34px; }
+.figma-app .device-frame.mobile::before{ content: ""; position: absolute; z-index: 2; left: 50%; top: 20px; width: 92px; height: 26px; margin-left: -46px; border-radius: 999px; background: #1d1f1c; }
+@media (min-width: 981px){.figma-app .editor-page{ display: flex; flex-direction: column; height: calc(100vh / var(--z, 1)); min-height: 0; overflow: hidden; }
+.figma-app .editor-workspace{ flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); padding-bottom: 0; }
+.figma-app .editor-pages, .figma-app .editor-controls{ overflow-y: auto; }
+.figma-app .editor-canvas-area{ min-height: 0; justify-content: center; }
+.figma-app .device-frame{ --frame-h: min(880px, calc(100% - 4px)); }}
+@media (max-width: 767px){.figma-app .editor-canvas-area{ display: block; overflow: visible; padding: 0; }
+.figma-app .device-frame, .figma-app .device-frame.mobile, .figma-app .device-frame.tablet, .figma-app .device-frame.desktop{ height: auto; min-height: 0; max-width: 100%; width: 100%; padding: 0; border-radius: 12px; background: #fffaf4; }
+.figma-app .device-frame::before{ display: none; }
+.figma-app .device-frame .editor-site{ overflow: visible; border-radius: 0; }}
