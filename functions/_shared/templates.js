@@ -56,6 +56,10 @@ export const LAUNCH_TEMPLATE_IDS = Object.freeze([
   'vidaai-dusk',
   'reception-chandelier',
   'custom-rituals',
+  'savanna-sunset',
+  'palmera-beach',
+  'curtain-call',
+  'lunaria-moon',
 ]);
 
 export function isLaunchTemplate(id) {
