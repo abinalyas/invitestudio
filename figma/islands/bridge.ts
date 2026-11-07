@@ -69,6 +69,8 @@ export type EditorSnapshot = EditorFields & {
   events: EventItem[];
   rsvp: string;
   galleryCount: number;
+  // What the invitation shows while a field is empty (used as the field's hint).
+  shown: { title: string; message: string; hosts: string; date: string };
 };
 
 export type RecoveryCard = { title: string; status: string; error: string };
@@ -89,7 +91,7 @@ export interface InviteStudioBridge {
   saveNow(): void;
   retrySave(): void;
   renderInvitation(host: HTMLElement, device: Device): void;
-  createDraft(backendTemplateId: string, templateNumber: number): void;
+  createDraft(backendTemplateId: string, templateNumber: number, sampleNames?: string): void;
   startCreate(category: string): void;
   openPreview(): void;
   previewTemplate(backendTemplateId: string): void;
@@ -129,7 +131,7 @@ export const bridge = {
   saveNow: () => host().saveNow(),
   retrySave: () => host().retrySave(),
   renderInvitation: (element: HTMLElement, device: Device) => host().renderInvitation(element, device),
-  createDraft: (backendTemplateId: string, templateNumber: number) => host().createDraft(backendTemplateId, templateNumber),
+  createDraft: (backendTemplateId: string, templateNumber: number, sampleNames?: string) => host().createDraft(backendTemplateId, templateNumber, sampleNames),
   startCreate: (category: string) => host().startCreate(category),
   openPreview: () => host().openPreview(),
   previewTemplate: (backendTemplateId: string) => host().previewTemplate(backendTemplateId),

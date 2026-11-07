@@ -79,15 +79,25 @@ function sectionHint(key: SectionKey, snap: EditorSnapshot): string {
 export function EditorPage() {
   useBridgeVersion();
   const snap = bridge.snapshot();
-  const [device, setDevice] = useState<Device>("desktop");
+  const [device, setDevice] = useState<Device>("mobile");
   const [active, setActive] = useState<SectionKey>("home");
   const [designsOpen, setDesignsOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
   const [picked, setPicked] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
+  // Scroll cue: shown while the invitation can scroll and is still at the top. The scrollbar is hidden on phone and tablet frames.
+  const [cue, setCue] = useState(false);
+  const updateCue = () => {
+    const element = canvasRef.current;
+    setCue(Boolean(element) && element!.scrollHeight > element!.clientHeight + 24 && element!.scrollTop < 24);
+  };
 
   useEffect(() => {
     if (canvasRef.current && snap.available) bridge.renderInvitation(canvasRef.current, device);
+    updateCue();
+    // The artwork and fonts can change the height after the first paint.
+    const timer = window.setTimeout(updateCue, 400);
+    return () => window.clearTimeout(timer);
   }, [snap, device]);
 
   // Outline the section being edited inside the preview.
@@ -258,16 +268,25 @@ export function EditorPage() {
         </aside>
 
         <section className="editor-canvas-area" id="panel-preview">
-          <div className={`editor-browser ${device}`}>
-            <div className="browser-bar">
-              <span className="browser-dots">
-                <i />
-                <i />
-                <i />
-              </span>
-              <span className="browser-address">▣ {addressLabel}</span>
-            </div>
-            <div className="editor-site figma-canvas" ref={canvasRef} onClick={selectFromPreview} />
+          <div className={`device-frame ${device}`}>
+            {device === "desktop" ? (
+              <div className="browser-bar">
+                <span className="browser-dots">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <span className="browser-address">▣ {addressLabel}</span>
+              </div>
+            ) : null}
+            {/* The invitation scrolls inside the frame, like on a real device, not with the page. */}
+            <div className="editor-site figma-canvas" ref={canvasRef} onClick={selectFromPreview} onScroll={updateCue} />
+            {device !== "desktop" ? (
+              <div className={cue ? "scroll-cue show" : "scroll-cue"} aria-hidden="true">
+                <span>Scroll</span>
+                <Icon name="chevron" size={18} />
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -284,11 +303,11 @@ export function EditorPage() {
               </label>
               <label>
                 Couple or celebration names
-                <input value={snap.title} onChange={event => set({ title: event.target.value })} />
+                <input value={snap.title} placeholder={snap.shown.title} onChange={event => set({ title: event.target.value })} />
               </label>
               <label>
                 Welcome message <span className="optional">(optional)</span>
-                <textarea rows={3} value={snap.message} onChange={event => set({ message: event.target.value })} />
+                <textarea rows={3} value={snap.message} placeholder={snap.shown.message} onChange={event => set({ message: event.target.value })} />
               </label>
               <label>
                 Date <span className="optional">(optional)</span>
@@ -296,17 +315,18 @@ export function EditorPage() {
                   <Icon name="calendar" size={18} />
                   <input type="date" value={snap.date} onChange={event => set({ date: event.target.value })} />
                 </span>
+                {snap.date ? null : <span className="field-hint">Until you choose a date, the invitation shows “{snap.shown.date}”.</span>}
               </label>
               <label>
                 Location <span className="optional">(optional)</span>
                 <span className="input-with-icon">
                   <Icon name="pin" size={18} />
-                  <input value={snap.location} onChange={event => set({ location: event.target.value })} />
+                  <input value={snap.location} placeholder="Venue, city" onChange={event => set({ location: event.target.value })} />
                 </span>
               </label>
               <label>
                 Hosts <span className="optional">(optional)</span>
-                <input value={snap.hosts} placeholder="Names shown with the couple" onChange={event => set({ hosts: event.target.value })} />
+                <input value={snap.hosts} placeholder={snap.shown.hosts} onChange={event => set({ hosts: event.target.value })} />
               </label>
               <p className="tiny muted">Your design's hero image is used for now. Your own hero photos unlock when photo storage is available.</p>
             </div>

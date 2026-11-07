@@ -69,7 +69,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
             <div className="detail-actions">
               <button
                 className="button"
-                onClick={() => bridge.createDraft(backendTemplateIds[template.id], template.id)}
+                onClick={() => bridge.createDraft(backendTemplateIds[template.id], template.id, template.names)}
               >
                 <Icon name="edit" size={19} />
                 Use this template
