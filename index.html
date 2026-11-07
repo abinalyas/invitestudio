@@ -183,6 +183,7 @@
 .tpl-mn .mn-gallery{padding-top:80px;padding-bottom:80px}
 .tpl-mn .mn-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
 .tpl-mn .mn-photo-grid figure{aspect-ratio:4/5}
+.tpl-mn .mn-photo-ph{height:100%;display:flex;align-items:center;justify-content:center;border:1px dashed var(--olive-line);font-size:9px;letter-spacing:2px;font-weight:600;text-transform:uppercase;color:var(--muted)}
 .tpl-mn .mn-gallery-caption{color:var(--muted);margin:22px 0 0}
 .tpl-mn .mn-location{background:var(--tint);padding-top:100px;padding-bottom:110px}
 .tpl-mn .mn-location-layout{display:grid;grid-template-columns:.75fr 1.25fr;gap:10%;align-items:center}
@@ -379,6 +380,8 @@
 .tpl-mh .mh-rsvp-status{display:inline-block;margin:0 auto;padding:10px 18px;border:1px solid var(--line);font-size:10px;line-height:1.8;color:var(--green)}
 .tpl-mh .mh-gallery{padding:78px 24px 85px}
 .tpl-mh .mh-photo-grid{max-width:900px;margin:34px auto 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.tpl-mh .mh-photo-grid figure{aspect-ratio:4/5}
+.tpl-mh .mh-photo-ph{height:100%;display:flex;align-items:center;justify-content:center;border:1px dashed #d7c8aa;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#d7c8aa}
 .tpl-mh .mh-photo-grid img{width:100%;aspect-ratio:4/5;object-fit:cover;border:1px solid rgba(230,217,196,.4)}
 .tpl-mh .mh-site-footer{background:#26372c;color:#e9dfcb;text-align:center;padding:45px 20px 30px}
 .tpl-mh .mh-footer-mono{width:110px;height:66px;margin:0 auto 8px}
@@ -933,7 +936,7 @@ function contrastOf(a,b){const x=luminanceOf(a),y=luminanceOf(b);return (Math.ma
 function paletteFor(p,t){if(t&&Array.isArray(t.colors)){const s=[...new Set(t.colors)].filter(c=>/^#[0-9a-f]{6}$/i.test(c));if(s.length>=3){const by=[...s].sort((a,b)=>luminanceOf(b)-luminanceOf(a));const background=by[0];const rest=by.slice(1);const text=[...rest].sort((a,b)=>luminanceOf(a)-luminanceOf(b)).find(c=>contrastOf(c,background)>=4.5)||'#28241f';const accent=rest.find(c=>c!==text)||rest[0];return {background,accent,text}}}return p.theme||{background:'#f4eee4',accent:'#a77d4d',text:'#28241f'}}
 // Button fill: the accent, darkened only until white text reaches 4.5:1.
 function accessibleButtonColor(hex){let c=hex;for(let i=0;i<30&&contrastOf('#ffffff',c)<4.5;i++){c='#'+[1,3,5].map(k=>Math.round(parseInt(c.slice(k,k+2),16)*0.92).toString(16).padStart(2,'0')).join('')}return c}
-function sitePreview(p,t,full){if(t.unavailable)return templateUnavailableHtml();if(t.scene&&window.renderSceneTemplate)return window.renderSceneTemplate(p,t);if(t.packaged&&window.renderPackagedTemplate)return window.renderPackagedTemplate(p,t);const theme=paletteFor(p,t);const buttonBg=accessibleButtonColor(theme.accent);
+function sitePreview(p,t,full){if(t.unavailable)return templateUnavailableHtml();if(t.scene&&window.renderSceneTemplate)return window.renderSceneTemplate(p,t);if(t.packaged&&window.renderPackagedTemplate)return window.renderPackagedTemplate(p,t,{sample:!full});const theme=paletteFor(p,t);const buttonBg=accessibleButtonColor(theme.accent);
  const title=p.title||p.name||'Your celebration';const animationConfig={...(p.animationSettings||{})};const effect=animationConfig.effect||t.effect||'fade';const speed=Math.max(.5,Math.min(2,Number(animationConfig.speed||1)));
  const date=p.date?new Date(p.date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'Date to be announced';
  const fns=(p.functions||[]).filter(f=>f.visible!==false);
