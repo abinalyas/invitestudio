@@ -349,3 +349,12 @@ The first template is built to this contract; what changed against the plan:
 - **Wording**: `content.copy` is stored, validated (key pattern, 300 characters, 60 keys) and returned on the public page. Each manifest copy key carries a `section`, and the editor shows a "Wording" panel per section. Empty wording means the template's own text.
 - **Not in the pilot**: scroll-reveal animations, photo slots (gallery shows the couple's photos in a plain grid), time zones (the countdown counts to local midnight of the date), map embeds (link only).
 - **Colours**: the reference's gold and muted text failed 4.5:1 on ivory, so text colours were darkened; the quality gate (`tests/unit/packaged-templates.test.mjs`) checks every text/background pair, scoping, markup safety, escaping, the minimal-content and long-name cases, and that the built files are current.
+
+### 15.1 Second template: Minimalist (implemented)
+
+Built with the same pipeline and no changes to the contract, which showed the photo rules work:
+
+- **Photo-led, but never photo-dependent.** The reference's cover photo, two story photos and gallery banner are stock photos of other people, which never ship. The cover uses the `backdrop` fallback (a tonal panel with the couple's initials and date); if the couple has a photo it becomes the cover and the rest go to the gallery. Story photos are dropped (`hide`) and the story is set as text. The gallery appears only when there are photos beyond the cover.
+- **Map embed** replaced by a typographic place panel plus the directions link (the CSP blocks map frames).
+- **Per-template data moved into the manifest**: `heroPhoto`, `contrast` (text/background pairs the quality gate checks, which must be colours the stylesheet uses) and `thumbnail` (how to crop the picture shown in the gallery).
+- **Wording** is the same mechanism (`content.copy`); the section tags that carried numbers ("01 — Our story") lost them because sections can be hidden.

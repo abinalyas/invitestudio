@@ -49,7 +49,8 @@ for (const { manifest, parts, css } of list) {
   test(`${id}: every wording key is used, every used key exists, text fits`, () => {
     const engine = readFileSync(join(root, 'packaged-templates.js'), 'utf8');
     const used = new Set([...markup.matchAll(/copy:(\w+)/g), ...engine.matchAll(/copy\("(\w+)"\)/g)].map(m => m[1]));
-    assert.deepEqual([...used].sort(), Object.keys(manifest.copy).sort());
+    for (const key of [...markup.matchAll(/copy:(\w+)/g)].map(m => m[1])) assert.ok(manifest.copy[key], `${key} is used in the markup but not in the manifest`);
+    for (const key of Object.keys(manifest.copy)) assert.ok(used.has(key) || engine.includes(`"${key}"`), `${key} is in the manifest but never used`);
     for (const [key, def] of Object.entries(manifest.copy)) {
       assert.ok(def.label && def.default && def.max > 0 && def.section, key);
       assert.ok(def.default.length <= def.max, `${key} default is longer than its limit`);
@@ -84,7 +85,7 @@ for (const { manifest, parts, css } of list) {
     const { renderPackagedTemplate } = renderer();
     const t = { id, packaged: id };
     const photo = 'data:image/png;base64,iVBORw0KGgo=';
-    const out = renderPackagedTemplate({ ...sampleOf(id), photos: [{ data: photo }] }, t);
+    const out = renderPackagedTemplate({ ...sampleOf(id), photos: [{ data: photo }, { data: photo }] }, t);
     assert.doesNotMatch(out, /\{\{|\}\}|<!--/);
     for (const section of manifest.sections) assert.ok(new RegExp(`data-section="${section === 'hero' ? 'hero' : section}"`).test(out), `${section} rendered`);
     for (const target of out.matchAll(/data-scroll-to="(\w+)"/g)) assert.ok(out.includes(`data-tpl-section="${target[1]}"`), `scroll target ${target[1]} exists`);
@@ -122,10 +123,13 @@ for (const { manifest, parts, css } of list) {
     const { renderPackagedTemplate } = renderer();
     const t = { id, packaged: id };
     const base = { ...sampleOf(id) };
-    const changed = renderPackagedTemplate({ ...base, copy: { story_lead: '  Our own opening  ', cta: '   ' } }, t);
-    assert.match(changed, /Our own opening/);
-    assert.match(changed, new RegExp(manifest.copy.cta.default), 'blank wording keeps the original');
-    assert.match(renderPackagedTemplate({ ...base, copy: { story_title: 'Our *Tale*' } }, t), /Our <em>Tale<\/em>/);
+    const plain = Object.entries(manifest.copy).filter(([key, def]) => !def.default.includes('*') && !/\bupper:copy:\w*/.test('') && def.max >= 20).map(([key]) => key);
+    const [first, second] = plain;
+    const changed = renderPackagedTemplate({ ...base, copy: { [first]: '  Our own words  ', [second]: '   ' } }, t);
+    assert.match(changed, /our own words/i);
+    assert.match(changed, new RegExp(manifest.copy[second].default.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/&/g, '&amp;'), 'i'), 'blank wording keeps the original');
+    const title = Object.entries(manifest.copy).find(([, def]) => def.default.includes('*'))[0];
+    assert.match(renderPackagedTemplate({ ...base, copy: { [title]: 'Our *Tale*' } }, t), /Our <em>Tale<\/em>/);
   });
 
   test(`${id}: sections the couple hides are not drawn, and navigation follows`, () => {
@@ -134,7 +138,7 @@ for (const { manifest, parts, css } of list) {
     const out = renderPackagedTemplate(sampleOf(id), { id, packaged: id }).length;
     const hidden = renderPackagedTemplate({ ...sampleOf(id), sections }, { id, packaged: id });
     assert.doesNotMatch(hidden, /data-section="(story|functions|welcome)"/);
-    assert.doesNotMatch(hidden, /data-scroll-to="(story|details|schedule|venue)"/);
+    assert.doesNotMatch(hidden, /data-scroll-to="(story|details|schedule|venue|location|invitation)"/);
     assert.ok(hidden.length < out);
   });
 
@@ -142,14 +146,11 @@ for (const { manifest, parts, css } of list) {
     const rgb = hex => hex.replace('#', '').match(/../g).map(h => parseInt(h, 16) / 255).map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
     const lum = hex => { const [r, g, b] = rgb(hex); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
     const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
-    const v = Object.fromEntries([...css.matchAll(/--([a-z]+):(#[0-9a-f]{6})/g)].map(m => [m[1], m[2]]));
-    const pairs = [
-      ['ink on ivory', v.ink, v.ivory], ['muted on ivory', v.muted, v.ivory], ['green on ivory', v.green, v.ivory],
-      ['gold text on ivory', '#7a6539', v.ivory], ['gold text on paper', '#7a6539', v.paper], ['muted on paper', v.muted, v.paper],
-      ['ivory on green', v.ivory, v.green], ['light gold on green', '#d0b98a', v.green], ['pale on green', '#d7c8aa', v.green], ['note on green', '#e5d9c4', v.green],
-      ['light gold on footer', '#d0b98a', '#26372c'], ['footer small', '#b39c72', '#26372c'], ['footer text', '#e9dfcb', '#26372c'], ['banner', '#e9dfcb', v.green]
-    ];
-    for (const [name, fg, bg] of pairs) assert.ok(ratio(fg, bg) >= 4.5, `${name}: ${ratio(fg, bg).toFixed(2)}`);
+    const pairs = manifest.contrast;
+    assert.ok(Array.isArray(pairs) && pairs.length >= 8, 'the manifest lists the text and background pairs to check');
+    const inCss = new Set([...css.matchAll(/#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/g)].map(m => '#' + (m[1].length === 3 ? [...m[1]].map(c => c + c).join('') : m[1]).toLowerCase()));
+    for (const [fg, bg, name] of pairs) assert.ok(inCss.has(fg.toLowerCase()) && inCss.has(bg.toLowerCase()), `${name}: colours must be ones the stylesheet uses`);
+    for (const [fg, bg, name] of pairs) assert.ok(ratio(fg, bg) >= 4.5, `${name}: ${ratio(fg, bg).toFixed(2)}`);
   });
 }
 

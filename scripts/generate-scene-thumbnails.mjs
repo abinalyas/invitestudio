@@ -58,8 +58,10 @@ for (const t of scenes) {
 }
 // Packaged templates: the real renderer and the template's own stylesheet. The phone picture is the top of the
 // page; the wide picture is the page's paper and botanical corners without text (the gallery adds the names).
-const packagedCss = loadTemplates().map(t => t.css).join('\n');
+const packaged = loadTemplates();
+const packagedCss = packaged.map(t => t.css).join('\n');
 for (const t of readCatalogue().templates.filter(t => t.packaged)) {
+  const thumb = packaged.find(p => p.manifest.id === t.packaged).manifest.thumbnail;
   const open = async (width, height, scale) => {
     const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale });
     await page.goto(`${base}/`);
@@ -72,13 +74,13 @@ for (const t of readCatalogue().templates.filter(t => t.packaged)) {
     return page;
   };
   const phone = await open(360, 720, 2);
-  await phone.addStyleTag({ content: '.announcement,.site-header{display:none!important}.hero{min-height:720px!important}' });
+  await phone.addStyleTag({ content: thumb.phone });
   const phoneShot = await phone.screenshot({ type: 'jpeg', quality: 88 });
   writeFileSync(join(root, t.image.replace(/\.png$/, '-phone.jpg').replace(/^\//, '')), phoneShot);
   const cover = (await phone.screenshot()).toString('base64');
   await phone.close();
   const wide = await open(400, 275, 3);
-  await wide.addStyleTag({ content: '.announcement,.site-header,.hero-inner,.countdown-wrap{display:none!important}.hero{min-height:275px!important;padding:0!important}.tpl-mh>*:not(.hero){display:none!important}.corner{width:128px!important;opacity:.9!important}' });
+  await wide.addStyleTag({ content: thumb.wide });
   writeFileSync(join(root, t.image.replace(/\.png$/, '-wide.jpg').replace(/^\//, '')), await wide.screenshot({ type: 'jpeg', quality: 86 }));
   await wide.close();
   const card = await browser.newPage({ viewport: { width: 1000, height: 750 } });

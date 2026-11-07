@@ -31,7 +31,7 @@
     var d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], 12));
     if (isNaN(d.getTime()) || d.getUTCMonth() !== +m[2] - 1) return null;
     var f = function (opt) { return d.toLocaleDateString("en-GB", Object.assign({ timeZone: "UTC" }, opt)); };
-    return { iso: iso, long: f({ day: "numeric", month: "long", year: "numeric" }), weekday: f({ weekday: "long" }), short: f({ day: "numeric", month: "short" }), num: m[3] + " · " + m[2] + " · " + m[1] };
+    return { iso: iso, long: f({ day: "numeric", month: "long", year: "numeric" }), weekday: f({ weekday: "long" }), short: f({ day: "numeric", month: "short" }), day: String(+m[3]), month_long: f({ month: "long" }), month_short: f({ month: "short" }), year: m[1], dots: m[3] + "." + m[2] + "." + m[1], num: m[3] + " · " + m[2] + " · " + m[1] };
   }
   function safeHttp(u) { return /^https?:\/\//i.test(u || "") ? u : ""; }
   function safePhoto(u) { return /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(u || "") || /^https:\/\//i.test(u || "") ? u : ""; }
@@ -123,13 +123,16 @@
       names: title, a: n[0], b: n[1], ia: initial(n[0]), ib: initial(n[1]),
       long_names: long, crest_size: namesLen > 17 ? Math.max(6, Math.round(100 * 17 / namesLen) / 10) : 10, stamp_y: 91,
       date: date ? true : false, date_long: date ? date.long : DEFAULTS.date, weekday: date ? date.weekday : "", date_num: date ? date.num : "", date_iso: date ? date.iso : "",
-      venue: venue, place: place, has_venue: Boolean(venue),
+      day: date ? date.day : "", month_long: date ? date.month_long : "", month_short: date ? date.month_short : "", year: date ? date.year : "", date_dots: date ? date.dots : "",
+      venue: venue, place: place, has_venue: Boolean(venue), place_or_venue: place || venue,
+      footer_names: n[1] ? n[0] + " & " + n[1] : n[0],
       hosts_line: String(p.hosts || "").trim() || copy("hosts_line"),
-      closing_note: String(p.message || "").trim() || copy("details_note"),
+      closing_note: String(p.message || "").trim() || copy(manifest.copy.invitation_note ? "invitation_note" : "details_note"),
       time_text: (fns.length === 1 && fns[0].time) || (timed && timed.time) || copy("time_pending"),
       story: Boolean(story) && visible.story, story_paras: story ? story.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean) : [],
       events: visible.functions ? events : [], events_count: Math.min(Math.max(events.length, 1), 3),
-      photos: visible.gallery ? photos : [],
+      hero_photo: manifest.heroPhoto && photos.length ? photos[0].src : "",
+      photos: visible.gallery ? (manifest.heroPhoto ? photos.slice(1) : photos) : [],
       map_url: directions || (p.location ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.location) : ""),
       welcome: visible.welcome, show_venue: visible.welcome && Boolean(venue),
       footer_line: [date ? date.long : "", place || venue].filter(Boolean).join(" · ")

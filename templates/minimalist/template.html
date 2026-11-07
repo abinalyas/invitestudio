@@ -1,0 +1,104 @@
+<!--part:header-->
+<header class="site-header">
+  <button class="wordmark" type="button" data-scroll-to="home" aria-label="{{names}} home">{{ia}}<!--if ib--><span>/</span>{{ib}}<!--/if--></button>
+  <nav class="desktop-nav" data-nav aria-label="Main navigation">
+    <!--if story--><button type="button" data-scroll-to="story">{{upper:copy:nav_story}}</button><!--/if-->
+    <!--if welcome--><button type="button" data-scroll-to="details">{{upper:copy:nav_details}}</button><!--/if-->
+    <!--if show_venue--><button type="button" data-scroll-to="location">{{upper:copy:nav_location}}</button><!--/if-->
+  </nav>
+  <button class="nav-rsvp" type="button" data-scroll-to="rsvp">{{upper:copy:nav_rsvp}} <span aria-hidden="true">↗</span></button>
+  <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false"><span></span><span></span></button>
+</header>
+
+<!--part:hero-->
+<section class="hero" data-tpl-section="home" data-section="hero">
+  <div class="hero-copy">
+    <p class="eyebrow"><span class="eyebrow-line"></span> {{upper:copy:eyebrow}} <span class="eyebrow-line"></span></p>
+    <h1<!--if long_names--> data-long<!--/if-->>{{a}}<!--if b--> <em>&amp;</em><br>{{b}}<!--/if--><span class="period">.</span></h1>
+    <p class="hero-date">{{upper:date_long}}<!--if place_or_venue--> <span>·</span> {{upper:place_or_venue}}<!--/if--></p>
+    <!--if welcome--><button class="text-link" type="button" data-scroll-to="invitation">{{upper:copy:cta}} <span aria-hidden="true">↓</span></button><!--/if-->
+  </div>
+  <figure class="hero-image">
+    <!--if hero_photo--><img src="{{hero_photo}}" alt=""><!--else--><div class="backdrop" aria-hidden="true"><span class="backdrop-mark">{{ia}}<!--if ib--><i>/</i>{{ib}}<!--/if--></span><!--if date--><span class="backdrop-date">{{date_dots}}</span><!--/if--></div><!--/if-->
+  </figure>
+  <!--if date--><div class="hero-index" aria-hidden="true">{{upper:month_short}}<br><strong>{{day}}</strong><br>{{year}}</div><!--/if-->
+</section>
+<!--if date--><section class="countdown-section" aria-label="{{copy:countdown_eyebrow}}">
+  <div class="countdown-intro"><p class="eyebrow">{{upper:copy:countdown_eyebrow}}</p><h2>{{em:copy:countdown_title}}</h2></div>
+  <div class="countdown" role="timer" aria-live="off" data-countdown="{{date_iso}}">
+    <div><strong data-cd="days">—</strong><span>DAYS</span></div><i></i>
+    <div><strong data-cd="hours">—</strong><span>HOURS</span></div><i></i>
+    <div><strong data-cd="minutes">—</strong><span>MINUTES</span></div><i></i>
+    <div><strong data-cd="seconds">—</strong><span>SECONDS</span></div>
+  </div>
+</section><!--/if-->
+
+<!--part:welcome-->
+<section class="invitation section-pad" data-tpl-section="invitation" data-section="welcome">
+  <p class="eyebrow">{{upper:copy:invitation_eyebrow}}</p>
+  <div class="invitation-content">
+    <h2>{{em:copy:invitation_title}}</h2>
+    <div class="invitation-note">
+      <span class="small-rule"></span>
+      <p>{{closing_note}}</p>
+      <p class="signature">{{names}}</p>
+    </div>
+  </div>
+</section>
+<section class="details section-pad" data-tpl-section="details" data-section="welcome">
+  <div class="section-heading"><p class="eyebrow">{{upper:copy:details_eyebrow}}</p></div>
+  <div class="details-main">
+    <div class="details-date"><!--if date--><span class="month">{{upper:month_long}}</span><strong>{{day}}</strong><span class="year">{{upper:weekday}} · {{year}}</span><!--else--><strong class="tba">{{copy:date_pending}}</strong><!--/if--></div>
+    <div class="details-info">
+      <p class="eyebrow">{{upper:copy:details_kicker}}</p>
+      <h2>{{em:copy:details_title}}</h2>
+      <!--if has_venue--><div class="detail-row"><span>{{upper:copy:label_venue}}</span><strong>{{venue}}</strong></div><!--/if-->
+      <!--if place--><div class="detail-row"><span>{{upper:copy:label_location}}</span><strong>{{place}}</strong></div><!--/if-->
+      <div class="detail-row"><span>{{upper:copy:label_time}}</span><strong>{{time_text}}</strong></div>
+    </div>
+  </div>
+</section>
+<!--if show_venue--><section class="location section-pad" data-tpl-section="location" data-section="welcome">
+  <div class="section-heading"><p class="eyebrow">{{upper:copy:location_eyebrow}}</p></div>
+  <div class="location-layout">
+    <div><h2>{{em:copy:location_title}}</h2><p>{{venue}}<!--if place--><br>{{place}}<!--/if--></p><!--if map_url--><a class="dark-button" href="{{map_url}}" target="_blank" rel="noopener">{{upper:copy:directions}} <span aria-hidden="true">↗</span></a><!--/if--></div>
+    <div class="place-panel" aria-hidden="true"><span>{{venue}}</span><!--if place--><small>{{upper:place}}</small><!--/if--></div>
+  </div>
+</section><!--/if-->
+
+<!--part:story-->
+<section class="story section-pad" data-tpl-section="story" data-section="story">
+  <div class="section-heading"><p class="eyebrow">{{upper:copy:story_eyebrow}}</p></div>
+  <div class="story-body">
+    <h2>{{em:copy:story_title}}</h2>
+    <div class="story-copy"><!--each story_paras--><p>{{.}}</p><!--/each--><span class="story-number">{{ia}}<!--if ib--> <span>+</span> {{ib}}<!--/if--></span></div>
+  </div>
+</section>
+
+<!--part:functions-->
+<section class="timeline section-pad" data-tpl-section="schedule" data-section="functions">
+  <div class="section-heading"><p class="eyebrow">{{upper:copy:schedule_eyebrow}}</p></div>
+  <div class="timeline-content"><h2>{{em:copy:schedule_title}}</h2>
+    <div class="timeline-list"><!--each events--><div class="timeline-item"><span>•</span><div><strong>{{title}}</strong><!--if venue--><p>{{venue}}</p><!--/if--></div><!--if when--><small>{{upper:when}}</small><!--/if--></div><!--/each--></div>
+  </div>
+</section>
+
+<!--part:gallery-->
+<section class="gallery section-pad" data-tpl-section="gallery" data-section="gallery">
+  <div class="photo-grid"><!--each photos--><figure><img src="{{src}}" alt="{{alt}}" loading="lazy"></figure><!--/each--></div>
+  <p class="gallery-caption">{{upper:copy:gallery_caption}}</p>
+</section>
+
+<!--part:rsvp-->
+<section class="rsvp section-pad" data-tpl-section="rsvp" data-section="rsvp">
+  <p class="eyebrow">{{upper:copy:rsvp_eyebrow}}</p>
+  <h2>{{em:copy:rsvp_title}}</h2>
+  <div class="rsvp-side"><p class="rsvp-lead">{{copy:rsvp_lead}}</p><p class="rsvp-status" role="note">{{copy:rsvp_status}}</p></div>
+</section>
+
+<!--part:footer-->
+<footer class="footer">
+  <button class="footer-mark" type="button" data-scroll-to="home" aria-label="Back to the top">{{ia}}<!--if ib--><span>/</span>{{ib}}<!--/if--></button>
+  <p>{{upper:copy:footer_line}}</p>
+  <span>{{upper:footer_names}}<!--if date--> · {{date_dots}}<!--/if--></span>
+</footer>
