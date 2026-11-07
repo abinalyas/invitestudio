@@ -1068,3 +1068,13 @@
 .figma-app .editor-form .input-with-icon svg{ top: 50%; transform: translateY(-50%); pointer-events: none; color: #5c625e; }
 .figma-app .field-hint{ flex: 1 1 100%; color: #6b6a64; font-size: 12px; font-weight: 400; line-height: 1.4; }
 .figma-app .editor-form input::placeholder, .figma-app .editor-form textarea::placeholder{ color: #6b6a64; opacity: 1; }
+.figma-app .device-frame.mobile .editor-site, .figma-app .device-frame.tablet .editor-site{ scrollbar-width: none; -ms-overflow-style: none; }
+.figma-app .device-frame.mobile .editor-site::-webkit-scrollbar, .figma-app .device-frame.tablet .editor-site::-webkit-scrollbar{ display: none; }
+.figma-app .scroll-cue{ position: absolute; z-index: 3; left: 50%; bottom: 26px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 14px 4px; border-radius: 999px; background: rgba(255, 250, 244, .82); color: #145c37; box-shadow: 0 8px 22px -10px rgba(62, 16, 22, .35), 0 0 0 1px rgba(20, 92, 55, .12); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); pointer-events: none; opacity: 0; transform: translate(-50%, 8px); transition: opacity .3s ease, transform .3s ease; }
+.figma-app .scroll-cue.show{ opacity: 1; transform: translate(-50%, 0); }
+.figma-app .scroll-cue span{ font-size: 10px; font-weight: 600; letter-spacing: 2.4px; text-transform: uppercase; }
+.figma-app .scroll-cue svg{ animation: scroll-cue-bob 1.6s ease-in-out infinite; }
+@keyframes scroll-cue-bob{ 0%, 100% { transform: translateY(-2px); opacity: .55; } 50% { transform: translateY(3px); opacity: 1; } }
+@media (prefers-reduced-motion: reduce){.figma-app .scroll-cue svg{ animation: none; }
+.figma-app .scroll-cue{ transition: none; }}
+@media (max-width: 767px){.figma-app .scroll-cue{ display: none; }}

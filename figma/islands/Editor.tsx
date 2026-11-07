@@ -85,9 +85,19 @@ export function EditorPage() {
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
   const [picked, setPicked] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
+  // Scroll cue: shown while the invitation can scroll and is still at the top. The scrollbar is hidden on phone and tablet frames.
+  const [cue, setCue] = useState(false);
+  const updateCue = () => {
+    const element = canvasRef.current;
+    setCue(Boolean(element) && element!.scrollHeight > element!.clientHeight + 24 && element!.scrollTop < 24);
+  };
 
   useEffect(() => {
     if (canvasRef.current && snap.available) bridge.renderInvitation(canvasRef.current, device);
+    updateCue();
+    // The artwork and fonts can change the height after the first paint.
+    const timer = window.setTimeout(updateCue, 400);
+    return () => window.clearTimeout(timer);
   }, [snap, device]);
 
   // Outline the section being edited inside the preview.
@@ -270,7 +280,13 @@ export function EditorPage() {
               </div>
             ) : null}
             {/* The invitation scrolls inside the frame, like on a real device, not with the page. */}
-            <div className="editor-site figma-canvas" ref={canvasRef} onClick={selectFromPreview} />
+            <div className="editor-site figma-canvas" ref={canvasRef} onClick={selectFromPreview} onScroll={updateCue} />
+            {device !== "desktop" ? (
+              <div className={cue ? "scroll-cue show" : "scroll-cue"} aria-hidden="true">
+                <span>Scroll</span>
+                <Icon name="chevron" size={18} />
+              </div>
+            ) : null}
           </div>
         </section>
 
