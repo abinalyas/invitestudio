@@ -13,6 +13,12 @@ export function HomePage() {
     <main className="home-page">
       <RecoveryBanner />
       <section className="hero">
+        <div className="hero-deco" aria-hidden="true">
+          <img className="deco deco-floral-left" src="/assets/hero/floral-cluster-left.webp" alt="" width={394} height={425} />
+          <img className="deco deco-floral-right" src="/assets/hero/floral-cluster-right.webp" alt="" width={374} height={323} />
+          <img className="deco deco-petals" src="/assets/hero/scattered-petals.webp" alt="" width={189} height={174} />
+          <img className="deco deco-fabric" src="/assets/hero/ivory-fabric-drape.webp" alt="" width={474} height={412} />
+        </div>
         <header className="site-header shell">
           <Logo />
           <button
@@ -75,35 +81,15 @@ export function HomePage() {
             </div>
           </div>
 
-          <div
-            className="hero-art"
-            aria-label="Floral wedding invitation in a green envelope"
-          >
-            <span className="hero-petal petal-one" />
-            <span className="hero-petal petal-two" />
-            <span className="hero-petal petal-three" />
-            <div className="hero-botanical botanical-one">
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-            </div>
-            <div className="invitation-card">
-              <div className="card-flower top-left" />
-              <div className="card-flower top-right" />
-              <span className="tiny-mark">
-                A <i>&amp;</i> R
-              </span>
-              <p>Aisha &amp; Rohan</p>
-              <span className="card-date">18 · 02 · 2025</span>
-              <small>ARE GETTING MARRIED</small>
-            </div>
-            <div className="envelope">
-              <div className="seal">
-                <span />
-              </div>
-            </div>
+          <div className="hero-art">
+            <img
+              className="hero-envelope"
+              src="/assets/hero/hero-envelope-invitation.webp"
+              alt="Floral wedding invitation in a green envelope"
+              width={853}
+              height={738}
+              fetchPriority="high"
+            />
           </div>
         </div>
       </section>

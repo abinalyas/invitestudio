@@ -216,3 +216,22 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
   .home-page .feature-panel { margin-block: 32px; }
   .home-page .faq { padding-block: 48px; }
 }
+
+/* Home hero: real artwork replaces the CSS-drawn envelope, flowers and petals. */
+.hero .hero-art { background: none; overflow: visible; }
+.hero .hero-art::before, .hero .hero-art::after { display: none; }
+.hero-envelope { position: absolute; z-index: 2; left: 6%; top: 68px; width: 73%; max-width: 640px; height: auto; filter: drop-shadow(0 28px 40px rgba(60, 50, 30, .22)); }
+.hero-deco { position: absolute; inset: 0; pointer-events: none; }
+.deco { position: absolute; height: auto; display: block; z-index: 4; }
+.deco-floral-left { left: -3%; top: 380px; width: 11%; max-width: 190px; min-width: 110px; }
+.deco-floral-right { right: -1.5%; top: -2px; width: 13%; max-width: 230px; min-width: 120px; }
+.deco-fabric { right: 0; bottom: 0; width: 31%; max-width: 480px; z-index: 1; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 22%); mask-image: linear-gradient(90deg, transparent 0, #000 22%); }
+.deco-petals { left: 44%; top: 390px; width: 6%; max-width: 90px; min-width: 52px; opacity: .95; }
+@media (max-width: 900px) {
+  .hero .hero-art { height: 420px; }
+  .hero-envelope { left: 50%; transform: translateX(-50%); top: 24px; width: min(92%, 520px); }
+  .deco-floral-left { top: auto; bottom: 10px; left: -6%; width: 22%; }
+  .deco-floral-right { width: 24%; min-width: 0; }
+  .deco-fabric { width: 52%; }
+  .deco-petals { left: 12%; top: auto; bottom: 120px; width: 12%; }
+}

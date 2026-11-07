@@ -1011,3 +1011,18 @@
 .figma-app .home-page .how{ padding-top: 64px; }
 .figma-app .home-page .feature-panel{ margin-block: 32px; }
 .figma-app .home-page .faq{ padding-block: 48px; }}
+.figma-app .hero .hero-art{ background: none; overflow: visible; }
+.figma-app .hero .hero-art::before, .figma-app .hero .hero-art::after{ display: none; }
+.figma-app .hero-envelope{ position: absolute; z-index: 2; left: 6%; top: 68px; width: 73%; max-width: 640px; height: auto; filter: drop-shadow(0 28px 40px rgba(60, 50, 30, .22)); }
+.figma-app .hero-deco{ position: absolute; inset: 0; pointer-events: none; }
+.figma-app .deco{ position: absolute; height: auto; display: block; z-index: 4; }
+.figma-app .deco-floral-left{ left: -3%; top: 380px; width: 11%; max-width: 190px; min-width: 110px; }
+.figma-app .deco-floral-right{ right: -1.5%; top: -2px; width: 13%; max-width: 230px; min-width: 120px; }
+.figma-app .deco-fabric{ right: 0; bottom: 0; width: 31%; max-width: 480px; z-index: 1; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 22%); mask-image: linear-gradient(90deg, transparent 0, #000 22%); }
+.figma-app .deco-petals{ left: 44%; top: 390px; width: 6%; max-width: 90px; min-width: 52px; opacity: .95; }
+@media (max-width: 900px){.figma-app .hero .hero-art{ height: 420px; }
+.figma-app .hero-envelope{ left: 50%; transform: translateX(-50%); top: 24px; width: min(92%, 520px); }
+.figma-app .deco-floral-left{ top: auto; bottom: 10px; left: -6%; width: 22%; }
+.figma-app .deco-floral-right{ width: 24%; min-width: 0; }
+.figma-app .deco-fabric{ width: 52%; }
+.figma-app .deco-petals{ left: 12%; top: auto; bottom: 120px; width: 12%; }}
