@@ -4,13 +4,16 @@ import { Icon, IconName, Logo, faqs, plans, templates, galleryTemplates } from "
 import { bridge } from "./bridge";
 import { RecoveryBanner } from "./extras";
 import { TemplateStrip } from "./TemplateStrip";
+// Shown under the template strip. Change these two values to update the page.
+const socialProof = { rating: "4.9", couples: "100+" };
+
 export function HomePage() {
   const [yearly, setYearly] = useState(true)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <main>
+    <main className="home-page">
       <RecoveryBanner />
       <section className="hero">
         <header className="site-header shell">
@@ -160,6 +163,17 @@ export function HomePage() {
           </a>
         </div>
         <TemplateStrip />
+      </section>
+
+      <section className="shell stats" aria-label="Ratings and couples">
+        <div className="stat">
+          <strong>{socialProof.rating}</strong>
+          <span>average rating</span>
+        </div>
+        <div className="stat">
+          <strong>{socialProof.couples}</strong>
+          <span>couples have trusted InviteStudio</span>
+        </div>
       </section>
 
       <section className="section shell how" id="how">

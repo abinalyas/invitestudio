@@ -202,3 +202,22 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
 .strip-name { font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #6b6a64; text-align: center; }
 @media (min-width: 760px) { .strip-item { width: 160px; } .strip-item[data-wave="1"] { margin-top: 64px; } }
 @media (prefers-reduced-motion: reduce) { .strip-card { transition: none; } .strip-item:hover .strip-card { transform: none; } }
+
+/* Home: more room between sections, and the ratings row under the template strip. */
+.home-page .section { padding-block: 96px; }
+.home-page .how { padding-top: 96px; }
+.home-page .feature-panel { margin-block: 48px; }
+.home-page .pricing { padding-bottom: 72px; }
+.home-page .faq { padding-block: 72px; }
+.home-page .cta { margin-block: 48px 24px; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 260px)); justify-content: center; gap: clamp(40px, 10vw, 160px); padding: 24px 0 96px; text-align: center; }
+.stat { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.stat strong { font-family: "Playfair Display", serif; font-weight: 400; font-size: clamp(44px, 6vw, 64px); line-height: 1; color: #1d2a22; }
+.stat span { max-width: 190px; font-size: 13px; line-height: 1.5; color: #6b6a64; }
+@media (max-width: 760px) {
+  .home-page .section { padding-block: 64px; }
+  .home-page .how { padding-top: 64px; }
+  .home-page .feature-panel { margin-block: 32px; }
+  .home-page .faq { padding-block: 48px; }
+  .stats { gap: 24px; padding: 8px 0 64px; }
+}
