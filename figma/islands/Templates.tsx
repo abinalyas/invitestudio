@@ -4,10 +4,10 @@ import { Icon, IconName, Logo, galleryTemplates, styleOptions } from "./shared";
 import { bridge } from "./bridge";
 export function TemplatesPage() {
   const [query, setQuery] = useState("")
-  const [sort, setSort] = useState("popular")
+  const [sort, setSort] = useState("featured")
   const [styles, setStyles] = useState<string[]>([])
   const [favorites, setFavorites] = useState<number[]>([])
-  const [recent, setRecent] = useState<number[]>([2, 3, 5, 8])
+  const [recent, setRecent] = useState<number[]>([])
   const [view, setView] = useState<"all" | "favorites" | "recent">("all")
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -45,17 +45,11 @@ export function TemplatesPage() {
     })
     .sort((a, b) => {
       if (sort === "name") return a.title.localeCompare(b.title)
-      if (sort === "newest") return b.id - a.id
-      return b.popularity - a.popularity
+      return 0
     })
 
   return (
     <main className="gallery-page">
-      <div className="browse-all shell">
-        <button className="button outline small" type="button" onClick={() => bridge.openLegacyTemplates()}>
-          Browse every design
-        </button>
-      </div>
       <header className="site-header gallery-shell gallery-header">
         <Logo />
         <button
@@ -98,7 +92,7 @@ export function TemplatesPage() {
         <div className="gallery-shell gallery-hero-copy">
           <span className="section-kicker">Template gallery</span>
           <h1>Find the perfect invitation</h1>
-          <p>Beautiful, customisable wedding websites for every celebration.</p>
+          <p>Wedding invitations you can make your own.</p>
         </div>
       </section>
 
@@ -126,8 +120,7 @@ export function TemplatesPage() {
               value={sort}
               onChange={(event) => setSort(event.target.value)}
             >
-              <option value="popular">Popular</option>
-              <option value="newest">Newest</option>
+              <option value="featured">Featured</option>
               <option value="name">Name</option>
             </select>
             <Icon name="chevron" size={18} />
@@ -183,12 +176,6 @@ export function TemplatesPage() {
               ))}
             </div>
 
-            {["Vibe", "Features", "Color"].map((label) => (
-              <button className="filter-collapsed" key={label}>
-                <span>{label}</span>
-                <Icon name="chevron" size={17} />
-              </button>
-            ))}
           </aside>
 
           <div className="gallery-results">

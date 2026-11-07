@@ -133,10 +133,7 @@ export function HomePage() {
           <div>
             <span className="section-kicker">Curated designs</span>
             <h2>Explore beautiful templates</h2>
-            <p>
-              From elegant and traditional to modern and playful, find a design
-              that feels like you.
-            </p>
+            <p>Start from a design, preview it, then make it yours.</p>
           </div>
           <a href="/templates">
             View all templates <Icon name="arrow" size={18} />

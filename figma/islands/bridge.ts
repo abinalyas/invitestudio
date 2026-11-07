@@ -92,6 +92,7 @@ export interface InviteStudioBridge {
   createDraft(backendTemplateId: string, templateNumber: number): void;
   startCreate(category: string): void;
   openPreview(): void;
+  previewTemplate(backendTemplateId: string): void;
   openPublish(): void;
   openAdvanced(): void;
   openLegacyTemplates(): void;
@@ -131,6 +132,7 @@ export const bridge = {
   createDraft: (backendTemplateId: string, templateNumber: number) => host().createDraft(backendTemplateId, templateNumber),
   startCreate: (category: string) => host().startCreate(category),
   openPreview: () => host().openPreview(),
+  previewTemplate: (backendTemplateId: string) => host().previewTemplate(backendTemplateId),
   openPublish: () => host().openPublish(),
   openAdvanced: () => host().openAdvanced(),
   openLegacyTemplates: () => host().openLegacyTemplates(),

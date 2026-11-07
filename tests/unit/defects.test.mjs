@@ -87,7 +87,7 @@ test('review designs render but cannot be created until approved', () => {
 
 test('defect 2: every design used by the Figma islands is registered', () => {
   const shared = readFileSync(join(root, 'figma/islands/shared.tsx'), 'utf8');
-  const mapped = [...shared.matchAll(/^\s+\d+: "([^"]+)"/gm)].map(match => match[1]);
-  assert.equal(mapped.length, 12); // 8 original designs + 4 scene templates
+  const mapped = [...shared.matchAll(/^\s+backendId: "([^"]+)"/gm)].map(match => match[1]);
+  assert.equal(mapped.length, 4); // the four scene templates are the only designs offered for now
   for (const templateId of mapped) assert.ok(isLaunchTemplate(templateId), templateId);
 });

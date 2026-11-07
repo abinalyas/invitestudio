@@ -40,10 +40,10 @@
   const RSVP_OPTIONS = ['count', 'rsvp', 'contact', 'none'];
   const EVENT_FIELDS = ['title', 'date', 'time', 'endTime', 'venue', 'description', 'dressCode', 'directionsUrl', 'parking', 'accommodation', 'accessibility', 'visible'];
 
-  // Launch designs only: the same registry the setup wizard offers.
+  // The designs offered for now (isOffered, index.html): the same list the setup wizard offers.
   function launchDesigns() {
     return templates
-      .filter(t => t.category === 'Wedding' && !t.review)
+      .filter(t => t.category === 'Wedding' && !t.review && isOffered(t))
       .map(t => ({ id: t.id, name: t.name, style: t.style || '', image: t.image || '' }));
   }
 
@@ -312,6 +312,11 @@
       render();
     },
 
+    // The real template with example content, in the existing preview dialog.
+    previewTemplate(backendTemplateId) {
+      previewTemplate(backendTemplateId);
+    },
+
     openPublish() {
       openPublish();
     },
@@ -398,6 +403,7 @@
     const host = document.querySelector('.figma-island-host');
     if (!host || !window.InviteStudioFigma) return;
     activeHost = host;
+    host.dataset.island = route.kind; // lets the page scale the editor differently from the marketing pages
     activeIsland = window.InviteStudioFigma.mount(route.kind, host, route.props || {});
   };
 
