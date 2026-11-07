@@ -706,6 +706,7 @@
       confirmed: false,
       availability: null,      // { available, message, suggestions } once checked
       checking: false,
+      queued: false,           // an availability check is scheduled but has not started
       busy: false,
       error: '',
       success: false
@@ -774,6 +775,17 @@
         <button class="btn dark" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${session.busy ? 'Publishing…' : primary}</button>
       </div>`);
     wirePublishDialog(project);
+    ensureAddressChecked(project);
+  }
+
+  // The suggested address (or the live one) is checked as soon as the dialog shows, so the person can
+  // publish it as it is and only needs to type to choose a different one.
+  function ensureAddressChecked(project) {
+    const session = publishSession;
+    if (!session || session.availability || session.checking || session.queued || session.busy) return;
+    if (!session.typed || slugProblem(session.typed, project.publicSlug)) return;
+    if (!project.cloudId || !tokenFor(project.cloudId) || !window.inviteStudioApi?.enabled) return;
+    checkAddressSoon(project);
   }
 
   function wirePublishDialog(project) {
@@ -835,7 +847,9 @@
       updateDialogWithoutRepaint(project);
       return;
     }
+    session.queued = true;
     availabilityTimer = setTimeout(async () => {
+      session.queued = false;
       session.checking = true;
       updateDialogWithoutRepaint(project);
       try {
