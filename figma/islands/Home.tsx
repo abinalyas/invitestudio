@@ -61,11 +61,8 @@ export function HomePage() {
               <button className="button" type="button" onClick={() => bridge.startCreate("Wedding")}>
                 Start your invitation <Icon name="arrow" size={18} />
               </button>
-              <a className="button outline" href="#how">
-                <span className="play">
-                  <Icon name="play" size={16} />
-                </span>{" "}
-                See it in action
+              <a className="button outline" href="/templates">
+                Explore designs
               </a>
             </div>
             <div className="trust-row">
