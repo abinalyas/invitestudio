@@ -287,11 +287,11 @@ export function EditorPage() {
               </label>
               <label>
                 Couple or celebration names
-                <input value={snap.title} onChange={event => set({ title: event.target.value })} />
+                <input value={snap.title} placeholder={snap.shown.title} onChange={event => set({ title: event.target.value })} />
               </label>
               <label>
                 Welcome message <span className="optional">(optional)</span>
-                <textarea rows={3} value={snap.message} onChange={event => set({ message: event.target.value })} />
+                <textarea rows={3} value={snap.message} placeholder={snap.shown.message} onChange={event => set({ message: event.target.value })} />
               </label>
               <label>
                 Date <span className="optional">(optional)</span>
@@ -299,17 +299,18 @@ export function EditorPage() {
                   <Icon name="calendar" size={18} />
                   <input type="date" value={snap.date} onChange={event => set({ date: event.target.value })} />
                 </span>
+                {snap.date ? null : <span className="field-hint">Until you choose a date, the invitation shows “{snap.shown.date}”.</span>}
               </label>
               <label>
                 Location <span className="optional">(optional)</span>
                 <span className="input-with-icon">
                   <Icon name="pin" size={18} />
-                  <input value={snap.location} onChange={event => set({ location: event.target.value })} />
+                  <input value={snap.location} placeholder="Venue, city" onChange={event => set({ location: event.target.value })} />
                 </span>
               </label>
               <label>
                 Hosts <span className="optional">(optional)</span>
-                <input value={snap.hosts} placeholder="Names shown with the couple" onChange={event => set({ hosts: event.target.value })} />
+                <input value={snap.hosts} placeholder={snap.shown.hosts} onChange={event => set({ hosts: event.target.value })} />
               </label>
               <p className="tiny muted">Your design's hero image is used for now. Your own hero photos unlock when photo storage is available.</p>
             </div>

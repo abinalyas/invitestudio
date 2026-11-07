@@ -1064,3 +1064,7 @@
 .figma-app .device-frame, .figma-app .device-frame.mobile, .figma-app .device-frame.tablet, .figma-app .device-frame.desktop{ height: auto; min-height: 0; max-width: 100%; width: 100%; padding: 0; border-radius: 12px; background: #fffaf4; }
 .figma-app .device-frame::before{ display: none; }
 .figma-app .device-frame .editor-site{ overflow: visible; border-radius: 0; }}
+.figma-app .editor-form .input-with-icon input{ padding-left: 42px; }
+.figma-app .editor-form .input-with-icon svg{ top: 50%; transform: translateY(-50%); pointer-events: none; color: #5c625e; }
+.figma-app .field-hint{ flex: 1 1 100%; color: #6b6a64; font-size: 12px; font-weight: 400; line-height: 1.4; }
+.figma-app .editor-form input::placeholder, .figma-app .editor-form textarea::placeholder{ color: #6b6a64; opacity: 1; }

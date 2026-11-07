@@ -110,7 +110,14 @@
       sections,
       events: (p?.functions || []).map(normaliseEvent),
       rsvp: prefs.rsvp || 'count',
-      galleryCount: (p?.photos || []).length
+      galleryCount: (p?.photos || []).length,
+      // What the invitation shows while a field is empty, so the editor can show it as a hint.
+      shown: {
+        title: p ? (p.title || p.name || (window.sceneDefaults && window.sceneDefaults.title) || '') : '',
+        message: (window.sceneDefaults && window.sceneDefaults.message) || '',
+        hosts: (window.sceneDefaults && window.sceneDefaults.hosts) || '',
+        date: (window.sceneDefaults && window.sceneDefaults.date) || ''
+      }
     };
   }
 

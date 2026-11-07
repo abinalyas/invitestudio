@@ -9,6 +9,8 @@
 (function () {
   "use strict";
   var uidN = 0;
+  /* What the invitation shows until the couple fills a field in. The editor shows the same texts as hints. */
+  var DEFAULTS = Object.freeze({ title: 'Your celebration', message: 'Together with our favourite people, for a day to remember.', hosts: 'Together with their families', date: 'Date to be announced' });
   function uid(p) { uidN += 1; return p + uidN; }
   function rng(seed) { var s = seed; return function () { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; }; }
 
@@ -189,7 +191,7 @@
     return '<h2 class="sx-names"><span class="sx-nm">' + esc(a) + '</span>' + (b ? '<span class="sx-amp">&amp;</span><span class="sx-nm">' + esc(b) + '</span>' : '') + '</h2>';
   }
   function dateLine(f, withWeekday) {
-    return f ? (withWeekday ? f.wd.toUpperCase() + ' ' : '') + f.day + ' ' + f.mon.toUpperCase() + ' ' + f.yr : 'DATE TO BE ANNOUNCED';
+    return f ? (withWeekday ? f.wd.toUpperCase() + ' ' : '') + f.day + ' ' + f.mon.toUpperCase() + ' ' + f.yr : DEFAULTS.date.toUpperCase();
   }
 
   function coverScene(key, d) {
@@ -223,7 +225,7 @@
 
   function messageScene(key, d) {
     return scene(key, 'welcome',
-      '<p class="sx-caps sx-rv" style="--d:0">' + esc(d.hosts || 'Together with their families') + '</p>' +
+      '<p class="sx-caps sx-rv" style="--d:0">' + esc(d.hosts || DEFAULTS.hosts) + '</p>' +
       '<p class="sx-script sx-h sx-rv" style="--d:1">' + esc(d.title) + '</p>' +
       '<p class="sx-body sx-rv" style="--d:2">' + esc(d.message) + '</p>');
   }
@@ -257,7 +259,7 @@
   function closingScene(key, d) {
     return scene(key, 'rsvp',
       '<p class="sx-caps sx-rv" style="--d:0">Save the date</p>' +
-      '<p class="sx-script sx-h sx-rv" style="--d:1">' + esc(d.date ? d.date.day + ' ' + d.date.mon + ' ' + d.date.yr : 'Date to be announced') + '</p>' +
+      '<p class="sx-script sx-h sx-rv" style="--d:1">' + esc(d.date ? d.date.day + ' ' + d.date.mon + ' ' + d.date.yr : DEFAULTS.date) + '</p>' +
       '<p class="sx-body sx-rv" style="--d:2">Guest responses are not open yet.</p>' +
       '<p class="sx-body sx-more sx-rv" style="--d:3">With love, ' + esc(d.b ? d.a + ' & ' + d.b : d.a) + '</p>');
   }
@@ -270,7 +272,7 @@
     var key = t && t.scene;
     if (!SCENES[key]) { return ''; }
     p = p || {};
-    var title = p.title || p.name || 'Your celebration', n = splitNames(title);
+    var title = p.title || p.name || DEFAULTS.title, n = splitNames(title);
     var fns = (p.functions || []).filter(function (f) { return f && f.visible !== false; });
     var loc = String(p.location || '').split(','), venue = loc[0].trim(), place = loc.slice(1).join(',').trim();
     var firstDirections = ''; fns.forEach(function (f) { if (!firstDirections) { firstDirections = safeUrl(f.directionsUrl); } });
@@ -278,7 +280,7 @@
     var d = {
       title: title, a: n[0], b: n[1], date: fmtDate(p.date), venue: venue, place: place,
       pretitle: (p.preferences && p.preferences.pretitle) || (!p.category || p.category === 'Wedding' ? 'The wedding of' : p.category),
-      hosts: p.hosts || '', message: p.message || 'Together with our favourite people, for a day to remember.',
+      hosts: p.hosts || '', message: p.message || DEFAULTS.message,
       story: p.story || '', storyTitle: (p.preferences && p.preferences.storyTitle) || 'Our story',
       time: fns.length === 1 && fns[0].time ? fns[0].time : '', fns: fns, dress: dress,
       mapUrl: firstDirections || (p.location ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.location) : ''),
@@ -318,6 +320,7 @@
 
   window.isSceneTemplate = function (t) { return !!(t && SCENES[t.scene]); };
   window.renderSceneTemplate = renderSceneTemplate;
+  window.sceneDefaults = DEFAULTS;
 
   if (typeof document !== 'undefined' && document.addEventListener) {
     document.addEventListener('click', function (e) {

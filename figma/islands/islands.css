@@ -281,3 +281,9 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
   .device-frame::before { display: none; }
   .device-frame .editor-site { overflow: visible; border-radius: 0; }
 }
+
+/* Icon fields: the icon sits in the left padding, and the text starts after it (the generic input padding used to win). */
+.editor-form .input-with-icon input { padding-left: 42px; }
+.editor-form .input-with-icon svg { top: 50%; transform: translateY(-50%); pointer-events: none; color: #5c625e; }
+.field-hint { flex: 1 1 100%; color: #6b6a64; font-size: 12px; font-weight: 400; line-height: 1.4; }
+.editor-form input::placeholder, .editor-form textarea::placeholder { color: #6b6a64; opacity: 1; }

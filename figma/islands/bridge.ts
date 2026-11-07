@@ -69,6 +69,8 @@ export type EditorSnapshot = EditorFields & {
   events: EventItem[];
   rsvp: string;
   galleryCount: number;
+  // What the invitation shows while a field is empty (used as the field's hint).
+  shown: { title: string; message: string; hosts: string; date: string };
 };
 
 export type RecoveryCard = { title: string; status: string; error: string };
