@@ -82,7 +82,7 @@ test('public projection drops hidden events and hidden sections and the visible 
 
 test('public projection tolerates missing content without throwing', () => {
   const projected = publicWeddingProjection({ ...privateWedding, content: null, sections: null });
-  assert.deepEqual(projected.content, { functions: [], gallery: { preference: '', photos: [] } });
+  assert.deepEqual(projected.content, { functions: [], copy: {}, gallery: { preference: '', photos: [] } });
   assert.deepEqual(projected.sections, []);
 });
 

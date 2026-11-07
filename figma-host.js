@@ -31,6 +31,18 @@
     return typeof current === 'function' ? current() : null;
   }
 
+  // The wording a packaged template lets the couple change (its manifest's copy keys), with their current values.
+  function copyFieldsFor(p) {
+    const t = p ? tpl(p.templateId) : null;
+    const manifest = t && t.packaged && window.packagedTemplateManifest ? window.packagedTemplateManifest(t.packaged) : null;
+    if (!manifest) return [];
+    const copy = p.copy && typeof p.copy === 'object' ? p.copy : {};
+    return Object.entries(manifest.copy).map(([key, def]) => ({
+      key, label: def.label, section: def.section || 'home', max: def.max || 80, fallback: def.default,
+      value: typeof copy[key] === 'string' ? copy[key] : ''
+    }));
+  }
+
   function publicUrlFor(p) {
     return p && p.publishStatus === 'published' && p.publicSlug
       ? `${window.location.origin}/s/${p.publicSlug}`
@@ -111,6 +123,7 @@
       events: (p?.functions || []).map(normaliseEvent),
       rsvp: prefs.rsvp || 'count',
       galleryCount: (p?.photos || []).length,
+      copyFields: copyFieldsFor(p),
       // What the invitation shows while a field is empty, so the editor can show it as a hint.
       shown: {
         title: p ? (p.title || p.name || (window.sceneDefaults && window.sceneDefaults.title) || '') : '',
@@ -180,6 +193,19 @@
       if ('storyTitle' in patch) prefs.storyTitle = patch.storyTitle;
       if ('storyCopy' in patch) p.story = patch.storyCopy;
       p.preferences = prefs;
+      p.updated = 'Just now';
+      save();
+      notify();
+    },
+
+    // Wording on a packaged template. An empty text goes back to the template's own wording.
+    setCopy(key, text) {
+      const p = project();
+      if (!p || typeof key !== 'string' || !/^[a-z][a-z0-9_]{0,39}$/.test(key)) return;
+      const copy = { ...(p.copy && typeof p.copy === 'object' ? p.copy : {}) };
+      const value = String(text == null ? '' : text).slice(0, 300);
+      if (value.trim()) copy[key] = value; else delete copy[key];
+      p.copy = copy;
       p.updated = 'Just now';
       save();
       notify();
@@ -288,6 +314,7 @@
       container.style.margin = '0 auto';
       // full=false: the editor canvas shows the invitation without its intro overlay.
       container.innerHTML = sitePreview(p, tpl(p.templateId), false);
+      if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
     },
 
     createDraft(backendTemplateId, templateNumber, sampleNames) {
@@ -382,6 +409,7 @@
       container.style.width = '100%';
       container.style.maxWidth = '100%';
       container.innerHTML = sitePreview(draft, t, false);
+      if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
     },
 
     setupStatus() {
