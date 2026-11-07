@@ -50,11 +50,6 @@ export function TemplatesPage() {
 
   return (
     <main className="gallery-page">
-      <div className="browse-all shell">
-        <button className="button outline small" type="button" onClick={() => bridge.openLegacyTemplates()}>
-          Browse every design
-        </button>
-      </div>
       <header className="site-header gallery-shell gallery-header">
         <Logo />
         <button

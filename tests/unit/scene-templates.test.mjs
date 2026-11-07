@@ -124,3 +124,12 @@ test('the template gallery lists every scene template with its artwork and phone
     assert.ok(existsSync(join(root, entry[2].replace(/^\//, ''))), `phone cover missing for ${template.id}: ${entry[2]} (npm run thumbs:scenes)`);
   }
 });
+
+test('the designs offered in the app (index.html) are the same ones the gallery lists (shared.tsx)', () => {
+  const html = readFileSync(join(root, 'index.html'), 'utf8');
+  const shared = readFileSync(join(root, 'figma/islands/shared.tsx'), 'utf8');
+  const offered = [...html.match(/const offeredTemplateIds=\[([^\]]*)\]/)[1].matchAll(/'([a-z0-9-]+)'/g)].map(match => match[1]).sort();
+  const listed = [...shared.matchAll(/^\s+backendId: "([^"]+)"/gm)].map(match => match[1]).sort();
+  assert.deepEqual(offered, listed);
+  assert.deepEqual(offered, sceneTemplates.map(template => template.id).sort());
+});
