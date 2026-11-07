@@ -96,7 +96,7 @@
   function template(id) { return root.PACKAGED_TEMPLATES && root.PACKAGED_TEMPLATES[id]; }
 
   /* ---------- the couple's content -> values the markers read ---------- */
-  function derive(p, pkg, visible) {
+  function derive(p, pkg, visible, sample) {
     p = p || {};
     var manifest = pkg.manifest, overrides = p.copy && typeof p.copy === "object" ? p.copy : {};
     var copy = function (key) {
@@ -116,7 +116,12 @@
     var directions = ""; fns.forEach(function (f) { if (!directions) directions = safeHttp(f.directionsUrl); });
     var timed = fns.filter(function (f) { return f.time; })[0];
     var story = String(p.story || "").trim();
+    var example = (sample && pkg.manifest.example) || null;
+    if (example && !story) story = example.story || "";
+    if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", when: "" }; });
     var photos = (Array.isArray(p.photos) ? p.photos : []).map(function (ph) { return ph && { src: safePhoto(ph.data), alt: ph.alt || "" }; }).filter(function (ph) { return ph && ph.src; });
+    var gallery = manifest.heroPhoto ? photos.slice(1) : photos;
+    if (example && !photos.length) { gallery = []; for (var k = 0; k < (example.photos || 0); k++) gallery.push({ src: "", alt: "" }); }
     var long = (n[0] + n[1]).length > 18;
     var namesLen = title.length;
     var v = {
@@ -132,7 +137,7 @@
       story: Boolean(story) && visible.story, story_paras: story ? story.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean) : [],
       events: visible.functions ? events : [], events_count: Math.min(Math.max(events.length, 1), 3),
       hero_photo: manifest.heroPhoto && photos.length ? photos[0].src : "",
-      photos: visible.gallery ? (manifest.heroPhoto ? photos.slice(1) : photos) : [],
+      photos: visible.gallery ? gallery : [],
       map_url: directions || (p.location ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.location) : ""),
       welcome: visible.welcome, show_venue: visible.welcome && Boolean(venue),
       footer_line: [date ? date.long : "", place || venue].filter(Boolean).join(" · ")
@@ -141,7 +146,9 @@
   }
 
   var DEFAULT_SECTIONS = ["hero", "welcome", "story", "functions", "gallery", "rsvp"];
-  function render(p, t) {
+  // opts.sample: the editor's preview fills empty sections with the template's own example content so the
+  // template looks complete. The published page never does (render without opts): it leaves empty sections out.
+  function render(p, t, opts) {
     var id = t && t.packaged, pkg = template(id);
     if (!pkg) return "";
     p = p || {};
@@ -149,7 +156,7 @@
     var visible = {};
     DEFAULT_SECTIONS.forEach(function (s) { visible[s] = false; });
     registry.forEach(function (sec) { if (sec && DEFAULT_SECTIONS.indexOf(sec.id) >= 0 && sec.visible !== false) visible[sec.id] = true; });
-    var d = derive(p, pkg, visible), chain = [d.values], ctx = { copy: d.copy };
+    var d = derive(p, pkg, visible, Boolean(opts && opts.sample)), chain = [d.values], ctx = { copy: d.copy };
     var show = function (name) { return evaluate(cachedParse(pkg.parts[name] || "").kids, chain, ctx); };
     var body = show("header");
     registry.forEach(function (sec) {

@@ -9,6 +9,7 @@
   "fonts": ["DM Serif Display", "Inter"],
   "contrast": [["#292929", "#FAF9F6", "ink on ivory"], ["#6b6a63", "#FAF9F6", "muted on ivory"], ["#6b6a63", "#F0EFE9", "muted on tint"], ["#5c6350", "#FAF9F6", "olive on ivory"], ["#5c6350", "#F0EFE9", "olive on tint"], ["#292929", "#F0EFE9", "ink on tint"], ["#c5c4be", "#292929", "footer text"], ["#b4b8a8", "#292929", "footer mark"], ["#FFFFFF", "#292929", "button"], ["#292929", "#DEDDD0", "ink on backdrop"], ["#5c6350", "#DEDDD0", "olive on backdrop"]],
   "thumbnail": {"phone": ".mn-site-header{display:none!important}.mn-hero{padding-top:36px!important}", "wide": ".mn-site-header,.mn-hero-copy,.mn-hero-index,.mn-backdrop-mark,.mn-backdrop-date{display:none!important}.tpl-mn>*:not(.mn-hero){display:none!important}.mn-hero{display:block!important;padding:0!important;min-height:0!important}.mn-hero-image{height:275px!important;min-height:0!important;margin:0!important;width:100%!important}"},
+  "example": {"story": "Some moments become memories. Some people become home. We’re looking forward to celebrating the beginning of our forever with the people who make life meaningful.", "events": [{"title": "Wedding ceremony", "venue": "Your ceremony venue"}, {"title": "Celebrations", "venue": "Further details will be shared soon."}], "photos": 3},
   "copy": {
     "nav_story": {"label": "Menu: story", "default": "Our story", "max": 16, "section": "home"},
     "nav_details": {"label": "Menu: the day", "default": "The day", "max": 16, "section": "home"},

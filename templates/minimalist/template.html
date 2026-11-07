@@ -85,7 +85,7 @@
 
 <!--part:gallery-->
 <section class="gallery section-pad" data-tpl-section="gallery" data-section="gallery">
-  <div class="photo-grid"><!--each photos--><figure><img src="{{src}}" alt="{{alt}}" loading="lazy"></figure><!--/each--></div>
+  <div class="photo-grid"><!--each photos--><figure><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph">Your photo</span><!--/if--></figure><!--/each--></div>
   <p class="gallery-caption">{{upper:copy:gallery_caption}}</p>
 </section>
 

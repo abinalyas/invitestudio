@@ -118,7 +118,7 @@
   <h2>{{em:copy:gallery_title}}</h2>
   <img class="flourish" src="/templates/modern-heritage/assets/botanical-divider.svg" alt="">
   <div class="photo-grid">
-    <!--each photos--><figure><img src="{{src}}" alt="{{alt}}" loading="lazy"></figure><!--/each-->
+    <!--each photos--><figure><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph">Your photo</span><!--/if--></figure><!--/each-->
   </div>
 </section>
 

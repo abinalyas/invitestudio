@@ -151,9 +151,15 @@ export function EditorPage() {
     const item = sections.find(section => section.key === key);
     const target = key === "home" ? "hero" : item?.sectionId;
     if (target) {
-      canvasRef.current?.shadowRoot
-        ?.querySelector<HTMLElement>(`[data-section="${target}"]`)
-        ?.scrollIntoView({ behavior: "auto", block: "nearest" });
+      // Scroll the preview itself (not the page) so the chosen section starts at the top of the frame,
+      // below any sticky header the template declares with scroll-margin-top.
+      const canvas = canvasRef.current;
+      const section = canvas?.shadowRoot?.querySelector<HTMLElement>(`[data-section="${target}"]`);
+      if (canvas && section) {
+        const margin = parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
+        const top = section.getBoundingClientRect().top - canvas.getBoundingClientRect().top + canvas.scrollTop - margin;
+        canvas.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+      }
     }
   }
 
@@ -348,6 +354,7 @@ export function EditorPage() {
           {active === "functions" ? <EventsPanel snap={snap} /> : null}
           {active === "gallery" ? <GalleryPanel snap={snap} /> : null}
           {active === "rsvp" ? <RsvpPanel snap={snap} /> : null}
+          <ExampleNote snap={snap} section={active} />
           <WordingPanel snap={snap} section={active} />
         </aside>
       </div>
@@ -375,6 +382,22 @@ export function EditorPage() {
         ))}
       </nav>
     </main>
+  );
+}
+
+// Packaged templates fill an empty section with example content in the editor so the design looks complete.
+// The published page leaves empty sections out, so say so where the couple is looking.
+function ExampleNote({ snap, section }: { snap: EditorSnapshot; section: SectionKey }) {
+  if (!snap.copyFields.length) return null;
+  const empty =
+    (section === "story" && !snap.storyCopy.trim()) ||
+    (section === "functions" && snap.events.length === 0) ||
+    (section === "gallery" && snap.galleryCount === 0);
+  if (!empty) return null;
+  return (
+    <p className="example-note" role="note">
+      The preview shows example content here so you can see the design. It does not appear on your published invitation until you add your own.
+    </p>
   );
 }
 

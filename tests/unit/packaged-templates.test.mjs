@@ -105,6 +105,24 @@ for (const { manifest, parts, css } of list) {
     assert.doesNotMatch(out, /<form|<input/, 'no guest form until responses exist');
   });
 
+  test(`${id}: the editor preview shows example content in empty sections, the published page does not`, () => {
+    const { renderPackagedTemplate } = renderer();
+    const t = { id, packaged: id };
+    const published = renderPackagedTemplate({ title: 'Sam' }, t);
+    const editing = renderPackagedTemplate({ title: 'Sam' }, t, { sample: true });
+    for (const section of ['story', 'functions', 'gallery']) {
+      assert.doesNotMatch(published, new RegExp(`data-section="${section}"`));
+      assert.match(editing, new RegExp(`data-section="${section}"`), `${section} shows example content`);
+    }
+    assert.doesNotMatch(editing, /\{\{|<!--|undefined|NaN|\[object/);
+    assert.doesNotMatch(editing, /<img src=""/, 'example photos are frames, not broken images');
+    assert.ok(manifest.example && manifest.example.story && manifest.example.events.length, 'the manifest provides example content');
+    assert.doesNotMatch(JSON.stringify(manifest.example), /\b(\d{1,2}:\d\d|20\d\d|AM|PM)\b/, 'example content makes no claims about times or dates');
+    const own = renderPackagedTemplate({ title: 'Sam', story: 'Our own story' }, t, { sample: true });
+    assert.match(own, /Our own story/);
+    assert.doesNotMatch(own, new RegExp(manifest.example.story.slice(0, 30)), "the couple's content replaces the example");
+  });
+
   test(`${id}: long names, one name, no date and unicode names stay tidy`, () => {
     const { renderPackagedTemplate } = renderer();
     const t = { id, packaged: id };
