@@ -1007,12 +1007,7 @@
 .figma-app .home-page .pricing{ padding-bottom: 72px; }
 .figma-app .home-page .faq{ padding-block: 72px; }
 .figma-app .home-page .cta{ margin-block: 48px 24px; }
-.figma-app .stats{ display: grid; grid-template-columns: repeat(2, minmax(0, 260px)); justify-content: center; gap: clamp(40px, 10vw, 160px); padding: 24px 0 96px; text-align: center; }
-.figma-app .stat{ display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.figma-app .stat strong{ font-family: "Playfair Display", serif; font-weight: 400; font-size: clamp(44px, 6vw, 64px); line-height: 1; color: #1d2a22; }
-.figma-app .stat span{ max-width: 190px; font-size: 13px; line-height: 1.5; color: #6b6a64; }
 @media (max-width: 760px){.figma-app .home-page .section{ padding-block: 64px; }
 .figma-app .home-page .how{ padding-top: 64px; }
 .figma-app .home-page .feature-panel{ margin-block: 32px; }
-.figma-app .home-page .faq{ padding-block: 48px; }
-.figma-app .stats{ gap: 24px; padding: 8px 0 64px; }}
+.figma-app .home-page .faq{ padding-block: 48px; }}
