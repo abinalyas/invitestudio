@@ -315,6 +315,7 @@
 
     startCreate(category) {
       state.editorMode = 'designer';
+      if (window.location.pathname !== '/') history.pushState({}, '', '/');
       startCreate(category);
     },
 
@@ -327,6 +328,74 @@
     // The real template with example content, in the existing preview dialog.
     previewTemplate(backendTemplateId) {
       previewTemplate(backendTemplateId);
+    },
+
+    // ---- Setup wizard (figma/islands/Setup.tsx) ----
+    setupDefaults() {
+      const p = project();
+      const known = id => offeredTemplateIds.includes(id);
+      const templateId = p && known(p.templateId) ? p.templateId : known(state.selectedTemplate) ? state.selectedTemplate : offeredTemplateIds[0];
+      return { templateId };
+    },
+
+    // Called when a step is finished: creates the draft the first time, then keeps it up to date.
+    commitSetup(fields) {
+      const templateId = offeredTemplateIds.includes(fields.templateId) ? fields.templateId : offeredTemplateIds[0];
+      state.category = 'Wedding';
+      state.selectedTemplate = templateId;
+      const p = project() || ensureProject();
+      p.category = 'Wedding';
+      p.title = fields.title;
+      p.date = fields.date;
+      p.location = fields.location;
+      p.message = fields.message;
+      p.story = fields.story;
+      p.hosts = fields.hosts;
+      p.name = p.title || p.name;
+      p.templateId = templateId;
+      const saved = save();
+      notify();
+      return saved;
+    },
+
+    // The preview while setting up: the typed values on the chosen template, before a draft exists.
+    // Names fall back to the template's example names, so the cover is never empty.
+    renderDraft(host, fields, fallbackTitle) {
+      const base = project() || {};
+      const t = tpl(offeredTemplateIds.includes(fields.templateId) ? fields.templateId : offeredTemplateIds[0]);
+      const title = String(fields.title || '').trim() || fallbackTitle || '';
+      const draft = {
+        ...base,
+        category: 'Wedding',
+        title,
+        name: title,
+        date: fields.date || '',
+        location: fields.location || '',
+        message: fields.message || '',
+        story: fields.story || '',
+        hosts: fields.hosts || '',
+        templateId: t.id,
+        functions: base.functions || [],
+        photos: base.photos || []
+      };
+      const container = invitationShadow(host);
+      container.style.width = '100%';
+      container.style.maxWidth = '100%';
+      container.innerHTML = sitePreview(draft, t, false);
+    },
+
+    setupStatus() {
+      const p = project();
+      return { canFinish: setupCanFinish(p), offer: setupLocalOffer(p), saveLine: setupSaveText(p) };
+    },
+
+    keepLocal() {
+      state.setupLocalOnly = true;
+      notify();
+    },
+
+    finishSetup() {
+      finishSetup();
     },
 
     openPublish() {
@@ -383,6 +452,8 @@
 
   window.inviteStudioIslandRoute = function inviteStudioIslandRoute() {
     if (!window.InviteStudioFigma) return null;
+    // The setup wizard is shown whatever the address says (it starts from any page).
+    if (state.page === 'setup') return { kind: 'setup' };
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
     const editorMatch = path.match(/^\/editor\/(\d+)$/);
     if (editorMatch) {

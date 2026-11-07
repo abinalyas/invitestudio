@@ -379,7 +379,7 @@ export function EditorPage() {
 
 // Events carry their own travel details: directions, parking, stays and access.
 // Structured per event so broader travel information can be added later.
-function EventsPanel({ snap }: { snap: EditorSnapshot }) {
+export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const trimmed = name.trim();
