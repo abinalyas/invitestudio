@@ -3,14 +3,26 @@
 // A native overflow scroller is driven by requestAnimationFrame, so touch, trackpad, keyboard
 // and drag all work with no library. Motion stops for reduced-motion users, while the strip
 // is off screen, and while it is hovered, focused or being dragged.
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { galleryTemplates } from "./shared";
 
-const COPIES = 3;
+// The list is repeated so the strip can loop. It must be wider than the screen plus two full copies,
+// so the number of copies grows with the screen and shrinks with the number of templates.
+function copiesFor(): number {
+  const width = typeof window === "undefined" ? 1440 : window.innerWidth;
+  return Math.min(14, Math.max(3, Math.ceil(width / (galleryTemplates.length * 140)) + 2));
+}
 const SPEED = 34; // px per second
 
 export function TemplateStrip() {
   const scroller = useRef<HTMLDivElement>(null);
+  const [copies, setCopies] = useState(copiesFor);
+
+  useEffect(() => {
+    const onResize = () => setCopies(copiesFor());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     const el = scroller.current;
@@ -68,17 +80,26 @@ export function TemplateStrip() {
     window.addEventListener("load", measure);
 
     const pause = () => { resumeAt = performance.now() + 2500; };
+    // The mouse is only "captured" once it has moved a few pixels, so a plain click still reaches the
+    // card's link. Capturing on press would send the click to the strip instead and nothing would open.
+    let captured = false;
     const down = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") { pause(); return; }
-      dragging = true; moved = 0; startX = e.clientX; startLeft = el.scrollLeft;
-      el.setPointerCapture(e.pointerId);
+      dragging = true; captured = false; moved = 0; startX = e.clientX; startLeft = el.scrollLeft;
     };
     const move = (e: PointerEvent) => {
       if (!dragging) return;
-      moved = Math.max(moved, Math.abs(e.clientX - startX));
-      el.scrollLeft = startLeft - (e.clientX - startX);
+      const dx = e.clientX - startX;
+      moved = Math.max(moved, Math.abs(dx));
+      if (!captured && moved > 6) { captured = true; el.setPointerCapture(e.pointerId); }
+      if (captured) el.scrollLeft = startLeft - dx;
     };
-    const up = () => { if (dragging) { dragging = false; pause(); } };
+    const up = (e: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      if (captured) { captured = false; try { el.releasePointerCapture(e.pointerId); } catch { /* already released */ } }
+      pause();
+    };
     const click = (e: MouseEvent) => { if (moved > 6) { e.preventDefault(); e.stopPropagation(); } moved = 0; };
     const enter = () => { hovering = true; };
     const leave = () => { hovering = false; };
@@ -107,12 +128,12 @@ export function TemplateStrip() {
       el.removeEventListener("focusin", enter);
       el.removeEventListener("focusout", leave);
     };
-  }, []);
+  }, [copies]);
 
   return (
     <div className="strip" ref={scroller} role="region" aria-label="Wedding templates, scrolling gallery">
       <div className="strip-track">
-        {Array.from({ length: COPIES }).flatMap((_, copy) =>
+        {Array.from({ length: copies }).flatMap((_, copy) =>
           galleryTemplates.map((t, i) => (
             <a
               key={`${copy}-${t.id}`}
