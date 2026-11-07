@@ -346,6 +346,14 @@ body{background:var(--paper);letter-spacing:.005em}.topbar{background:#faf7f0ef;
   .flow-layout .flow-step { flex-direction: column; justify-content: center; gap: 4px; min-height: 56px; padding: 6px 4px; text-align: center; font-size: 12px; line-height: 1.25; white-space: normal; }
   .flow-layout .flow-step .num { width: 26px; height: 26px; font-size: 12px; }
 }
+/* Large screens: the redesigned pages are drawn for a ~1500px-wide viewport. On wider monitors they were tiny at
+   100% browser zoom, so scale them up in steps to keep the same apparent size (e.g. 2560px wide ~ 175% zoom). */
+@media(min-width:1680px){.figma-island-host{zoom:1.15}}
+@media(min-width:1920px){.figma-island-host{zoom:1.3}}
+@media(min-width:2240px){.figma-island-host{zoom:1.5}}
+@media(min-width:2560px){.figma-island-host{zoom:1.75}}
+@media(min-width:3000px){.figma-island-host{zoom:2}}
+@media(min-width:3440px){.figma-island-host{zoom:2.3}}
 </style></head>
 <body><div id="app" class="app"></div><div id="modal-root"></div><div id="toast-root" aria-live="polite" aria-atomic="true"></div>
 <script src="/supabase-config.js"></script>
