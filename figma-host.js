@@ -290,13 +290,18 @@
       container.innerHTML = sitePreview(p, tpl(p.templateId), false);
     },
 
-    createDraft(backendTemplateId, templateNumber) {
+    createDraft(backendTemplateId, templateNumber, sampleNames) {
       // A new website: the existing creation path, then the designer for that template.
       state.currentId = null;
       state.selectedTemplate = backendTemplateId;
       state.category = 'Wedding';
       const p = ensureProject();
       p.templateId = backendTemplateId;
+      // A new draft starts with the names on the template's cover, as real values the couple edits.
+      if (typeof sampleNames === 'string' && sampleNames.trim()) {
+        p.title = sampleNames.trim();
+        p.name = p.title;
+      }
       applyPreferences(p);
       save();
       if (window.inviteStudioApi?.enabled && typeof createCloudDraftForProject === 'function') {

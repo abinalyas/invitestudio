@@ -236,7 +236,7 @@ export type GalleryTemplate = {
   id: number // the number in /templates/<id>
   backendId: string // the template id saved with a wedding (public.templates.id)
   title: string
-  names: string // example names shown on the gallery card
+  names: string // the example names on the template's cover; a new draft starts with them
   tagline: string
   tags: string[]
   opening: { name: string; text: string }
@@ -265,7 +265,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     id: 10,
     backendId: "palmera-beach",
     title: "Palmera Beach",
-    names: "Olivia & Ethan",
+    names: "Daniel & Amelia",
     tagline: "A sunlit beach inside an arch, framed by palms and hibiscus.",
     tags: ["Nature", "Beach"],
     opening: { name: "Scene story", text: sceneStory },
@@ -277,7 +277,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     id: 11,
     backendId: "curtain-call",
     title: "Curtain Call",
-    names: "Clara & Noah",
+    names: "Daniel & Amelia",
     tagline: "Theatre curtains that open on tap to reveal the invitation.",
     tags: ["Classic", "Theatre"],
     opening: {
@@ -292,7 +292,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     id: 12,
     backendId: "lunaria-moon",
     title: "Lunaria",
-    names: "Idris & Margot",
+    names: "Daniel & Amelia",
     tagline: "Dusty blue linen, a moon and an arch of leaves and water lilies.",
     tags: ["Botanical", "Moonlit"],
     opening: { name: "Scene story", text: sceneStory },
