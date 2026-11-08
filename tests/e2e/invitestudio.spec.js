@@ -380,4 +380,51 @@ test.describe('guest replies', () => {
     await expect(page.getByRole('heading', { name: 'RSVP' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Home' })).toHaveCount(0);
   });
+
+  // This one uses the app's own loadRsvpReplies (the others replace it), so a broken lookup of the open draft or its
+  // edit token cannot hide: the call must reach the replies address with the draft's edit token.
+  test('the dashboard loads the replies of the open draft with its edit token, and deletes one', async ({ page }) => {
+    const wid = '22222222-2222-4222-8222-222222222222', token = 'k'.repeat(43);
+    const seen = { auth: [], deleted: [] };
+    let replies = [
+      { id: '33333333-3333-4333-8333-333333333333', name: 'Meera Nair', attending: true, party: 3, events: {}, needs: 'Vegetarian', message: '', createdAt: '2027-01-01T10:00:00Z', updatedAt: '2027-01-01T10:00:00Z' },
+      { id: '44444444-4444-4444-8444-444444444444', name: 'Kiran', attending: false, party: 0, events: {}, needs: '', message: '', createdAt: '2027-01-02T10:00:00Z', updatedAt: '2027-01-02T10:00:00Z' }
+    ];
+    // 1. Make a draft on the device, then turn it into a saved one: a cloud id, and this browser holds its edit token.
+    await page.route('**/api/**', route => route.abort());
+    await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding', 'minimalist'));
+    await page.locator('#projectTitle').fill('Mira & Arun');
+    await page.locator('#projectDate').fill('2027-01-20');
+    await completeSetupSteps(page);
+    await page.evaluate(({ wid, token }) => {
+      current().cloudId = wid;
+      localStorage.setItem('invitestudio-edit-tokens', JSON.stringify({ [wid]: token }));
+      save();
+    }, { wid, token });
+    // 2. Open the app again with the saved-draft service switched on, as a returning couple does.
+    await page.unroute('**/api/**');
+    await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
+    await page.route('**/api/**', route => {
+      const url = new URL(route.request().url()), method = route.request().method();
+      const json = body => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+      if (url.pathname === `/api/weddings/${wid}/rsvps` && method === 'GET') {
+        seen.auth.push(route.request().headers().authorization);
+        return json({ replies, totals: { replies: replies.length, attending: replies.filter(r => r.attending).length, notAttending: replies.filter(r => !r.attending).length, headcount: replies.reduce((n, r) => n + r.party, 0), byEvent: {} } });
+      }
+      const del = url.pathname.match(new RegExp(`^/api/weddings/${wid}/rsvps/([0-9a-f-]+)$`));
+      if (del && method === 'DELETE') { seen.deleted.push(del[1]); replies = replies.filter(r => r.id !== del[1]); return json({ deleted: true }); }
+      return route.abort();
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await page.getByRole('button', { name: /^RSVP/ }).click();
+    await expect(page.getByText('Meera Nair')).toBeVisible();
+    await expect(page.locator('.rsvp-cards')).toContainText('3people');
+    expect(seen.auth[0]).toBe(`Bearer ${token}`);
+    await expect(page.getByRole('button', { name: /^Replies/ }).first()).toContainText('2');
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', { name: 'Delete' }).first().click();
+    await expect(page.locator('.rsvp-list li')).toHaveCount(1);
+    expect(seen.deleted).toEqual(['33333333-3333-4333-8333-333333333333']);
+  });
 });
