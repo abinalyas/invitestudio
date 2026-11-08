@@ -6,6 +6,7 @@ import {
   publicWeddingProjection,
   success
 } from '../../_shared/api.js';
+import { safePhotoViews } from '../../_shared/media.js';
 
 export async function onRequest(context) {
   const { request, env, params } = context;
@@ -32,14 +33,9 @@ export async function onRequest(context) {
 
     // Events come from wedding.content.functions (the single event source). Photos
     // are metadata only; signed storage URLs are introduced with the media phase.
-    const photos = await db(env, `wedding_photos?${new URLSearchParams({
-      select: 'alt,width,height,sort_order',
-      wedding_id: `eq.${wedding.id}`,
-      order: 'sort_order.asc,created_at.asc'
-    })}`);
     return success(request, env, {
       wedding: publicWeddingProjection(wedding),
-      photos: photos || []
+      photos: await safePhotoViews(env, wedding.id)
     });
   } catch (error) {
     return fail(request, env, error);

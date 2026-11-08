@@ -127,7 +127,14 @@
   // Events are restored from wedding.content.functions by mergeServerWedding().
   // Only photo metadata is merged here.
   function mergeRecoveredChildren(project, result) {
-    if (Array.isArray(result?.photos)) project.galleryMetadata = result.photos;
+    if (Array.isArray(result?.photos)) project.photos = localPhotos(result.photos);
+  }
+  // What the invitation and the editor show for each uploaded photo: its full picture, thumbnail and description.
+  function localPhotos(list) {
+    return list.map(photo => ({
+      id: photo.id, alt: photo.alt || '', width: photo.width || null, height: photo.height || null,
+      data: photo.full, thumb: photo.thumb
+    }));
   }
 
   async function recoverFromPrivateLink(link) {
@@ -189,6 +196,90 @@
     } catch {
       window.prompt('Copy your private edit link:', link);
     }
+  };
+
+  // ---- Photos (docs/MEDIA_PLAN.md). The list on the server is the truth; project.photos mirrors it. ----
+  function mediaContext() {
+    const project = typeof current === 'function' ? current() : null;
+    const token = project?.cloudId ? tokenFor(project.cloudId) : '';
+    return { project, token, api: window.inviteStudioApi, ready: Boolean(project && token && window.inviteStudioApi?.enabled) };
+  }
+  function applyMedia(project, result) {
+    project.media = {
+      enabled: result.enabled !== false, reason: result.reason || '', limits: result.limits || null,
+      usage: result.usage || { count: 0, bytes: 0 }, error: ''
+    };
+    project.photos = localPhotos(result.photos || []);
+    localSave();
+  }
+  window.loadMedia = async function loadMedia() {
+    const { project, token, api, ready } = mediaContext();
+    if (!project) return;
+    if (!ready) { project.media = { enabled: false, reason: 'NOT_SAVED_ONLINE', limits: null, usage: { count: 0, bytes: 0 }, error: '' }; window.notifyInviteStudioChange?.(); return; }
+    try {
+      applyMedia(project, await api.listMedia(project.cloudId, token));
+    } catch (error) {
+      project.media = { ...(project.media || {}), enabled: Boolean(project.media?.enabled), error: error.message || 'Photos could not be loaded.' };
+    }
+    window.notifyInviteStudioChange?.();
+  };
+  // Adds photos one at a time (each is resized here first). Returns what was added and what failed, with reasons.
+  window.uploadMediaPhotos = async function uploadMediaPhotos(files, onProgress) {
+    const { project, token, api, ready } = mediaContext();
+    const result = { added: 0, errors: [] };
+    if (!ready) { result.errors.push({ name: '', message: 'Your invitation needs to be saved online before you can add photos.' }); return result; }
+    const list = Array.from(files || []);
+    for (let i = 0; i < list.length; i += 1) {
+      const file = list[i];
+      if (onProgress) onProgress({ index: i + 1, total: list.length, name: file.name });
+      try {
+        const prepared = await window.InviteMedia.prepare(file);
+        const form = new FormData();
+        const ext = prepared.format === 'webp' ? 'webp' : 'jpg';
+        form.set('full', prepared.full, `full.${ext}`);
+        form.set('thumb', prepared.thumb, `thumb.${ext}`);
+        form.set('alt', '');
+        await api.uploadMedia(project.cloudId, token, form);
+        result.added += 1;
+      } catch (error) {
+        result.errors.push({ name: file.name, message: friendlyMediaError(error) });
+        if (error.code === 'MEDIA_LIMIT' || error.code === 'RATE_LIMITED' || error.code === 'MEDIA_NOT_CONFIGURED') break;
+      }
+    }
+    await window.loadMedia();
+    return result;
+  };
+  function friendlyMediaError(error) {
+    if (error.code === 'MEDIA_LIMIT') return 'You have reached the limit of 12 photos or 8 MB. Remove a photo to add another.';
+    if (error.code === 'RATE_LIMITED') return 'Too many uploads just now. Please try again in a little while.';
+    if (error.code === 'MEDIA_NOT_CONFIGURED') return 'Photo storage is not set up yet.';
+    if (error.code === 'MEDIA_TOO_LARGE' || error.code === 'MEDIA_DIMENSIONS' || error.code === 'MEDIA_TYPE') return 'This photo could not be accepted. Try a different one.';
+    return error.message || 'This photo could not be added.';
+  }
+  window.setMediaAlt = async function setMediaAlt(photoId, alt) {
+    const { project, token, api, ready } = mediaContext();
+    if (!ready) return;
+    const photo = (project.photos || []).find(item => item.id === photoId);
+    if (photo) photo.alt = alt;
+    window.notifyInviteStudioChange?.();
+    try { await api.updateMedia(project.cloudId, token, photoId, { alt }); } catch { await window.loadMedia(); }
+  };
+  window.moveMediaPhoto = async function moveMediaPhoto(photoId, delta) {
+    const { project, token, api, ready } = mediaContext();
+    if (!ready) return;
+    const list = (project.photos || []).slice();
+    const from = list.findIndex(item => item.id === photoId), to = from + delta;
+    if (from < 0 || to < 0 || to >= list.length) return;
+    [list[from], list[to]] = [list[to], list[from]];
+    project.photos = list;
+    window.notifyInviteStudioChange?.();
+    try { await api.reorderMedia(project.cloudId, token, list.map(item => item.id)); } catch { await window.loadMedia(); }
+  };
+  window.deleteMediaPhoto = async function deleteMediaPhoto(photoId) {
+    const { project, token, api, ready } = mediaContext();
+    if (!ready) return;
+    try { await api.deleteMedia(project.cloudId, token, photoId); } catch { /* the reload below shows the truth */ }
+    await window.loadMedia();
   };
 
   // The couple's replies (private: needs the edit token this device holds).
@@ -296,15 +387,8 @@
   };
 
   function galleryPayload(project) {
-    return {
-      preference: project.preferences?.gallery || 'gallery',
-      photos: (project.photos || []).map(photo => ({
-        alt: photo.alt || '',
-        storagePath: photo.storagePath || null,
-        width: Number.isInteger(photo.width) ? photo.width : null,
-        height: Number.isInteger(photo.height) ? photo.height : null
-      }))
-    };
+    // Photos are uploaded and managed through the media endpoints, not saved with the invitation's content.
+    return { preference: project.preferences?.gallery || 'gallery' };
   }
 
   // Image and audio data URLs are never sent to the server: they are too large for a
@@ -388,7 +472,6 @@
       project.preferences = { ...(project.preferences || {}), gallery: content.gallery.preference };
     }
     if (Array.isArray(content.gallery?.photos)) project.galleryMetadata = content.gallery.photos;
-    if (!preserveLocalPhotos && Array.isArray(content.gallery?.photos)) project.photos = content.gallery.photos;
     return project;
   }
 

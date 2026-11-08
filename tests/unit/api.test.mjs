@@ -77,7 +77,7 @@ test('public projection drops hidden events and hidden sections and the visible 
   assert.deepEqual(projected.sections.map(s => s.id), ['hero', 'draft']);
   assert.equal(projected.sections.find(s => s.id === 'draft').visible, false);
   assert.equal(projected.sections.find(s => s.id === 'draft').content, undefined);
-  assert.deepEqual(projected.content.gallery.photos, [{ alt: 'Portrait', width: 1200, height: 800 }]);
+  assert.deepEqual(projected.content.gallery.photos, [], 'photos come from the media table, never from the saved content');
 });
 
 test('public projection tolerates missing content without throwing', () => {
