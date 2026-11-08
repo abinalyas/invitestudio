@@ -113,15 +113,23 @@
       var d = parseDate(f.date), bits = [d ? d.short : "", f.time || ""].filter(Boolean);
       return { title: f.title, venue: f.venue || "", when: bits.join(" · ") };
     });
+    var numbered = function (list) { return list.map(function (e, i) { e.n = String(i + 1).padStart(2, "0"); return e; }); };
     var directions = ""; fns.forEach(function (f) { if (!directions) directions = safeHttp(f.directionsUrl); });
     var timed = fns.filter(function (f) { return f.time; })[0];
     var story = String(p.story || "").trim();
     var example = (sample && pkg.manifest.example) || null;
     if (example && !story) story = example.story || "";
     if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", when: "" }; });
+    events = numbered(events);
     var photos = (Array.isArray(p.photos) ? p.photos : []).map(function (ph) { return ph && { src: safePhoto(ph.data), alt: ph.alt || "" }; }).filter(function (ph) { return ph && ph.src; });
-    var gallery = manifest.heroPhoto ? photos.slice(1) : photos;
+    // Photo slots: the first photos fill the template's named slots (hero, story, ...), in order. The gallery gets the
+    // rest, or all of them when the template reuses its slot photos (galleryReuse).
+    var slots = manifest.photoSlots || (manifest.heroPhoto ? ["hero"] : []);
+    var gallery = manifest.galleryReuse ? photos : photos.slice(slots.length);
     if (example && !photos.length) { gallery = []; for (var k = 0; k < (example.photos || 0); k++) gallery.push({ src: "", alt: "" }); }
+    var capKeys = manifest.captionKeys || [];
+    gallery = gallery.map(function (ph, i) { return { src: ph.src, alt: ph.alt, caption: capKeys[i] ? copy(capKeys[i]) : "" }; });
+    var galleryShown = visible.gallery && gallery.length >= (manifest.galleryMin || 1);
     var long = (n[0] + n[1]).length > 18;
     var namesLen = title.length;
     var v = {
@@ -132,12 +140,14 @@
       venue: venue, place: place, has_venue: Boolean(venue), place_or_venue: place || venue,
       footer_names: n[1] ? n[0] + " & " + n[1] : n[0],
       hosts_line: String(p.hosts || "").trim() || copy("hosts_line"),
-      closing_note: String(p.message || "").trim() || copy(manifest.copy.invitation_note ? "invitation_note" : "details_note"),
+      closing_note: String(p.message || "").trim() || copy(["invitation_note", "note_text", "details_note"].filter(function (k) { return manifest.copy[k]; })[0] || "details_note"),
       time_text: (fns.length === 1 && fns[0].time) || (timed && timed.time) || copy("time_pending"),
       story: Boolean(story) && visible.story, story_paras: story ? story.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean) : [],
       events: visible.functions ? events : [], events_count: Math.min(Math.max(events.length, 1), 3),
-      hero_photo: manifest.heroPhoto && photos.length ? photos[0].src : "",
-      photos: visible.gallery ? gallery : [],
+      hero_photo: slots.indexOf("hero") >= 0 && photos[slots.indexOf("hero")] ? photos[slots.indexOf("hero")].src : "",
+      story_photo: slots.indexOf("story") >= 0 && photos[slots.indexOf("story")] ? photos[slots.indexOf("story")].src : "",
+      venue_photo: slots.indexOf("venue") >= 0 && photos[slots.indexOf("venue")] ? photos[slots.indexOf("venue")].src : "",
+      photos: galleryShown ? gallery : [], show_gallery: galleryShown,
       map_url: directions || (p.location ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.location) : ""),
       welcome: visible.welcome, show_venue: visible.welcome && Boolean(venue),
       footer_line: [date ? date.long : "", place || venue].filter(Boolean).join(" · ")

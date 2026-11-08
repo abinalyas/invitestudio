@@ -358,3 +358,10 @@ Built with the same pipeline and no changes to the contract, which showed the ph
 - **Map embed** replaced by a typographic place panel plus the directions link (the CSP blocks map frames).
 - **Per-template data moved into the manifest**: `heroPhoto`, `contrast` (text/background pairs the quality gate checks, which must be colours the stylesheet uses) and `thumbnail` (how to crop the picture shown in the gallery).
 - **Wording** is the same mechanism (`content.copy`); the section tags that carried numbers ("01 — Our story") lost them because sections can be hidden.
+
+### 15.2 Third template: Cinematic (implemented)
+
+- **Photo slots are now in the engine**: a manifest lists `photoSlots` (here `hero`, `story`, `venue`); the couple's first photos fill them in order. `galleryReuse` lets the gallery show every photo (the reference reuses its photos), and `galleryMin` hides the gallery under that many (here 2). Gallery captions are wording keys listed in `captionKeys`.
+- **Fallbacks**: the cover and closing scene use a designed dark backdrop (a warm glow with the couple's initials, large and faint); the story photo is dropped (the story is centred text); the venue photo becomes the same backdrop panel; the banner is a typographic scene.
+- **Removed**: the map iframe, the `mailto:` RSVP (a "not open yet" note instead), the "temporary visual reference" note, the numbered scene labels, and the slow-zoom and fade-in animations (they restart on every keystroke in the editor preview).
+- **Gotcha found**: class prefixing must not see conditional markers inside `class="..."`, so conditional state uses a data attribute (`data-photo`), not a class.
