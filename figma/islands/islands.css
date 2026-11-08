@@ -431,3 +431,17 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
 @media (max-width: 767px) { .scroll-cue.detail-cue { display: flex; } }
 /* overflow: hidden here made the page a scroll container and stopped the phone from staying in view (sticky). clip keeps the same look. */
 .detail-page { overflow: clip; }
+
+/* RSVP: replies list in the editor */
+.rsvp-replies{margin-top:18px;padding-top:14px;border-top:1px solid var(--line, #e6ddd3)}
+.rsvp-replies h4{margin:0 0 8px;font-size:1rem}
+.rsvp-totals{margin:0 0 8px;font-size:.92rem}
+.rsvp-by-event{margin:0 0 10px;padding-left:18px;font-size:.85rem}
+.rsvp-list{list-style:none;margin:10px 0;padding:0;display:grid;gap:8px}
+.rsvp-list li{padding:10px 12px;border:1px solid var(--line, #e6ddd3);border-radius:10px;background:#fff}
+.rsvp-list li>div{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.rsvp-list p{margin:4px 0 0;overflow-wrap:anywhere}
+.rsvp-yes{color:#2f6b3f;font-size:.85rem}
+.rsvp-no{color:#8a5a2b;font-size:.85rem}
+.check-row{display:flex;align-items:center;gap:10px}
+.check-row input{width:auto}

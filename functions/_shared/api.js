@@ -22,7 +22,7 @@ function corsHeaders(request, env) {
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Headers': 'authorization, content-type, x-edit-token',
-    'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin'
   };
@@ -601,16 +601,41 @@ export const RESERVED_SLUGS = Object.freeze(new Set([
   'support', 'help', 'www', 'mail', 'root', 'null', 'undefined'
 ]));
 
-// The only RSVP facts a visitor gets: how the response section works and, when the couple chose it, the
-// contact number. Replies themselves are never part of a public projection.
-function publicRsvp(preferences) {
+// How the response section works, read from the couple's saved settings. Defaults: online replies with a guest count,
+// open, no reply-by date, up to 10 people per reply.
+export const RSVP_MAX_PARTY_LIMIT = 20;
+export function rsvpSettings(preferences) {
   const prefs = preferences && typeof preferences === 'object' && !Array.isArray(preferences) ? preferences : {};
   const mode = ['count', 'rsvp', 'contact', 'none'].includes(prefs.rsvp) ? prefs.rsvp : 'count';
+  const maxParty = Number.isInteger(prefs.rsvpMaxParty) ? Math.min(Math.max(prefs.rsvpMaxParty, 1), RSVP_MAX_PARTY_LIMIT) : 10;
+  const replyBy = typeof prefs.rsvpReplyBy === 'string' && validDate(prefs.rsvpReplyBy) && prefs.rsvpReplyBy ? prefs.rsvpReplyBy : '';
   const contact = prefs.rsvpContact && typeof prefs.rsvpContact === 'object' ? prefs.rsvpContact : {};
   const value = typeof contact.value === 'string' ? contact.value.replace(/[^\d+\s()-]/g, '').trim().slice(0, 24) : '';
   const digits = value.replace(/\D/g, '');
-  const valid = (contact.type === 'whatsapp' || contact.type === 'phone') && digits.length >= 7 && digits.length <= 15;
-  return { mode, contact: mode === 'contact' && valid ? { type: contact.type, value } : null };
+  const validContact = (contact.type === 'whatsapp' || contact.type === 'phone') && digits.length >= 7 && digits.length <= 15;
+  return {
+    mode, maxParty, replyBy, open: prefs.rsvpOpen !== false,
+    contact: validContact ? { type: contact.type, value } : null
+  };
+}
+
+// True while guests may reply online: an online mode, switched on, and not past the reply-by date (that whole day counts).
+export function rsvpAccepting(settings, today = new Date().toISOString().slice(0, 10)) {
+  return (settings.mode === 'count' || settings.mode === 'rsvp') && settings.open && (!settings.replyBy || today <= settings.replyBy);
+}
+
+// The only RSVP facts a visitor gets. Replies themselves are never part of a public projection.
+function publicRsvp(preferences) {
+  const settings = rsvpSettings(preferences);
+  const online = settings.mode === 'count' || settings.mode === 'rsvp';
+  return {
+    mode: settings.mode,
+    open: settings.open,
+    maxParty: online ? settings.maxParty : null,
+    replyBy: online ? settings.replyBy : '',
+    // The number is shown when the couple chose contact details, and as the fallback when replies are closed.
+    contact: settings.mode === 'contact' || (online && !rsvpAccepting(settings)) ? settings.contact : null
+  };
 }
 
 export function publicWeddingProjection(wedding) {

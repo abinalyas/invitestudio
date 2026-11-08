@@ -60,7 +60,7 @@ Every field below is what the couple provides, or what is derived from it. "Toda
 | Photos | Library of images, each with alt text | `content.gallery.photos` (up to 4, local only for now) | **Photo storage** and more than 4 photos (section 5). |
 | Template copy | Section titles, kickers, hero headline, sign-off, closing line | Not stored | **New**: `content.copy`, a map of copy keys to text (section 6). |
 | Section visibility | Show or hide per section | `sections` | Registry gains new section ids (section 4). |
-| Guest responses | Name, attending, guests, dietary note, message | `preferences.rsvp` (a mode only) | Built in the RSVP phase. Until then every template shows "Guest responses are not open yet". |
+| Guest responses | Name, attending, guests, dietary note, message | `preferences.rsvp` (a mode only) | Built: a Reply button (`data-rsvp-open`) that the platform turns into a form; see `docs/RSVP_PLAN.md`.|
 
 ### 3.1 Date and time
 
@@ -93,7 +93,7 @@ The references need three more.
 | `functions` | events | No | Hide when there are no events |
 | `venue` **new** | venue, place, map link, venue photo | No | Hide when there is no venue |
 | `gallery` | photos with captions | No | Hide when there are no photos |
-| `rsvp` | RSVP settings | No | "Guest responses are not open yet" until the RSVP phase |
+| `rsvp` | RSVP settings | No | A Reply button (online replies), the couple's number, or "Replies are closed"; markup comes from `rsvp_*` values (see `rsvp-view.js`) |
 | `closing` **new** | names, date, closing line | Yes | Names only |
 
 Templates may split one section across the page (for example the countdown inside the hero, or a date block in the

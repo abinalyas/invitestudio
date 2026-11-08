@@ -42,7 +42,6 @@
     "rsvp_eyebrow": {"label": "RSVP: small heading", "default": "We hope you can join us", "max": 40, "section": "rsvp"},
     "rsvp_title": {"label": "RSVP: title", "default": "Save your *place.*", "max": 30, "section": "rsvp"},
     "rsvp_lead": {"label": "RSVP: text", "default": "Your presence would mean the world to us. Please let us know if you can make it.", "max": 120, "section": "rsvp"},
-    "rsvp_status": {"label": "RSVP: status line", "default": "Online replies are not open yet. Your hosts will tell you when you can respond.", "max": 120, "section": "rsvp"},
     "footer_line": {"label": "Footer: line", "default": "Made with love, for a day to remember.", "max": 60, "section": "home"}
   }
 }

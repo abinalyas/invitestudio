@@ -44,7 +44,6 @@
     "rsvp_kicker": {"label": "RSVP: small heading", "default": "Kindly reply", "max": 40, "section": "rsvp"},
     "rsvp_title": {"label": "RSVP: title", "default": "Will you *join us?*", "max": 30, "section": "rsvp"},
     "rsvp_intro": {"label": "RSVP: text", "default": "We would be delighted to celebrate this special day with you.", "max": 120, "section": "rsvp"},
-    "rsvp_status": {"label": "RSVP: status line", "default": "Online replies are not open yet. Your hosts will tell you when you can respond.", "max": 120, "section": "rsvp"},
     "gallery_kicker": {"label": "Gallery: small heading", "default": "Memories", "max": 40, "section": "gallery"},
     "gallery_title": {"label": "Gallery: title", "default": "Moments *together*", "max": 30, "section": "gallery"},
     "footer_back": {"label": "Footer: link", "default": "Back to the beginning", "max": 30, "section": "home"},

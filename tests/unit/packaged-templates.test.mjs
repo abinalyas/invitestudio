@@ -16,10 +16,11 @@ const list = loadTemplates();
 const html = readFileSync(join(root, 'index.html'), 'utf8');
 
 function renderer() {
-  const ctx = { Math, Date, String, Array, Object, encodeURIComponent, Intl };
+  const ctx = { Math, Date, String, Array, Object, JSON, Number, encodeURIComponent, Intl };
   ctx.globalThis = ctx;
   vm.createContext(ctx);
   vm.runInContext(readFileSync(join(root, 'templates/templates.generated.js'), 'utf8'), ctx);
+  vm.runInContext(readFileSync(join(root, 'rsvp-view.js'), 'utf8'), ctx);
   vm.runInContext(readFileSync(join(root, 'packaged-templates.js'), 'utf8'), ctx);
   return ctx;
 }
@@ -127,8 +128,9 @@ for (const { manifest, parts, css } of list) {
     for (const hidden of ['story', 'functions', 'gallery']) assert.doesNotMatch(out, new RegExp(`data-section="${hidden}"`), `${hidden} is left out when empty`);
     assert.doesNotMatch(out, /data-countdown/, 'no countdown without a date');
     assert.doesNotMatch(out, /Get directions/, 'no directions without a place');
-    assert.match(out, /Online replies are not open yet/, 'RSVP says it is not open');
-    assert.doesNotMatch(out, /<form|<input/, 'no guest form until responses exist');
+    assert.match(out, /data-rsvp-open/, 'a Reply button, by default');
+    assert.doesNotMatch(out, /not open yet/i);
+    assert.doesNotMatch(out, /<form|<input/, 'the form is drawn by the platform, not by the template');
   });
 
   test(`${id}: the editor preview shows example content in empty sections, the published page does not`, () => {
@@ -223,27 +225,48 @@ test('wording is validated and stored by the server, and returned on the public 
   assert.equal(pub.content.secret, undefined);
 });
 
-// RSVP contact fallback: online replies are not built yet, so the section tells the truth in every mode.
+// The RSVP section: online replies by default, a contact number, nothing, or closed.
 for (const { manifest: t } of list) {
   test(`${t.id}: RSVP section follows the chosen mode`, () => {
     const { renderPackagedTemplate } = renderer();
     const base = { title: 'Asha & Ravi', date: '2027-02-14' };
-    const run = preferences => stripped(renderPackagedTemplate({ ...base, preferences }, { packaged: t.id }));
-    const whatsapp = run({ rsvp: 'contact', rsvpContact: { type: 'whatsapp', value: '+91 98765 43210' } });
+    const run = (preferences, extra = {}) => stripped(renderPackagedTemplate({ ...base, ...extra, preferences }, { packaged: t.id }));
+    const number = { type: 'whatsapp', value: '+91 98765 43210' };
+
+    const online = run({});
+    assert.match(online, /<button type="button" class="[a-z]+-rsvp-open" data-rsvp-open/);
+    assert.match(online, /data-rsvp-config="[^"]*&quot;mode&quot;:&quot;count&quot;/);
+    assert.doesNotMatch(online, /wa\.me|not open yet|Replies are closed/);
+    assert.match(run({ rsvp: 'rsvp' }), /&quot;mode&quot;:&quot;rsvp&quot;/);
+    assert.match(run({ rsvpMaxParty: 4 }), /&quot;maxParty&quot;:4/);
+
+    // Several events with ids: the form asks which ones. One event: it does not.
+    const ev = (id, title) => ({ id, title, visible: true, date: '2027-02-14' });
+    assert.match(run({}, { functions: [ev('a', 'First'), ev('b', 'Second')] }), /&quot;events&quot;:\[\{&quot;id&quot;:&quot;a&quot;,&quot;title&quot;:&quot;First&quot;/);
+    assert.match(run({}, { functions: [ev('a', 'First')] }), /&quot;events&quot;:\[\]/);
+
+    // Switched off or past the reply-by date: closed, with the number when there is one. No button.
+    for (const closedPrefs of [{ rsvpOpen: false }, { rsvpReplyBy: '2020-01-01' }]) {
+      const closed = run({ ...closedPrefs, rsvpContact: number });
+      assert.match(closed, /Replies are closed\. To reach the couple:/);
+      assert.match(closed, /href="https:\/\/wa\.me\/919876543210"/);
+      assert.doesNotMatch(closed, /data-rsvp-open/);
+      assert.match(run(closedPrefs), /Replies are closed\./);
+    }
+    assert.match(run({ rsvpReplyBy: '2999-01-01' }), /data-rsvp-open/);
+
+    // Contact details only.
+    const whatsapp = run({ rsvp: 'contact', rsvpContact: number });
     assert.match(whatsapp, /href="https:\/\/wa\.me\/919876543210"/);
     assert.match(whatsapp, /To reply, contact the couple:/);
-    assert.doesNotMatch(whatsapp, /not open yet/i);
+    assert.doesNotMatch(whatsapp, /data-rsvp-open|not open yet/i);
     assert.match(run({ rsvp: 'contact', rsvpContact: { type: 'phone', value: '+44 20 7946 0958' } }), /href="tel:\+442079460958"/);
-    // No usable number: no empty box, no dead link, no "not open yet".
     for (const bad of [null, { type: 'whatsapp', value: '' }, { type: 'whatsapp', value: '12' }, { type: 'email', value: 'a@b.co' }]) {
-      const out = run({ rsvp: 'contact', rsvpContact: bad });
-      assert.doesNotMatch(out, /wa\.me|tel:|not open yet/i);
+      assert.doesNotMatch(run({ rsvp: 'contact', rsvpContact: bad }), /wa\.me|tel:|data-rsvp-open/i);
     }
-    // Script-looking input never reaches an attribute.
     assert.doesNotMatch(run({ rsvp: 'contact', rsvpContact: { type: 'whatsapp', value: '"><script>1234567' } }), /<script/i);
-    // "none" says nothing; the others keep the honest note.
-    assert.doesNotMatch(run({ rsvp: 'none' }), /not open yet|wa\.me/i);
-    assert.match(run({ rsvp: 'count' }), /not open yet/i);
-    assert.match(run({}), /not open yet/i);
+
+    // No response form: nothing about replies.
+    assert.doesNotMatch(run({ rsvp: 'none', rsvpContact: number }), /data-rsvp-open|wa\.me|Replies are closed/);
   });
 }

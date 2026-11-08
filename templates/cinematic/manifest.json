@@ -47,7 +47,6 @@
     "gallery_cap4": {"label": "Gallery: caption 4", "default": "Rooted in home", "max": 30, "section": "gallery"},
     "rsvp_eyebrow": {"label": "Closing: small heading", "default": "The final scene", "max": 40, "section": "rsvp"},
     "rsvp_title": {"label": "Closing: title", "default": "We can’t wait to celebrate *with you.*", "max": 60, "section": "rsvp"},
-    "rsvp_status": {"label": "Closing: status line", "default": "Online replies are not open yet. Your hosts will tell you when you can respond.", "max": 120, "section": "rsvp"},
     "footer_line": {"label": "Footer: line", "default": "Made with love", "max": 40, "section": "home"},
     "footer_back": {"label": "Footer: link", "default": "Back to the beginning", "max": 30, "section": "home"}
   }

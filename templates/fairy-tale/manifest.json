@@ -46,7 +46,6 @@
     "rsvp_eyebrow": {"label": "RSVP: small heading", "default": "Kindly reply", "max": 30, "section": "rsvp"},
     "rsvp_title": {"label": "RSVP: title", "default": "Will You *Join Us?*", "max": 30, "section": "rsvp"},
     "rsvp_intro": {"label": "RSVP: text", "default": "Your presence would make our day even more special.", "max": 100, "section": "rsvp"},
-    "rsvp_status": {"label": "RSVP: status line", "default": "Online replies are not open yet. Your hosts will tell you when you can respond.", "max": 120, "section": "rsvp"},
     "rsvp_note": {"label": "RSVP: closing line", "default": "We can’t wait to celebrate with you.", "max": 60, "section": "rsvp"},
     "footer_eyebrow": {"label": "Footer: small heading", "default": "And so the adventure begins", "max": 40, "section": "home"},
     "footer_last": {"label": "Footer: last line", "default": "Happily ever after starts with you.", "max": 60, "section": "home"}

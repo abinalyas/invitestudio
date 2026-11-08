@@ -145,14 +145,14 @@ test('marketing copy makes no photo gallery claim while photo storage does not e
   }
 });
 
-test('public projection carries only the RSVP mode and a valid contact number', () => {
-  const withContact = prefs => publicWeddingProjection({ ...privateWedding, preferences: prefs }).rsvp;
-  assert.deepEqual(withContact({ rsvp: 'contact', rsvpContact: { type: 'whatsapp', value: '+91 98765 43210' } }),
-    { mode: 'contact', contact: { type: 'whatsapp', value: '+91 98765 43210' } });
-  assert.deepEqual(withContact({ rsvp: 'count', rsvpContact: { type: 'phone', value: '+91 98765 43210' } }), { mode: 'count', contact: null });
-  assert.equal(withContact({ rsvp: 'contact', rsvpContact: { type: 'email', value: 'a@b.co' } }).contact, null);
-  assert.equal(withContact({ rsvp: 'contact', rsvpContact: { type: 'phone', value: '12' } }).contact, null);
-  assert.equal(withContact({ rsvp: 'bogus' }).mode, 'count');
-  assert.equal(withContact(null).mode, 'count');
+test('public projection carries only how replies work and a valid contact number', () => {
+  const rsvp = prefs => publicWeddingProjection({ ...privateWedding, preferences: prefs }).rsvp;
+  const number = { type: 'whatsapp', value: '+91 98765 43210' };
+  assert.deepEqual(rsvp({ rsvp: 'contact', rsvpContact: number }), { mode: 'contact', open: true, maxParty: null, replyBy: '', contact: number });
+  assert.equal(rsvp({ rsvp: 'count', rsvpContact: number }).contact, null, 'the number stays hidden while replies are open');
+  assert.equal(rsvp({ rsvp: 'contact', rsvpContact: { type: 'email', value: 'a@b.co' } }).contact, null);
+  assert.equal(rsvp({ rsvp: 'contact', rsvpContact: { type: 'phone', value: '12' } }).contact, null);
+  assert.equal(rsvp({ rsvp: 'bogus' }).mode, 'count');
+  assert.equal(rsvp(null).mode, 'count');
   assert.equal(JSON.stringify(publicWeddingProjection(privateWedding)).includes('do not publish'), false);
 });

@@ -96,3 +96,5 @@ figure{margin:0}
 .section-heading h2{font-size:2.8rem}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
 .rsvp-link{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.rsvp-open{display:inline-block;margin:16px auto 0;padding:13px 34px;border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:opacity .2s}
+.rsvp-open:hover,.rsvp-open:focus-visible{opacity:.7}

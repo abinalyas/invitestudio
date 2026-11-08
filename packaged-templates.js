@@ -149,7 +149,7 @@
     var capKeys = manifest.captionKeys || [];
     gallery = gallery.map(function (ph, i) { return { src: ph.src, alt: ph.alt, caption: capKeys[i] ? copy(capKeys[i]) : "" }; });
     var galleryShown = visible.gallery && gallery.length >= (manifest.galleryMin || 1);
-    var rsvp = rsvpValues(p, overrides.rsvp_status);
+    var rsvp = root.InviteRsvp ? root.InviteRsvp.view(p, "") : { text: "", show: false };
     var long = (n[0] + n[1]).length > 18;
     var namesLen = title.length;
     var v = {
@@ -170,32 +170,11 @@
       photos: galleryShown ? gallery : [], show_gallery: galleryShown,
       map_url: directions || (p.location ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.location) : ""),
       welcome: visible.welcome, show_venue: visible.welcome && Boolean(venue),
-      rsvp_status_show: rsvp.show, rsvp_status_text: rsvp.fallback ? copy("rsvp_status") : rsvp.text, rsvp_contact: rsvp.contact, rsvp_href: rsvp.href, rsvp_contact_label: rsvp.label,
+      rsvp_status_show: rsvp.show, rsvp_status_text: rsvp.text, rsvp_contact: rsvp.contact, rsvp_href: rsvp.href, rsvp_contact_label: rsvp.label,
+      rsvp_online: Boolean(rsvp.config), rsvp_config: rsvp.config || "",
       footer_line: [date ? date.long : "", place || venue].filter(Boolean).join(" · ")
     };
     return { values: v, copy: copy };
-  }
-
-  // What the RSVP section says. Online replies are not built yet, so "count" and "rsvp" keep the honest
-  // "not open yet" line. "contact" shows the couple's WhatsApp or phone number; "none" shows nothing.
-  // A line the couple wrote themselves (copy.rsvp_status) wins in every mode.
-  function rsvpValues(p, custom) {
-    var prefs = (p && p.preferences) || {}, mode = prefs.rsvp || "count";
-    var own = typeof custom === "string" ? custom.trim().slice(0, 300) : "";
-    var c = prefs.rsvpContact || {}, digits = String(c.value || "").replace(/[^\d]/g, "");
-    var okNumber = digits.length >= 7 && digits.length <= 15 && (c.type === "whatsapp" || c.type === "phone");
-    var contact = mode === "contact" && okNumber;
-    var pretty = String(c.value || "").replace(/[^\d+\s()-]/g, "").trim().slice(0, 24);
-    if (mode === "none") return { show: Boolean(own), text: own, contact: false, href: "", label: "" };
-    if (mode === "contact") {
-      return {
-        show: contact || Boolean(own), contact: contact,
-        text: own || (contact ? "To reply, contact the couple:" : ""),
-        href: contact ? (c.type === "whatsapp" ? "https://wa.me/" + digits : "tel:+" + digits) : "",
-        label: contact ? (c.type === "whatsapp" ? "WhatsApp " : "Call ") + pretty : ""
-      };
-    }
-    return { show: true, text: own || "", contact: false, href: "", label: "", fallback: true };
   }
 
   // The time shown beside the date. With one event it is that event's time; with several there is no single

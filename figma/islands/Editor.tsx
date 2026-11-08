@@ -10,7 +10,7 @@
 //   the template. Photos stay disabled until persistent photo storage exists.
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
 import { Icon, IconName, Logo } from "./shared";
-import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch } from "./bridge";
+import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, RsvpData } from "./bridge";
 import { useBridgeVersion } from "./extras";
 
 type SectionKey = "home" | "story" | "functions" | "gallery" | "rsvp";
@@ -681,38 +681,63 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
 }
 
 const rsvpOptions: Array<[string, string]> = [
-  ["count", "RSVP with guest count"],
-  ["rsvp", "RSVP only"],
+  ["count", "Online replies, with guest count"],
+  ["rsvp", "Online replies, attending or not"],
   ["contact", "Contact details only"],
   ["none", "No response form"]
 ];
 
-// Online replies are not built yet. "Contact details" works today: guests see the couple's WhatsApp or phone number.
+const dateTime = (iso: string) => {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+};
+
+// How guests reply, and the couple's private list of replies.
 function RsvpPanel({ snap }: { snap: EditorSnapshot }) {
+  const online = snap.rsvp === "count" || snap.rsvp === "rsvp";
   const contactMode = snap.rsvp === "contact";
   const digits = snap.rsvpContact.value.replace(/\D/g, "");
-  const badNumber = contactMode && snap.rsvpContact.value.trim() !== "" && (digits.length < 7 || digits.length > 15);
+  const badNumber = snap.rsvpContact.value.trim() !== "" && (digits.length < 7 || digits.length > 15);
   return (
     <div className="editor-form">
-      <div className="notice" role="note">
-        <strong>Online replies are not live yet.</strong>
-        <p className="tiny">
-          Until they are, choose “Contact details only” so guests can reach you on WhatsApp or by phone. The other
-          two choices are kept for when online replies open; today they show a “not open yet” line.
-        </p>
-      </div>
       <label>
-        Response section
+        How guests reply
         <select value={snap.rsvp} onChange={event => bridge.setRsvp(event.target.value)}>
           {rsvpOptions.map(([value, label]) => (
             <option key={value} value={value}>{label}</option>
           ))}
         </select>
       </label>
-      {contactMode ? (
+      {online ? (
+        <>
+          {!snap.published ? (
+            <p className="tiny muted">Guests can reply once your invitation is live. Until then, the Reply button only shows how it will look.</p>
+          ) : null}
+          <label className="check-row">
+            <input type="checkbox" checked={snap.rsvpOpen} onChange={event => bridge.setRsvpOption("rsvpOpen", event.target.checked)} />
+            Accepting replies
+          </label>
+          <label>
+            Reply by (optional)
+            <input type="date" value={snap.rsvpReplyBy} onChange={event => bridge.setRsvpOption("rsvpReplyBy", event.target.value)} />
+          </label>
+          {snap.rsvp === "count" ? (
+            <label>
+              Most people in one reply
+              <input type="number" min={1} max={20} value={snap.rsvpMaxParty} onChange={event => bridge.setRsvpOption("rsvpMaxParty", event.target.value)} />
+            </label>
+          ) : null}
+          <p className="tiny muted">
+            Guests give their name, whether they will attend{snap.rsvp === "count" ? ", how many people are coming" : ""}, and any meal or access needs.
+            Only you can see replies. After the date you set, or when you switch replies off, guests see “Replies are closed”
+            {snap.rsvpContact.value ? " and your number" : ""}.
+          </p>
+        </>
+      ) : null}
+      {contactMode || online ? (
         <>
           <label>
-            How should guests reach you?
+            {contactMode ? "How should guests reach you?" : "Contact for guests (optional)"}
             <select value={snap.rsvpContact.type} onChange={event => bridge.setRsvpContact(event.target.value, snap.rsvpContact.value)}>
               <option value="whatsapp">WhatsApp</option>
               <option value="phone">Phone call</option>
@@ -731,10 +756,78 @@ function RsvpPanel({ snap }: { snap: EditorSnapshot }) {
             />
           </label>
           {badNumber ? <p className="tiny error">Enter a full number with country code, for example +91 98765 43210.</p> : null}
-          <p className="tiny muted">This number is shown on your public invitation, so anyone with the link can see it. Use a number you are happy to share.</p>
+          <p className="tiny muted">
+            {contactMode ? "This number is shown on your public invitation" : "This number is shown only when replies are closed"}, so anyone with the link can see it.
+            Use a number you are happy to share.
+          </p>
         </>
       ) : null}
       {snap.rsvp === "none" ? <p className="tiny muted">The invitation will not mention replies.</p> : null}
+      {online ? <RepliesList snap={snap} /> : null}
+    </div>
+  );
+}
+
+function RepliesList({ snap }: { snap: EditorSnapshot }) {
+  const [data, setData] = useState<RsvpData | null>(null);
+  const [state, setState] = useState<"idle" | "loading" | "error" | "offline">("idle");
+  const [query, setQuery] = useState("");
+  const load = () => {
+    setState("loading");
+    bridge.loadReplies().then(
+      result => { setData(result); setState("idle"); },
+      (error: { code?: string }) => setState(error && error.code === "NOT_SAVED_ONLINE" ? "offline" : "error")
+    );
+  };
+  useEffect(load, [snap.published]);
+  const remove = (id: string, name: string) => {
+    if (!window.confirm(`Delete ${name}'s reply? This cannot be undone.`)) return;
+    bridge.deleteReply(id).then(load, () => setState("error"));
+  };
+  const needle = query.trim().toLowerCase();
+  const rows = data ? data.replies.filter(reply => !needle || `${reply.name} ${reply.needs} ${reply.message}`.toLowerCase().includes(needle)) : [];
+  return (
+    <div className="rsvp-replies">
+      <h4>Replies</h4>
+      {state === "offline" ? <p className="tiny muted">Replies appear here once your invitation is saved online.</p> : null}
+      {state === "error" ? <p className="tiny error">We could not load replies. <button type="button" className="link-button" onClick={load}>Try again</button></p> : null}
+      {data ? (
+        <>
+          <p className="rsvp-totals">
+            <strong>{data.totals.attending}</strong> attending · <strong>{data.totals.notAttending}</strong> not attending ·{" "}
+            <strong>{data.totals.headcount}</strong> {data.totals.headcount === 1 ? "person" : "people"} in total
+          </p>
+          {Object.values(data.totals.byEvent).length > 1 ? (
+            <ul className="rsvp-by-event">
+              {Object.values(data.totals.byEvent).map(item => (
+                <li key={item.title}>{item.title}: {item.headcount} {item.headcount === 1 ? "person" : "people"}</li>
+              ))}
+            </ul>
+          ) : null}
+          {data.replies.length > 0 ? (
+            <input type="search" placeholder="Search replies" value={query} onChange={event => setQuery(event.target.value)} aria-label="Search replies" />
+          ) : <p className="empty-state">No replies yet.</p>}
+          <ul className="rsvp-list">
+            {rows.map(reply => (
+              <li key={reply.id}>
+                <div>
+                  <strong>{reply.name}</strong>
+                  <span className={reply.attending ? "rsvp-yes" : "rsvp-no"}>
+                    {reply.attending ? `Attending${snap.rsvp === "count" ? ` · ${reply.party}` : ""}` : "Not attending"}
+                  </span>
+                </div>
+                {reply.needs ? <p className="tiny">Needs: {reply.needs}</p> : null}
+                {reply.message ? <p className="tiny">“{reply.message}”</p> : null}
+                <p className="tiny muted">
+                  {dateTime(reply.updatedAt || reply.createdAt)}{" "}
+                  <button type="button" className="link-button" onClick={() => remove(reply.id, reply.name)}>Delete</button>
+                </p>
+              </li>
+            ))}
+          </ul>
+          <button type="button" className="link-button" onClick={load}>Refresh</button>
+        </>
+      ) : state === "loading" ? <p className="tiny muted">Loading replies…</p> : null}
     </div>
   );
 }
