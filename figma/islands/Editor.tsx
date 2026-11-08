@@ -108,6 +108,7 @@ export function EditorPage() {
   const [designsOpen, setDesignsOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
   const replyCount = useReplyCount(snap);
+  const controlsRef = useRef<HTMLElement>(null);
   const [picked, setPicked] = useState(false);
   const [namesNeeded, setNamesNeeded] = useState(false);
   const namesRef = useRef<HTMLInputElement>(null);
@@ -209,6 +210,13 @@ export function EditorPage() {
     setActive("rsvp");
     setPicked(false);
     if (isPhone()) setMobileTab("edit");
+    // On narrower screens the panel sits below the preview, so bring it into view and move focus to it.
+    window.setTimeout(() => {
+      const panel = controlsRef.current;
+      if (!panel) return;
+      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+      panel.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
+    }, 50);
   }
 
   const designs = bridge.designs();
@@ -362,9 +370,9 @@ export function EditorPage() {
           </div>
         </section>
 
-        <aside className="editor-controls" id="panel-edit" aria-labelledby="editing-heading">
+        <aside className="editor-controls" id="panel-edit" aria-labelledby="editing-heading" ref={controlsRef}>
           <p className="editing-kicker">Editing</p>
-          <h2 id="editing-heading">{activeItem.label}</h2>
+          <h2 id="editing-heading" tabIndex={-1}>{activeItem.label}</h2>
 
           {active === "home" ? (
             <div className="editor-form">

@@ -353,4 +353,16 @@ test.describe('guest replies', () => {
     await expect(page.getByText('Meera Nair')).toBeVisible();
     await expect(page.locator('.rsvp-cards')).toContainText('2');
   });
+
+  test('on a tablet-width screen, Replies brings the panel (below the preview) into view', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 800 });
+    await page.route('**/api/**', route => route.abort());
+    await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding', 'minimalist'));
+    await page.locator('#projectTitle').fill('Mira & Arun');
+    await page.locator('#projectDate').fill('2027-01-20');
+    await completeSetupSteps(page);
+    await expect(page.getByRole('heading', { name: 'RSVP' })).not.toBeInViewport();
+    await page.getByRole('button', { name: 'Replies', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'RSVP' })).toBeInViewport();
+  });
 });
