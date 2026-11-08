@@ -24,6 +24,13 @@
     var t = String(title || "").trim(), parts = t.split(/\s+(?:&|and|\+)\s+/i);
     return parts.length >= 2 ? [parts[0].trim(), parts.slice(1).join(" & ").trim()] : [t, ""];
   }
+  // Length of the longest word in the names, counting a hyphenated name as separate words (it can wrap there).
+  // Templates scale their big names by it so a long word fits the screen instead of breaking mid-word.
+  function longestWord(parts) {
+    var longest = 8;
+    String(parts[0] + " " + parts[1]).split(/[\s-]+/).forEach(function (w) { longest = Math.max(longest, Array.from(w).length); });
+    return longest;
+  }
   function initial(name) { var c = Array.from(String(name || "").trim())[0]; return c ? c.toUpperCase() : ""; }
   function parseDate(iso) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
@@ -134,7 +141,7 @@
     var namesLen = title.length;
     var v = {
       names: title, a: n[0], b: n[1], ia: initial(n[0]), ib: initial(n[1]),
-      long_names: long, crest_size: namesLen > 17 ? Math.max(6, Math.round(100 * 17 / namesLen) / 10) : 10, stamp_y: 91,
+      long_names: long, name_len: longestWord(n), crest_size: namesLen > 17 ? Math.max(6, Math.round(100 * 17 / namesLen) / 10) : 10, stamp_y: 91,
       date: date ? true : false, date_long: date ? date.long : DEFAULTS.date, weekday: date ? date.weekday : "", date_num: date ? date.num : "", date_iso: date ? date.iso : "",
       day: date ? date.day : "", month_long: date ? date.month_long : "", month_short: date ? date.month_short : "", year: date ? date.year : "", date_dots: date ? date.dots : "",
       venue: venue, place: place, has_venue: Boolean(venue), place_or_venue: place || venue,

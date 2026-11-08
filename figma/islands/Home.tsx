@@ -37,8 +37,8 @@ export function HomePage() {
             <a href="#pricing">Pricing</a>
           </nav>
           <div className="header-actions">
-            <a className="button small" href="#pricing">
-              Get started
+            <a className="button small" href="/templates">
+              Start creating
             </a>
           </div>
         </header>
@@ -61,8 +61,8 @@ export function HomePage() {
               <a className="button" href="/templates">
                 Start your invitation <Icon name="arrow" size={18} />
               </a>
-              <a className="button outline" href="/templates">
-                Explore designs
+              <a className="button outline" href="#how">
+                See how it works
               </a>
             </div>
             <div className="trust-row">
@@ -283,9 +283,9 @@ export function HomePage() {
               </ul>
               <a
                 className={plan.featured ? "button" : "button outline"}
-                href="#cta"
+                href="/templates"
               >
-                Get started
+                Start creating
               </a>
             </article>
           ))}
@@ -334,7 +334,7 @@ export function HomePage() {
           </p>
         </div>
         <a className="button light" href="/templates">
-          Get started for free <Icon name="arrow" size={18} />
+          Start your invitation <Icon name="arrow" size={18} />
         </a>
       </section>
 

@@ -408,3 +408,12 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
 .share-guide-close { padding: 6px 12px; border: 1px solid var(--line-strong); border-radius: 999px; background: #fff; font: inherit; font-size: 13px; cursor: pointer; }
 @media (max-width: 767px) { .share-guide { grid-template-columns: 1fr; margin: 0 12px 8px; } .share-guide-close { justify-self: start; } }
 .editor-publish { white-space: nowrap; }
+
+/* Draft access: who can see and edit the draft */
+.draft-access { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fffaf2; font-size: 13px; line-height: 1.5; }
+.draft-access p { margin: 6px 0 10px; color: #4a4640; }
+.recovery-access { margin-top: 4px; font-size: 13px; line-height: 1.5; max-width: 60ch; }
+
+/* Template page: which way to start */
+.detail-path { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: #4a4640; }
+.link-button { padding: 0; border: 0; background: none; font: inherit; color: var(--green, #145c37); text-decoration: underline; cursor: pointer; }

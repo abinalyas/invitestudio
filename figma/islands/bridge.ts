@@ -85,11 +85,13 @@ export type EditorSnapshot = EditorFields & {
   galleryCount: number;
   // Wording the template lets the couple change (empty for templates without it).
   copyFields: CopyField[];
+  // A cloud draft has a private link that opens it on another device.
+  hasPrivateLink: boolean;
   // What the invitation shows while a field is empty (used as the field's hint).
   shown: { title: string; message: string; hosts: string; date: string };
 };
 
-export type RecoveryCard = { title: string; status: string; error: string };
+export type RecoveryCard = { title: string; status: string; access: string; error: string };
 
 export interface InviteStudioBridge {
   snapshot(): EditorSnapshot;
@@ -98,6 +100,7 @@ export interface InviteStudioBridge {
   update(patch: Partial<EditorFields>): void;
   setSectionVisible(sectionId: string, visible: boolean): void;
   setCopy(key: string, text: string): void;
+  copyPrivateLink(): void;
   addEvent(title: string): string;
   updateEvent(eventId: string, patch: EventPatch): void;
   removeEvent(eventId: string): void;
@@ -110,6 +113,7 @@ export interface InviteStudioBridge {
   renderInvitation(host: HTMLElement, device: Device): void;
   createDraft(backendTemplateId: string, templateNumber: number, sampleNames?: string): void;
   startCreate(category: string): void;
+  startSetup(backendTemplateId: string): void;
   openPreview(): void;
   setupDefaults(): { templateId: string };
   commitSetup(fields: SetupFields): boolean;
@@ -145,6 +149,7 @@ export const bridge = {
   update: (patch: Partial<EditorFields>) => host().update(patch),
   setSectionVisible: (sectionId: string, visible: boolean) => host().setSectionVisible(sectionId, visible),
   setCopy: (key: string, text: string) => host().setCopy(key, text),
+  copyPrivateLink: () => host().copyPrivateLink(),
   addEvent: (title: string) => host().addEvent(title),
   updateEvent: (eventId: string, patch: EventPatch) => host().updateEvent(eventId, patch),
   removeEvent: (eventId: string) => host().removeEvent(eventId),
@@ -157,6 +162,7 @@ export const bridge = {
   renderInvitation: (element: HTMLElement, device: Device) => host().renderInvitation(element, device),
   createDraft: (backendTemplateId: string, templateNumber: number, sampleNames?: string) => host().createDraft(backendTemplateId, templateNumber, sampleNames),
   startCreate: (category: string) => host().startCreate(category),
+  startSetup: (backendTemplateId: string) => host().startSetup(backendTemplateId),
   openPreview: () => host().openPreview(),
   setupDefaults: () => host().setupDefaults(),
   commitSetup: (fields: SetupFields) => host().commitSetup(fields),

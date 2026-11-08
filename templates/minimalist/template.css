@@ -28,8 +28,8 @@ figure{margin:0}
 .hero-copy{position:relative;z-index:2;padding:25px 0 50px}
 .eyebrow{color:var(--olive);display:flex;align-items:center;gap:12px;margin:0 0 32px}
 .eyebrow-line{width:26px;height:1px;background:var(--olive-line)}
-.hero h1{font:clamp(70px,11cqw,158px)/.83 var(--serif);letter-spacing:-5px;margin:0 0 32px;overflow-wrap:anywhere}
-.hero h1[data-long]{font-size:clamp(56px,8cqw,110px)}
+.hero h1{font:clamp(70px,11cqw,158px)/.83 var(--serif);font-size:min(clamp(70px,11cqw,158px),var(--fit));--fit:calc((100cqw - 56px)/(var(--nl,10)*.5));letter-spacing:-5px;margin:0 0 32px;overflow-wrap:anywhere}
+.hero h1[data-long]{font-size:min(clamp(56px,8cqw,110px),var(--fit))}
 .hero h1 em,h2 em{font-weight:400;color:var(--olive)}
 .period{color:var(--olive)}
 .hero-date{color:var(--muted);letter-spacing:1.2px}
@@ -116,7 +116,7 @@ figure{margin:0}
 .footer>span{text-align:right}
 @container (max-width:800px){
 .site-header{height:68px;padding:0 24px}.desktop-nav{gap:18px;margin-left:24px}.desktop-nav button{font-size:8px}
-.hero{min-height:0;padding:64px 24px 36px;display:flex;flex-direction:column;align-items:stretch;gap:35px}.hero-copy{padding:0}.hero h1{font-size:clamp(80px,17cqw,132px);margin-bottom:24px}.hero h1[data-long]{font-size:clamp(54px,12cqw,96px)}.hero .eyebrow{margin-bottom:27px}.text-link{margin-top:30px}
+.hero{min-height:0;padding:64px 24px 36px;display:flex;flex-direction:column;align-items:stretch;gap:35px}.hero-copy{padding:0}.hero h1{font-size:min(clamp(80px,17cqw,132px),var(--fit));margin-bottom:24px}.hero h1[data-long]{font-size:min(clamp(54px,12cqw,96px),var(--fit))}.hero .eyebrow{margin-bottom:27px}.text-link{margin-top:30px}
 .hero-image{height:58cqw;min-height:280px;margin:0;width:100%}.hero-index{display:none}
 .countdown-section{padding:58px 24px;grid-template-columns:1fr;gap:35px}.countdown{max-width:520px}.countdown strong{font-size:clamp(32px,8cqw,48px)}
 .section-pad{padding:82px 24px}.invitation{padding-top:100px;padding-bottom:100px}.invitation-content{grid-template-columns:1fr;gap:38px}.invitation-note{margin-left:18%}
@@ -129,7 +129,7 @@ figure{margin:0}
 .desktop-nav{display:none}.menu-toggle{display:flex;flex-direction:column;gap:5px;padding:10px}.menu-toggle span{width:21px;height:1px;background:var(--ink)}
 .desktop-nav[data-open]{display:flex;position:absolute;top:67px;left:0;right:0;margin:0;padding:22px 24px;background:var(--ivory);border-bottom:1px solid var(--line);flex-direction:column;gap:20px}
 .nav-rsvp{margin-left:auto;margin-right:16px}
-.hero{padding-top:52px}.hero h1{font-size:clamp(70px,22cqw,112px);letter-spacing:-4px}.hero h1[data-long]{font-size:clamp(46px,14cqw,72px)}.hero-date{font-size:8px}.hero-image{height:90cqw;min-height:300px}
+.hero{padding-top:52px}.hero h1{font-size:min(clamp(70px,22cqw,112px),var(--fit));letter-spacing:-4px}.hero h1[data-long]{font-size:min(clamp(46px,14cqw,72px),var(--fit))}.hero-date{font-size:8px}.hero-image{height:90cqw;min-height:300px}
 .countdown-section{padding:50px 24px}.countdown{gap:10px}.countdown strong{font-size:32px}.countdown span{font-size:7px;letter-spacing:.6px}.countdown i{height:25px}
 .section-pad{padding:70px 24px}.invitation h2{font-size:52px}.invitation-note{margin-left:7%}.section-heading{margin-bottom:38px}.story-body h2{font-size:46px}
 .details-main{grid-template-columns:1fr;gap:38px}.details-date{border-right:0;border-bottom:1px solid #d9d6ce;padding:0 0 30px}.details-date strong{font-size:150px}.details-info h2{font-size:52px}

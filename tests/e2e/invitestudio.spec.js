@@ -11,7 +11,7 @@ test('homepage starts a short personalised-preview journey', async ({ page }) =>
   await expect(page.getByRole('heading', { name: /create a wedding|make the moment|find the feeling|invite.*moment/i })).toBeVisible();
   // The big button is a link to the template gallery, where the couple picks a design first.
   // (The plain static test server has no route for /templates, so only the destination is checked here.)
-  await expect(page.getByRole('link', { name: /start your invitation/i })).toHaveAttribute('href', '/templates');
+  await expect(page.getByRole('link', { name: /start your invitation/i }).first()).toHaveAttribute('href', '/templates');
   // Starting from scratch (the "New website" path) opens the setup wizard.
   await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding'));
   await expect(page.getByRole('heading', { name: /create your invitation/i })).toBeVisible();
@@ -114,4 +114,12 @@ test('a new event shows only the essentials; the rest is tucked away and optiona
   await expect(page.getByLabel(/dress code/i)).toBeHidden();
   await more.locator('summary').click();
   await expect(page.getByLabel(/dress code/i)).toBeVisible();
+});
+
+test('guided setup opens with the chosen design already selected', async ({ page }) => {
+  await page.evaluate(() => window.InviteStudioBridge.startSetup('minimalist'));
+  await expect(page.getByRole('heading', { name: /create your invitation/i })).toBeVisible();
+  await page.locator('#projectTitle').fill('Mira & Arun');
+  await page.getByRole('button', { name: /^Continue/ }).click();
+  await expect(page.locator('.setup-template.selected')).toContainText('Minimalist');
 });

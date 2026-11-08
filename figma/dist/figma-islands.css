@@ -1172,3 +1172,8 @@
 @media (max-width: 767px){.figma-app .share-guide{ grid-template-columns: 1fr; margin: 0 12px 8px; }
 .figma-app .share-guide-close{ justify-self: start; }}
 .figma-app .editor-publish{ white-space: nowrap; }
+.figma-app .draft-access{ margin-top: 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fffaf2; font-size: 13px; line-height: 1.5; }
+.figma-app .draft-access p{ margin: 6px 0 10px; color: #4a4640; }
+.figma-app .recovery-access{ margin-top: 4px; font-size: 13px; line-height: 1.5; max-width: 60ch; }
+.figma-app .detail-path{ margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: #4a4640; }
+.figma-app .link-button{ padding: 0; border: 0; background: none; font: inherit; color: var(--green, #145c37); text-decoration: underline; cursor: pointer; }

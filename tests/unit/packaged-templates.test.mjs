@@ -153,7 +153,9 @@ for (const { manifest, parts, css } of list) {
     const { renderPackagedTemplate } = renderer();
     const t = { id, packaged: id };
     const long = renderPackagedTemplate({ title: 'Alexandria-Catherine & Maximilian-Bartholomew', date: '2027-01-21' }, t);
-    assert.match(long, /<h1 data-long>/);
+    assert.match(long, /<h1 data-long style="--nl:11">/);
+    const word = renderPackagedTemplate({ title: 'Wolfeschlegelsteinhausen & Bartholomew' }, t);
+    assert.match(word, /style="--nl:24"/, 'the longest word sizes the big names so it fits instead of breaking');
     const one = renderPackagedTemplate({ title: 'Anniversary party' }, t);
     assert.doesNotMatch(one, /<span>&amp;<\/span>/);
     const uni = renderPackagedTemplate({ title: 'ആരതി & Émile' }, t);
