@@ -1,6 +1,6 @@
 // Template detail screen. Everything shown comes from galleryTemplates in shared.tsx, so the page
 // only claims what the template and the editor really do.
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon, Logo, backendTemplateIds, editableItems, galleryTemplates, guestSections } from "./shared";
 import { bridge } from "./bridge";
 export function TemplateDetailPage({ templateId }: { templateId: number }) {
@@ -8,6 +8,24 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
     galleryTemplates.find((item) => item.id === templateId) ??
     galleryTemplates[0]
   const [menuOpen, setMenuOpen] = useState(false)
+  const screenRef = useRef<HTMLDivElement>(null)
+  const [cue, setCue] = useState(false)
+
+  // Scroll cue: shown while the invitation can scroll and is still at the top.
+  const updateCue = () => {
+    const element = screenRef.current
+    setCue(Boolean(element) && element!.scrollHeight > element!.clientHeight + 24 && element!.scrollTop < 24)
+  }
+
+  // The real template, with example names and content, inside the phone. It stays beside the details.
+  useEffect(() => {
+    if (!screenRef.current) return
+    bridge.renderTemplateDemo(screenRef.current, template.backendId)
+    screenRef.current.scrollTop = 0
+    updateCue()
+    const timer = window.setTimeout(updateCue, 500)
+    return () => window.clearTimeout(timer)
+  }, [template.backendId])
 
   return (
     <main className="detail-page">
@@ -44,12 +62,22 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
         <div className="detail-layout">
           <div className="detail-showcase">
             <div className="phone-stage" style={{ background: `${template.palette[0]}55` }}>
-              <div className="phone-frame">
-                <img src={template.phone} alt={`The ${template.title} cover, shown with example names`} />
+              <div className="detail-device">
+                <div
+                  className="detail-screen figma-canvas"
+                  ref={screenRef}
+                  onScroll={updateCue}
+                  role="region"
+                  aria-label={`${template.title} preview, scrollable`}
+                />
+                <div className={cue ? "scroll-cue detail-cue show" : "scroll-cue detail-cue"} aria-hidden="true">
+                  <span>Scroll</span>
+                  <Icon name="chevron" size={18} />
+                </div>
               </div>
             </div>
             <p className="detail-note">
-              The cover with example names. Your own details fill the template.
+              Scroll the phone to see the whole invitation. Example names and details are shown; yours replace them.
             </p>
           </div>
 
@@ -66,12 +94,6 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
               <button className="button" onClick={() => bridge.startSetup(template.backendId)}>
                 <Icon name="edit" size={19} />
                 Start with this design
-              </button>
-              <button
-                className="button outline"
-                onClick={() => bridge.previewTemplate(template.backendId)}
-              >
-                <Icon name="eye" size={20} /> Live preview
               </button>
             </div>
             <p className="detail-path">

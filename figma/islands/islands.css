@@ -417,3 +417,17 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
 /* Template page: which way to start */
 .detail-path { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: #4a4640; }
 .link-button { padding: 0; border: 0; background: none; font: inherit; color: var(--green, #145c37); text-decoration: underline; cursor: pointer; }
+
+/* Template page: the real design in a phone beside the details. On a wide screen the phone stays in view while the
+   details scroll; on a phone-sized screen it comes first. */
+.detail-device { position: relative; box-sizing: border-box; width: min(372px, 100%); height: min(760px, calc(100vh / var(--z, 1) - 215px)); min-height: 540px; padding: 12px; border-radius: 46px; background: #1d1f1c; box-shadow: 0 22px 44px -18px rgba(62, 16, 22, .32), 0 0 0 1px rgba(43, 35, 32, .06); }
+.detail-device::before { content: ""; position: absolute; z-index: 2; left: 50%; top: 20px; width: 92px; height: 26px; margin-left: -46px; border-radius: 999px; background: #1d1f1c; }
+.detail-screen { height: 100%; overflow-x: hidden; overflow-y: auto; border-radius: 34px; background: #fffaf4; overscroll-behavior: contain; scrollbar-width: none; }
+.detail-screen::-webkit-scrollbar { display: none; }
+.detail-showcase .phone-stage { min-height: 0; padding: 24px 16px; }
+.detail-showcase { align-self: start; }
+@media (min-width: 901px) { .detail-showcase { position: sticky; top: 16px; } }
+@media (max-width: 900px) { .detail-device { height: min(680px, 78vh); min-height: 480px; } }
+@media (max-width: 767px) { .scroll-cue.detail-cue { display: flex; } }
+/* overflow: hidden here made the page a scroll container and stopped the phone from staying in view (sticky). clip keeps the same look. */
+.detail-page { overflow: clip; }

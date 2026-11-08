@@ -120,3 +120,17 @@ test('long names are sized by their longest word in every template, so they fit 
   assert.match(read('scene-templates.js'), /function longestWord\(a, b\)/);
   assert.match(read('scene-templates.css'), /\.sx-nm\{font-size:min\(58px,calc\(300px\/\(var\(--nl,10\)\*\.5\)\)\)\}/);
 });
+
+test('the template page shows the real design in a phone beside the details, with no Live preview button or popup', () => {
+  const detail = read('figma/islands/TemplateDetail.tsx');
+  assert.match(detail, /bridge\.renderTemplateDemo\(screenRef\.current, template\.backendId\)/);
+  assert.match(detail, /className="detail-device"/);
+  assert.match(detail, /scroll-cue detail-cue/); // the "Scroll" animation, as in the editor and setup previews
+  assert.doesNotMatch(detail, /Live preview|previewTemplate/);
+  assert.doesNotMatch(read('figma/islands/bridge.ts'), /previewTemplate/);
+  assert.match(read('figma-host.js'), /renderTemplateDemo\(host, backendTemplateId\)/);
+  assert.match(read('index.html'), /function templateDemoProject\(t\)/);
+  const css = read('figma/islands/islands.css');
+  assert.match(css, /@media \(min-width: 901px\) \{ \.detail-showcase \{ position: sticky;/); // stays in view while the details scroll
+  assert.match(css, /\.detail-page \{ overflow: clip; \}/); // overflow hidden here would stop it sticking
+});

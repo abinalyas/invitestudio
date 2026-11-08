@@ -121,7 +121,7 @@ export interface InviteStudioBridge {
   setupStatus(): SetupStatus;
   keepLocal(): void;
   finishSetup(): void;
-  previewTemplate(backendTemplateId: string): void;
+  renderTemplateDemo(host: HTMLElement, backendTemplateId: string): void;
   openPublish(): void;
   openAdvanced(): void;
   openLegacyTemplates(): void;
@@ -170,7 +170,7 @@ export const bridge = {
   setupStatus: () => host().setupStatus(),
   keepLocal: () => host().keepLocal(),
   finishSetup: () => host().finishSetup(),
-  previewTemplate: (backendTemplateId: string) => host().previewTemplate(backendTemplateId),
+  renderTemplateDemo: (element: HTMLElement, backendTemplateId: string) => host().renderTemplateDemo(element, backendTemplateId),
   openPublish: () => host().openPublish(),
   openAdvanced: () => host().openAdvanced(),
   openLegacyTemplates: () => host().openLegacyTemplates(),
