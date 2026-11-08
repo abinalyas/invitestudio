@@ -525,67 +525,75 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
   const [confirming, setConfirming] = useState(false);
   const change = (patch: EventPatch) => bridge.updateEvent(item.id, patch);
 
+  // Only the name is needed. Date, time and venue are what most guests look for; everything else is tucked
+  // away, and opens by itself when it already has something in it.
+  const hasMore = Boolean(item.endTime || item.description || item.dressCode || item.directionsUrl || item.parking || item.accommodation || item.accessibility);
+
   return (
     <div className="event-form">
+      <p className="event-note">Only the name is needed. Add the rest now or come back to it later.</p>
       <label className="visibility-field">
         <input type="checkbox" checked={item.visible} onChange={event => change({ visible: event.target.checked })} />
         Show this event on the invitation
       </label>
       <label>
-        Event name
+        Event name <span className="required-tag">(required)</span>
         <input value={item.title} onChange={event => change({ title: event.target.value })} />
       </label>
       <div className="two-up">
         <label>
-          Date
+          Date <span className="optional">(optional)</span>
           <input type="date" value={item.date} onChange={event => change({ date: event.target.value })} />
         </label>
         <label>
-          Start time
+          Start time <span className="optional">(optional)</span>
           <input value={item.time} placeholder="4:00 PM" onChange={event => change({ time: event.target.value })} />
         </label>
       </div>
       <label>
-        End time <span className="optional">(optional)</span>
-        <input value={item.endTime} placeholder="7:00 PM" onChange={event => change({ endTime: event.target.value })} />
-      </label>
-      <label>
-        Venue
+        Venue <span className="optional">(optional)</span>
         <input value={item.venue} onChange={event => change({ venue: event.target.value })} />
       </label>
-      <label>
-        Description <span className="optional">(optional)</span>
-        <textarea rows={2} value={item.description} onChange={event => change({ description: event.target.value })} />
-      </label>
-      <label>
-        Dress code <span className="optional">(optional)</span>
-        <input value={item.dressCode} onChange={event => change({ dressCode: event.target.value })} />
-      </label>
 
-      <fieldset className="travel-fields">
-        <legend>Travel details <span className="optional">(optional)</span></legend>
+      <details className="event-more" open={hasMore}>
+        <summary>More details <span className="optional">(optional, add later if you like)</span></summary>
         <label>
-          Directions link
-          <input
-            type="url"
-            value={item.directionsUrl}
-            placeholder="https://maps.google.com/…"
-            onChange={event => change({ directionsUrl: event.target.value })}
-          />
+          End time
+          <input value={item.endTime} placeholder="7:00 PM" onChange={event => change({ endTime: event.target.value })} />
         </label>
         <label>
-          Parking
-          <textarea rows={2} value={item.parking} onChange={event => change({ parking: event.target.value })} />
+          Description
+          <textarea rows={2} value={item.description} onChange={event => change({ description: event.target.value })} />
         </label>
         <label>
-          Travel and accommodation
-          <textarea rows={2} value={item.accommodation} onChange={event => change({ accommodation: event.target.value })} />
+          Dress code
+          <input value={item.dressCode} onChange={event => change({ dressCode: event.target.value })} />
         </label>
-        <label>
-          Accessibility
-          <textarea rows={2} value={item.accessibility} onChange={event => change({ accessibility: event.target.value })} />
-        </label>
-      </fieldset>
+        <fieldset className="travel-fields">
+          <legend>Travel details</legend>
+          <label>
+            Directions link
+            <input
+              type="url"
+              value={item.directionsUrl}
+              placeholder="https://maps.google.com/…"
+              onChange={event => change({ directionsUrl: event.target.value })}
+            />
+          </label>
+          <label>
+            Parking
+            <textarea rows={2} value={item.parking} onChange={event => change({ parking: event.target.value })} />
+          </label>
+          <label>
+            Travel and accommodation
+            <textarea rows={2} value={item.accommodation} onChange={event => change({ accommodation: event.target.value })} />
+          </label>
+          <label>
+            Accessibility
+            <textarea rows={2} value={item.accessibility} onChange={event => change({ accessibility: event.target.value })} />
+          </label>
+        </fieldset>
+      </details>
 
       {confirming ? (
         <div className="confirm-remove" role="group" aria-label={`Remove ${item.title || "this event"}`}>

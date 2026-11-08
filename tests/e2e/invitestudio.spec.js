@@ -87,3 +87,31 @@ test('new visitors do not receive a demo draft', async ({ page }) => {
   const stored = await page.evaluate(() => localStorage.getItem('invitestudio-projects'));
   expect(stored === null || !stored.includes('Meera & Abin')).toBe(true);
 });
+
+test('"Open editor" opens the editor even when setup was started from a template page', async ({ page }) => {
+  // Setup can start from a template's own address (its preview popup, "Choose this design"). The editor must not be hidden
+  // behind that earlier page when setup finishes.
+  await page.evaluate(() => { history.pushState({}, '', '/templates/9'); startCreate('Wedding'); });
+  await expect(page.getByRole('heading', { name: /create your invitation/i })).toBeVisible();
+  await page.locator('#projectTitle').fill('Mira & Arun');
+  await completeSetupSteps(page);
+  await expect(page.getByText(/your first preview is ready/i)).toBeVisible();
+  await expect(page.locator('.editor-header, .editor-page').first()).toBeVisible();
+  await expect(page.locator('.editor-controls')).toBeAttached();
+  expect(new URL(page.url()).pathname).toBe('/');
+});
+
+test('a new event shows only the essentials; the rest is tucked away and optional', async ({ page }) => {
+  await page.evaluate(() => { startCreate('Wedding'); });
+  await page.locator('#projectTitle').fill('Mira & Arun');
+  await completeSetupSteps(page);
+  await page.getByRole('button', { name: /^Events/ }).first().click();
+  await page.getByRole('button', { name: /\+ Wedding ceremony/ }).click();
+  await expect(page.getByText(/only the name is needed/i)).toBeVisible();
+  await expect(page.getByText('(required)')).toBeVisible();
+  const more = page.locator('details.event-more');
+  await expect(more).not.toHaveAttribute('open', '');
+  await expect(page.getByLabel(/dress code/i)).toBeHidden();
+  await more.locator('summary').click();
+  await expect(page.getByLabel(/dress code/i)).toBeVisible();
+});

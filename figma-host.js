@@ -484,7 +484,12 @@
   window.inviteStudioIslandRoute = function inviteStudioIslandRoute() {
     if (!window.InviteStudioFigma) return null;
     // The setup wizard is shown whatever the address says (it starts from any page).
-    if (state.page === 'setup') return { kind: 'setup' };
+    if (state.page === 'setup') {
+      // Setup can start from any address (for example a template's page). Move to the home address first, so that
+      // when it finishes the editor is not hidden behind that earlier page's route.
+      if ((window.location.pathname.replace(/\/+$/, '') || '/') !== '/') history.pushState({}, '', '/');
+      return { kind: 'setup' };
+    }
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
     const editorMatch = path.match(/^\/editor\/(\d+)$/);
     if (editorMatch) {
@@ -524,6 +529,7 @@
   // Browser back and forward move between routes that the application state tracks.
   window.addEventListener('popstate', () => {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    if (state.page === 'setup' && path !== '/') state.page = 'home'; // leaving the setup page by going back
     if (path === '/') {
       if (state.page !== 'home' && state.page !== 'editor' && state.page !== 'preview') state.page = 'home';
       if (state.page === 'home') state.editorMode = 'designer';
