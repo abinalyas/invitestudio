@@ -67,6 +67,32 @@ for (const { manifest, parts, css } of list) {
     assert.doesNotMatch(text, /href="#/, 'anchors would change the page address; use data-scroll-to');
   });
 
+  test(`${id}: the template's own wording never names a kind of event (the couple's events decide that)`, () => {
+    // "The wedding ceremony" over a Reception misled guests. Only the editor's example content may name events.
+    const named = /ceremon|reception|dinner|sangeet|mehndi|haldi|church|temple/i;
+    for (const [key, def] of Object.entries(manifest.copy)) assert.doesNotMatch(def.default + ' ' + def.label, named, key);
+    assert.doesNotMatch(stripped(markup).replace(/\{\{[^}]*\}\}/g, ''), named, 'markup');
+  });
+
+  test(`${id}: the time beside the date does not present one event's time as the day's`, () => {
+    const { renderPackagedTemplate } = renderer();
+    const t = { id, packaged: id };
+    const event = (title, time) => ({ title, date: '2027-08-24', time, venue: 'Hall', visible: true });
+    const base = { title: 'A & B', date: '2027-08-24', location: 'Hall, Town' };
+    const one = renderPackagedTemplate({ ...base, functions: [event('Reception', '6:00 PM')] }, t);
+    const two = renderPackagedTemplate({ ...base, functions: [event('Ceremony', '11:00 AM'), event('Reception', '6:00 PM')] }, t);
+    const none = renderPackagedTemplate(base, t);
+    if (manifest.copy.time_pending) {
+      assert.match(one, /6:00 PM/);
+      assert.match(none, /To be announced/);
+      if (manifest.copy.time_multi) {
+        const row = out => (out.match(/>(?:The Time|TIME)<[\s\S]{0,120}/) || [''])[0];
+        assert.doesNotMatch(row(two), /11:00 AM/);
+        assert.match(row(two), /See the schedule/);
+      }
+    }
+  });
+
   test(`${id}: stylesheet is scoped, container based and self contained`, () => {
     for (const rule of css.split('\n')) {
       if (!rule.trim() || rule.startsWith('@font-face')) continue;

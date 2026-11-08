@@ -365,3 +365,7 @@ Built with the same pipeline and no changes to the contract, which showed the ph
 - **Fallbacks**: the cover and closing scene use a designed dark backdrop (a warm glow with the couple's initials, large and faint); the story photo is dropped (the story is centred text); the venue photo becomes the same backdrop panel; the banner is a typographic scene.
 - **Removed**: the map iframe, the `mailto:` RSVP (a "not open yet" note instead), the "temporary visual reference" note, the numbered scene labels, and the slow-zoom and fade-in animations (they restart on every keystroke in the editor preview).
 - **Gotcha found**: class prefixing must not see conditional markers inside `class="..."`, so conditional state uses a data attribute (`data-photo`), not a class.
+
+### 15.3 Wording must not name a kind of event
+
+Found in use: a Reception was added to a Minimalist invitation and the details card still said "The wedding ceremony". The details card shows the wedding's date and place, which belong to no particular event, so the template's own wording must not name one (ceremony, reception, dinner and so on); only the couple's own events do. The quality gate now fails any template whose wording or markup names a kind of event (the editor's example content is exempt, since it never publishes). The time beside the date follows the same rule: one event shows its time, several events point to the schedule, and a single event's time is never shown as the day's.

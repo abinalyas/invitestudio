@@ -141,7 +141,7 @@
       footer_names: n[1] ? n[0] + " & " + n[1] : n[0],
       hosts_line: String(p.hosts || "").trim() || copy("hosts_line"),
       closing_note: String(p.message || "").trim() || copy(["invitation_note", "note_text", "details_note"].filter(function (k) { return manifest.copy[k]; })[0] || "details_note"),
-      time_text: (fns.length === 1 && fns[0].time) || (timed && timed.time) || copy("time_pending"),
+      time_text: timeText(fns, timed, copy),
       story: Boolean(story) && visible.story, story_paras: story ? story.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean) : [],
       events: visible.functions ? events : [], events_count: Math.min(Math.max(events.length, 1), 3),
       hero_photo: slots.indexOf("hero") >= 0 && photos[slots.indexOf("hero")] ? photos[slots.indexOf("hero")].src : "",
@@ -153,6 +153,15 @@
       footer_line: [date ? date.long : "", place || venue].filter(Boolean).join(" · ")
     };
     return { values: v, copy: copy };
+  }
+
+  // The time shown beside the date. With one event it is that event's time; with several there is no single
+  // time, so point to the schedule (or the first time when the template has no such wording) instead of
+  // showing one event's time as if it were the day's.
+  function timeText(fns, timed, copy) {
+    if (fns.length <= 1) return (fns[0] && fns[0].time) || copy("time_pending");
+    if (!timed) return copy("time_pending");
+    return copy("time_multi") || timed.time;
   }
 
   var DEFAULT_SECTIONS = ["hero", "welcome", "story", "functions", "gallery", "rsvp"];
