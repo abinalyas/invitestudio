@@ -63,6 +63,7 @@ export const LAUNCH_TEMPLATE_IDS = Object.freeze([
   'modern-heritage',
   'minimalist',
   'cinematic',
+  'fairy-tale',
 ]);
 
 export function isLaunchTemplate(id) {

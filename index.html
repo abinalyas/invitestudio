@@ -242,6 +242,109 @@
 .tpl-cn .cn-final-scene{min-height:600px}
 .tpl-cn .cn-final-copy h2{font-size:3.8rem}}
 @media(prefers-reduced-motion:reduce){.tpl-cn *,.tpl-cn *:before,.tpl-cn *:after{animation:none!important;transition:none!important}}
+@font-face{font-family:"DM Sans";font-weight:300;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/dm-sans-latin-300-normal.woff2") format("woff2")}
+@font-face{font-family:"DM Sans";font-weight:400;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/dm-sans-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"DM Sans";font-weight:500;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/dm-sans-latin-500-normal.woff2") format("woff2")}
+.tpl-ft *{box-sizing:border-box}
+.tpl-ft{--ivory:#fff9f4;--blush:#f7eded;--gold:#c5a36f;--gold-text:#7a5d2c;--mauve:#7f566a;--ink:#59494a;--muted:#6b5a57;--line:rgba(170,132,111,.27);--serif:"Cormorant Garamond",Georgia,serif;--sans:"DM Sans",Arial,sans-serif;--script:"Great Vibes",cursive;container-type:inline-size;position:relative;width:100%;margin:0;background:var(--ivory);color:var(--ink);font-family:var(--sans);font-weight:300;font-size:16px;line-height:1.5;overflow:clip}
+.tpl-ft img{display:block;max-width:100%}
+.tpl-ft a{color:inherit;text-decoration:none}
+.tpl-ft button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+.tpl-ft h1,.tpl-ft h2,.tpl-ft h3,.tpl-ft p,.tpl-ft figure{margin-top:0}
+.tpl-ft figure{margin:0}
+.tpl-ft [data-tpl-section]{scroll-margin-top:84px}
+.tpl-ft .ft-eyebrow{font-size:.66rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-text);font-weight:500}
+.tpl-ft .ft-section{position:relative;padding:clamp(70px,10cqw,130px) 7cqw;overflow:hidden}
+.tpl-ft .ft-wrap{width:min(1100px,100%);margin:0 auto}
+.tpl-ft .ft-section-heading{text-align:center;max-width:650px;margin:0 auto 56px}
+.tpl-ft .ft-section-heading h2{font:500 clamp(2.5rem,5.2cqw,4.5rem)/.98 var(--serif);color:var(--mauve);margin:13px 0 16px;overflow-wrap:anywhere}
+.tpl-ft .ft-section-heading h2 em{font-style:italic;font-weight:500}
+.tpl-ft .ft-section-text{font:400 1.2rem/1.5 var(--serif);color:var(--muted);margin:0 auto;max-width:510px}
+.tpl-ft .ft-gold-rule{width:66px;height:1px;background:var(--gold);margin:20px auto}
+.tpl-ft .ft-site-header{position:sticky;top:0;z-index:40;height:78px;padding:0 6cqw;display:flex;align-items:center;justify-content:space-between;background:rgba(255,249,244,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(197,163,111,.22)}
+.tpl-ft .ft-brand{font:400 1.7rem var(--script);color:var(--mauve);line-height:.8;text-align:left}
+.tpl-ft .ft-brand span{display:block;font:500 .5rem var(--sans);letter-spacing:.24em;text-align:center;color:var(--gold-text);margin-top:7px}
+.tpl-ft .ft-nav{display:flex;align-items:center;gap:clamp(18px,3cqw,38px)}
+.tpl-ft .ft-nav button{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:#5f4f4c;transition:color .25s}
+.tpl-ft .ft-nav button:hover{color:var(--mauve)}
+.tpl-ft .ft-nav .ft-nav-rsvp{border:1px solid var(--gold);padding:10px 17px;border-radius:30px}
+.tpl-ft .ft-menu-toggle{display:none;font-size:1.45rem;color:var(--ink)}
+.tpl-ft .ft-hero{min-height:760px;position:relative;isolation:isolate;display:grid;place-items:center;text-align:center;padding:70px 22px 100px;overflow:hidden;background:linear-gradient(180deg,#e9d9eb 0%,#f4dfe4 48%,#fff4ec 100%)}
+.tpl-ft .ft-hero-sky{position:absolute;inset:0;z-index:-5;opacity:.72;background:linear-gradient(180deg,rgba(246,229,237,.12),rgba(255,247,239,.22)),url("/templates/fairy-tale/assets/sky.webp") center 44%/cover no-repeat}
+.tpl-ft .ft-hero-castle{position:absolute;z-index:-2;width:min(34cqw,455px);right:2.5%;bottom:15%;opacity:.78;mix-blend-mode:multiply;filter:drop-shadow(0 10px 18px rgba(85,62,73,.1))}
+.tpl-ft .ft-hero-horizon{position:absolute;z-index:-3;left:0;right:0;bottom:0;height:20%;opacity:.88;background:linear-gradient(180deg,rgba(255,249,244,0),rgba(255,249,244,.1)),url("/templates/fairy-tale/assets/terrace.webp") center bottom/100% 100% no-repeat;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 24%,#000 84%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,#000 24%,#000 84%,transparent 100%)}
+.tpl-ft .ft-hero-content{position:relative;z-index:3;width:min(720px,100%);padding:30px 24px;background:radial-gradient(ellipse at center,rgba(255,249,246,.62) 0%,rgba(255,249,246,.3) 54%,transparent 78%)}
+.tpl-ft .ft-hero-content .ft-eyebrow{color:#6f4f52}
+.tpl-ft .ft-hero h1{font:400 clamp(3.4rem,9.6cqw,8rem)/.86 var(--script);color:#7f566a;margin:25px 0 18px;text-shadow:0 2px 20px rgba(255,249,246,.75);display:grid;justify-items:center}
+.tpl-ft .ft-hero-subtitle{font:400 clamp(1.15rem,2cqw,1.45rem) var(--serif);letter-spacing:.09em;color:#5f4e4a;margin:0}
+.tpl-ft .ft-couple-names{font:400 clamp(2.6rem,6cqw,4.7rem)/1 var(--script);color:#7f566a;margin:10px 0 13px;overflow-wrap:anywhere;font-size:min(clamp(2.6rem,6cqw,4.7rem),calc((100cqw - 64px)/(var(--nl,10)*.5)))}
+.tpl-ft .ft-amp{padding:0 .1em}
+.tpl-ft .ft-hero-meta{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:#5f4e4a;margin:0;overflow-wrap:anywhere}
+.tpl-ft .ft-hero-copy{max-width:440px;margin:19px auto 24px;font:400 1.2rem/1.45 var(--serif);color:#5f4e4a}
+.tpl-ft .ft-countdown{display:flex;justify-content:center;gap:22px;margin:0 auto 12px}
+.tpl-ft .ft-count-item{min-width:48px}
+.tpl-ft .ft-count-item strong{display:block;font:500 1.75rem var(--serif);color:#6b4b58;font-variant-numeric:tabular-nums}
+.tpl-ft .ft-count-item span{display:block;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:#6b5a57;margin-top:2px}
+.tpl-ft .ft-count-note{font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:#6b5a57;margin:0 0 20px}
+.tpl-ft .ft-cta{display:inline-flex;align-items:center;gap:18px;padding:13px 24px;border-radius:30px;background:#8a5d70;color:#fff;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;box-shadow:0 7px 20px rgba(126,82,99,.16);transition:.3s}
+.tpl-ft .ft-cta:hover{background:#744c5d}
+.tpl-ft .ft-scroll-cue{position:absolute;bottom:19px;left:50%;transform:translateX(-50%);z-index:3;font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;color:#5f4e4a;margin:0;white-space:nowrap}
+.tpl-ft .ft-scroll-cue:after{content:"";display:block;width:1px;height:27px;background:var(--gold);margin:9px auto 0}
+.tpl-ft .ft-story{background:var(--ivory)}
+.tpl-ft .ft-story-layout{display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(38px,7cqw,90px);align-items:center}
+.tpl-ft .ft-story-photo{position:relative;min-height:470px;background:linear-gradient(145deg,#ead9df,#f9eee8 55%,#e8dce8);overflow:hidden}
+.tpl-ft .ft-story-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tpl-ft .ft-story-photo:after{content:"";position:absolute;inset:15px;border:1px solid rgba(255,255,255,.7);pointer-events:none}
+.tpl-ft .ft-story-copy .ft-eyebrow{margin-bottom:15px}
+.tpl-ft .ft-story-copy h3{font:500 clamp(2.2rem,4cqw,3.4rem)/1 var(--serif);color:var(--mauve);margin:0 0 22px}
+.tpl-ft .ft-story-copy p:not(.ft-eyebrow):not(.ft-story-signoff){font:400 1.22rem/1.7 var(--serif);color:#5f4e4a;margin:0 0 18px}
+.tpl-ft .ft-story-signoff{font:400 2.5rem var(--script);color:#7f566a;margin:24px 0 0}
+.tpl-ft .ft-celebration{background:linear-gradient(180deg,#f7eded 0%,#fff9f4 100%)}
+.tpl-ft .ft-event-layout{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(30px,5cqw,60px);max-width:900px;margin:0 auto}
+.tpl-ft .ft-event{padding:12px 20px 22px;text-align:center;border-left:1px solid var(--line)}
+.tpl-ft .ft-event:first-child{border-left:0}
+.tpl-ft .ft-event h3{font:500 clamp(2rem,3cqw,2.7rem)/1.05 var(--serif);color:var(--mauve);margin:12px 0;overflow-wrap:anywhere}
+.tpl-ft .ft-event-date{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:#6b5a57;margin:0 0 4px}
+.tpl-ft .ft-event-venue{font:400 1.2rem/1.5 var(--serif);color:#5f4e4a;margin:16px 0;overflow-wrap:anywhere}
+.tpl-ft .ft-text-link{display:inline-block;margin-top:7px;padding-bottom:5px;border-bottom:1px solid var(--gold);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:#7a5d2c}
+.tpl-ft .ft-gallery{background:var(--ivory)}
+.tpl-ft .ft-gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;max-width:1000px;margin:0 auto}
+.tpl-ft .ft-gallery-item{position:relative;overflow:hidden;aspect-ratio:4/5;background:linear-gradient(145deg,#ead9df,#f8eee8 48%,#e7dce8)}
+.tpl-ft .ft-gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.tpl-ft .ft-gallery-item:hover img{transform:scale(1.035)}
+.tpl-ft .ft-gallery-item figcaption{position:absolute;left:15px;bottom:14px;padding:7px 10px;background:rgba(255,250,245,.9);font:400 1.15rem var(--serif);color:#6b4b58}
+.tpl-ft .ft-photo-ph{height:100%;display:flex;align-items:center;justify-content:center;border:1px dashed #b89a8a;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:#6b5a57}
+.tpl-ft .ft-rsvp{background:linear-gradient(180deg,#f7eded,#fff9f4);text-align:center}
+.tpl-ft .ft-rsvp-status{display:inline-block;max-width:460px;margin:0 auto;padding:16px 24px;border:1px solid var(--line);background:rgba(255,253,250,.82);font:400 1.05rem/1.5 var(--serif);color:#5f4e4a}
+.tpl-ft .ft-rsvp-note{text-align:center;color:var(--muted);font:400 1.1rem var(--serif);margin:24px 0 0}
+.tpl-ft .ft-site-footer{text-align:center;padding:100px 20px 86px;background:linear-gradient(180deg,#f3e3e6,#ead6dd) ,url("/templates/fairy-tale/assets/mist.webp") center/cover no-repeat;position:relative;isolation:isolate}
+.tpl-ft .ft-site-footer .ft-eyebrow{color:#6b4b58}
+.tpl-ft .ft-footer-names{font:400 clamp(3.2rem,8cqw,6.5rem)/1 var(--script);color:#7a4f60;margin:16px 0;overflow-wrap:anywhere;font-size:min(clamp(3.2rem,8cqw,6.5rem),calc((100cqw - 48px)/(var(--nl,10)*.5)))}
+.tpl-ft .ft-footer-line{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:#6b4b58;margin:0;overflow-wrap:anywhere}
+.tpl-ft .ft-footer-last{font:400 1.7rem var(--serif);color:#6b4b58;margin:24px 0 0}
+@container (max-width:800px){.tpl-ft .ft-site-header{height:70px}
+.tpl-ft .ft-menu-toggle{display:block}
+.tpl-ft .ft-nav{display:none;position:absolute;top:70px;left:0;right:0;padding:25px;background:rgba(255,249,244,.98);border-bottom:1px solid var(--line);flex-direction:column;gap:22px}
+.tpl-ft .ft-nav[data-open]{display:flex}
+.tpl-ft .ft-hero{min-height:720px}
+.tpl-ft .ft-hero-castle{width:58cqw;right:-10%;bottom:14%;opacity:.54}
+.tpl-ft .ft-hero-horizon{height:16%}
+.tpl-ft .ft-hero-content{padding:24px 12px}
+.tpl-ft .ft-hero h1{font-size:clamp(3.4rem,14cqw,6.2rem)}
+.tpl-ft .ft-story-layout{grid-template-columns:1fr;gap:34px}
+.tpl-ft .ft-story-photo{min-height:350px;max-width:560px;width:100%;margin:0 auto}
+.tpl-ft .ft-section{padding:72px 6cqw}
+.tpl-ft .ft-section-heading{margin-bottom:42px}}
+@container (max-width:520px){.tpl-ft .ft-hero-castle{width:78cqw;right:-25%;opacity:.42}
+.tpl-ft .ft-hero-copy{font-size:1.1rem}
+.tpl-ft .ft-countdown{gap:13px}
+.tpl-ft .ft-count-item{min-width:40px}
+.tpl-ft .ft-event{border-left:0;border-top:1px solid var(--line);padding:32px 20px 10px}
+.tpl-ft .ft-event:first-child{border-top:0}
+.tpl-ft .ft-gallery-grid{grid-template-columns:1fr 1fr;gap:9px}
+.tpl-ft .ft-gallery-item figcaption{font-size:1rem;left:8px;bottom:8px}
+.tpl-ft .ft-section-heading h2{font-size:2.8rem}}
+@media(prefers-reduced-motion:reduce){.tpl-ft *,.tpl-ft *:before,.tpl-ft *:after{transition:none!important;animation:none!important}}
 @font-face{font-family:"DM Serif Display";font-weight:400;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/dm-serif-display-latin-400-normal.woff2") format("woff2")}
 @font-face{font-family:"DM Serif Display";font-weight:400;font-style:italic;font-display:swap;src:url("/assets/scene-fonts/dm-serif-display-latin-400-italic.woff2") format("woff2")}
 @font-face{font-family:"Inter";font-weight:400;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/inter-latin-400-normal.woff2") format("woff2")}
@@ -962,12 +1065,13 @@ templates.push(
 {id:'lunaria-moon',name:'Lunaria',category:'Wedding',style:'Botanical',desc:'Dusty blue linen, a moon and an arch of leaves and water lilies.',image:'/assets/templates/lunaria-moon.png',colors:['#a6b6c9','#6f8b78','#1f2b3d'],tradition:'General',occasion:'Wedding',animation:'Scene story',effect:'fade',featured:true,scene:'lunaria'},
 {id:'modern-heritage',name:'Modern Heritage',category:'Wedding',style:'Classic',desc:'Ivory paper, deep green and gold botanical details, with a live countdown to the day.',image:'/assets/templates/modern-heritage.png',colors:['#f4eedf','#a58b62','#34493a'],tradition:'General',occasion:'Wedding',animation:'Countdown',effect:'fade',featured:true,packaged:'modern-heritage'},
 {id:'minimalist',name:'Minimalist',category:'Wedding',style:'Modern',desc:'Quiet editorial layout: large serif names, one olive accent and plenty of space.',image:'/assets/templates/minimalist.png',colors:['#faf9f6','#5c6350','#292929'],tradition:'General',occasion:'Wedding',animation:'Countdown',effect:'fade',featured:true,packaged:'minimalist'},
-{id:'cinematic',name:'Cinematic',category:'Wedding',style:'Modern',desc:'A dark, film-like invitation: big names, a golden countdown and quiet scenes.',image:'/assets/templates/cinematic.png',colors:['#171615','#b59a72','#f5f0e8'],tradition:'General',occasion:'Wedding',animation:'Countdown',effect:'fade',featured:true,packaged:'cinematic'}
+{id:'cinematic',name:'Cinematic',category:'Wedding',style:'Modern',desc:'A dark, film-like invitation: big names, a golden countdown and quiet scenes.',image:'/assets/templates/cinematic.png',colors:['#171615','#b59a72','#f5f0e8'],tradition:'General',occasion:'Wedding',animation:'Countdown',effect:'fade',featured:true,packaged:'cinematic'},
+{id:'fairy-tale',name:'Fairy Tale',category:'Wedding',style:'Romantic',desc:'A pink sunset sky, a castle on the hill and script lettering: once upon a time, with a countdown to forever.',image:'/assets/templates/fairy-tale.png',colors:['#fff9f4','#855b6c','#59494a'],tradition:'General',occasion:'Wedding',animation:'Countdown',effect:'fade',featured:true,packaged:'fairy-tale'}
 );
 // Packaged templates (templates/<id>/, built by npm run build:templates, drawn by packaged-templates.js). Database row: supabase/migrations/202611080001_modern_heritage_template.sql.
 // The designs offered for now. Everything that lets a person pick a design uses this list, and older designs stay in the catalogue
 // only so existing drafts keep working. Keep it in step with galleryTemplates in figma/islands/shared.tsx.
-const offeredTemplateIds=['savanna-sunset','palmera-beach','curtain-call','lunaria-moon','modern-heritage','minimalist','cinematic'];
+const offeredTemplateIds=['savanna-sunset','palmera-beach','curtain-call','lunaria-moon','modern-heritage','minimalist','cinematic','fairy-tale'];
 function isOffered(t){return offeredTemplateIds.includes(t.id)}
 
 

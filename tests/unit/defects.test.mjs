@@ -88,6 +88,6 @@ test('review designs render but cannot be created until approved', () => {
 test('defect 2: every design used by the Figma islands is registered', () => {
   const shared = readFileSync(join(root, 'figma/islands/shared.tsx'), 'utf8');
   const mapped = [...shared.matchAll(/^\s+backendId: "([^"]+)"/gm)].map(match => match[1]);
-  assert.equal(mapped.length, 7); // the four scene templates, Modern Heritage, Minimalist and Cinematic are the only designs offered for now
+  assert.equal(mapped.length, 8); // the four scene templates, Modern Heritage, Minimalist, Cinematic and Fairy Tale are the only designs offered for now
   for (const templateId of mapped) assert.ok(isLaunchTemplate(templateId), templateId);
 });
