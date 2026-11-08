@@ -136,3 +136,4 @@ figure{margin:0}
 .timeline-item{grid-template-columns:25px 1fr}.timeline-item small{grid-column:2;text-align:left;padding:0}
 .photo-grid{grid-template-columns:repeat(2,1fr)}.footer{min-height:130px}.footer>span{max-width:160px;line-height:1.7}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
+.rsvp-link{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}

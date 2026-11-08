@@ -601,6 +601,18 @@ export const RESERVED_SLUGS = Object.freeze(new Set([
   'support', 'help', 'www', 'mail', 'root', 'null', 'undefined'
 ]));
 
+// The only RSVP facts a visitor gets: how the response section works and, when the couple chose it, the
+// contact number. Replies themselves are never part of a public projection.
+function publicRsvp(preferences) {
+  const prefs = preferences && typeof preferences === 'object' && !Array.isArray(preferences) ? preferences : {};
+  const mode = ['count', 'rsvp', 'contact', 'none'].includes(prefs.rsvp) ? prefs.rsvp : 'count';
+  const contact = prefs.rsvpContact && typeof prefs.rsvpContact === 'object' ? prefs.rsvpContact : {};
+  const value = typeof contact.value === 'string' ? contact.value.replace(/[^\d+\s()-]/g, '').trim().slice(0, 24) : '';
+  const digits = value.replace(/\D/g, '');
+  const valid = (contact.type === 'whatsapp' || contact.type === 'phone') && digits.length >= 7 && digits.length <= 15;
+  return { mode, contact: mode === 'contact' && valid ? { type: contact.type, value } : null };
+}
+
 export function publicWeddingProjection(wedding) {
   const intro = wedding.intro_settings && typeof wedding.intro_settings === 'object'
     ? wedding.intro_settings
@@ -633,6 +645,7 @@ export function publicWeddingProjection(wedding) {
       copy: publicCopy(content.copy)
     },
     sections,
+    rsvp: publicRsvp(wedding.preferences),
     intro_settings: {
       enabled: intro.enabled,
       style: intro.style,

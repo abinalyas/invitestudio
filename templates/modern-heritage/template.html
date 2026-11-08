@@ -129,7 +129,7 @@
     <h2>{{em:copy:rsvp_title}}</h2>
     <img class="flourish" src="/templates/modern-heritage/assets/botanical-divider.svg" alt="">
     <p class="section-intro">{{copy:rsvp_intro}}</p>
-    <p class="rsvp-status" role="note">{{copy:rsvp_status}}</p>
+    <!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if-->
   </div>
 </section>
 

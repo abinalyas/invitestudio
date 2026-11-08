@@ -14,7 +14,7 @@ once approved (the earlier "no per-event, no edits" wording is superseded).
 | 4 | Guests change their reply | **Yes**, with a private link shown on the confirmation. |
 | 5 | Notifications to the couple | **None** for now. The dashboard is the only place replies appear. |
 | 6 | Retention | Everything is kept for **2 months after the wedding**, then deleted. Longer keeping is a later paid option. |
-| 7 | Contact methods for the fallback | **Open** (WhatsApp, phone, email?). |
+| 7 | Contact methods for the fallback | **WhatsApp or phone call.** No email. The number is shown publicly on the invitation, and the editor says so. |
 
 ## What guests see
 
@@ -114,11 +114,15 @@ date is the last event date, or the wedding date if there are no events.
 
 Each step ships with tests (validation, rate limit, privacy of the public projection, closed state, deletion).
 
-## Still to confirm
+## Defaults settled
 
-- **Contact methods** for the fallback (decision 7), and that the number or address is public on the page.
-- **Retention scope:** deleting the whole invitation page 2 months after the wedding (not only the replies) is a
-  bigger step than deleting replies. Is that intended? And for weddings with no date, what is the rule (for example,
-  12 months after publishing)?
-- **Warning:** with no email, is an editor-only warning acceptable?
-- **Reply-by date and maximum party size:** defaults (no deadline, maximum 10)?
+- Deleting the whole invitation page (not only the replies) 2 months after the wedding date: confirmed.
+- Weddings with no date: not deleted until a date is set (revisit when the retention job is built).
+- The only warning is the banner in the editor (no email channel).
+- No reply-by date unless the couple sets one; maximum party size 10.
+
+## Progress
+
+- **Phase 1 (contact fallback): built.** "Contact details only" shows the couple's WhatsApp or phone link in the
+  RSVP section of every design; "No response form" says nothing; the other two modes still show the honest
+  "not open yet" line until online replies exist.

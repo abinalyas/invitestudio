@@ -35,7 +35,11 @@
       hosts: wedding.hosts || '',
       locale: wedding.locale || 'English',
       theme: wedding.theme || {},
-      preferences: { gallery: (content.gallery && content.gallery.preference) || 'gallery' },
+      preferences: {
+        gallery: (content.gallery && content.gallery.preference) || 'gallery',
+        rsvp: (wedding.rsvp && wedding.rsvp.mode) || 'count',
+        rsvpContact: (wedding.rsvp && wedding.rsvp.contact) || null
+      },
       // An empty list means the couple has not customised sections: use the editor's defaults.
       sections: Array.isArray(wedding.sections) && wedding.sections.length ? wedding.sections : undefined,
       functions: Array.isArray(content.functions) ? content.functions : [],
