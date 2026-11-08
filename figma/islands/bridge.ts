@@ -90,9 +90,34 @@ export interface RsvpData {
   };
 }
 
+export interface PhotoItem {
+  id: string;
+  alt: string;
+  thumb: string;
+  width: number | null;
+  height: number | null;
+}
+
+export interface MediaInfo {
+  enabled: boolean;
+  reason: string;
+  error: string;
+  loaded: boolean;
+  limits: { photos: number; totalBytes: number };
+  usage: { count: number; bytes: number };
+}
+
+export interface UploadResult {
+  added: number;
+  errors: Array<{ name: string; message: string }>;
+}
+
 export type EditorSnapshot = EditorFields & {
   available: boolean;
   draftId: string;
+  photos: PhotoItem[];
+  photoSlots: string[];
+  media: MediaInfo;
   templateId: string;
   templateName: string;
   publishStatus: string;
@@ -135,6 +160,11 @@ export interface InviteStudioBridge {
   setRsvp(value: string): void;
   setRsvpContact(type: string, value: string): void;
   setRsvpOption(key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number): void;
+  mediaLoad(): Promise<void>;
+  mediaUpload(files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void): Promise<UploadResult>;
+  mediaAlt(id: string, alt: string): Promise<void>;
+  mediaMove(id: string, delta: number): Promise<void>;
+  mediaRemove(id: string): Promise<void>;
   loadReplies(): Promise<RsvpData>;
   deleteReply(id: string): Promise<unknown>;
   downloadRepliesCsv(data: RsvpData, withCount: boolean): void;
@@ -189,6 +219,11 @@ export const bridge = {
   setRsvp: (value: string) => host().setRsvp(value),
   setRsvpContact: (type: string, value: string) => host().setRsvpContact(type, value),
   setRsvpOption: (key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number) => host().setRsvpOption(key, value),
+  mediaLoad: () => host().mediaLoad(),
+  mediaUpload: (files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void) => host().mediaUpload(files, onProgress),
+  mediaAlt: (id: string, alt: string) => host().mediaAlt(id, alt),
+  mediaMove: (id: string, delta: number) => host().mediaMove(id, delta),
+  mediaRemove: (id: string) => host().mediaRemove(id),
   loadReplies: () => host().loadReplies(),
   deleteReply: (id: string) => host().deleteReply(id),
   downloadRepliesCsv: (data: RsvpData, withCount: boolean) => host().downloadRepliesCsv(data, withCount),

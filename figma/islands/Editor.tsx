@@ -31,7 +31,7 @@ const sections: SectionItem[] = [
   { key: "home", label: "Home", icon: "home" },
   { key: "story", label: "Our story", icon: "heart", sectionId: "story" },
   { key: "functions", label: "Events", icon: "calendar", sectionId: "functions" },
-  { key: "gallery", label: "Gallery", icon: "gallery", sectionId: "gallery" },
+  { key: "gallery", label: "Photos", icon: "gallery", sectionId: "gallery" },
   { key: "rsvp", label: "RSVP", icon: "check", sectionId: "rsvp" }
 ];
 
@@ -93,7 +93,10 @@ function sectionHint(key: SectionKey, snap: EditorSnapshot): string {
     const count = snap.events.length;
     return count ? `${count} ${count === 1 ? "event" : "events"}` : "No events yet";
   }
-  if (key === "gallery") return snap.galleryCount ? `${snap.galleryCount} photos` : "Photos not available yet";
+  if (key === "gallery") {
+    if (snap.galleryCount) return `${snap.galleryCount} ${snap.galleryCount === 1 ? "photo" : "photos"}`;
+    return snap.media.enabled ? "Add your photos" : "Not available yet";
+  }
   if (snap.rsvp === "none") return "No response form";
   if (snap.rsvp === "contact") return "Contact details only";
   const closed = !snap.rsvpOpen || (Boolean(snap.rsvpReplyBy) && new Date().toISOString().slice(0, 10) > snap.rsvpReplyBy);
@@ -121,6 +124,7 @@ export function EditorPage() {
   const setActive = (next: SectionKey) => { remembered.active = next; setActiveState(next); };
   const setMobileTab = (next: MobileTab) => { remembered.mobileTab = next; setMobileTabState(next); };
   const replyCount = useReplyCount(snap);
+  useEffect(() => { if (snap.available) void bridge.mediaLoad(); }, [snap.available, snap.draftId]);
   const controlsRef = useRef<HTMLElement>(null);
   const [picked, setPicked] = useState(false);
   const [namesNeeded, setNamesNeeded] = useState(false);
@@ -729,12 +733,97 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
   );
 }
 
-// Photos need persistent storage, which does not exist yet. The empty state says so.
+const slotLabels: Record<string, string> = { hero: "Cover picture", story: "Story picture", venue: "Venue picture" };
+const mb = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1);
+
+const mediaOffNotes: Record<string, string> = {
+  NOT_SAVED_ONLINE: "Photos need your invitation to be saved online. Open it with your private link, or wait until it finishes saving.",
+  NO_STORAGE: "Photo storage is not set up yet. Until it is, your invitation uses the design's own pictures.",
+  MIGRATION_PENDING: "Photo storage is being set up. Please try again later."
+};
+
+// Photos: the first ones fill the design's large pictures, the rest form the gallery. Each is resized on this device
+// before it is uploaded, so a phone photo of several MB becomes a few hundred KB.
 function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
+  const [progress, setProgress] = useState("");
+  const [problems, setProblems] = useState<string[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const media = snap.media;
+  const slots = snap.photoSlots;
+
+  if (!media.loaded) return <div className="editor-form"><p className="tiny muted">Loading photos…</p></div>;
+  if (!media.enabled) {
+    return (
+      <div className="editor-form">
+        <p className="empty-state">No photos yet.</p>
+        <p className="tiny muted">{mediaOffNotes[media.reason] ?? "Photos are not available right now."}</p>
+        {media.error ? <p className="tiny error">{media.error} <button type="button" className="link-button" onClick={() => bridge.mediaLoad()}>Try again</button></p> : null}
+      </div>
+    );
+  }
+
+  const full = snap.photos.length >= media.limits.photos;
+  const add = async (files: FileList | null) => {
+    if (!files || !files.length) return;
+    setProblems([]);
+    const result = await bridge.mediaUpload(Array.from(files), p => setProgress(`Adding photo ${p.index} of ${p.total}…`));
+    setProgress("");
+    setProblems(result.errors.map(error => (error.name ? `${error.name}: ${error.message}` : error.message)));
+    if (inputRef.current) inputRef.current.value = "";
+  };
+  const slotName = (index: number) => slotLabels[slots[index]] ?? "Large picture";
+
   return (
     <div className="editor-form">
-      <p className="empty-state">{snap.galleryCount ? `${snap.galleryCount} photos` : "No photos yet."}</p>
-      <p className="tiny muted">Photo uploads unlock when photo storage is available. Until then, your invitation has no gallery section.</p>
+      <p className="tiny muted" data-testid="photo-usage">
+        {media.usage.count} of {media.limits.photos} photos · {mb(media.usage.bytes)} of {mb(media.limits.totalBytes)} MB
+      </p>
+      <p className="tiny muted">
+        {slots.length
+          ? `The first ${slots.length} ${slots.length === 1 ? "photo fills" : "photos fill"} this design's large ${slots.length === 1 ? "picture" : "pictures"}; the rest go in the gallery. Use the arrows to change the order.`
+          : "Your photos appear in the gallery. Use the arrows to change the order."}
+      </p>
+      <label className={full || progress ? "button outline small photo-add disabled" : "button outline small photo-add"}>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          disabled={full || Boolean(progress)}
+          onChange={event => void add(event.target.files)}
+          aria-label="Add photos"
+        />
+        {progress ? progress : full ? "Photo limit reached" : "Add photos"}
+      </label>
+      {problems.length ? (
+        <ul className="photo-problems" role="alert">
+          {problems.map((text, index) => <li key={index}>{text}</li>)}
+        </ul>
+      ) : null}
+      {media.error ? <p className="tiny error">{media.error}</p> : null}
+      {snap.photos.length === 0 ? <p className="empty-state">No photos yet. Photos you add replace the design's example pictures.</p> : null}
+      <ul className="photo-list">
+        {snap.photos.map((photo, index) => (
+          <li key={photo.id}>
+            <img src={photo.thumb} alt="" width={72} height={72} />
+            <div className="photo-fields">
+              {index < slots.length ? <span className="photo-slot">{slotName(index)}</span> : <span className="photo-slot muted">Gallery</span>}
+              <input
+                aria-label={`Description of photo ${index + 1}`}
+                placeholder="Describe this photo (for screen readers)"
+                maxLength={300}
+                defaultValue={photo.alt}
+                onBlur={event => { if (event.target.value !== photo.alt) void bridge.mediaAlt(photo.id, event.target.value); }}
+              />
+              <div className="photo-actions">
+                <button type="button" aria-label={`Move photo ${index + 1} up`} disabled={index === 0} onClick={() => void bridge.mediaMove(photo.id, -1)}>↑</button>
+                <button type="button" aria-label={`Move photo ${index + 1} down`} disabled={index === snap.photos.length - 1} onClick={() => void bridge.mediaMove(photo.id, 1)}>↓</button>
+                <button type="button" className="link-button" onClick={() => { if (window.confirm("Remove this photo?")) void bridge.mediaRemove(photo.id); }}>Remove</button>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -48,7 +48,10 @@
     return (h % 12 || 12) + ":" + m[2] + " " + (h < 12 ? "AM" : "PM");
   }
   function safeHttp(u) { return /^https?:\/\//i.test(u || "") ? u : ""; }
-  function safePhoto(u) { return /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(u || "") || /^https:\/\//i.test(u || "") ? u : ""; }
+  // A photo address: an embedded picture, an https address, or one of this site's own /media/ pictures.
+  function safePhoto(u) {
+    return /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(u || "") || /^https:\/\//i.test(u || "") || /^\/media\/w\/[0-9a-f-]{36}\/[0-9a-f-]{36}-(full|thumb)\.(webp|jpg)$/.test(u || "") ? u : "";
+  }
 
   /* ---------- marker engine ---------- */
   var TOKEN = /<!--(if|each) ([\w.]+)-->|<!--(else|\/if|\/each)-->/g;
@@ -140,14 +143,16 @@
     if (example && !story) story = example.story || "";
     if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", when: "", date_text: "", time_text: "", map: "" }; });
     events = numbered(events);
-    var photos = (Array.isArray(p.photos) ? p.photos : []).map(function (ph) { return ph && { src: safePhoto(ph.data), alt: ph.alt || "" }; }).filter(function (ph) { return ph && ph.src; });
+    var photos = (Array.isArray(p.photos) ? p.photos : []).map(function (ph) { return ph && { src: safePhoto(ph.data), thumb: safePhoto(ph.thumb), alt: ph.alt || "" }; }).filter(function (ph) { return ph && ph.src; });
     // Photo slots: the first photos fill the template's named slots (hero, story, ...), in order. The gallery gets the
     // rest, or all of them when the template reuses its slot photos (galleryReuse).
     var slots = manifest.photoSlots || (manifest.heroPhoto ? ["hero"] : []);
     var gallery = manifest.galleryReuse ? photos : photos.slice(slots.length);
     if (example && !photos.length) { gallery = []; for (var k = 0; k < (example.photos || 0); k++) gallery.push({ src: "", alt: "" }); }
     var capKeys = manifest.captionKeys || [];
-    gallery = gallery.map(function (ph, i) { return { src: ph.src, alt: ph.alt, caption: capKeys[i] ? copy(capKeys[i]) : "" }; });
+    // Gallery grids show the small version (a guest's phone loads about a sixth of the data); designs that reuse their
+    // large pictures in the gallery keep the full version.
+    gallery = gallery.map(function (ph, i) { return { src: (!manifest.galleryReuse && ph.thumb) || ph.src, alt: ph.alt, caption: capKeys[i] ? copy(capKeys[i]) : "" }; });
     var galleryShown = visible.gallery && gallery.length >= (manifest.galleryMin || 1);
     var rsvp = root.InviteRsvp ? root.InviteRsvp.view(p, "") : { text: "", show: false };
     var long = (n[0] + n[1]).length > 18;

@@ -7,6 +7,17 @@ The service limits quoted here come from search results, because the providers' 
 opened from the development environment. **Check each figure in the Cloudflare and Supabase dashboards before relying
 on it.**
 
+## Progress
+
+- **Photo upload and display: built** (step 1 of "Order of work"). Server: `functions/api/weddings/[id]/media/`
+  (list, upload, reorder, describe, delete), `functions/media/[[path]].js` (serves photos from this site's own
+  `/media/` address until a separate media domain is connected), `functions/_shared/media.js` (the strict checks).
+  Browser: `media-resize.js` (resize, re-encode, strip hidden details) and the **Photos** panel in the editor. The
+  designs show the real photos, the published page shows them, and deleting a wedding deletes its pictures.
+- Needs: the R2 bucket bound as `MEDIA`, and migration `202611090001_wedding_photos_media.sql`. Until both are done the
+  editor says so and nothing breaks.
+- Not yet: usage clean-up sweep (joins the deletion job), intro image, music, video.
+
 ## Decisions
 
 | # | Question | Decision |

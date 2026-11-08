@@ -123,6 +123,11 @@ Configure these as Cloudflare Pages environment variables/secrets:
 - `SUPABASE_URL` — regular environment variable
 - `SUPABASE_SERVICE_ROLE_KEY` — encrypted secret, server-only
 - `ALLOWED_ORIGIN` — the deployed InviteStudio origin
+- `MEDIA` — an **R2 bucket binding** (Pages project, Settings, Functions, R2 bucket bindings). Holds the photos. Without it
+  the editor says photo storage is not set up and nothing breaks. See `docs/MEDIA_PLAN.md`.
+- `MEDIA_PUBLIC_URL` — optional. An `https://` media address connected to the bucket (for example
+  `https://media.example.com`). When unset, photos are served from this site's own `/media/` address. When set, add the
+  address to `img-src` in `_headers` and `functions/_shared/security.js` as well.
 
 For local Pages Functions development, copy `.dev.vars.example` to `.dev.vars`
 and put the real service-role key there. Never commit `.dev.vars`.

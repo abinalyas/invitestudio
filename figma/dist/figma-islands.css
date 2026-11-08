@@ -1215,3 +1215,18 @@
 .figma-app .reply-badge{ min-width: 20px; padding: 1px 6px; border-radius: 999px; background: #145c37; color: #fff; font-size: 12px; font-weight: 700; line-height: 18px; text-align: center; }
 @media (max-width: 767px){.figma-app .editor-header-actions .editor-action.editor-replies{ flex: none; width: auto; padding: 0 12px; min-height: 40px; font-size: 14px; font-weight: 600; }}
 .figma-app #editing-heading:focus{ outline: none; }
+.figma-app .photo-add{ position: relative; min-height: 42px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+.figma-app .photo-add input{ position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.figma-app .photo-add.disabled{ opacity: .55; cursor: not-allowed; }
+.figma-app .photo-add:focus-within{ outline: 2px solid #145c37; outline-offset: 2px; }
+.figma-app .photo-problems{ margin: 6px 0; padding-left: 18px; color: #a3261c; font-size: .85rem; }
+.figma-app .photo-list{ list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 10px; }
+.figma-app .photo-list li{ display: grid; grid-template-columns: 72px 1fr; gap: 12px; align-items: start; padding: 10px; border: 1px solid var(--line, #e6ddd3); border-radius: 10px; background: #fff; }
+.figma-app .photo-list img{ width: 72px; height: 72px; object-fit: cover; border-radius: 8px; background: #eee; }
+.figma-app .photo-fields{ display: grid; gap: 6px; min-width: 0; }
+.figma-app .photo-fields input{ width: 100%; font-size: .85rem; padding: 7px 9px; border: 1px solid #8a7f76; border-radius: 8px; }
+.figma-app .photo-slot{ font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #145c37; }
+.figma-app .photo-slot.muted{ color: #6b5f58; font-weight: 600; }
+.figma-app .photo-actions{ display: flex; gap: 6px; align-items: center; }
+.figma-app .photo-actions button:not(.link-button){ width: 34px; height: 30px; border: 1px solid #8a7f76; border-radius: 8px; background: #fff; cursor: pointer; }
+.figma-app .photo-actions button[disabled]{ opacity: .4; cursor: default; }

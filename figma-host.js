@@ -43,6 +43,13 @@
     }));
   }
 
+  // The picture spots the open design defines (hero, story, venue ...). The first photos fill them, the rest form the gallery.
+  function photoSlotsFor(p) {
+    const t = p ? tpl(p.templateId) : null;
+    const manifest = t && t.packaged && window.packagedTemplateManifest ? window.packagedTemplateManifest(t.packaged) : null;
+    return manifest ? (manifest.photoSlots || (manifest.heroPhoto ? ['hero'] : [])).slice() : [];
+  }
+
   function publicUrlFor(p) {
     return p && p.publishStatus === 'published' && p.publicSlug
       ? `${window.location.origin}/s/${p.publicSlug}`
@@ -132,6 +139,18 @@
       rsvpMaxParty: Number.isInteger(prefs.rsvpMaxParty) ? Math.min(Math.max(prefs.rsvpMaxParty, 1), 20) : 10,
       rsvpContact: prefs.rsvpContact && typeof prefs.rsvpContact === 'object' ? { type: prefs.rsvpContact.type === 'phone' ? 'phone' : 'whatsapp', value: String(prefs.rsvpContact.value || '') } : { type: 'whatsapp', value: '' },
       galleryCount: (p?.photos || []).length,
+      photos: (p?.photos || []).filter(photo => photo && photo.id).map(photo => ({
+        id: photo.id, alt: photo.alt || '', thumb: photo.thumb || photo.data || '', width: photo.width || null, height: photo.height || null
+      })),
+      photoSlots: photoSlotsFor(p),
+      media: {
+        enabled: Boolean(p?.media?.enabled),
+        reason: p?.media?.reason || '',
+        error: p?.media?.error || '',
+        loaded: Boolean(p?.media),
+        limits: p?.media?.limits || { photos: 12, totalBytes: 8 * 1024 * 1024 },
+        usage: p?.media?.usage || { count: 0, bytes: 0 }
+      },
       copyFields: copyFieldsFor(p),
       hasPrivateLink: Boolean(p?.cloudId && window.inviteStudioApi?.enabled),
       // What the invitation shows while a field is empty, so the editor can show it as a hint.
@@ -287,6 +306,13 @@
       save();
       notify();
     },
+
+    // Photos
+    mediaLoad() { return typeof window.loadMedia === 'function' ? window.loadMedia() : Promise.resolve(); },
+    mediaUpload(files, onProgress) { return window.uploadMediaPhotos(files, onProgress); },
+    mediaAlt(id, alt) { return window.setMediaAlt(id, alt); },
+    mediaMove(id, delta) { return window.moveMediaPhoto(id, delta); },
+    mediaRemove(id) { return window.deleteMediaPhoto(id); },
 
     loadReplies() {
       return typeof window.loadRsvpReplies === 'function' ? window.loadRsvpReplies() : Promise.reject(new Error('Not available.'));

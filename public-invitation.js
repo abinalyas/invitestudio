@@ -19,8 +19,7 @@
   };
 
   // Maps the public projection onto the project shape the invitation renderer uses.
-  // Photos are not included: they are metadata only until the media phase.
-  function projectFromPublic(wedding) {
+  function projectFromPublic(wedding, photos) {
     const content = wedding.content && typeof wedding.content === 'object' ? wedding.content : {};
     return {
       id: wedding.slug,
@@ -47,7 +46,7 @@
       sections: Array.isArray(wedding.sections) && wedding.sections.length ? wedding.sections : undefined,
       functions: Array.isArray(content.functions) ? content.functions : [],
       copy: content.copy && typeof content.copy === 'object' ? content.copy : {},
-      photos: [],
+      photos: (Array.isArray(photos) ? photos : []).map(photo => ({ id: photo.id, alt: photo.alt || '', width: photo.width, height: photo.height, data: photo.full, thumb: photo.thumb })),
       introSettings: wedding.intro_settings || {},
       animationSettings: wedding.animation_settings || {},
       status: 'Published',
@@ -79,7 +78,7 @@
     const centred = inner => `<main class="container" style="padding:80px 0;text-align:center;max-width:620px">${inner}</main>`;
     let body;
     if (view.status === 'ready') {
-      const project = projectFromPublic(view.data.wedding);
+      const project = projectFromPublic(view.data.wedding, view.data.photos);
       body = `<div class="published-page" data-public-invitation>${sitePreview(project, tpl(project.templateId), true)}</div>`;
     } else if (view.status === 'loading') {
       body = centred('<p class="muted">Loading invitation…</p>');

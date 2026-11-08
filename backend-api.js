@@ -102,6 +102,31 @@
     listRsvps(id, editToken) {
       return request(`/weddings/${encodeURIComponent(id)}/rsvps`, { headers: { Authorization: `Bearer ${editToken}` } });
     },
+    // Photos. The upload is a multipart form (the browser sets its content type); the rest is JSON.
+    listMedia(id, editToken) {
+      return request(`/weddings/${encodeURIComponent(id)}/media`, { headers: { Authorization: `Bearer ${editToken}` } });
+    },
+    async uploadMedia(id, editToken, form) {
+      const response = await fetch(`${base}/weddings/${encodeURIComponent(id)}/media`, {
+        method: 'POST', headers: { Authorization: `Bearer ${editToken}` }, body: form
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const error = new Error(body?.error?.message || 'Upload failed.');
+        error.code = body?.error?.code; error.fields = body?.error?.fields; error.status = response.status;
+        throw error;
+      }
+      return body;
+    },
+    reorderMedia(id, editToken, order) {
+      return request(`/weddings/${encodeURIComponent(id)}/media`, { method: 'PATCH', headers: { Authorization: `Bearer ${editToken}` }, body: JSON.stringify({ order }) });
+    },
+    updateMedia(id, editToken, photoId, patch) {
+      return request(`/weddings/${encodeURIComponent(id)}/media/${encodeURIComponent(photoId)}`, { method: 'PATCH', headers: { Authorization: `Bearer ${editToken}` }, body: JSON.stringify(patch) });
+    },
+    deleteMedia(id, editToken, photoId) {
+      return request(`/weddings/${encodeURIComponent(id)}/media/${encodeURIComponent(photoId)}`, { method: 'DELETE', headers: { Authorization: `Bearer ${editToken}` } });
+    },
     deleteRsvp(id, editToken, rsvpId) {
       return request(`/weddings/${encodeURIComponent(id)}/rsvps/${encodeURIComponent(rsvpId)}`, { method: 'DELETE', headers: { Authorization: `Bearer ${editToken}` } });
     }

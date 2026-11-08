@@ -12,6 +12,7 @@ import {
   success,
   validateWeddingInput
 } from '../../_shared/api.js';
+import { deleteWeddingMedia } from '../../_shared/media.js';
 
 export async function onRequest(context) {
   const { request, env, params } = context;
@@ -32,7 +33,8 @@ export async function onRequest(context) {
     if (request.method === 'DELETE') {
       // Permanent. The private links, photo records, events, payments and RSVPs of this
       // draft are removed by cascading foreign keys, and its public address stops working
-      // at once. Stored files are removed when media storage is added (Phase 5).
+      // at once. Its stored photos are removed first.
+      await deleteWeddingMedia(env, id).catch(error => console.error('InviteStudio media cleanup failed', error?.message));
       await db(env, `weddings?id=eq.${id}`, {
         method: 'DELETE',
         headers: { Prefer: 'return=minimal' }

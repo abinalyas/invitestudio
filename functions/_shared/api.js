@@ -1,4 +1,5 @@
 import { isLaunchTemplate } from './templates.js';
+import { safePhotoViews } from './media.js';
 
 const encoder = new TextEncoder();
 
@@ -334,22 +335,11 @@ function validateGallery(value, fields) {
     fields.gallery = 'Gallery settings must be an object.';
     return {};
   }
-  const photos = Array.isArray(value.photos) ? value.photos : [];
-  if (photos.length > 4) fields.gallery = 'A gallery can contain no more than 4 photos.';
+  // Photos are not part of the invitation's saved content: they are uploaded and managed through the media
+  // endpoints (docs/MEDIA_PLAN.md). Anything sent here is ignored.
   return {
     preference: typeof value.preference === 'string' ? value.preference.slice(0, 40) : '',
-    photos: photos.slice(0, 4).map((photo, index) => {
-      if (!photo || typeof photo !== 'object') {
-        fields[`gallery.photos[${index}]`] = 'Photo metadata must be an object.';
-        return null;
-      }
-      return {
-        alt: typeof photo.alt === 'string' ? photo.alt.trim().slice(0, 500) : '',
-        storagePath: typeof photo.storagePath === 'string' ? photo.storagePath.slice(0, 500) : null,
-        width: Number.isInteger(photo.width) && photo.width > 0 ? photo.width : null,
-        height: Number.isInteger(photo.height) && photo.height > 0 ? photo.height : null
-      };
-    }).filter(Boolean)
+    photos: []
   };
 }
 
@@ -545,12 +535,8 @@ export async function getWedding(env, id) {
 // content.functions is the single event source (see docs/PHASE_0_INTEGRATION_PLAN.md).
 // The wedding_events table is retained but intentionally not read or written.
 export async function getWeddingChildren(env, id) {
-  const photos = await db(env, `wedding_photos?${new URLSearchParams({
-    select: 'id,storage_path,alt,width,height,sort_order,metadata',
-    wedding_id: `eq.${id}`,
-    order: 'sort_order.asc,created_at.asc'
-  })}`);
-  return { photos: photos || [] };
+  // Photos are managed by the media endpoints (functions/api/weddings/[id]/media); this returns their addresses.
+  return { photos: await safePhotoViews(env, id) };
 }
 
 const PUBLIC_FUNCTION_FIELDS = [
@@ -581,15 +567,8 @@ function publicSection(section) {
 }
 
 function publicGallery(gallery) {
-  const photos = Array.isArray(gallery?.photos) ? gallery.photos : [];
-  return {
-    preference: typeof gallery?.preference === 'string' ? gallery.preference : '',
-    photos: photos.map(photo => ({
-      alt: typeof photo?.alt === 'string' ? photo.alt : '',
-      width: Number.isInteger(photo?.width) ? photo.width : null,
-      height: Number.isInteger(photo?.height) ? photo.height : null
-    }))
-  };
+  // The photos themselves come from the media table (see safePhotoViews); only the layout choice lives here.
+  return { preference: typeof gallery?.preference === 'string' ? gallery.preference : '', photos: [] };
 }
 
 // Paths and words that a public invitation must never take, so that /s/, /api/ and

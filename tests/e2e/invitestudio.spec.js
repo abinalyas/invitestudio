@@ -427,4 +427,170 @@ test.describe('guest replies', () => {
     await expect(page.locator('.rsvp-list li')).toHaveCount(1);
     expect(seen.deleted).toEqual(['33333333-3333-4333-8333-333333333333']);
   });
+
+  // ---- Photos -------------------------------------------------------------------------------------------------
+  function parseMultipart(request) {
+    const boundary = /boundary=(.+)$/.exec(request.headers()['content-type'])[1];
+    const buffer = request.postDataBuffer();
+    const delimiter = Buffer.from('--' + boundary), parts = {};
+    let position = buffer.indexOf(delimiter);
+    while (position !== -1) {
+      const next = buffer.indexOf(delimiter, position + delimiter.length);
+      if (next === -1) break;
+      const part = buffer.subarray(position + delimiter.length + 2, next - 2);
+      const headerEnd = part.indexOf('\r\n\r\n');
+      parts[/name="([^"]+)"/.exec(part.subarray(0, headerEnd).toString())[1]] = part.subarray(headerEnd + 4);
+      position = next;
+    }
+    return parts;
+  }
+  const TINY_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+
+  // A draft that is saved online (cloud id and edit token on this device), opened the way a returning couple opens it,
+  // with a stand-in photo service. Nothing reaches production.
+  async function openSavedDraft(page, { enabled = true, reason = '' } = {}) {
+    const wid = '55555555-5555-4555-8555-555555555555', token = 'm'.repeat(43);
+    const calls = { uploads: [], patches: [], deleted: [], orders: [] };
+    const photos = [];
+    const view = () => ({ enabled, reason, limits: { photos: 12, totalBytes: 8388608 }, usage: { count: photos.length, bytes: photos.length * 90000 }, photos: photos.map(p => ({ id: p.id, alt: p.alt, width: p.width, height: p.height, full: p.full, thumb: p.thumb, bytes: 90000 })) });
+    await page.route('**/api/**', route => route.abort());
+    await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding', 'cinematic'));
+    await page.locator('#projectTitle').fill('Mira & Arun');
+    await page.locator('#projectDate').fill('2027-01-20');
+    await completeSetupSteps(page);
+    await page.evaluate(({ wid, token }) => {
+      window.InviteStudioBridge.setTemplate('cinematic'); // a design with three large picture spots
+      current().cloudId = wid;
+      localStorage.setItem('invitestudio-edit-tokens', JSON.stringify({ [wid]: token }));
+      save();
+    }, { wid, token });
+    await page.unroute('**/api/**');
+    await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
+    await page.route('**/media/**', route => route.fulfill({ contentType: 'image/png', body: TINY_PNG }));
+    await page.route('**/api/**', route => {
+      const request = route.request(), url = new URL(request.url()), method = request.method();
+      const json = (body, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
+      const base = `/api/weddings/${wid}/media`;
+      if (url.pathname === base && method === 'GET') return json(view());
+      if (url.pathname === base && method === 'POST') {
+        const parts = parseMultipart(request);
+        calls.uploads.push(parts);
+        const id = `66666666-6666-4666-8666-${String(photos.length + 1).padStart(12, '0')}`;
+        photos.push({ id, alt: '', width: 1600, height: 1067, full: `/media/w/${wid}/${id}-full.webp`, thumb: `/media/w/${wid}/${id}-thumb.webp` });
+        return json({ photo: photos[photos.length - 1] }, 201);
+      }
+      if (url.pathname === base && method === 'PATCH') { const order = request.postDataJSON().order; calls.orders.push(order); photos.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id)); return json(view()); }
+      const one = url.pathname.match(new RegExp(`^${base}/([0-9a-f-]+)$`));
+      if (one && method === 'PATCH') { calls.patches.push(request.postDataJSON()); photos.find(p => p.id === one[1]).alt = request.postDataJSON().alt; return json({ photo: {} }); }
+      if (one && method === 'DELETE') { calls.deleted.push(one[1]); photos.splice(photos.findIndex(p => p.id === one[1]), 1); return json({ deleted: true }); }
+      return route.abort();
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await page.getByRole('button', { name: /^Photos/ }).click();
+    return { calls, photos };
+  }
+  const makeImage = (page, type, width, height) => page.evaluate(({ type, width, height }) => {
+    const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext('2d'), gradient = ctx.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, '#c06'); gradient.addColorStop(1, '#06c'); ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
+    for (let i = 0; i < 400; i += 1) { ctx.fillStyle = `hsl(${i * 7 % 360} 70% 50%)`; ctx.fillRect((i * 53) % width, (i * 97) % height, 40, 40); }
+    return canvas.toDataURL(type, 0.95).split(',')[1];
+  }, { type, width, height });
+
+  test('photos: resized on the device, uploaded, described, reordered and removed', async ({ page }) => {
+    const { sniffImage, imageSize, MEDIA_LIMITS } = await import('../../functions/_shared/media.js');
+    const { calls } = await openSavedDraft(page);
+    await expect(page.getByTestId('photo-usage')).toContainText('0 of 12 photos');
+    await expect(page.getByText(/first 3 photos fill this design/)).toBeVisible();
+    const big = Buffer.from(await makeImage(page, 'image/png', 3000, 2000), 'base64');
+    const portrait = Buffer.from(await makeImage(page, 'image/jpeg', 1200, 1800), 'base64');
+    await page.getByLabel('Add photos').setInputFiles([
+      { name: 'wide.png', mimeType: 'image/png', buffer: big },
+      { name: 'tall.jpg', mimeType: 'image/jpeg', buffer: portrait }
+    ]);
+    await expect(page.getByTestId('photo-usage')).toContainText('2 of 12 photos');
+    await expect(page.locator('.photo-list li')).toHaveCount(2);
+    await expect(page.locator('.photo-slot').first()).toHaveText('Cover picture');
+
+    // What the browser made is what the server accepts: right format, shrunk, small.
+    expect(calls.uploads).toHaveLength(2);
+    const [wide, tall] = calls.uploads;
+    const wideFull = new Uint8Array(wide.full), wideThumb = new Uint8Array(wide.thumb);
+    const format = sniffImage(wideFull);
+    expect(['webp', 'jpeg']).toContain(format);
+    expect(sniffImage(wideThumb)).toBe(format);
+    expect(imageSize(wideFull, format)).toEqual({ width: 1600, height: 1067 });
+    expect(imageSize(wideThumb, format)).toEqual({ width: 480, height: 320 });
+    expect(wideFull.length).toBeLessThan(MEDIA_LIMITS.fullBytes);
+    expect(wideThumb.length).toBeLessThan(MEDIA_LIMITS.thumbBytes);
+    expect(wideFull.length).toBeLessThan(big.length / 2);
+    expect(imageSize(new Uint8Array(tall.full), format)).toEqual({ width: 1067, height: 1600 });
+
+    // Real pictures now fill the design's spots in the preview.
+    await expect(page.locator('img[src^="/media/w/"]').first()).toBeAttached();
+
+    // Description, order, removal.
+    const first = page.getByLabel('Description of photo 1');
+    await first.fill('On the beach');
+    await first.blur();
+    await expect.poll(() => calls.patches.length).toBe(1);
+    expect(calls.patches[0]).toEqual({ alt: 'On the beach' });
+    await page.getByLabel('Move photo 1 down').click();
+    await expect.poll(() => calls.orders.length).toBe(1);
+    await expect(page.getByLabel('Description of photo 2')).toHaveValue('On the beach');
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', { name: 'Remove' }).first().click();
+    await expect(page.locator('.photo-list li')).toHaveCount(1);
+    expect(calls.deleted).toHaveLength(1);
+  });
+
+  test('photos: location and camera details inside a picture are removed before it leaves the device', async ({ page }) => {
+    const { calls } = await openSavedDraft(page);
+    const jpeg = Buffer.from(await makeImage(page, 'image/jpeg', 1200, 800), 'base64');
+    const exif = Buffer.concat([Buffer.from('Exif\0\0'), Buffer.from('GPSLatitude 12.9716 N GPSLongitude 77.5946 E Make=SecretCam')]);
+    const app1 = Buffer.concat([Buffer.from([0xFF, 0xE1, (exif.length + 2) >> 8, (exif.length + 2) & 255]), exif]);
+    const tagged = Buffer.concat([jpeg.subarray(0, 2), app1, jpeg.subarray(2)]);
+    expect(tagged.includes('GPSLatitude')).toBe(true);
+    await page.getByLabel('Add photos').setInputFiles({ name: 'trip.jpg', mimeType: 'image/jpeg', buffer: tagged });
+    await expect(page.locator('.photo-list li')).toHaveCount(1);
+    for (const part of ['full', 'thumb']) {
+      const sent = calls.uploads[0][part];
+      expect(sent.includes('GPS')).toBe(false);
+      expect(sent.includes('SecretCam')).toBe(false);
+      expect(sent.includes('Exif')).toBe(false);
+    }
+  });
+
+  test('photos: a file that is not a picture is refused with a reason, and nothing is sent', async ({ page }) => {
+    const { calls } = await openSavedDraft(page);
+    await page.getByLabel('Add photos').setInputFiles({ name: 'notes.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 hello') });
+    await expect(page.getByRole('alert')).toContainText('notes.pdf');
+    await expect(page.getByRole('alert')).toContainText(/photo file/i);
+    expect(calls.uploads).toHaveLength(0);
+  });
+
+  test('photos: when storage is not set up the panel says so plainly', async ({ page }) => {
+    await openSavedDraft(page, { enabled: false, reason: 'NO_STORAGE' });
+    await expect(page.getByText(/Photo storage is not set up yet/)).toBeVisible();
+    await expect(page.getByLabel('Add photos')).toHaveCount(0);
+  });
+
+  test('guests see the couple\'s uploaded photos on the published page', async ({ page }) => {
+    const slug = 'asha-ravi', wid = '55555555-5555-4555-8555-555555555555';
+    await page.route('**/s/' + slug, route => route.fulfill({ contentType: 'text/html', body: require('fs').readFileSync('index.html', 'utf8') }));
+    await page.route('**/media/**', route => route.fulfill({ contentType: 'image/png', body: TINY_PNG }));
+    const img = n => ({ id: `77777777-7777-4777-8777-00000000000${n}`, alt: `Photo ${n}`, width: 1600, height: 1067 });
+    const photos = [1, 2, 3, 4, 5].map(n => { const p = img(n); return { ...p, full: `/media/w/${wid}/${p.id}-full.webp`, thumb: `/media/w/${wid}/${p.id}-thumb.webp` }; });
+    await page.route('**/api/**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+      wedding: { slug, template_id: 'cinematic', name: 'A', category: 'Wedding', title: 'Asha & Ravi', event_date: '2027-02-14', location: 'Hall, Kochi', message: '', story: '', hosts: '', locale: 'English', theme: {}, content: { functions: [], copy: {}, gallery: {} }, sections: [], intro_settings: {}, animation_settings: {}, rsvp: { mode: 'count', open: true, maxParty: 6, replyBy: '', contact: null } },
+      photos
+    }) }));
+    await page.goto('/s/' + slug);
+    await page.waitForSelector('[data-public-invitation]');
+    const sources = await page.locator('[data-public-invitation] img').evaluateAll(list => list.map(n => n.getAttribute('src')));
+    expect(sources.filter(src => /^\/media\/w\//.test(src)).length).toBeGreaterThanOrEqual(3);
+    expect(sources.some(src => /-full\.webp$/.test(src))).toBe(true);
+    expect(await page.locator('[data-public-invitation] img[alt="Photo 4"]').count()).toBeGreaterThan(0);
+  });
 });
