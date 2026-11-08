@@ -136,6 +136,7 @@ export interface InviteStudioBridge {
   setRsvpOption(key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number): void;
   loadReplies(): Promise<RsvpData>;
   deleteReply(id: string): Promise<unknown>;
+  downloadRepliesCsv(data: RsvpData, withCount: boolean): void;
   setTemplate(templateId: string): void;
   designs(): Design[];
   eventPresets(): string[];
@@ -189,6 +190,7 @@ export const bridge = {
   setRsvpOption: (key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number) => host().setRsvpOption(key, value),
   loadReplies: () => host().loadReplies(),
   deleteReply: (id: string) => host().deleteReply(id),
+  downloadRepliesCsv: (data: RsvpData, withCount: boolean) => host().downloadRepliesCsv(data, withCount),
   setTemplate: (templateId: string) => host().setTemplate(templateId),
   designs: () => host().designs(),
   eventPresets: () => host().eventPresets(),

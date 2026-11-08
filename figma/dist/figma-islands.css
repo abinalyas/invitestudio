@@ -1187,10 +1187,9 @@
 @media (max-width: 900px){.figma-app .detail-device{ height: min(680px, 78vh); min-height: 480px; }}
 @media (max-width: 767px){.figma-app .scroll-cue.detail-cue{ display: flex; }}
 .figma-app .detail-page{ overflow: clip; }
-.figma-app .rsvp-replies{margin-top:18px;padding-top:14px;border-top:1px solid var(--line, #e6ddd3)}
+.figma-app .rsvp-replies{margin:0 0 6px;padding-bottom:14px;border-bottom:1px solid var(--line, #e6ddd3)}
+.figma-app .rsvp-settings-title{margin:14px 0 0;font-size:1rem}
 .figma-app .rsvp-replies h4{margin:0 0 8px;font-size:1rem}
-.figma-app .rsvp-totals{margin:0 0 8px;font-size:.92rem}
-.figma-app .rsvp-by-event{margin:0 0 10px;padding-left:18px;font-size:.85rem}
 .figma-app .rsvp-list{list-style:none;margin:10px 0;padding:0;display:grid;gap:8px}
 .figma-app .rsvp-list li{padding:10px 12px;border:1px solid var(--line, #e6ddd3);border-radius:10px;background:#fff}
 .figma-app .rsvp-list li>div{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
@@ -1199,3 +1198,16 @@
 .figma-app .rsvp-no{color:#8a5a2b;font-size:.85rem}
 .figma-app .check-row{display:flex;align-items:center;gap:10px}
 .figma-app .check-row input{width:auto}
+.figma-app .rsvp-status{margin:0 0 10px;font-size:.9rem}
+.figma-app .rsvp-status.closed{color:#8a5a2b}
+.figma-app .rsvp-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px;margin:0 0 12px}
+.figma-app .rsvp-cards div{padding:10px 8px;border:1px solid var(--line, #e6ddd3);border-radius:10px;background:#fff;text-align:center}
+.figma-app .rsvp-cards strong{display:block;font-size:1.35rem;line-height:1.1}
+.figma-app .rsvp-cards span{font-size:.75rem;color:#6b5f58}
+.figma-app table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-size:.85rem;padding:0;list-style:none}
+.figma-app .rsvp-by-event th, .figma-app .rsvp-by-event td{padding:6px 8px;border-bottom:1px solid var(--line, #e6ddd3);text-align:left}
+.figma-app .rsvp-by-event th:not(:first-child), .figma-app .rsvp-by-event td:not(:first-child){text-align:right}
+.figma-app .rsvp-filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.figma-app .rsvp-filters button{padding:6px 12px;border:1px solid var(--line, #d9cec3);border-radius:999px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer}
+.figma-app .rsvp-filters button.active{background:var(--green, #145c37);border-color:var(--green, #145c37);color:#fff}
+.figma-app .rsvp-actions-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px}

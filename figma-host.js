@@ -291,6 +291,20 @@
       return typeof window.loadRsvpReplies === 'function' ? window.loadRsvpReplies() : Promise.reject(new Error('Not available.'));
     },
 
+    // Saves the replies as a spreadsheet file on this device. Nothing is sent anywhere.
+    downloadRepliesCsv(data, withCount) {
+      if (!window.InviteRsvpCsv) return;
+      const csv = window.InviteRsvpCsv.repliesCsv(data, { withCount: withCount !== false });
+      const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'wedding-replies.csv';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    },
+
     deleteReply(id) {
       return typeof window.deleteRsvpReply === 'function' ? window.deleteRsvpReply(id) : Promise.reject(new Error('Not available.'));
     },
