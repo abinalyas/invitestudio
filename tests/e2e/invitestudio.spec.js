@@ -336,4 +336,21 @@ test.describe('guest replies', () => {
     await page.getByRole('button', { name: 'Delete' }).first().click();
     await expect(page.locator('.rsvp-list li')).toHaveCount(2);
   });
+
+  test('the Replies button in the editor header opens the RSVP dashboard, on a phone too', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.route('**/api/**', route => route.abort());
+    await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding', 'minimalist'));
+    await page.locator('#projectTitle').fill('Mira & Arun');
+    await page.locator('#projectDate').fill('2027-01-20');
+    await completeSetupSteps(page);
+    await page.evaluate(() => {
+      window.loadRsvpReplies = async () => ({ replies: [{ id: 'r1', name: 'Meera Nair', attending: true, party: 2, events: {}, needs: '', message: '', createdAt: '2027-01-01T10:00:00Z', updatedAt: '2027-01-01T10:00:00Z' }], totals: { replies: 1, attending: 1, notAttending: 0, headcount: 2, byEvent: {} } });
+    });
+    // From the first screen of the editor (the preview), one tap reaches the replies.
+    await page.getByRole('button', { name: 'Replies' }).click();
+    await expect(page.getByRole('heading', { name: 'RSVP' })).toBeVisible();
+    await expect(page.getByText('Meera Nair')).toBeVisible();
+    await expect(page.locator('.rsvp-cards')).toContainText('2');
+  });
 });

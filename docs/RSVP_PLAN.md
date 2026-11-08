@@ -123,6 +123,8 @@ Each step ships with tests (validation, rate limit, privacy of the public projec
 
 ## Progress
 
+- **Finding the dashboard:** a **Replies** button (with the reply count when this device holds the private link) sits in the editor header on desktop and phone and opens the RSVP panel in one tap. Before this, the replies were only reachable through Sections, then RSVP, which first-time users did not find.
+
 - **Phase 3 (dashboard): built.** The RSVP panel opens on the replies: status line with "Close replies now" or
   "Reopen replies", summary cards (replies, attending, not attending, people), per-event table, filters (all,
   attending, not attending, with needs), search, delete, and "Download spreadsheet (CSV)". The CSV is built on the

@@ -120,7 +120,7 @@
   .editor-header { flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
   .editor-brand { min-width: 0; flex: 1 1 auto; }
   .editor-brand strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .device-switcher, .editor-advanced, .editor-header-actions > .editor-action:not(.editor-advanced) { display: none; }
+  .device-switcher, .editor-advanced, .editor-header-actions > .editor-action:not(.editor-advanced):not(.editor-replies) { display: none; }
   .editor-header-actions { gap: 8px; }
   .save-status { min-height: 40px; padding: 0 10px; font-size: 13px; }
   .editor-workspace { display: block; min-height: 0; padding: 12px 12px 104px; }
@@ -459,3 +459,10 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
 .rsvp-filters button{padding:6px 12px;border:1px solid var(--line, #d9cec3);border-radius:999px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer}
 .rsvp-filters button.active{background:var(--green, #145c37);border-color:var(--green, #145c37);color:#fff}
 .rsvp-actions-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px}
+
+/* "Replies" button in the editor header */
+.editor-replies { position: relative; display: inline-flex; align-items: center; gap: 6px; }
+.reply-badge { min-width: 20px; padding: 1px 6px; border-radius: 999px; background: #145c37; color: #fff; font-size: 12px; font-weight: 700; line-height: 18px; text-align: center; }
+@media (max-width: 767px) {
+  .editor-header-actions .editor-action.editor-replies { flex: none; width: auto; padding: 0 12px; min-height: 40px; font-size: 14px; font-weight: 600; }
+}
