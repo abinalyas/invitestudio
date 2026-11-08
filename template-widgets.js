@@ -24,7 +24,10 @@
       var parts = isNaN(target) ? null : left <= 0 ? [0, 0, 0, 0] : [Math.floor(left / 864e5), Math.floor(left % 864e5 / 36e5), Math.floor(left % 36e5 / 6e4), Math.floor(left % 6e4 / 1e3)];
       ["days", "hours", "minutes", "seconds"].forEach(function (k, i) {
         var el = node.querySelector('[data-cd="' + k + '"]');
-        if (el) el.textContent = parts ? pad(parts[i]) : "—";
+        // Only write when the text changes: the page-level observer below reacts to DOM changes, and writing the
+        // same text again would trigger it again, forever.
+        var next = parts ? pad(parts[i]) : "—";
+        if (el && el.textContent !== next) el.textContent = next;
       });
     });
   }

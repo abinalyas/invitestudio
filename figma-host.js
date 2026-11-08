@@ -49,6 +49,10 @@
       : null;
   }
 
+  // The names shown on every template's cover until the couple adds their own. They are only ever a hint
+  // (a grey placeholder and the preview), never a saved value.
+  const SAMPLE_NAMES = 'Daniel & Amelia';
+
   const RSVP_OPTIONS = ['count', 'rsvp', 'contact', 'none'];
   const EVENT_FIELDS = ['title', 'date', 'time', 'endTime', 'venue', 'description', 'dressCode', 'directionsUrl', 'parking', 'accommodation', 'accessibility', 'visible'];
 
@@ -126,7 +130,7 @@
       copyFields: copyFieldsFor(p),
       // What the invitation shows while a field is empty, so the editor can show it as a hint.
       shown: {
-        title: p ? (p.title || p.name || (window.sceneDefaults && window.sceneDefaults.title) || '') : '',
+        title: SAMPLE_NAMES,
         message: (window.sceneDefaults && window.sceneDefaults.message) || '',
         hosts: (window.sceneDefaults && window.sceneDefaults.hosts) || '',
         date: (window.sceneDefaults && window.sceneDefaults.date) || ''
@@ -313,7 +317,9 @@
       container.style.maxWidth = '100%';
       container.style.margin = '0 auto';
       // full=false: the editor canvas shows the invitation without its intro overlay.
-      container.innerHTML = sitePreview(p, tpl(p.templateId), false);
+      // Until the couple adds their names, the preview shows the template's example names.
+      const shown = String(p.title || '').trim() ? p : { ...p, title: SAMPLE_NAMES, name: SAMPLE_NAMES };
+      container.innerHTML = sitePreview(shown, tpl(p.templateId), false);
       if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
     },
 
@@ -324,11 +330,8 @@
       state.category = 'Wedding';
       const p = ensureProject();
       p.templateId = backendTemplateId;
-      // A new draft starts with the names on the template's cover, as real values the couple edits.
-      if (typeof sampleNames === 'string' && sampleNames.trim()) {
-        p.title = sampleNames.trim();
-        p.name = p.title;
-      }
+      // The names stay empty: the cover shows the template's example names as a preview and the field shows
+      // them as a grey hint, so the couple's own names are never mixed up with the example.
       applyPreferences(p);
       save();
       if (window.inviteStudioApi?.enabled && typeof createCloudDraftForProject === 'function') {

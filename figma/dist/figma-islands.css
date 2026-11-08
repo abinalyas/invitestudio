@@ -1154,3 +1154,4 @@
 .figma-app .editor-wording summary{cursor:pointer;font-weight:600;font-size:15px;padding:6px 0}
 .figma-app .editor-wording .editor-form{margin-top:12px}
 .figma-app .example-note{margin:16px 0 0;padding:10px 12px;border:1px dashed var(--line-strong,#cfc7bd);border-radius:10px;font-size:13px;line-height:1.5;color:var(--ink)}
+.figma-app .field-error{ display: block; margin-top: 6px; font-size: 13px; line-height: 1.4; color: #a12b2b; }

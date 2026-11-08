@@ -340,7 +340,10 @@
     project.name = wedding.name || project.name;
     project.category = wedding.category || project.category;
     project.templateId = wedding.template_id || project.templateId;
-    project.title = wedding.title || project.title;
+    // The server needs some title, so a draft without names is stored as "Our wedding". That stand-in must not
+    // come back as if the couple had typed it.
+    const standIn = wedding.title === 'Our wedding' || wedding.title === 'Our celebration';
+    project.title = standIn && !String(project.title || '').trim() ? '' : (wedding.title || project.title);
     project.date = wedding.event_date || project.date || '';
     project.location = wedding.location || '';
     project.message = wedding.message || '';
@@ -1030,6 +1033,10 @@
     if (!window.inviteStudioApi?.enabled) return false;
     if (!project?.cloudId || !tokenFor(project.cloudId)) {
       renderModal(`<div class="eyebrow">Share your invitation</div><h2 id="modal-title">Almost ready</h2><p class="muted">Your draft is still being saved to the cloud. Publishing becomes available as soon as it is saved.</p><div class="modal-actions"><button class="btn dark" type="button" onclick="closeModal()">Got it</button></div>`);
+      return true;
+    }
+    if (!String(project.title || '').trim()) {
+      renderModal(`<div class="eyebrow">Share your invitation</div><h2 id="modal-title">Add your names first</h2><p class="muted">Your names become your invitation's web address, so add them before publishing.</p><div class="modal-actions"><button class="btn dark" type="button" onclick="closeModal()">Got it</button></div>`);
       return true;
     }
     paintPublishDialog(project, {});

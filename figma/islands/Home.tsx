@@ -58,9 +58,9 @@ export function HomePage() {
               <br className="desktop-only" /> animations, events and travel details.
             </p>
             <div className="hero-buttons">
-              <button className="button" type="button" onClick={() => bridge.startCreate("Wedding")}>
+              <a className="button" href="/templates">
                 Start your invitation <Icon name="arrow" size={18} />
-              </button>
+              </a>
               <a className="button outline" href="/templates">
                 Explore designs
               </a>
