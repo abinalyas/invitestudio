@@ -123,6 +123,13 @@ Each step ships with tests (validation, rate limit, privacy of the public projec
 
 ## Progress
 
+- **Phase 3 (dashboard): built.** The RSVP panel opens on the replies: status line with "Close replies now" or
+  "Reopen replies", summary cards (replies, attending, not attending, people), per-event table, filters (all,
+  attending, not attending, with needs), search, delete, and "Download spreadsheet (CSV)". The CSV is built on the
+  couple's device from the replies already loaded (nothing extra is sent), and a cell that starts with `=`, `+`, `-`
+  or `@` is prefixed so a guest cannot run a formula in the couple's spreadsheet. Phase 4 (retention job and
+  editor warning) is next.
+
 - **Phase 2 (online replies): built.** Migration `202611080005_wedding_rsvps.sql` (table, rate-limit counters, atomic
   counter function). Guests reply from a Reply button on every design (name, attending, how many, per-event answers
   when there are several events, meal or access needs, a message). Confirmation repeats the reply and gives a private
@@ -131,7 +138,7 @@ Each step ships with tests (validation, rate limit, privacy of the public projec
   invitation, a hidden spam-trap field. Settings live in `preferences` (`rsvp`, `rsvpOpen`, `rsvpReplyBy`,
   `rsvpMaxParty`, `rsvpContact`); closed or past the reply-by date, guests see "Replies are closed" and the couple's
   number if given. The editor's RSVP panel holds the settings and a basic replies list (totals, search, delete).
-  Still to do in phase 3: CSV export, per-event totals polish. Phase 4: retention job.
+
 
 - **Phase 1 (contact fallback): built.** "Contact details only" shows the couple's WhatsApp or phone link in the
   RSVP section of every design; "No response form" says nothing; the other two modes still show the honest

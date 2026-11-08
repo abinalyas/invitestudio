@@ -282,4 +282,58 @@ test.describe('guest replies', () => {
     await expect(page.locator('[data-rsvp-open]')).toHaveCount(0);
     expect(calls, 'the editor preview never sends a reply').toBe(0);
   });
+
+  test('the couple\'s dashboard: totals, filters, search, close replies, spreadsheet', async ({ page }) => {
+    await page.route('**/api/**', route => route.abort());
+    await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding', 'minimalist'));
+    await page.locator('#projectTitle').fill('Mira & Arun');
+    await page.locator('#projectDate').fill('2027-01-20');
+    await completeSetupSteps(page);
+    const deleted = [];
+    await page.evaluate(() => {
+      window.__replies = [
+        { id: 'r1', name: 'Meera Nair', attending: true, party: 3, events: { e1: true, e2: true }, needs: 'Vegetarian', message: 'See you!', createdAt: '2027-01-01T10:00:00Z', updatedAt: '2027-01-01T10:00:00Z' },
+        { id: 'r2', name: '=cmd|calc', attending: true, party: 1, events: { e1: true, e2: false }, needs: '', message: '', createdAt: '2027-01-02T10:00:00Z', updatedAt: '2027-01-02T10:00:00Z' },
+        { id: 'r3', name: 'Kiran', attending: false, party: 0, events: { e1: false, e2: false }, needs: '', message: 'Sorry!', createdAt: '2027-01-03T10:00:00Z', updatedAt: '2027-01-03T10:00:00Z' }
+      ];
+      const totals = () => ({ replies: window.__replies.length, attending: 2, notAttending: 1, headcount: 4, byEvent: { e1: { title: 'Ceremony', replies: 2, headcount: 4 }, e2: { title: 'Reception', replies: 1, headcount: 3 } } });
+      window.loadRsvpReplies = async () => ({ replies: window.__replies.slice(), totals: totals() });
+      window.deleteRsvpReply = async id => { window.__replies = window.__replies.filter(r => r.id !== id); };
+    });
+    await page.getByRole('button', { name: /^RSVP/ }).click();
+    await expect(page.getByText('Meera Nair')).toBeVisible();
+    await expect(page.locator('.rsvp-cards')).toContainText('4');
+    await expect(page.locator('table.rsvp-by-event')).toContainText('Reception');
+
+    await page.getByRole('button', { name: /^Not attending 1/ }).click();
+    await expect(page.locator('.rsvp-list li')).toHaveCount(1);
+    await expect(page.getByText('Kiran')).toBeVisible();
+    await page.getByRole('button', { name: /^With needs 1/ }).click();
+    await expect(page.locator('.rsvp-list li')).toHaveCount(1);
+    await expect(page.getByText('Needs: Vegetarian')).toBeVisible();
+    await page.getByRole('button', { name: /^All 3/ }).click();
+    await page.getByLabel('Search replies').fill('sorry');
+    await expect(page.locator('.rsvp-list li')).toHaveCount(1);
+    await page.getByLabel('Search replies').fill('');
+
+    // Closing replies from the dashboard changes the invitation's button.
+    await expect(page.locator('.rsvp-status')).toContainText('Accepting replies.');
+    await page.getByRole('button', { name: 'Close replies now' }).click();
+    await expect(page.locator('.rsvp-status.closed')).toContainText('Replies are closed.');
+    await expect(page.locator('[data-rsvp-open]')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Reopen replies' }).click();
+    await expect(page.locator('[data-rsvp-open]').first()).toBeVisible();
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', { name: /Download spreadsheet/ }).click();
+    const file = await download;
+    expect(file.suggestedFilename()).toBe('wedding-replies.csv');
+    const csv = require('fs').readFileSync(await file.path(), 'utf8');
+    expect(csv).toContain('"Meera Nair","Yes","3","Ceremony; Reception","Vegetarian"');
+    expect(csv).toContain(`"'=cmd|calc"`);
+
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', { name: 'Delete' }).first().click();
+    await expect(page.locator('.rsvp-list li')).toHaveCount(2);
+  });
 });

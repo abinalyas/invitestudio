@@ -73,7 +73,10 @@ function sectionHint(key: SectionKey, snap: EditorSnapshot): string {
     return count ? `${count} ${count === 1 ? "event" : "events"}` : "No events yet";
   }
   if (key === "gallery") return snap.galleryCount ? `${snap.galleryCount} photos` : "Photos not available yet";
-  return "Guest responses not live yet";
+  if (snap.rsvp === "none") return "No response form";
+  if (snap.rsvp === "contact") return "Contact details only";
+  const closed = !snap.rsvpOpen || (Boolean(snap.rsvpReplyBy) && new Date().toISOString().slice(0, 10) > snap.rsvpReplyBy);
+  return closed ? "Replies closed" : "Online replies";
 }
 
 export function EditorPage() {
@@ -700,6 +703,8 @@ function RsvpPanel({ snap }: { snap: EditorSnapshot }) {
   const badNumber = snap.rsvpContact.value.trim() !== "" && (digits.length < 7 || digits.length > 15);
   return (
     <div className="editor-form">
+      {online ? <RepliesList snap={snap} /> : null}
+      <h4 className="rsvp-settings-title">Settings</h4>
       <label>
         How guests reply
         <select value={snap.rsvp} onChange={event => bridge.setRsvp(event.target.value)}>
@@ -763,15 +768,23 @@ function RsvpPanel({ snap }: { snap: EditorSnapshot }) {
         </>
       ) : null}
       {snap.rsvp === "none" ? <p className="tiny muted">The invitation will not mention replies.</p> : null}
-      {online ? <RepliesList snap={snap} /> : null}
     </div>
   );
 }
 
+type ReplyFilter = "all" | "yes" | "no" | "needs";
+
+const longDate = (iso: string) => {
+  const date = new Date(`${iso}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+};
+
+// The couple's private dashboard: totals, who is coming to what, needs to plan for, and a spreadsheet to download.
 function RepliesList({ snap }: { snap: EditorSnapshot }) {
   const [data, setData] = useState<RsvpData | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "error" | "offline">("idle");
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<ReplyFilter>("all");
   const load = () => {
     setState("loading");
     bridge.loadReplies().then(
@@ -784,48 +797,102 @@ function RepliesList({ snap }: { snap: EditorSnapshot }) {
     if (!window.confirm(`Delete ${name}'s reply? This cannot be undone.`)) return;
     bridge.deleteReply(id).then(load, () => setState("error"));
   };
+
+  const today = new Date().toISOString().slice(0, 10);
+  const pastDeadline = Boolean(snap.rsvpReplyBy) && today > snap.rsvpReplyBy;
+  const closed = !snap.rsvpOpen || pastDeadline;
+  const counted = snap.rsvp === "count";
+  const titles: Record<string, string> = {};
+  if (data) for (const [id, item] of Object.entries(data.totals.byEvent)) titles[id] = item.title;
   const needle = query.trim().toLowerCase();
-  const rows = data ? data.replies.filter(reply => !needle || `${reply.name} ${reply.needs} ${reply.message}`.toLowerCase().includes(needle)) : [];
+  const rows = data
+    ? data.replies.filter(reply => {
+        if (filter === "yes" && !reply.attending) return false;
+        if (filter === "no" && reply.attending) return false;
+        if (filter === "needs" && !reply.needs) return false;
+        return !needle || `${reply.name} ${reply.needs} ${reply.message}`.toLowerCase().includes(needle);
+      })
+    : [];
+  const withNeeds = data ? data.replies.filter(reply => reply.needs).length : 0;
+  const filters: Array<[ReplyFilter, string]> = data
+    ? [["all", `All ${data.totals.replies}`], ["yes", `Attending ${data.totals.attending}`], ["no", `Not attending ${data.totals.notAttending}`], ["needs", `With needs ${withNeeds}`]]
+    : [];
+
   return (
     <div className="rsvp-replies">
       <h4>Replies</h4>
+      <p className={closed ? "rsvp-status closed" : "rsvp-status"}>
+        {closed
+          ? pastDeadline && snap.rsvpOpen ? `Replies closed on ${longDate(snap.rsvpReplyBy)}.` : "Replies are closed."
+          : snap.rsvpReplyBy ? `Accepting replies until ${longDate(snap.rsvpReplyBy)}.` : "Accepting replies."}{" "}
+        {pastDeadline && snap.rsvpOpen ? null : (
+          <button type="button" className="link-button" onClick={() => bridge.setRsvpOption("rsvpOpen", !snap.rsvpOpen)}>
+            {snap.rsvpOpen ? "Close replies now" : "Reopen replies"}
+          </button>
+        )}
+      </p>
       {state === "offline" ? <p className="tiny muted">Replies appear here once your invitation is saved online.</p> : null}
       {state === "error" ? <p className="tiny error">We could not load replies. <button type="button" className="link-button" onClick={load}>Try again</button></p> : null}
       {data ? (
         <>
-          <p className="rsvp-totals">
-            <strong>{data.totals.attending}</strong> attending · <strong>{data.totals.notAttending}</strong> not attending ·{" "}
-            <strong>{data.totals.headcount}</strong> {data.totals.headcount === 1 ? "person" : "people"} in total
-          </p>
+          <div className="rsvp-cards">
+            <div><strong>{data.totals.replies}</strong><span>{data.totals.replies === 1 ? "reply" : "replies"}</span></div>
+            <div><strong>{data.totals.attending}</strong><span>attending</span></div>
+            <div><strong>{data.totals.notAttending}</strong><span>not attending</span></div>
+            {counted ? <div><strong>{data.totals.headcount}</strong><span>{data.totals.headcount === 1 ? "person" : "people"}</span></div> : null}
+          </div>
           {Object.values(data.totals.byEvent).length > 1 ? (
-            <ul className="rsvp-by-event">
-              {Object.values(data.totals.byEvent).map(item => (
-                <li key={item.title}>{item.title}: {item.headcount} {item.headcount === 1 ? "person" : "people"}</li>
-              ))}
-            </ul>
+            <table className="rsvp-by-event">
+              <thead><tr><th>Event</th><th>Replies yes</th>{counted ? <th>People</th> : null}</tr></thead>
+              <tbody>
+                {Object.entries(data.totals.byEvent).map(([id, item]) => (
+                  <tr key={id}><td>{item.title}</td><td>{item.replies}</td>{counted ? <td>{item.headcount}</td> : null}</tr>
+                ))}
+              </tbody>
+            </table>
           ) : null}
-          {data.replies.length > 0 ? (
-            <input type="search" placeholder="Search replies" value={query} onChange={event => setQuery(event.target.value)} aria-label="Search replies" />
-          ) : <p className="empty-state">No replies yet.</p>}
+          {data.replies.length === 0 ? (
+            <p className="empty-state">No replies yet. They appear here as guests send them.</p>
+          ) : (
+            <>
+              <div className="rsvp-filters" role="group" aria-label="Show replies">
+                {filters.map(([value, label]) => (
+                  <button key={value} type="button" className={filter === value ? "active" : ""} aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</button>
+                ))}
+              </div>
+              <input type="search" placeholder="Search by name, needs or message" value={query} onChange={event => setQuery(event.target.value)} aria-label="Search replies" />
+              <p className="tiny muted">Meal and access needs are private to you. Use the filter “With needs” when you brief your caterer.</p>
+            </>
+          )}
           <ul className="rsvp-list">
-            {rows.map(reply => (
-              <li key={reply.id}>
-                <div>
-                  <strong>{reply.name}</strong>
-                  <span className={reply.attending ? "rsvp-yes" : "rsvp-no"}>
-                    {reply.attending ? `Attending${snap.rsvp === "count" ? ` · ${reply.party}` : ""}` : "Not attending"}
-                  </span>
-                </div>
-                {reply.needs ? <p className="tiny">Needs: {reply.needs}</p> : null}
-                {reply.message ? <p className="tiny">“{reply.message}”</p> : null}
-                <p className="tiny muted">
-                  {dateTime(reply.updatedAt || reply.createdAt)}{" "}
-                  <button type="button" className="link-button" onClick={() => remove(reply.id, reply.name)}>Delete</button>
-                </p>
-              </li>
-            ))}
+            {rows.map(reply => {
+              const going = Object.keys(reply.events).filter(id => reply.events[id] && titles[id]).map(id => titles[id]);
+              return (
+                <li key={reply.id}>
+                  <div>
+                    <strong>{reply.name}</strong>
+                    <span className={reply.attending ? "rsvp-yes" : "rsvp-no"}>
+                      {reply.attending ? `Attending${counted ? ` · ${reply.party}` : ""}` : "Not attending"}
+                    </span>
+                  </div>
+                  {going.length > 0 && Object.keys(data.totals.byEvent).length > 1 ? <p className="tiny">Events: {going.join(", ")}</p> : null}
+                  {reply.needs ? <p className="tiny">Needs: {reply.needs}</p> : null}
+                  {reply.message ? <p className="tiny">“{reply.message}”</p> : null}
+                  <p className="tiny muted">
+                    {dateTime(reply.updatedAt || reply.createdAt)}{" "}
+                    <button type="button" className="link-button" onClick={() => remove(reply.id, reply.name)}>Delete</button>
+                  </p>
+                </li>
+              );
+            })}
           </ul>
-          <button type="button" className="link-button" onClick={load}>Refresh</button>
+          {data.replies.length > 0 && rows.length === 0 ? <p className="tiny muted">No replies match.</p> : null}
+          <div className="rsvp-actions-row">
+            {data.replies.length > 0 ? (
+              <button type="button" className="button small outline" onClick={() => bridge.downloadRepliesCsv(data, counted)}>Download spreadsheet (CSV)</button>
+            ) : null}
+            <button type="button" className="link-button" onClick={load}>Refresh</button>
+          </div>
         </>
       ) : state === "loading" ? <p className="tiny muted">Loading replies…</p> : null}
     </div>

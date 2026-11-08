@@ -433,10 +433,9 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
 .detail-page { overflow: clip; }
 
 /* RSVP: replies list in the editor */
-.rsvp-replies{margin-top:18px;padding-top:14px;border-top:1px solid var(--line, #e6ddd3)}
+.rsvp-replies{margin:0 0 6px;padding-bottom:14px;border-bottom:1px solid var(--line, #e6ddd3)}
+.rsvp-settings-title{margin:14px 0 0;font-size:1rem}
 .rsvp-replies h4{margin:0 0 8px;font-size:1rem}
-.rsvp-totals{margin:0 0 8px;font-size:.92rem}
-.rsvp-by-event{margin:0 0 10px;padding-left:18px;font-size:.85rem}
 .rsvp-list{list-style:none;margin:10px 0;padding:0;display:grid;gap:8px}
 .rsvp-list li{padding:10px 12px;border:1px solid var(--line, #e6ddd3);border-radius:10px;background:#fff}
 .rsvp-list li>div{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
@@ -445,3 +444,18 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
 .rsvp-no{color:#8a5a2b;font-size:.85rem}
 .check-row{display:flex;align-items:center;gap:10px}
 .check-row input{width:auto}
+
+/* RSVP: dashboard */
+.rsvp-status{margin:0 0 10px;font-size:.9rem}
+.rsvp-status.closed{color:#8a5a2b}
+.rsvp-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px;margin:0 0 12px}
+.rsvp-cards div{padding:10px 8px;border:1px solid var(--line, #e6ddd3);border-radius:10px;background:#fff;text-align:center}
+.rsvp-cards strong{display:block;font-size:1.35rem;line-height:1.1}
+.rsvp-cards span{font-size:.75rem;color:#6b5f58}
+table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-size:.85rem;padding:0;list-style:none}
+.rsvp-by-event th,.rsvp-by-event td{padding:6px 8px;border-bottom:1px solid var(--line, #e6ddd3);text-align:left}
+.rsvp-by-event th:not(:first-child),.rsvp-by-event td:not(:first-child){text-align:right}
+.rsvp-filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.rsvp-filters button{padding:6px 12px;border:1px solid var(--line, #d9cec3);border-radius:999px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer}
+.rsvp-filters button.active{background:var(--green, #145c37);border-color:var(--green, #145c37);color:#fff}
+.rsvp-actions-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px}
