@@ -25,6 +25,10 @@ Supported fields:
 
 - Simple and mobile-first. No seating, no meal menus, no advanced guest management.
 - Built in Phase 7 of the plan. Not built as part of D0 or D1.
+- **Updated:** the fields above are refined, and guest edits, per-event replies and retention are decided, in
+  `docs/RSVP_PLAN.md` (draft). Where they differ, that plan applies once approved: the guest gives a count only (no
+  names for others), the dietary field is "meal or access needs", replies can be changed with a private link, replies
+  can be per event, and everything is deleted 2 months after the wedding.
 
 ## 3. Kerala wedding design
 

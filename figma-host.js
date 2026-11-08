@@ -126,6 +126,7 @@
       sections,
       events: (p?.functions || []).map(normaliseEvent),
       rsvp: prefs.rsvp || 'count',
+      rsvpContact: prefs.rsvpContact && typeof prefs.rsvpContact === 'object' ? { type: prefs.rsvpContact.type === 'phone' ? 'phone' : 'whatsapp', value: String(prefs.rsvpContact.value || '') } : { type: 'whatsapp', value: '' },
       galleryCount: (p?.photos || []).length,
       copyFields: copyFieldsFor(p),
       hasPrivateLink: Boolean(p?.cloudId && window.inviteStudioApi?.enabled),
@@ -264,6 +265,16 @@
       const p = project();
       if (!p || !RSVP_OPTIONS.includes(value)) return;
       p.preferences = { ...(p.preferences || {}), rsvp: value };
+      p.updated = 'Just now';
+      save();
+      notify();
+    },
+
+    setRsvpContact(type, value) {
+      const p = project();
+      if (!p || !['whatsapp', 'phone'].includes(type)) return;
+      const clean = String(value || '').replace(/[^\d+\s()-]/g, '').slice(0, 24);
+      p.preferences = { ...(p.preferences || {}), rsvpContact: { type, value: clean } };
       p.updated = 'Just now';
       save();
       notify();

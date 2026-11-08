@@ -92,7 +92,7 @@
       <p class="eyebrow">{{upper:copy:rsvp_eyebrow}}</p><h2>{{em:copy:rsvp_title}}</h2><div class="gold-rule"></div>
       <p class="section-text">{{copy:rsvp_intro}}</p>
     </div>
-    <p class="rsvp-status" role="note">{{copy:rsvp_status}}</p>
+    <!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if-->
     <p class="rsvp-note">{{copy:rsvp_note}}</p>
   </div>
 </section>

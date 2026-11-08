@@ -144,3 +144,15 @@ test('marketing copy makes no photo gallery claim while photo storage does not e
     assert.equal(pattern.test(sources), false, `unsupported gallery copy matches ${pattern}`);
   }
 });
+
+test('public projection carries only the RSVP mode and a valid contact number', () => {
+  const withContact = prefs => publicWeddingProjection({ ...privateWedding, preferences: prefs }).rsvp;
+  assert.deepEqual(withContact({ rsvp: 'contact', rsvpContact: { type: 'whatsapp', value: '+91 98765 43210' } }),
+    { mode: 'contact', contact: { type: 'whatsapp', value: '+91 98765 43210' } });
+  assert.deepEqual(withContact({ rsvp: 'count', rsvpContact: { type: 'phone', value: '+91 98765 43210' } }), { mode: 'count', contact: null });
+  assert.equal(withContact({ rsvp: 'contact', rsvpContact: { type: 'email', value: 'a@b.co' } }).contact, null);
+  assert.equal(withContact({ rsvp: 'contact', rsvpContact: { type: 'phone', value: '12' } }).contact, null);
+  assert.equal(withContact({ rsvp: 'bogus' }).mode, 'count');
+  assert.equal(withContact(null).mode, 'count');
+  assert.equal(JSON.stringify(publicWeddingProjection(privateWedding)).includes('do not publish'), false);
+});

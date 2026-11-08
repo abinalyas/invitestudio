@@ -122,3 +122,4 @@ h1 i,.opening-note h2 i,.story h2 i,.section-top h2 i,.celebration h2 i,.venue-c
 .section-light{padding:85px 7cqw}.timeline-row{grid-template-columns:28px 1fr;gap:10px;padding:24px 0}.timeline-row h3{font-size:1.65rem}.timeline-row p,.timeline-row small{grid-column:2}
 .venue-copy{padding:75px 7cqw}.final-scene{min-height:600px}.final-copy h2{font-size:3.8rem}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+.rsvp-link{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}

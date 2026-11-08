@@ -687,22 +687,54 @@ const rsvpOptions: Array<[string, string]> = [
   ["none", "No response form"]
 ];
 
-// The preference is stored for launch. Guest responses are not collected today.
+// Online replies are not built yet. "Contact details" works today: guests see the couple's WhatsApp or phone number.
 function RsvpPanel({ snap }: { snap: EditorSnapshot }) {
+  const contactMode = snap.rsvp === "contact";
+  const digits = snap.rsvpContact.value.replace(/\D/g, "");
+  const badNumber = contactMode && snap.rsvpContact.value.trim() !== "" && (digits.length < 7 || digits.length > 15);
   return (
     <div className="editor-form">
       <div className="notice" role="note">
-        <strong>Guest responses are not live yet.</strong>
-        <p className="tiny">You can choose how the response form will work at launch. Nothing is collected from guests today.</p>
+        <strong>Online replies are not live yet.</strong>
+        <p className="tiny">
+          Until they are, choose “Contact details only” so guests can reach you on WhatsApp or by phone. The other
+          two choices are kept for when online replies open; today they show a “not open yet” line.
+        </p>
       </div>
       <label>
-        Response form at launch
+        Response section
         <select value={snap.rsvp} onChange={event => bridge.setRsvp(event.target.value)}>
           {rsvpOptions.map(([value, label]) => (
             <option key={value} value={value}>{label}</option>
           ))}
         </select>
       </label>
+      {contactMode ? (
+        <>
+          <label>
+            How should guests reach you?
+            <select value={snap.rsvpContact.type} onChange={event => bridge.setRsvpContact(event.target.value, snap.rsvpContact.value)}>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="phone">Phone call</option>
+            </select>
+          </label>
+          <label>
+            Number, with country code
+            <input
+              type="tel"
+              inputMode="tel"
+              autoComplete="off"
+              maxLength={24}
+              placeholder="+91 98765 43210"
+              value={snap.rsvpContact.value}
+              onChange={event => bridge.setRsvpContact(snap.rsvpContact.type, event.target.value)}
+            />
+          </label>
+          {badNumber ? <p className="tiny error">Enter a full number with country code, for example +91 98765 43210.</p> : null}
+          <p className="tiny muted">This number is shown on your public invitation, so anyone with the link can see it. Use a number you are happy to share.</p>
+        </>
+      ) : null}
+      {snap.rsvp === "none" ? <p className="tiny muted">The invitation will not mention replies.</p> : null}
     </div>
   );
 }

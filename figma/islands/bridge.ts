@@ -82,6 +82,7 @@ export type EditorSnapshot = EditorFields & {
   sections: Record<string, boolean>;
   events: EventItem[];
   rsvp: string;
+  rsvpContact: { type: "whatsapp" | "phone"; value: string };
   galleryCount: number;
   // Wording the template lets the couple change (empty for templates without it).
   copyFields: CopyField[];
@@ -105,6 +106,7 @@ export interface InviteStudioBridge {
   updateEvent(eventId: string, patch: EventPatch): void;
   removeEvent(eventId: string): void;
   setRsvp(value: string): void;
+  setRsvpContact(type: string, value: string): void;
   setTemplate(templateId: string): void;
   designs(): Design[];
   eventPresets(): string[];
@@ -154,6 +156,7 @@ export const bridge = {
   updateEvent: (eventId: string, patch: EventPatch) => host().updateEvent(eventId, patch),
   removeEvent: (eventId: string) => host().removeEvent(eventId),
   setRsvp: (value: string) => host().setRsvp(value),
+  setRsvpContact: (type: string, value: string) => host().setRsvpContact(type, value),
   setTemplate: (templateId: string) => host().setTemplate(templateId),
   designs: () => host().designs(),
   eventPresets: () => host().eventPresets(),

@@ -222,3 +222,28 @@ test('wording is validated and stored by the server, and returned on the public 
   assert.deepEqual(pub.content.copy, { cta: 'Hi' });
   assert.equal(pub.content.secret, undefined);
 });
+
+// RSVP contact fallback: online replies are not built yet, so the section tells the truth in every mode.
+for (const { manifest: t } of list) {
+  test(`${t.id}: RSVP section follows the chosen mode`, () => {
+    const { renderPackagedTemplate } = renderer();
+    const base = { title: 'Asha & Ravi', date: '2027-02-14' };
+    const run = preferences => stripped(renderPackagedTemplate({ ...base, preferences }, { packaged: t.id }));
+    const whatsapp = run({ rsvp: 'contact', rsvpContact: { type: 'whatsapp', value: '+91 98765 43210' } });
+    assert.match(whatsapp, /href="https:\/\/wa\.me\/919876543210"/);
+    assert.match(whatsapp, /To reply, contact the couple:/);
+    assert.doesNotMatch(whatsapp, /not open yet/i);
+    assert.match(run({ rsvp: 'contact', rsvpContact: { type: 'phone', value: '+44 20 7946 0958' } }), /href="tel:\+442079460958"/);
+    // No usable number: no empty box, no dead link, no "not open yet".
+    for (const bad of [null, { type: 'whatsapp', value: '' }, { type: 'whatsapp', value: '12' }, { type: 'email', value: 'a@b.co' }]) {
+      const out = run({ rsvp: 'contact', rsvpContact: bad });
+      assert.doesNotMatch(out, /wa\.me|tel:|not open yet/i);
+    }
+    // Script-looking input never reaches an attribute.
+    assert.doesNotMatch(run({ rsvp: 'contact', rsvpContact: { type: 'whatsapp', value: '"><script>1234567' } }), /<script/i);
+    // "none" says nothing; the others keep the honest note.
+    assert.doesNotMatch(run({ rsvp: 'none' }), /not open yet|wa\.me/i);
+    assert.match(run({ rsvp: 'count' }), /not open yet/i);
+    assert.match(run({}), /not open yet/i);
+  });
+}
