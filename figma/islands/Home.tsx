@@ -30,7 +30,7 @@ export function HomePage() {
             <span />
             <span />
           </button>
-          <nav className={menuOpen ? "nav open" : "nav"}>
+          <nav className={menuOpen ? "nav open" : "nav"} onClick={() => setMenuOpen(false)}>
             <a href="/templates">Templates</a>
             <a href="#features">Features</a>
             <a href="#how">How it works</a>
