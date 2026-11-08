@@ -88,6 +88,22 @@
     },
     getPublishedWedding(slug) {
       return request(`/public-weddings/${encodeURIComponent(slug)}`);
+    },
+    // Guest replies. The change token is the guest's private link; the edit token is the couple's.
+    submitRsvp(slug, reply) {
+      return request(`/public-weddings/${encodeURIComponent(slug)}/rsvp`, { method: 'POST', body: JSON.stringify(reply) });
+    },
+    getRsvp(slug, changeToken) {
+      return request(`/public-weddings/${encodeURIComponent(slug)}/rsvp/${encodeURIComponent(changeToken)}`);
+    },
+    changeRsvp(slug, changeToken, reply) {
+      return request(`/public-weddings/${encodeURIComponent(slug)}/rsvp/${encodeURIComponent(changeToken)}`, { method: 'PUT', body: JSON.stringify(reply) });
+    },
+    listRsvps(id, editToken) {
+      return request(`/weddings/${encodeURIComponent(id)}/rsvps`, { headers: { Authorization: `Bearer ${editToken}` } });
+    },
+    deleteRsvp(id, editToken, rsvpId) {
+      return request(`/weddings/${encodeURIComponent(id)}/rsvps/${encodeURIComponent(rsvpId)}`, { method: 'DELETE', headers: { Authorization: `Bearer ${editToken}` } });
     }
   });
 })();

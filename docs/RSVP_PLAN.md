@@ -123,6 +123,16 @@ Each step ships with tests (validation, rate limit, privacy of the public projec
 
 ## Progress
 
+- **Phase 2 (online replies): built.** Migration `202611080005_wedding_rsvps.sql` (table, rate-limit counters, atomic
+  counter function). Guests reply from a Reply button on every design (name, attending, how many, per-event answers
+  when there are several events, meal or access needs, a message). Confirmation repeats the reply and gives a private
+  change link (`/s/<slug>#reply=<secret>`; the secret is hashed in the database and removed from the address bar when
+  used). Limits: 5 replies per hour per device per invitation, 300 per hour per invitation, 1000 replies per
+  invitation, a hidden spam-trap field. Settings live in `preferences` (`rsvp`, `rsvpOpen`, `rsvpReplyBy`,
+  `rsvpMaxParty`, `rsvpContact`); closed or past the reply-by date, guests see "Replies are closed" and the couple's
+  number if given. The editor's RSVP panel holds the settings and a basic replies list (totals, search, delete).
+  Still to do in phase 3: CSV export, per-event totals polish. Phase 4: retention job.
+
 - **Phase 1 (contact fallback): built.** "Contact details only" shows the couple's WhatsApp or phone link in the
   RSVP section of every design; "No response form" says nothing; the other two modes still show the honest
   "not open yet" line until online replies exist.

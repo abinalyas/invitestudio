@@ -14,7 +14,11 @@ const sceneTemplates = readCatalogue().templates.filter(template => template.sce
 
 function loadRenderer() {
   const window = {};
-  vm.runInNewContext(readFileSync(join(root, 'scene-templates.js'), 'utf8'), { window, Math, Date, String, Array, Object, encodeURIComponent });
+  const ctx = { window, Math, Date, String, Array, Object, JSON, Number, encodeURIComponent };
+  ctx.globalThis = ctx;
+  vm.createContext(ctx);
+  vm.runInContext(readFileSync(join(root, 'rsvp-view.js'), 'utf8'), ctx);
+  vm.runInContext(readFileSync(join(root, 'scene-templates.js'), 'utf8'), ctx);
   return window;
 }
 const project = {
@@ -62,12 +66,19 @@ test('every scene template renders the couple, the date, the venue and visible e
   }
 });
 
-test('guest responses are not offered: no form, and the closing scene says so', () => {
+test('the closing scene offers a Reply button by default, and no form is drawn into the page itself', () => {
   const { renderSceneTemplate } = loadRenderer();
   for (const template of sceneTemplates) {
     const html = renderSceneTemplate(project, template);
     assert.doesNotMatch(html, /<form|<input|<textarea/i);
-    assert.match(html, /Guest responses are not open yet/);
+    assert.match(html, /data-rsvp-open/);
+    assert.doesNotMatch(html, /not open yet/i);
+    const none = renderSceneTemplate({ ...project, preferences: { rsvp: 'none' } }, template);
+    assert.doesNotMatch(none, /data-rsvp-open|Replies are closed|contact the couple/);
+    const closed = renderSceneTemplate({ ...project, preferences: { rsvpOpen: false, rsvpContact: { type: 'phone', value: '+91 98765 43210' } } }, template);
+    assert.match(closed, /Replies are closed/);
+    assert.match(closed, /href="tel:\+919876543210"/);
+    assert.doesNotMatch(closed, /data-rsvp-open/);
   }
 });
 

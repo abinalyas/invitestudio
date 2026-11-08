@@ -67,6 +67,29 @@ export type CopyField = { key: string; label: string; section: string; max: numb
 
 export type Design = { id: string; name: string; style: string; image: string };
 
+export interface RsvpReply {
+  id: string;
+  name: string;
+  attending: boolean;
+  party: number;
+  events: Record<string, boolean>;
+  needs: string;
+  message: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RsvpData {
+  replies: RsvpReply[];
+  totals: {
+    replies: number;
+    attending: number;
+    notAttending: number;
+    headcount: number;
+    byEvent: Record<string, { title: string; replies: number; headcount: number }>;
+  };
+}
+
 export type EditorSnapshot = EditorFields & {
   available: boolean;
   templateId: string;
@@ -82,6 +105,9 @@ export type EditorSnapshot = EditorFields & {
   sections: Record<string, boolean>;
   events: EventItem[];
   rsvp: string;
+  rsvpOpen: boolean;
+  rsvpReplyBy: string;
+  rsvpMaxParty: number;
   rsvpContact: { type: "whatsapp" | "phone"; value: string };
   galleryCount: number;
   // Wording the template lets the couple change (empty for templates without it).
@@ -107,6 +133,9 @@ export interface InviteStudioBridge {
   removeEvent(eventId: string): void;
   setRsvp(value: string): void;
   setRsvpContact(type: string, value: string): void;
+  setRsvpOption(key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number): void;
+  loadReplies(): Promise<RsvpData>;
+  deleteReply(id: string): Promise<unknown>;
   setTemplate(templateId: string): void;
   designs(): Design[];
   eventPresets(): string[];
@@ -157,6 +186,9 @@ export const bridge = {
   removeEvent: (eventId: string) => host().removeEvent(eventId),
   setRsvp: (value: string) => host().setRsvp(value),
   setRsvpContact: (type: string, value: string) => host().setRsvpContact(type, value),
+  setRsvpOption: (key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number) => host().setRsvpOption(key, value),
+  loadReplies: () => host().loadReplies(),
+  deleteReply: (id: string) => host().deleteReply(id),
   setTemplate: (templateId: string) => host().setTemplate(templateId),
   designs: () => host().designs(),
   eventPresets: () => host().eventPresets(),

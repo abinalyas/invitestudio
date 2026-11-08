@@ -125,7 +125,7 @@ export function SetupPage() {
           <h1>Create your invitation</h1>
           <p>Start with your names and date. Everything else can wait until you’re ready.</p>
           <p className="setup-note">
-            <Icon name="sparkle" size={16} /> Drafts are saved automatically as you work. Guest responses are not open yet.
+            <Icon name="sparkle" size={16} /> Drafts are saved automatically as you work. Guests can reply online once your invitation is live.
           </p>
         </div>
 

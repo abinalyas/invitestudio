@@ -270,16 +270,18 @@
   function galleryScene(key, d) {
     return scene(key, 'gallery', '<p class="sx-script sx-h sx-rv" style="--d:0">Gallery</p><div class="sx-gallery sx-rv" style="--d:1">' + d.photos.map(function (ph) { return '<img src="' + esc(ph.data) + '" alt="' + esc(ph.alt || 'Event photo') + '" loading="lazy">'; }).join('') + '</div>');
   }
-  // Online replies are not built yet: "contact" shows the couple's number, "none" says nothing, the rest is honest.
+  // The response line comes from rsvp-view.js, so every design says the same thing.
   function rsvpLine(d) {
-    var c = d.rsvpContact || {}, digits = String(c.value || '').replace(/\D/g, '');
-    if (d.rsvp === 'none') { return ''; }
-    if (d.rsvp === 'contact') {
-      if ((c.type !== 'whatsapp' && c.type !== 'phone') || digits.length < 7 || digits.length > 15) { return ''; }
-      var shown = String(c.value).replace(/[^\d+\s()-]/g, '').trim().slice(0, 24);
-      return '<p class="sx-body sx-rv" style="--d:2">To reply, contact the couple: <a href="' + (c.type === 'whatsapp' ? 'https://wa.me/' + digits : 'tel:+' + digits) + '" style="color:inherit;font-weight:700">' + esc((c.type === 'whatsapp' ? 'WhatsApp ' : 'Call ') + shown) + '</a></p>';
+    var v = d.rsvpView;
+    if (!v) { return ''; }
+    var out = '';
+    if (v.show) {
+      out += '<p class="sx-body sx-rv" style="--d:2">' + esc(v.text) + (v.contact ? ' <a href="' + esc(v.href) + '" style="color:inherit;font-weight:700">' + esc(v.label) + '</a>' : '') + '</p>';
     }
-    return '<p class="sx-body sx-rv" style="--d:2">Guest responses are not open yet.</p>';
+    if (v.config) {
+      out += '<p class="sx-rv" style="--d:2"><button type="button" data-rsvp-open data-rsvp-config="' + esc(v.config) + '" style="border:1px solid currentColor;background:transparent;color:inherit;font:inherit;letter-spacing:.2em;text-transform:uppercase;padding:12px 30px;cursor:pointer">Reply</button></p>';
+    }
+    return out;
   }
   function closingScene(key, d) {
     return scene(key, 'rsvp',
@@ -309,7 +311,7 @@
       story: p.story || '', storyTitle: (p.preferences && p.preferences.storyTitle) || 'Our story',
       time: fns.length === 1 && fns[0].time ? showTime(fns[0].time) : '', fns: fns, dress: dress,
       mapUrl: firstDirections || (p.location ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.location) : ''),
-      rsvp: (p.preferences && p.preferences.rsvp) || 'count', rsvpContact: (p.preferences && p.preferences.rsvpContact) || null,
+      rsvpView: globalThis.InviteRsvp ? globalThis.InviteRsvp.view(p, '') : null,
       photos: Array.isArray(p.photos) ? p.photos.filter(function (ph) { return ph && typeof ph.data === 'string'; }) : []
     };
     var registry = (p.sections && p.sections.length) ? p.sections : [{ id: 'hero', visible: true }, { id: 'welcome', visible: true }, { id: 'story', visible: true }, { id: 'functions', visible: true }, { id: 'gallery', visible: true }, { id: 'rsvp', visible: true }];

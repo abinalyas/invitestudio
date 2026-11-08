@@ -191,6 +191,19 @@
     }
   };
 
+  // The couple's replies (private: needs the edit token this device holds).
+  window.loadRsvpReplies = async function loadRsvpReplies() {
+    const project = typeof currentProject === 'function' ? currentProject() : null;
+    const token = project?.cloudId ? tokenFor(project.cloudId) : '';
+    if (!token || !window.inviteStudioApi?.enabled) throw Object.assign(new Error('Replies are saved with your invitation online.'), { code: 'NOT_SAVED_ONLINE' });
+    return window.inviteStudioApi.listRsvps(project.cloudId, token);
+  };
+  window.deleteRsvpReply = async function deleteRsvpReply(replyId) {
+    const project = typeof currentProject === 'function' ? currentProject() : null;
+    const token = project?.cloudId ? tokenFor(project.cloudId) : '';
+    if (!token || !window.inviteStudioApi?.enabled) throw new Error('Not saved online.');
+    return window.inviteStudioApi.deleteRsvp(project.cloudId, token, replyId);
+  };
   window.regeneratePrivateEditLink = async function regeneratePrivateEditLink() {
     const project = typeof current === 'function' ? current() : null;
     const token = project?.cloudId ? tokenFor(project.cloudId) : '';

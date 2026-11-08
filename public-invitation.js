@@ -38,7 +38,10 @@
       preferences: {
         gallery: (content.gallery && content.gallery.preference) || 'gallery',
         rsvp: (wedding.rsvp && wedding.rsvp.mode) || 'count',
-        rsvpContact: (wedding.rsvp && wedding.rsvp.contact) || null
+        rsvpContact: (wedding.rsvp && wedding.rsvp.contact) || null,
+        rsvpOpen: !(wedding.rsvp && wedding.rsvp.open === false),
+        rsvpReplyBy: (wedding.rsvp && wedding.rsvp.replyBy) || '',
+        rsvpMaxParty: wedding.rsvp && Number.isInteger(wedding.rsvp.maxParty) ? wedding.rsvp.maxParty : undefined
       },
       // An empty list means the couple has not customised sections: use the editor's defaults.
       sections: Array.isArray(wedding.sections) && wedding.sections.length ? wedding.sections : undefined,

@@ -126,6 +126,9 @@
       sections,
       events: (p?.functions || []).map(normaliseEvent),
       rsvp: prefs.rsvp || 'count',
+      rsvpOpen: prefs.rsvpOpen !== false,
+      rsvpReplyBy: /^\d{4}-\d{2}-\d{2}$/.test(prefs.rsvpReplyBy || '') ? prefs.rsvpReplyBy : '',
+      rsvpMaxParty: Number.isInteger(prefs.rsvpMaxParty) ? Math.min(Math.max(prefs.rsvpMaxParty, 1), 20) : 10,
       rsvpContact: prefs.rsvpContact && typeof prefs.rsvpContact === 'object' ? { type: prefs.rsvpContact.type === 'phone' ? 'phone' : 'whatsapp', value: String(prefs.rsvpContact.value || '') } : { type: 'whatsapp', value: '' },
       galleryCount: (p?.photos || []).length,
       copyFields: copyFieldsFor(p),
@@ -268,6 +271,28 @@
       p.updated = 'Just now';
       save();
       notify();
+    },
+
+    setRsvpOption(key, value) {
+      const p = project();
+      if (!p) return;
+      let next;
+      if (key === 'rsvpOpen') next = Boolean(value);
+      else if (key === 'rsvpReplyBy') next = /^\d{4}-\d{2}-\d{2}$/.test(String(value || '')) ? String(value) : '';
+      else if (key === 'rsvpMaxParty') next = Math.min(Math.max(parseInt(value, 10) || 10, 1), 20);
+      else return;
+      p.preferences = { ...(p.preferences || {}), [key]: next };
+      p.updated = 'Just now';
+      save();
+      notify();
+    },
+
+    loadReplies() {
+      return typeof window.loadRsvpReplies === 'function' ? window.loadRsvpReplies() : Promise.reject(new Error('Not available.'));
+    },
+
+    deleteReply(id) {
+      return typeof window.deleteRsvpReply === 'function' ? window.deleteRsvpReply(id) : Promise.reject(new Error('Not available.'));
     },
 
     setRsvpContact(type, value) {
