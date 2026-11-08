@@ -65,6 +65,27 @@ function isVisible(key: SectionKey, snap: EditorSnapshot): boolean {
   return section?.sectionId ? snap.sections[section.sectionId] !== false : true;
 }
 
+// The number of replies, for the "Replies" button in the header. Only asked for when replies are online and this
+// device holds the private link; refreshed when the tab is shown again and every minute.
+function useReplyCount(snap: EditorSnapshot): number | null {
+  const [count, setCount] = useState<number | null>(null);
+  const watching = snap.hasPrivateLink && (snap.rsvp === "count" || snap.rsvp === "rsvp");
+  useEffect(() => {
+    if (!watching) { setCount(null); return; }
+    let live = true;
+    const refresh = () => bridge.loadReplies().then(
+      result => { if (live) setCount(result.totals.replies); },
+      () => { if (live) setCount(null); }
+    );
+    refresh();
+    const timer = window.setInterval(refresh, 60000);
+    const onShow = () => { if (document.visibilityState === "visible") refresh(); };
+    document.addEventListener("visibilitychange", onShow);
+    return () => { live = false; window.clearInterval(timer); document.removeEventListener("visibilitychange", onShow); };
+  }, [watching, snap.published]);
+  return count;
+}
+
 function sectionHint(key: SectionKey, snap: EditorSnapshot): string {
   if (key === "home") return "Always shown";
   if (key === "story") return snap.storyCopy ? "Written" : "Not written yet";
@@ -86,6 +107,7 @@ export function EditorPage() {
   const [active, setActive] = useState<SectionKey>("home");
   const [designsOpen, setDesignsOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
+  const replyCount = useReplyCount(snap);
   const [picked, setPicked] = useState(false);
   const [namesNeeded, setNamesNeeded] = useState(false);
   const namesRef = useRef<HTMLInputElement>(null);
@@ -182,6 +204,13 @@ export function EditorPage() {
     }
   }
 
+  // The couple's replies live in the RSVP panel: this opens it from anywhere (on a phone, on the Edit tab).
+  function openReplies() {
+    setActive("rsvp");
+    setPicked(false);
+    if (isPhone()) setMobileTab("edit");
+  }
+
   const designs = bridge.designs();
   const failed = snap.saveState === "error";
   const conflict = snap.saveState === "conflict";
@@ -218,6 +247,12 @@ export function EditorPage() {
             {failed ? <button type="button" onClick={() => bridge.retrySave()}>Retry</button> : null}
             {conflict ? <button type="button" onClick={() => window.location.reload()}>Reload</button> : null}
           </div>
+          {snap.rsvp === "count" || snap.rsvp === "rsvp" ? (
+            <button className="editor-action editor-replies" type="button" onClick={openReplies} aria-label={replyCount ? `Replies, ${replyCount}` : "Replies"}>
+              <Icon name="people" size={20} /> Replies
+              {replyCount ? <span className="reply-badge">{replyCount}</span> : null}
+            </button>
+          ) : null}
           <button className="editor-action" type="button" onClick={() => bridge.openPreview()}>
             <Icon name="eye" size={20} /> Preview
           </button>
