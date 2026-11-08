@@ -1,3 +1,9 @@
 name = "invitestudio"
 compatibility_date = "2026-11-03"
 pages_build_output_dir = "."
+
+# Photos (docs/MEDIA_PLAN.md): the private R2 bucket that holds uploaded pictures. The Cloudflare dashboard shows
+# bindings as read-only because this file manages them. The bucket must exist before this is deployed.
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "invitestudio-media"
