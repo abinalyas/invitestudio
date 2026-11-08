@@ -9,7 +9,11 @@ test.beforeEach(async ({ page }) => {
 
 test('homepage starts a short personalised-preview journey', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /create a wedding|make the moment|find the feeling|invite.*moment/i })).toBeVisible();
-  await page.getByRole('button', { name: /start your invitation/i }).click();
+  // The big button is a link to the template gallery, where the couple picks a design first.
+  // (The plain static test server has no route for /templates, so only the destination is checked here.)
+  await expect(page.getByRole('link', { name: /start your invitation/i })).toHaveAttribute('href', '/templates');
+  // Starting from scratch (the "New website" path) opens the setup wizard.
+  await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding'));
   await expect(page.getByRole('heading', { name: /create your invitation/i })).toBeVisible();
   await page.locator('#projectTitle').fill('Mira & Arun');
   await page.locator('#projectDate').fill('2027-01-20');

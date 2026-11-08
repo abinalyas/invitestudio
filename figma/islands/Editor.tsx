@@ -84,6 +84,8 @@ export function EditorPage() {
   const [designsOpen, setDesignsOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
   const [picked, setPicked] = useState(false);
+  const [namesNeeded, setNamesNeeded] = useState(false);
+  const namesRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   // Scroll cue: shown while the invitation can scroll and is still at the top. The scrollbar is hidden on phone and tablet frames.
   const [cue, setCue] = useState(false);
@@ -127,6 +129,20 @@ export function EditorPage() {
   const set = (patch: Partial<EditorFields>) => bridge.update(patch);
   const addressLabel = snap.publicUrl ? snap.publicUrl.replace(/^https?:\/\//, "") : "Draft preview";
   const activeItem = sections.find(item => item.key === active) ?? sections[0];
+
+  // Names become the web address, so they are needed before publishing. Take the couple to the field instead of
+  // publishing under an example or stand-in name.
+  function publish() {
+    if (snap.title.trim()) {
+      bridge.openPublish();
+      return;
+    }
+    setNamesNeeded(true);
+    setActive("home");
+    setPicked(false);
+    if (isPhone()) setMobileTab("edit");
+    window.setTimeout(() => namesRef.current?.focus(), 50);
+  }
 
   // A click on the preview selects the section that was clicked.
   function selectFromPreview(event: ReactMouseEvent<HTMLDivElement>) {
@@ -202,7 +218,7 @@ export function EditorPage() {
           <button className="editor-action" type="button" onClick={() => bridge.openPreview()}>
             <Icon name="eye" size={20} /> Preview
           </button>
-          <button className="editor-publish" type="button" onClick={() => bridge.openPublish()}>
+          <button className="editor-publish" type="button" onClick={publish}>
             {snap.published ? "Published" : "Publish"} <Icon name={snap.published ? "check" : "chevron"} size={17} />
           </button>
           <button className="editor-action editor-advanced" type="button" onClick={() => bridge.openAdvanced()}>
@@ -309,7 +325,19 @@ export function EditorPage() {
               </label>
               <label>
                 Couple or celebration names
-                <input value={snap.title} placeholder={snap.shown.title} onChange={event => set({ title: event.target.value })} />
+                <input
+                  ref={namesRef}
+                  value={snap.title}
+                  placeholder={snap.shown.title}
+                  aria-invalid={namesNeeded && !snap.title.trim() ? true : undefined}
+                  aria-describedby={namesNeeded && !snap.title.trim() ? "names-needed" : undefined}
+                  onChange={event => { setNamesNeeded(false); set({ title: event.target.value }); }}
+                />
+                {namesNeeded && !snap.title.trim() ? (
+                  <span id="names-needed" className="field-error" role="alert">Add your names to publish. They become your web address.</span>
+                ) : (
+                  <span className="field-hint">Shown in grey until you add your own. Your names become your web address.</span>
+                )}
               </label>
               <label>
                 Welcome message <span className="optional">(optional)</span>
