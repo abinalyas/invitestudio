@@ -9,7 +9,7 @@ Use **Cloudflare Pages + Supabase** for the first production-capable release.
 
 - **Frontend and public invitation hosting:** Cloudflare Pages, connected to the GitHub repository. Keep the current static-first frontend and migrate deployment from GitHub Pages when ready to support routed public invitation pages.
 - **Database and identity:** Supabase Postgres and Supabase Auth.
-- **Media:** Supabase Storage, with server-side upload validation and per-project ownership.
+- **Media:** Cloudflare R2 for the files, with Supabase holding the photo details (updated: see `docs/MEDIA_PLAN.md`; Supabase's free bandwidth is too small for guest traffic). Server-side upload validation and per-wedding ownership stay.
 - **Trusted operations:** Supabase Edge Functions for publish/unpublish, public RSVP submission, and any operation that needs privileged validation. Never ship the service-role key to the browser.
 - **Client access:** Supabase publishable/anon key only, with Row Level Security (RLS) enabled on every exposed table.
 - **Monitoring:** Cloudflare Pages deployment logs plus Supabase logs; add request IDs and user-safe error messages.
