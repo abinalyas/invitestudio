@@ -85,3 +85,38 @@ test('the last step says what it does before and inside the Share dialog', () =>
   // The other places that start publishing use the same name.
   assert.doesNotMatch(read('index.html'), /onclick="openPublish\(\)">Publish</);
 });
+
+test('one clear creation path: the header starts creating, and the template page offers guided setup or a labelled quick start', () => {
+  const home = read('figma/islands/Home.tsx');
+  assert.match(home, /<a className="button small" href="\/templates">\s*Start creating/);
+  assert.doesNotMatch(home, /Get started/);
+  assert.match(home, /<a className="button outline" href="#how">\s*See how it works/); // not a second link to the same place
+  for (const page of ['figma/islands/Templates.tsx', 'figma/islands/TemplateDetail.tsx']) assert.doesNotMatch(read(page), /Get started/);
+  const detail = read('figma/islands/TemplateDetail.tsx');
+  assert.match(detail, /bridge\.startSetup\(template\.backendId\)/);
+  assert.match(detail, /Start with this design/);
+  assert.match(detail, /Guided setup takes about a minute/);
+  assert.match(detail, /Quick start: skip setup and open the editor/);
+  // The chosen design is carried into setup (the preview popup's Choose this design too).
+  const html = read('index.html');
+  assert.match(html, /function startCreate\(cat,chosenId\)/);
+  assert.match(html, /startCreate\(state\.category,id\)\}/);
+  assert.match(read('cloud-sync.js'), /cloudAwareStartCreate\(category, templateId\)/);
+});
+
+test('the preview and the saved-draft banner say plainly who can see and edit', () => {
+  const html = read('index.html');
+  assert.match(html, /function previewNote\(p\)/);
+  assert.match(html, /Only you can see this\. Choose Share invitation when you want a link guests can open\./);
+  assert.doesNotMatch(html, /Public publishing and live guest RSVPs are not available yet/);
+  const sync = read('cloud-sync.js');
+  assert.match(sync, /Only you can see it, and it is not public until you share it\./);
+  assert.match(sync, /Anyone with that link can edit/);
+  assert.match(read('figma/islands/Editor.tsx'), /Your draft is private/);
+});
+
+test('long names are sized by their longest word in every template, so they fit instead of breaking mid-word', () => {
+  for (const id of ['modern-heritage', 'minimalist', 'cinematic']) assert.match(read(`templates/${id}/template.css`), /--fit:calc\(/, id);
+  assert.match(read('scene-templates.js'), /function longestWord\(a, b\)/);
+  assert.match(read('scene-templates.css'), /\.sx-nm\{font-size:min\(58px,calc\(300px\/\(var\(--nl,10\)\*\.5\)\)\)\}/);
+});

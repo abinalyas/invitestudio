@@ -266,11 +266,19 @@
     }
   };
 
+  // Who can see and edit a draft, in plain words. The key to a draft is held by this browser (there is no sign-in), so
+  // clearing browser data or switching device needs the private link.
+  window.draftAccessNote = () => {
+    const project = projectForReference();
+    return project?.cloudId
+      ? 'Only you can see it, and it is not public until you share it. This browser holds the key, so on another device (or after clearing browser data) open it with your private link: choose Copy private link in the editor. Anyone with that link can edit, so keep it to yourself.'
+      : 'Only you can see it, and it is not public until you share it. It is saved in this browser only, so it will not open on another device.';
+  };
   window.draftRecoveryCard = recoveryCard;
   window.draftStorageNote = () => {
     const project = projectForReference();
     return project?.cloudId
-      ? 'Your draft is saved in the cloud and can be continued from this browser.'
+      ? 'Your draft is private and saved in the cloud.'
       : 'Drafts are saved on this device until cloud setup is available.';
   };
 
@@ -1099,8 +1107,8 @@
       decorateRecoveryUi(project);
     };
 
-    window.startCreate = function cloudAwareStartCreate(category) {
-      originalStartCreate(category);
+    window.startCreate = function cloudAwareStartCreate(category, templateId) {
+      originalStartCreate(category, templateId);
       setTimeout(() => {
         const project = ensureProject();
         if (!project.cloudId) createCloudDraft(project);

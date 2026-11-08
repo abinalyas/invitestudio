@@ -19,6 +19,7 @@ export function RecoveryBanner() {
         <span className="section-kicker">Welcome back</span>
         <strong>Continue {card.title}</strong>
         <p>{card.status}</p>
+        {card.access ? <p className="recovery-access">{card.access}</p> : null}
         {card.error ? <p role="alert" className="recovery-error">{card.error}</p> : null}
       </div>
       <div className="recovery-actions">

@@ -30,11 +30,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
           <a href="/#how">How it works</a>
           <a href="/#pricing">Pricing</a>
         </nav>
-        <div className="header-actions">
-          <a className="button small" href="/#pricing">
-            Get started
-          </a>
-        </div>
+        <div className="header-actions" />
       </header>
 
       <div className="gallery-shell detail-content">
@@ -67,12 +63,9 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
               ))}
             </div>
             <div className="detail-actions">
-              <button
-                className="button"
-                onClick={() => bridge.createDraft(backendTemplateIds[template.id], template.id, template.names)}
-              >
+              <button className="button" onClick={() => bridge.startSetup(template.backendId)}>
                 <Icon name="edit" size={19} />
-                Use this template
+                Start with this design
               </button>
               <button
                 className="button outline"
@@ -81,6 +74,16 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
                 <Icon name="eye" size={20} /> Live preview
               </button>
             </div>
+            <p className="detail-path">
+              Guided setup takes about a minute: your names, date and place, then the editor.{" "}
+              <button
+                type="button"
+                className="link-button"
+                onClick={() => bridge.createDraft(backendTemplateIds[template.id], template.id, template.names)}
+              >
+                Quick start: skip setup and open the editor
+              </button>
+            </p>
 
             <div className="detail-block">
               <h2>Opening</h2>

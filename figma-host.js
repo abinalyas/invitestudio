@@ -128,6 +128,7 @@
       rsvp: prefs.rsvp || 'count',
       galleryCount: (p?.photos || []).length,
       copyFields: copyFieldsFor(p),
+      hasPrivateLink: Boolean(p?.cloudId && window.inviteStudioApi?.enabled),
       // What the invitation shows while a field is empty, so the editor can show it as a hint.
       shown: {
         title: SAMPLE_NAMES,
@@ -200,6 +201,11 @@
       p.updated = 'Just now';
       save();
       notify();
+    },
+
+    // The private link that opens this draft on another device (anyone with it can edit).
+    copyPrivateLink() {
+      if (typeof window.copyPrivateEditLink === 'function') window.copyPrivateEditLink();
     },
 
     // Wording on a packaged template. An empty text goes back to the template's own wording.
@@ -349,6 +355,13 @@
       startCreate(category);
     },
 
+    // The guided setup (names, date, place, then the editor) with a design already chosen.
+    startSetup(backendTemplateId) {
+      state.editorMode = 'designer';
+      if (window.location.pathname !== '/') history.pushState({}, '', '/');
+      startCreate('Wedding', backendTemplateId);
+    },
+
     openPreview() {
       state.page = 'preview';
       history.pushState({}, '', '/');
@@ -458,6 +471,7 @@
       return {
         title: p.title || p.name || 'your invitation',
         status: typeof draftStorageNote === 'function' ? draftStorageNote() : '',
+        access: typeof draftAccessNote === 'function' ? draftAccessNote() : '',
         error: state.recoveryError || ''
       };
     },

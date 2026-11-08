@@ -187,8 +187,15 @@
   }
   function safeUrl(u) { return /^https?:\/\//i.test(u || '') ? u : ''; }
 
+  // Length of the longest word in the names (a hyphenated name can wrap at the hyphen). The big script names are
+  // sized by it, so a long word fits the screen instead of breaking in the middle.
+  function longestWord(a, b) {
+    var longest = 8;
+    String(a + ' ' + b).split(/[\s-]+/).forEach(function (w) { longest = Math.max(longest, Array.from(w).length); });
+    return longest;
+  }
   function namesHtml(a, b) {
-    return '<h2 class="sx-names"><span class="sx-nm">' + esc(a) + '</span>' + (b ? '<span class="sx-amp">&amp;</span><span class="sx-nm">' + esc(b) + '</span>' : '') + '</h2>';
+    return '<h2 class="sx-names" style="--nl:' + longestWord(a, b) + '"><span class="sx-nm">' + esc(a) + '</span>' + (b ? '<span class="sx-amp">&amp;</span><span class="sx-nm">' + esc(b) + '</span>' : '') + '</h2>';
   }
   function dateLine(f, withWeekday) {
     return f ? (withWeekday ? f.wd.toUpperCase() + ' ' : '') + f.day + ' ' + f.mon.toUpperCase() + ' ' + f.yr : DEFAULTS.date.toUpperCase();

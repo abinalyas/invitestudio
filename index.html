@@ -30,7 +30,7 @@
 .sx-script{font-family:var(--sx-script);font-weight:400;line-height:1.05;word-spacing:.12em;overflow-wrap:anywhere}
 .sx-h{font-size:44px}
 .sx-names{font-family:var(--sx-script);line-height:1;display:grid;justify-items:center;gap:2px;word-spacing:.12em;overflow-wrap:anywhere;max-width:100%}
-.sx-nm{font-size:58px}.sx-amp{font-size:30px;opacity:.8}
+.sx-nm{font-size:min(58px,calc(300px/(var(--nl,10)*.5)))}.sx-amp{font-size:30px;opacity:.8}
 .sx-body{font-size:13px;line-height:1.75;letter-spacing:.02em;color:var(--sx-muted);text-wrap:pretty;overflow-wrap:anywhere}
 .sx-date{display:grid;gap:4px;justify-items:center}.sx-day{font-family:var(--sx-script);font-size:96px;line-height:.9}
 .sx-link{display:inline-flex;align-items:center;padding:8px 14px;border:1px solid currentColor;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;transition:transform .5s var(--sx-ease),background-color .3s var(--sx-ease),color .3s var(--sx-ease)}
@@ -58,13 +58,13 @@
 /* Palmera */
 .sx-palmera{--sx-ink:#1c4f57;--sx-muted:#3f6b70;--sx-paper:#fbf1dd;--sx-script:"Italianno",cursive}
 .sx-palmera .sx-cv-top{position:absolute;top:9%;left:0;right:0;display:grid;gap:8px;justify-items:center;padding:0 24px}
-.sx-palmera .sx-nm{font-size:68px}.sx-palmera .sx-amp{font-size:34px}
+.sx-palmera .sx-nm{font-size:min(68px,calc(290px/(var(--nl,10)*.5)))}.sx-palmera .sx-amp{font-size:34px}
 .sx-palmera .sx-cv-bot{position:absolute;bottom:5.5%;left:0;right:0;display:grid;gap:4px;justify-items:center;padding:0 24px}
 .sx-palmera .sx-h{font-size:54px}.sx-palmera .sx-day{font-size:104px}
 /* Curtain Call */
 .sx-curtain-call{--sx-ink:#3a3226;--sx-muted:#6a5e49;--sx-paper:#f4ecd9;--sx-script:"Cormorant Garamond",serif}
 .sx-curtain-call .sx-script,.sx-curtain-call .sx-names{font-weight:500;word-spacing:0}
-.sx-curtain-call .sx-nm{font-size:54px}.sx-curtain-call .sx-amp{font-size:28px}.sx-curtain-call .sx-h{font-size:40px}.sx-curtain-call .sx-day{font-size:88px;font-weight:500}
+.sx-curtain-call .sx-nm{font-size:min(54px,calc(290px/(var(--nl,10)*.5)))}.sx-curtain-call .sx-amp{font-size:28px}.sx-curtain-call .sx-h{font-size:40px}.sx-curtain-call .sx-day{font-size:88px;font-weight:500}
 .sx-curtain-call .sx-cv{padding:0}
 .sx-stage{position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 50% 34%,#fff7e2 0,#efe3c5 52%,#d8c8a0 100%)}
 .sx-stage-content{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:64px 28px;transition:opacity 1.2s var(--sx-ease) .5s}
@@ -85,7 +85,7 @@
 .sx-lunaria{--sx-ink:#1f2b3d;--sx-muted:#34445c;--sx-paper:#e9eef5;--sx-script:"Great Vibes",cursive}
 .sx-lunaria .sx-cv-mid{position:absolute;top:28%;left:0;right:0;display:grid;gap:14px;justify-items:center;padding:0 72px}
 .sx-lunaria .sx-cv-bot{position:absolute;bottom:5.5%;left:0;right:0;display:grid;gap:4px;justify-items:center;padding:0 24px}
-.sx-lunaria .sx-nm{font-size:54px}
+.sx-lunaria .sx-nm{font-size:min(54px,calc(250px/(var(--nl,10)*.5)))}
 
 @media(prefers-reduced-motion:reduce){
  .sx.sx-live .sx-rv{transform:none;transition:opacity .4s linear}
@@ -122,8 +122,8 @@
 .tpl-cn .cn-hero-shade{background:linear-gradient(180deg,rgba(15,14,13,.5),rgba(15,14,13,.12) 40%,rgba(15,14,13,.58)),linear-gradient(90deg,rgba(15,14,13,.16),transparent 50%,rgba(15,14,13,.16))}
 .tpl-cn .cn-hero-copy{position:relative;z-index:2;padding:100px 20px 90px;max-width:100%}
 .tpl-cn .cn-eyebrow{font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);font-weight:500}
-.tpl-cn .cn-hero h1{font:400 clamp(5rem,12cqw,11rem)/.82 var(--serif);letter-spacing:-.055em;margin:34px 0 38px;text-shadow:0 3px 35px rgba(0,0,0,.18);overflow-wrap:anywhere}
-.tpl-cn .cn-hero h1[data-long]{font-size:clamp(3.6rem,8cqw,7.5rem)}
+.tpl-cn .cn-hero h1{font:400 clamp(5rem,12cqw,11rem)/.82 var(--serif);font-size:min(clamp(5rem,12cqw,11rem),var(--fit));--fit:calc((100cqw - 40px)/(var(--nl,10)*.46));letter-spacing:-.055em;margin:34px 0 38px;text-shadow:0 3px 35px rgba(0,0,0,.18);overflow-wrap:anywhere}
+.tpl-cn .cn-hero h1[data-long]{font-size:min(clamp(3.6rem,8cqw,7.5rem),var(--fit))}
 .tpl-cn h1 i,.tpl-cn .cn-opening-note h2 i,.tpl-cn .cn-story h2 i,.tpl-cn .cn-section-top h2 i,.tpl-cn .cn-celebration h2 i,.tpl-cn .cn-venue-copy h2 i,.tpl-cn .cn-final-copy h2 i,.tpl-cn .cn-footer-mark i,.tpl-cn .cn-opening-note h2 em,.tpl-cn .cn-story h2 em,.tpl-cn .cn-section-top h2 em,.tpl-cn .cn-venue-copy h2 em,.tpl-cn .cn-final-copy h2 em{color:var(--gold);font-weight:400}
 .tpl-cn .cn-hero-rule{width:42px;height:1px;background:var(--gold);margin:0 auto 23px}
 .tpl-cn .cn-hero-date{font-size:.7rem;letter-spacing:.23em;margin:0 0 12px}
@@ -213,8 +213,8 @@
 .tpl-cn .cn-section-dark{padding:100px 7cqw}
 .tpl-cn .cn-section-light{padding:100px 8cqw}}
 @container (max-width:560px){.tpl-cn .cn-hero{min-height:720px}
-.tpl-cn .cn-hero h1{font-size:clamp(4.6rem,20cqw,7rem)}
-.tpl-cn .cn-hero h1[data-long]{font-size:clamp(3rem,13cqw,5rem)}
+.tpl-cn .cn-hero h1{font-size:min(clamp(4.6rem,20cqw,7rem),var(--fit))}
+.tpl-cn .cn-hero h1[data-long]{font-size:min(clamp(3rem,13cqw,5rem),var(--fit))}
 .tpl-cn .cn-opening-note{padding:105px 8cqw}
 .tpl-cn .cn-opening-note h2{font-size:2.5rem}
 .tpl-cn .cn-story,.tpl-cn .cn-story[data-photo]{padding:80px 7cqw}
@@ -268,8 +268,8 @@
 .tpl-mn .mn-hero-copy{position:relative;z-index:2;padding:25px 0 50px}
 .tpl-mn .mn-eyebrow{color:var(--olive);display:flex;align-items:center;gap:12px;margin:0 0 32px}
 .tpl-mn .mn-eyebrow-line{width:26px;height:1px;background:var(--olive-line)}
-.tpl-mn .mn-hero h1{font:clamp(70px,11cqw,158px)/.83 var(--serif);letter-spacing:-5px;margin:0 0 32px;overflow-wrap:anywhere}
-.tpl-mn .mn-hero h1[data-long]{font-size:clamp(56px,8cqw,110px)}
+.tpl-mn .mn-hero h1{font:clamp(70px,11cqw,158px)/.83 var(--serif);font-size:min(clamp(70px,11cqw,158px),var(--fit));--fit:calc((100cqw - 56px)/(var(--nl,10)*.5));letter-spacing:-5px;margin:0 0 32px;overflow-wrap:anywhere}
+.tpl-mn .mn-hero h1[data-long]{font-size:min(clamp(56px,8cqw,110px),var(--fit))}
 .tpl-mn .mn-hero h1 em,.tpl-mn h2 em{font-weight:400;color:var(--olive)}
 .tpl-mn .mn-period{color:var(--olive)}
 .tpl-mn .mn-hero-date{color:var(--muted);letter-spacing:1.2px}
@@ -359,8 +359,8 @@
 .tpl-mn .mn-desktop-nav button{font-size:8px}
 .tpl-mn .mn-hero{min-height:0;padding:64px 24px 36px;display:flex;flex-direction:column;align-items:stretch;gap:35px}
 .tpl-mn .mn-hero-copy{padding:0}
-.tpl-mn .mn-hero h1{font-size:clamp(80px,17cqw,132px);margin-bottom:24px}
-.tpl-mn .mn-hero h1[data-long]{font-size:clamp(54px,12cqw,96px)}
+.tpl-mn .mn-hero h1{font-size:min(clamp(80px,17cqw,132px),var(--fit));margin-bottom:24px}
+.tpl-mn .mn-hero h1[data-long]{font-size:min(clamp(54px,12cqw,96px),var(--fit))}
 .tpl-mn .mn-hero .mn-eyebrow{margin-bottom:27px}
 .tpl-mn .mn-text-link{margin-top:30px}
 .tpl-mn .mn-hero-image{height:58cqw;min-height:280px;margin:0;width:100%}
@@ -394,8 +394,8 @@
 .tpl-mn .mn-desktop-nav[data-open]{display:flex;position:absolute;top:67px;left:0;right:0;margin:0;padding:22px 24px;background:var(--ivory);border-bottom:1px solid var(--line);flex-direction:column;gap:20px}
 .tpl-mn .mn-nav-rsvp{margin-left:auto;margin-right:16px}
 .tpl-mn .mn-hero{padding-top:52px}
-.tpl-mn .mn-hero h1{font-size:clamp(70px,22cqw,112px);letter-spacing:-4px}
-.tpl-mn .mn-hero h1[data-long]{font-size:clamp(46px,14cqw,72px)}
+.tpl-mn .mn-hero h1{font-size:min(clamp(70px,22cqw,112px),var(--fit));letter-spacing:-4px}
+.tpl-mn .mn-hero h1[data-long]{font-size:min(clamp(46px,14cqw,72px),var(--fit))}
 .tpl-mn .mn-hero-date{font-size:8px}
 .tpl-mn .mn-hero-image{height:90cqw;min-height:300px}
 .tpl-mn .mn-countdown-section{padding:50px 24px}
@@ -446,8 +446,8 @@
 .tpl-mh .mh-eyebrow,.tpl-mh .mh-section-kicker{font-size:9px;letter-spacing:3px;color:#7a6539;text-transform:uppercase}
 .tpl-mh .mh-hero-crest{width:170px;height:190px;margin:12px auto 0}
 .tpl-mh .mh-invitation-line{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--green);margin:0}
-.tpl-mh h1{font:500 clamp(54px,8cqw,94px)/.95 var(--serif);letter-spacing:2px;color:var(--green);margin:8px 0 12px;overflow-wrap:anywhere}
-.tpl-mh h1[data-long]{font-size:clamp(40px,6cqw,70px)}
+.tpl-mh h1{font:500 clamp(54px,8cqw,94px)/.95 var(--serif);font-size:min(clamp(54px,8cqw,94px),var(--fit));--fit:calc((100cqw - 48px)/(var(--nl,10)*.52));letter-spacing:2px;color:var(--green);margin:8px 0 12px;overflow-wrap:anywhere}
+.tpl-mh h1[data-long]{font-size:min(clamp(40px,6cqw,70px),var(--fit))}
 .tpl-mh h1 span,.tpl-mh .mh-footer-names span{font-style:italic;color:var(--gold);font-weight:400}
 .tpl-mh .mh-flourish{width:170px;height:25px;object-fit:contain;margin:12px auto 18px}
 .tpl-mh .mh-hero-copy{font:400 12px/2 var(--body);letter-spacing:1.4px;text-transform:uppercase}
@@ -559,8 +559,8 @@
 .tpl-mh .mh-hero{min-height:730px;padding:50px 18px 42px}
 .tpl-mh .mh-hero-crest{width:140px;height:155px}
 .tpl-mh .mh-invitation-line{font-size:17px}
-.tpl-mh h1{font-size:58px}
-.tpl-mh h1[data-long]{font-size:44px}
+.tpl-mh h1{font-size:min(58px,var(--fit))}
+.tpl-mh h1[data-long]{font-size:min(44px,var(--fit))}
 .tpl-mh .mh-hero-copy{font-size:9px}
 .tpl-mh .mh-hero-meta{flex-direction:column;align-items:flex-start;gap:15px;width:min(310px,100%);margin:25px auto}
 .tpl-mh .mh-hero-meta>i{display:none}
@@ -977,6 +977,9 @@ const reviewDesigns={'kerala-kasavu':{name:'Kasavu Heritage',style:'Heritage',de
 for(const [id,o] of Object.entries(reviewDesigns)){const t=templates.find(x=>x.id===id);if(t)Object.assign(t,o)}
 const defaultFunctions=[{id:crypto.randomUUID(),title:'Welcome Dinner',date:'2027-08-23',time:'18:00',venue:'Grand Hyatt, Kochi',visible:true},{id:crypto.randomUUID(),title:'Wedding Ceremony',date:'2027-08-24',time:'10:00',venue:'Venue to be confirmed',visible:true},{id:crypto.randomUUID(),title:'Reception',date:'2027-08-24',time:'18:30',venue:'Venue to be confirmed',visible:true}];
 let state={page:'home',category:'Wedding',filter:'All Templates',sort:'Recommended',tradition:'All',animation:'All',palette:'All',search:'',selectedTemplate:'eternal',setupStep:0,editorTab:'Sections',activeSection:'Events / Functions',device:'desktop',mobileEditorView:'edit',projects:[],currentId:null,modal:null,templateReturnToSetup:false};
+// What the preview page tells the couple about who can see it. Sharing by link works once the publishing service is
+// connected; guest replies (RSVP) are not open yet.
+function previewNote(p){const rsvp='Guest replies are not open yet.';const live=p&&p.publishStatus==='published'&&p.publicSlug;if(live)return 'This shows your latest changes. Your invitation is live at '+location.origin+'/s/'+p.publicSlug+'; choose Share invitation, then Update live page, to show these changes to guests. '+rsvp;if(window.inviteStudioApi&&window.inviteStudioApi.enabled)return 'Only you can see this. Choose Share invitation when you want a link guests can open. '+rsvp;return 'Sharing by link needs the publishing service, which is not connected here. '+rsvp}
 function draftNote(){return typeof draftStorageNote==='function'?draftStorageNote():'Drafts are saved on this device until cloud setup is available.'}function load(){try{state.projects=JSON.parse(localStorage.getItem('invitestudio-projects')||'[]')}catch{state.projects=[]}}
 function save(){try{localStorage.setItem('invitestudio-projects',JSON.stringify(state.projects));state.saveFailed=false;state.saveStatus='saved';return true}catch(e){state.saveFailed=true;state.saveStatus='failed';toast('Could not save this draft. Browser storage may be unavailable or full. Remove large images and retry.');return false}}
 function categoryAlias(category){return category==='Baptism / Christening / Naming Ceremony'?'Baptism':category==='Wedding Anniversary'?'Anniversary':category==='Other / Custom Event'?'Other Event':category}function current(){return state.projects.find(p=>p.id===state.currentId)}function tpl(id){return templates.find(t=>t.id===id)||unavailableTemplate(id)}
@@ -1010,7 +1013,7 @@ function home(){return `${header()}${window.draftRecoveryCard?window.draftRecove
     <article><span>02</span><h3>Make it yours</h3><p>Add names and a date first. Photos, event details and your story can come later.</p></article>
     <article><span>03</span><h3>Review every detail</h3><p>Check the invitation on mobile and desktop before you decide what to share.</p></article>
   </div>
-  <p class="how-disclosure">Drafts are saved automatically as you work. Public publishing and live RSVP collection are not available yet.</p>
+  <p class="how-disclosure">Drafts are saved automatically as you work. You can share your invitation by link; guest replies (RSVP) are not open yet.</p>
 </section>
 <section class="section container lux-occasions"><div class="section-head"><div><div class="eyebrow">Find your occasion</div><h2>Every moment has its own magic.</h2><p>Choose your celebration to discover a collection curated just for it.</p></div><button class="text-link" onclick="go('templates')">Explore all designs ↗</button></div>
 <div class="occasion-catalogue">${[['Wedding','Ivory Heirloom'],['Birthdays','Confetti Club'],['Baby & Family','Baby in Bloom'],['Home & Personal','Open Doors'],['Milestones','A New Chapter'],['Events & Gatherings','The Summit']].map(([n,templateName])=>{const c=topCategories.find(x=>x.label===n);const t=templates.find(x=>x.name===templateName)||templates[0];return `<button class="occasion-tile" onclick="browseCategory('${n}')">${img(c?.image||t.image,n+' invitation collection')}<span class="occasion-tile-copy"><strong>${n}</strong><small>Discover the collection ↗</small></span></button>`}).join('')}</div></section>
@@ -1024,7 +1027,7 @@ function paletteFor(t){const text=(t.id+' '+t.name+' '+(t.tradition||'')+' '+(t.
 function genericWeddingTemplates(){return templates.filter(t=>t.category==='Wedding'&&isOffered(t)&&(!t.tradition||t.tradition==='General'))}
 function sortedTemplates(){const grouped=topCategories.some(c=>c.label===state.category);const source=(state.category==='Wedding'?genericWeddingTemplates():templates).filter(t=>!t.review);const visible=source.filter(t=>(!grouped||categoryGroupForTemplate(t)===state.category)&&(grouped||state.category==='All'||t.category===state.category||categoryAlias(state.category)===t.category)&&(!state.occasionFilter||state.occasionFilter===t.category||state.occasionFilter===t.occasion)&&(state.filter==='All Templates'||t.style===state.filter)&&(state.tradition==='All'||(t.tradition||'General')===state.tradition)&&(state.animation==='All'||(t.effect||'fade')===state.animation)&&(state.palette==='All'||paletteFor(t)===state.palette)&&(t.name+' '+t.category+' '+t.desc+' '+(t.tradition||'')+' '+(t.occasion||'')+' '+(t.animation||'')).toLowerCase().includes(state.search.toLowerCase()));if(state.sort==='A–Z')visible.sort((a,b)=>a.name.localeCompare(b.name));else if(state.sort==='Occasion')visible.sort((a,b)=>(a.occasion||a.category).localeCompare(b.occasion||b.category)||a.name.localeCompare(b.name));return visible}
 function renderTemplatesOnly(){const el=document.getElementById('template-grid');if(!el)return;const visible=sortedTemplates();el.innerHTML=visible.map(templateCard).join('')||'<div class="empty" style="grid-column:1/-1">No templates match. Try another filter.</div>';const count=document.getElementById('template-count');if(count)count.textContent=`${visible.length} ${visible.length===1?'design':'designs'}`}
-function startCreate(cat){state.currentId=null;state.category=cat||'Wedding';state.selectedTemplate=templates.find(t=>isOffered(t)&&(t.category===state.category||t.category===categoryAlias(state.category)))?.id||offeredTemplateIds[0];state.setupStep=0;state.setupError='';state.setupLocalOnly=false;state.page='setup';render()}
+function startCreate(cat,chosenId){state.currentId=null;state.category=cat||'Wedding';state.selectedTemplate=(chosenId&&offeredTemplateIds.includes(chosenId))?chosenId:templates.find(t=>isOffered(t)&&(t.category===state.category||t.category===categoryAlias(state.category)))?.id||offeredTemplateIds[0];state.setupStep=0;state.setupError='';state.setupLocalOnly=false;state.page='setup';render()}
 const setupStepNames=['Essentials','Template','Story and details','Ready'];
 function setupNamesMissing(p){return !String(p?.title||'').trim()}
 function setupSaveText(p){if(!window.inviteStudioApi?.enabled)return 'Saved on this device';if(!p)return 'Creating your draft…';if(p.cloudStatus==='local')return 'Kept on this device — not yet saved to your account';if(p.cloudStatus)return typeof window.cloudSaveLabel==='function'?window.cloudSaveLabel(p):'Saving…';return 'Creating your draft…'}
@@ -1108,9 +1111,9 @@ function sitePreview(p,t,full){if(t.unavailable)return templateUnavailableHtml()
 function refreshPreview(){const p=current();const el=document.getElementById('live-preview');if(el&&p)el.innerHTML=sitePreview(p,tpl(p.templateId),false)}
 function dashboard(){return `${header()}<main class="container view"><div class="page-title dashboard-head"><div><div class="eyebrow">Your creative space</div><h1>My projects</h1><p>Pick up where you left off, or start something new.</p><p class="dashboard-data-note"><strong>${esc(draftNote())}</strong></p></div><button class="btn dark" onclick="startCreate()">＋ Create a website</button></div><div class="project-grid">${state.projects.map(p=>`<article class="project-card"><div class="project-cover">${img(tpl(p.templateId).image,p.name)}<span class="tag">${p.status||'Draft'}</span></div><div class="project-body"><h3>${esc(p.name||p.title||'Untitled event')}</h3><p>${esc(p.category)} · Edited ${esc(p.updated||'recently')}</p><div class="project-actions"><button class="btn small dark" onclick="openProject('${p.id}')">Edit</button><button class="btn small" onclick="previewProject('${p.id}')">Preview</button><button class="btn small" onclick="duplicateProject('${p.id}')">Duplicate</button><button class="btn small" onclick="deleteProjectFromDashboard('${p.id}')">Delete</button></div></div></article>`).join('')}<button class="project-card" style="border:1px dashed #d3c9ba;background:transparent;display:grid;place-items:center;min-height:280px;color:#7d766b" onclick="startCreate()"><span style="font-size:32px">＋</span><strong>Start a new project</strong><span class="tiny">A new moment begins here</span></button></div></main>${footer()}`}
 function openProject(id){state.currentId=id;state.page='editor';state.editorTab='Sections';render()}function duplicateProject(id){const p=state.projects.find(x=>x.id===id);const copy=JSON.parse(JSON.stringify(p));copy.id=crypto.randomUUID();copy.name=(p.name||'Project')+' copy';copy.title=(p.title||'')+' copy';copy.status='Draft';copy.published=false;copy.updated='Just now';copy.functions=(copy.functions||[]).map(f=>({...f,id:crypto.randomUUID()}));state.projects.unshift(copy);save();render();toast('Project duplicated')}
-function previewTemplate(id){const t=tpl(id);state.selectedTemplate=id;state.modal={type:'template',id};const mine=current();const ownNames=String(mine&&mine.title||'').trim();const title=ownNames||(t.category==='Wedding'?'Daniel & Amelia':demoTitle(t.category));const demo={title,name:title,category:t.category,date:(ownNames&&mine.date)||'2027-06-19',location:(ownNames&&mine.location)||'A place to remember',hosts:ownNames?(mine.hosts||''):'',message:'Together with our favourite people, for a day to remember.',story:'The best moments are the ones we share. We can’t wait to make beautiful memories with you.',functions:[{title:'The celebration',date:'19 June 2027',time:'4:00 PM',venue:'The Garden Estate',visible:true}],photos:[],sections:[{id:'hero',visible:true},{id:'welcome',visible:true},{id:'story',visible:true},{id:'functions',visible:true},{id:'gallery',visible:true},{id:'rsvp',visible:true}],theme:{background:t.colors[0]||'#f5f0e7',text:t.colors[2]||'#292923',accent:t.colors[1]||'#a98958'}};renderModal(`<div class="full-template-preview"><div class="full-template-preview-head"><div><div class="eyebrow">LIVE TEMPLATE PREVIEW</div><h2 id="modal-title">${esc(t.name)}</h2><p>${esc(t.desc)} · ${esc(t.category)}</p></div><div class="template-detail-swatches">${t.colors.map(c=>`<i style="background:${c}" title="Theme color"></i>`).join('')}</div></div><div class="full-template-preview-site">${sitePreview(demo,t,true)}</div><div class="full-template-preview-actions"><span>${ownNames?'Your names are shown on this design. The rest is example content.':'Example names shown — you add yours when you start.'}</span><button class="btn" onclick="closeModal()">Keep browsing</button><button class="btn dark" onclick="chooseTemplate('${id}')">Choose this design →</button></div></div>`)}function demoTitle(category){return ({Wedding:'A Day to Remember',Engagement:'The Beginning of Forever',Birthday:'Let’s Celebrate!',Baptism:'A Little Blessing','Baby Shower':'A Little One Is on the Way',Anniversary:'Still Falling for You',Graduation:'The Next Chapter','Corporate Event':'An Evening Together'})[category]||'A Celebration to Remember'} function chooseTemplate(id){const wasSetup=state.page==='setup'||state.templateReturnToSetup;if(state.page==='setup'&&!saveSetupFields())return;state.selectedTemplate=id;state.category=tpl(id).category;closeModal();if(wasSetup){state.templateReturnToSetup=false;const p=current();if(p){const t=tpl(id);p.templateId=id;p.category=state.category;p.theme={...(p.theme||{}),background:t.colors[0]||'#f4eee4',accent:t.colors[1]||'#a77d4d',text:t.colors[2]||'#28241f'};p.animationSettings={...(p.animationSettings||{}),effect:t.effect||'fade'};if(!save())return}state.setupStep=0;state.page='setup';render();return}startCreate(state.category);state.selectedTemplate=id;render()}
+function previewTemplate(id){const t=tpl(id);state.selectedTemplate=id;state.modal={type:'template',id};const mine=current();const ownNames=String(mine&&mine.title||'').trim();const title=ownNames||(t.category==='Wedding'?'Daniel & Amelia':demoTitle(t.category));const demo={title,name:title,category:t.category,date:(ownNames&&mine.date)||'2027-06-19',location:(ownNames&&mine.location)||'A place to remember',hosts:ownNames?(mine.hosts||''):'',message:'Together with our favourite people, for a day to remember.',story:'The best moments are the ones we share. We can’t wait to make beautiful memories with you.',functions:[{title:'The celebration',date:'19 June 2027',time:'4:00 PM',venue:'The Garden Estate',visible:true}],photos:[],sections:[{id:'hero',visible:true},{id:'welcome',visible:true},{id:'story',visible:true},{id:'functions',visible:true},{id:'gallery',visible:true},{id:'rsvp',visible:true}],theme:{background:t.colors[0]||'#f5f0e7',text:t.colors[2]||'#292923',accent:t.colors[1]||'#a98958'}};renderModal(`<div class="full-template-preview"><div class="full-template-preview-head"><div><div class="eyebrow">LIVE TEMPLATE PREVIEW</div><h2 id="modal-title">${esc(t.name)}</h2><p>${esc(t.desc)} · ${esc(t.category)}</p></div><div class="template-detail-swatches">${t.colors.map(c=>`<i style="background:${c}" title="Theme color"></i>`).join('')}</div></div><div class="full-template-preview-site">${sitePreview(demo,t,true)}</div><div class="full-template-preview-actions"><span>${ownNames?'Your names are shown on this design. The rest is example content.':'Example names shown — you add yours when you start.'}</span><button class="btn" onclick="closeModal()">Keep browsing</button><button class="btn dark" onclick="chooseTemplate('${id}')">Choose this design →</button></div></div>`)}function demoTitle(category){return ({Wedding:'A Day to Remember',Engagement:'The Beginning of Forever',Birthday:'Let’s Celebrate!',Baptism:'A Little Blessing','Baby Shower':'A Little One Is on the Way',Anniversary:'Still Falling for You',Graduation:'The Next Chapter','Corporate Event':'An Evening Together'})[category]||'A Celebration to Remember'} function chooseTemplate(id){const wasSetup=state.page==='setup'||state.templateReturnToSetup;if(state.page==='setup'&&!saveSetupFields())return;state.selectedTemplate=id;state.category=tpl(id).category;closeModal();if(wasSetup){state.templateReturnToSetup=false;const p=current();if(p){const t=tpl(id);p.templateId=id;p.category=state.category;p.theme={...(p.theme||{}),background:t.colors[0]||'#f4eee4',accent:t.colors[1]||'#a77d4d',text:t.colors[2]||'#28241f'};p.animationSettings={...(p.animationSettings||{}),effect:t.effect||'fade'};if(!save())return}state.setupStep=0;state.page='setup';render();return}startCreate(state.category,id)}
 function previewProject(id){state.currentId=id;state.page='preview';render()}
-function previewPage(){const p=current()||ensureProject();return `<header class="topbar"><div class="brand" onclick="go('dashboard')">Invite<span>Studio</span></div><div class="top-actions"><button class="btn" onclick="go('editor')">← Back to editor</button><button class="btn dark" onclick="openPublish()">Share invitation</button></div></header><main class="container" style="padding:22px 0"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px"><div><strong>Website preview</strong><div class="tiny muted">Preview only · ${esc(draftNote())} Public publishing and live guest RSVPs are not available yet.</div></div><div class="filters" style="margin:0"><button class="pill ${state.device==='desktop'?'active':''}" onclick="state.device='desktop';render()">Desktop</button><button class="pill ${state.device==='tablet'?'active':''}" onclick="state.device='tablet';render()">Tablet</button><button class="pill ${state.device==='mobile'?'active':''}" onclick="state.device='mobile';render()">Mobile</button></div></div><div style="max-width:${state.device==='mobile'?'390px':state.device==='tablet'?'768px':'100%'};margin:auto;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:white">${sitePreview(p,tpl(p.templateId),true)}</div></main>`}
+function previewPage(){const p=current()||ensureProject();return `<header class="topbar"><div class="brand" onclick="go('dashboard')">Invite<span>Studio</span></div><div class="top-actions"><button class="btn" onclick="go('editor')">← Back to editor</button><button class="btn dark" onclick="openPublish()">Share invitation</button></div></header><main class="container" style="padding:22px 0"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px"><div><strong>Website preview</strong><div class="tiny muted"><strong>Private preview.</strong> ${esc(previewNote(p))} ${esc(draftNote())}</div></div><div class="filters" style="margin:0"><button class="pill ${state.device==='desktop'?'active':''}" onclick="state.device='desktop';render()">Desktop</button><button class="pill ${state.device==='tablet'?'active':''}" onclick="state.device='tablet';render()">Tablet</button><button class="pill ${state.device==='mobile'?'active':''}" onclick="state.device='mobile';render()">Mobile</button></div></div><div style="max-width:${state.device==='mobile'?'390px':state.device==='tablet'?'768px':'100%'};margin:auto;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:white">${sitePreview(p,tpl(p.templateId),true)}</div></main>`}
 function openPublish(){const p=current();if(!p)return;if(typeof window.openCloudPublish==='function'&&window.openCloudPublish(p))return;state.modal={type:'publish'};renderModal(`<div class="eyebrow">Your invitation draft</div><h2>Your preview is ready.</h2><p class="muted">You can keep personalising your invitation here. ${esc(draftNote())}</p><div style="background:#f2eee6;padding:14px;border-radius:9px;margin-top:15px;font-size:12px;line-height:1.6">✓ Preview available<br>✓ Draft saved on this device<br>○ Live website not available yet</div><div role="status" class="publish-unavailable"><strong>You can’t publish a live website yet.</strong><p>InviteStudio’s publishing service isn’t connected. This preview is not a public link, and guests can’t submit real RSVPs yet.</p></div><div class="modal-actions"><button class="btn" onclick="closeModal()">Continue editing</button><button class="btn dark" onclick="viewInvitationPreview()">View my preview</button></div>`)}function viewInvitationPreview(){closeModal();state.page="preview";state.device="mobile";render()}function simulatePublish(){toast('Publishing is not available yet. Your draft remains saved on this device.');closeModal()}
 function renderModal(content){document.getElementById('modal-root').innerHTML=`<div class="modal-backdrop" role="presentation" onclick="if(event.target===this)closeModal()"><section class="modal ${content.includes('template-detail-modal')?'template-detail-shell':content.includes('full-template-preview')?'template-preview-shell':''}" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">${content}</section></div>`;const dlg=document.querySelector('[role=dialog]');dlg?.focus();dlg?.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if(e.key==='Tab'){const els=[...dlg.querySelectorAll('button,input,textarea,select,a[href]')].filter(x=>!x.disabled);if(!els.length)return;const first=els[0],last=els[els.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}})}function closeModal(){state.modal=null;document.getElementById('modal-root').innerHTML=''}
 

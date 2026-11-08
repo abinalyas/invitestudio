@@ -30,8 +30,8 @@ figure{margin:0}
 .hero-shade{background:linear-gradient(180deg,rgba(15,14,13,.5),rgba(15,14,13,.12) 40%,rgba(15,14,13,.58)),linear-gradient(90deg,rgba(15,14,13,.16),transparent 50%,rgba(15,14,13,.16))}
 .hero-copy{position:relative;z-index:2;padding:100px 20px 90px;max-width:100%}
 .eyebrow{font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);font-weight:500}
-.hero h1{font:400 clamp(5rem,12cqw,11rem)/.82 var(--serif);letter-spacing:-.055em;margin:34px 0 38px;text-shadow:0 3px 35px rgba(0,0,0,.18);overflow-wrap:anywhere}
-.hero h1[data-long]{font-size:clamp(3.6rem,8cqw,7.5rem)}
+.hero h1{font:400 clamp(5rem,12cqw,11rem)/.82 var(--serif);font-size:min(clamp(5rem,12cqw,11rem),var(--fit));--fit:calc((100cqw - 40px)/(var(--nl,10)*.46));letter-spacing:-.055em;margin:34px 0 38px;text-shadow:0 3px 35px rgba(0,0,0,.18);overflow-wrap:anywhere}
+.hero h1[data-long]{font-size:min(clamp(3.6rem,8cqw,7.5rem),var(--fit))}
 h1 i,.opening-note h2 i,.story h2 i,.section-top h2 i,.celebration h2 i,.venue-copy h2 i,.final-copy h2 i,.footer-mark i,.opening-note h2 em,.story h2 em,.section-top h2 em,.venue-copy h2 em,.final-copy h2 em{color:var(--gold);font-weight:400}
 .hero-rule{width:42px;height:1px;background:var(--gold);margin:0 auto 23px}
 .hero-date{font-size:.7rem;letter-spacing:.23em;margin:0 0 12px}
@@ -114,7 +114,7 @@ h1 i,.opening-note h2 i,.story h2 i,.section-top h2 i,.celebration h2 i,.venue-c
 .venue-scene{grid-template-columns:1fr}.venue-photo,.venue-backdrop{min-height:260px;height:58cqw}.venue-copy{padding:75px 9cqw}
 .section-dark{padding:100px 7cqw}.section-light{padding:100px 8cqw}}
 @container (max-width:560px){
-.hero{min-height:720px}.hero h1{font-size:clamp(4.6rem,20cqw,7rem)}.hero h1[data-long]{font-size:clamp(3rem,13cqw,5rem)}.opening-note{padding:105px 8cqw}.opening-note h2{font-size:2.5rem}
+.hero{min-height:720px}.hero h1{font-size:min(clamp(4.6rem,20cqw,7rem),var(--fit))}.hero h1[data-long]{font-size:min(clamp(3rem,13cqw,5rem),var(--fit))}.opening-note{padding:105px 8cqw}.opening-note h2{font-size:2.5rem}
 .story,.story[data-photo]{padding:80px 7cqw}.image-frame{height:112cqw;min-height:0}.story-copy h2,.section-top h2,.celebration h2,.venue-copy h2{font-size:3.6rem}
 .wide-scene{height:420px}.wide-overlay{left:7cqw;right:7cqw;bottom:12%}.wide-overlay h2{font-size:3.8rem}
 .section-dark{padding:85px 6cqw}.section-top{margin-bottom:45px}.gallery{grid-template-columns:1fr 1fr;gap:10px}.gallery figcaption{font-size:.46rem;left:12px;bottom:12px}

@@ -69,11 +69,7 @@ export function TemplatesPage() {
           <a href="/#how">How it works</a>
           <a href="/#pricing">Pricing</a>
         </nav>
-        <div className="header-actions">
-          <a className="button small" href="/#pricing">
-            Get started
-          </a>
-        </div>
+        <div className="header-actions" />
       </header>
 
       <section className="gallery-hero">
