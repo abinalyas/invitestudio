@@ -580,6 +580,7 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
 
   // Only the name is needed. Date, time and venue are what most guests look for; everything else is tucked
   // away, and opens by itself when it already has something in it.
+  const endBeforeStart = Boolean(item.time && item.endTime && item.endTime < item.time);
   const hasMore = Boolean(item.endTime || item.description || item.dressCode || item.directionsUrl || item.parking || item.accommodation || item.accessibility);
 
   return (
@@ -591,7 +592,7 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
       </label>
       <label>
         Event name <span className="required-tag">(required)</span>
-        <input value={item.title} onChange={event => change({ title: event.target.value })} />
+        <input value={item.title} maxLength={180} onChange={event => change({ title: event.target.value })} />
       </label>
       <div className="two-up">
         <label>
@@ -600,27 +601,33 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
         </label>
         <label>
           Start time <span className="optional">(optional)</span>
-          <input value={item.time} placeholder="4:00 PM" onChange={event => change({ time: event.target.value })} />
+          <input type="time" value={item.time} onChange={event => change({ time: event.target.value })} />
         </label>
       </div>
       <label>
         Venue <span className="optional">(optional)</span>
-        <input value={item.venue} onChange={event => change({ venue: event.target.value })} />
+        <input value={item.venue} maxLength={500} onChange={event => change({ venue: event.target.value })} />
       </label>
 
       <details className="event-more" open={hasMore}>
         <summary>More details <span className="optional">(optional, add later if you like)</span></summary>
         <label>
           End time
-          <input value={item.endTime} placeholder="7:00 PM" onChange={event => change({ endTime: event.target.value })} />
+          <input
+            type="time"
+            value={item.endTime}
+            aria-invalid={endBeforeStart ? true : undefined}
+            onChange={event => change({ endTime: event.target.value })}
+          />
+          {endBeforeStart ? <span className="field-error" role="alert">The end time is before the start time, so it will not be shown.</span> : null}
         </label>
         <label>
           Description
-          <textarea rows={2} value={item.description} onChange={event => change({ description: event.target.value })} />
+          <textarea rows={2} maxLength={4000} value={item.description} onChange={event => change({ description: event.target.value })} />
         </label>
         <label>
           Dress code
-          <input value={item.dressCode} onChange={event => change({ dressCode: event.target.value })} />
+          <input value={item.dressCode} maxLength={180} onChange={event => change({ dressCode: event.target.value })} />
         </label>
         <fieldset className="travel-fields">
           <legend>Travel details</legend>
@@ -635,15 +642,15 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
           </label>
           <label>
             Parking
-            <textarea rows={2} value={item.parking} onChange={event => change({ parking: event.target.value })} />
+            <textarea rows={2} maxLength={4000} value={item.parking} onChange={event => change({ parking: event.target.value })} />
           </label>
           <label>
             Travel and accommodation
-            <textarea rows={2} value={item.accommodation} onChange={event => change({ accommodation: event.target.value })} />
+            <textarea rows={2} maxLength={4000} value={item.accommodation} onChange={event => change({ accommodation: event.target.value })} />
           </label>
           <label>
             Accessibility
-            <textarea rows={2} value={item.accessibility} onChange={event => change({ accessibility: event.target.value })} />
+            <textarea rows={2} maxLength={4000} value={item.accessibility} onChange={event => change({ accessibility: event.target.value })} />
           </label>
         </fieldset>
       </details>

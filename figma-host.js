@@ -84,8 +84,8 @@
       id: f.id,
       title: f.title || '',
       date: f.date || '',
-      time: f.time || '',
-      endTime: f.endTime || '',
+      time: window.InviteEventFields ? window.InviteEventFields.normalizeTime(f.time) : f.time || '',
+      endTime: window.InviteEventFields ? window.InviteEventFields.normalizeTime(f.endTime) : f.endTime || '',
       venue: f.venue || '',
       description: f.description || '',
       dressCode: f.dressCode || '',
@@ -242,7 +242,9 @@
       if (!item) return;
       for (const key of EVENT_FIELDS) {
         if (!(key in patch)) continue;
-        item[key] = key === 'visible' ? Boolean(patch.visible) : String(patch[key] ?? '');
+        item[key] = key === 'visible' ? Boolean(patch.visible)
+          : (key === 'time' || key === 'endTime') && window.InviteEventFields ? window.InviteEventFields.normalizeTime(patch[key])
+          : String(patch[key] ?? '');
       }
       p.updated = 'Just now';
       save();

@@ -123,3 +123,18 @@ test('guided setup opens with the chosen design already selected', async ({ page
   await page.getByRole('button', { name: /^Continue/ }).click();
   await expect(page.locator('.setup-template.selected')).toContainText('Minimalist');
 });
+
+test('event times are real time fields, saved as HH:MM and shown as 4:00 PM', async ({ page }) => {
+  await page.evaluate(() => { startCreate('Wedding'); });
+  await page.locator('#projectTitle').fill('Mira & Arun');
+  await completeSetupSteps(page);
+  await page.getByRole('button', { name: /^Events/ }).first().click();
+  await page.getByRole('button', { name: /\+ Wedding ceremony/ }).click();
+  const start = page.getByLabel(/start time/i);
+  await expect(start).toHaveAttribute('type', 'time');
+  await start.fill('16:00');
+  expect(await page.evaluate(() => current().functions[0].time)).toBe('16:00');
+  // Whatever an older draft or a pasted value holds, the cloud copy is clean and the field shows it as a time.
+  await page.evaluate(() => { current().functions[0].time = '4:00 PM'; current().functions[0].endTime = 'late'; });
+  expect(await page.evaluate(() => InviteEventFields.cloudEvents(current().functions)[0])).toMatchObject({ time: '16:00', endTime: '' });
+});
