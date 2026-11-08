@@ -42,7 +42,7 @@ const checks = [
   ['Cloud save statuses are user-readable', () => { for (const text of ['Saving changes…','Saved just now ✓','Cloud save failed — local copy safe']) if (!cloud.includes(text)) throw Error(text+' missing'); }],
   ['Cloud saves retry with backoff', () => { if (!cloud.includes('maxRetries = 5') || !cloud.includes('retryDelay(meta.retryCount)')) throw Error('safe retry policy missing'); }],
   ['Older responses cannot overwrite newer edits', () => { if (!cloud.includes('revisionAtRequest') || !cloud.includes('const isCurrent = meta.revision === revisionAtRequest')) throw Error('stale response guard missing'); }],
-  ['Cloud payload includes events and gallery metadata', () => { if (!cloud.includes('functions: project.functions || []') || !cloud.includes('gallery: galleryPayload(project)')) throw Error('draft payload coverage missing'); }],
+  ['Cloud payload includes events and gallery metadata', () => { if (!cloud.includes('functions: window.InviteEventFields.cloudEvents(project.functions)') || !cloud.includes('gallery: galleryPayload(project)')) throw Error('draft payload coverage missing'); }],
   ['Current draft reference is stored locally', () => { if (!cloud.includes("invitestudio-current-draft") || !cloud.includes('rememberDraftReference(project)')) throw Error('draft reference persistence missing'); }],
   ['Returning customers get a continue option', () => { if (!cloud.includes('Continue editing') || !js.includes('draftRecoveryCard')) throw Error('draft recovery prompt missing'); }],
   ['Customers can start a separate new website', () => { if (!cloud.includes('＋ New website') || !js.includes('Create a website')) throw Error('new website recovery action missing'); }],

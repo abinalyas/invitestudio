@@ -329,7 +329,7 @@
       sections: project.sections || [],
       introSettings: transferableIntro(project.introSettings),
       animationSettings: project.animationSettings || {},
-      functions: project.functions || [],
+      functions: window.InviteEventFields.cloudEvents(project.functions),
       copy: project.copy && typeof project.copy === 'object' ? project.copy : {},
       gallery: galleryPayload(project)
     };
@@ -368,7 +368,8 @@
     project.introSettings = { ...(wedding.intro_settings || {}), ...localMedia };
     project.animationSettings = wedding.animation_settings || project.animationSettings || {};
     const content = wedding.content && typeof wedding.content === 'object' ? wedding.content : {};
-    if (Array.isArray(content.functions)) project.functions = content.functions;
+    // Keep what was typed when the server's copy is just what we sent (cleaned up); take the server's otherwise.
+    if (Array.isArray(content.functions) && !window.InviteEventFields.sameEvents(window.InviteEventFields.cloudEvents(project.functions), content.functions)) project.functions = content.functions;
     if (content.copy && typeof content.copy === 'object') project.copy = content.copy;
     if (content.gallery?.preference) {
       project.preferences = { ...(project.preferences || {}), gallery: content.gallery.preference };

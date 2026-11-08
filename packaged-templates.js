@@ -40,6 +40,13 @@
     var f = function (opt) { return d.toLocaleDateString("en-GB", Object.assign({ timeZone: "UTC" }, opt)); };
     return { iso: iso, long: f({ day: "numeric", month: "long", year: "numeric" }), weekday: f({ weekday: "long" }), short: f({ day: "numeric", month: "short" }), day: String(+m[3]), month_long: f({ month: "long" }), month_short: f({ month: "short" }), year: m[1], dots: m[3] + "." + m[2] + "." + m[1], num: m[3] + " · " + m[2] + " · " + m[1] };
   }
+  // 16:00 -> 4:00 PM; anything else (older free text) is shown as typed.
+  function showTime(value) {
+    var m = /^(\d{2}):(\d{2})$/.exec(String(value || ""));
+    if (!m) return String(value || "");
+    var h = +m[1];
+    return (h % 12 || 12) + ":" + m[2] + " " + (h < 12 ? "AM" : "PM");
+  }
   function safeHttp(u) { return /^https?:\/\//i.test(u || "") ? u : ""; }
   function safePhoto(u) { return /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(u || "") || /^https:\/\//i.test(u || "") ? u : ""; }
 
@@ -117,7 +124,7 @@
     var loc = String(p.location || "").split(","), venue = loc[0].trim(), place = loc.slice(1).join(",").trim();
     var fns = (Array.isArray(p.functions) ? p.functions : []).filter(function (f) { return f && f.visible !== false && (f.title || "").trim(); });
     var events = fns.map(function (f) {
-      var d = parseDate(f.date), bits = [d ? d.short : "", f.time || ""].filter(Boolean);
+      var d = parseDate(f.date), bits = [d ? d.short : "", showTime(f.time)].filter(Boolean);
       return { title: f.title, venue: f.venue || "", when: bits.join(" · ") };
     });
     var numbered = function (list) { return list.map(function (e, i) { e.n = String(i + 1).padStart(2, "0"); return e; }); };
@@ -166,9 +173,9 @@
   // time, so point to the schedule (or the first time when the template has no such wording) instead of
   // showing one event's time as if it were the day's.
   function timeText(fns, timed, copy) {
-    if (fns.length <= 1) return (fns[0] && fns[0].time) || copy("time_pending");
+    if (fns.length <= 1) return (fns[0] && showTime(fns[0].time)) || copy("time_pending");
     if (!timed) return copy("time_pending");
-    return copy("time_multi") || timed.time;
+    return copy("time_multi") || showTime(timed.time);
   }
 
   var DEFAULT_SECTIONS = ["hero", "welcome", "story", "functions", "gallery", "rsvp"];

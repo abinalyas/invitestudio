@@ -185,6 +185,13 @@
       short: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
     };
   }
+  // 16:00 -> 4:00 PM; anything else (older free text) is shown as typed.
+  function showTime(value) {
+    var m = /^(\d{2}):(\d{2})$/.exec(String(value || ''));
+    if (!m) return String(value || '');
+    var h = +m[1];
+    return (h % 12 || 12) + ':' + m[2] + ' ' + (h < 12 ? 'AM' : 'PM');
+  }
   function safeUrl(u) { return /^https?:\/\//i.test(u || '') ? u : ''; }
 
   // Length of the longest word in the names (a hyphenated name can wrap at the hyphen). The big script names are
@@ -253,7 +260,7 @@
     var multi = {}; d.fns.forEach(function (f) { multi[f.date || ''] = 1; });
     var manyDays = Object.keys(multi).length > 1;
     var rows = d.fns.map(function (f) {
-      var fd = fmtDate(f.date), time = [f.time, f.endTime].filter(Boolean).join(' to ');
+      var fd = fmtDate(f.date), time = [showTime(f.time), showTime(f.endTime)].filter(Boolean).join(' to ');
       var left = manyDays ? (fd ? esc(fd.short) : '') + (time ? '<small>' + esc(time) + '</small>' : '') : esc(time || (fd ? fd.short : ''));
       var sub = [f.venue, f.description].filter(Boolean).map(esc).join(' · ');
       return '<li><span class="sx-tm">' + left + '</span><span class="sx-ev">' + esc(f.title) + (sub ? '<small>' + sub + '</small>' : '') + '</span></li>';
@@ -289,7 +296,7 @@
       pretitle: (p.preferences && p.preferences.pretitle) || (!p.category || p.category === 'Wedding' ? 'The wedding of' : p.category),
       hosts: p.hosts || '', message: p.message || DEFAULTS.message,
       story: p.story || '', storyTitle: (p.preferences && p.preferences.storyTitle) || 'Our story',
-      time: fns.length === 1 && fns[0].time ? fns[0].time : '', fns: fns, dress: dress,
+      time: fns.length === 1 && fns[0].time ? showTime(fns[0].time) : '', fns: fns, dress: dress,
       mapUrl: firstDirections || (p.location ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.location) : ''),
       photos: Array.isArray(p.photos) ? p.photos.filter(function (ph) { return ph && typeof ph.data === 'string'; }) : []
     };
