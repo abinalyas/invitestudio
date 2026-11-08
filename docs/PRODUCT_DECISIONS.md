@@ -79,5 +79,5 @@ These were reproduced before fixing, and each fix has regression tests:
 ## 7. Not decided here
 
 - Monetisation after early access.
-- Image storage provider and limits (needed before hero and intro media).
+- Image storage provider and limits (needed before hero and intro media). **Decided: Cloudflare R2; see `docs/MEDIA_PLAN.md`** (limits there are suggestions to confirm).
 - Guest-facing RSVP form design (Phase 7 design work).
