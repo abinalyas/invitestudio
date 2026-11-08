@@ -1155,3 +1155,8 @@
 .figma-app .editor-wording .editor-form{margin-top:12px}
 .figma-app .example-note{margin:16px 0 0;padding:10px 12px;border:1px dashed var(--line-strong,#cfc7bd);border-radius:10px;font-size:13px;line-height:1.5;color:var(--ink)}
 .figma-app .field-error{ display: block; margin-top: 6px; font-size: 13px; line-height: 1.4; color: #a12b2b; }
+.figma-app .event-note{ margin: 0 0 4px; font-size: 13px; line-height: 1.5; color: #4a4640; }
+.figma-app .required-tag{ font-weight: 400; font-size: 12px; color: #6b6a64; }
+.figma-app .event-more{ margin-top: 6px; border-top: 1px solid var(--line); padding-top: 10px; }
+.figma-app .event-more > summary{ cursor: pointer; font-weight: 600; font-size: 14px; padding: 4px 0 8px; }
+.figma-app .event-more > label, .figma-app .event-more > fieldset{ margin-top: 12px; }
