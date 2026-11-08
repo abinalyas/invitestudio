@@ -68,3 +68,20 @@ test('the countdown widget does not rewrite unchanged text (that retriggered its
 
 import vmModule from 'node:vm';
 function require_vm() { return vmModule; }
+
+test('the last step says what it does before and inside the Share dialog', () => {
+  const editor = read('figma/islands/Editor.tsx');
+  assert.match(editor, /Share invitation <Icon/); // the header button
+  assert.doesNotMatch(editor, /\{snap\.published \? "Published" : "Publish"\}/);
+  assert.match(editor, /Preview is private\./);
+  assert.match(editor, /Nothing is public until you do, and you can edit afterwards or take it offline any time\./);
+  assert.match(editor, /Update live page/); // the live state explains how changes go live
+  const sync = read('cloud-sync.js');
+  for (const text of ['What it does.', 'Not public until you do this.', 'Guests can’t reply online yet.', 'You can change your mind.', 'Preview it first', 'Your link will be', 'Make it live']) {
+    assert.ok(sync.includes(text), text);
+  }
+  assert.match(sync, /data-preview-first/);
+  assert.doesNotMatch(sync, /Publish invitation|Publish your invitation/);
+  // The other places that start publishing use the same name.
+  assert.doesNotMatch(read('index.html'), /onclick="openPublish\(\)">Publish</);
+});

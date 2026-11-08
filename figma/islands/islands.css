@@ -395,3 +395,16 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
 .event-more { margin-top: 6px; border-top: 1px solid var(--line); padding-top: 10px; }
 .event-more > summary { cursor: pointer; font-weight: 600; font-size: 14px; padding: 4px 0 8px; }
 .event-more > label, .event-more > fieldset { margin-top: 12px; }
+
+/* Share guide: what Preview and Share invitation do, shown before anything is clicked */
+.share-guide { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px 18px; margin: 0 20px 10px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 14px; background: #fffaf2; font-size: 13px; line-height: 1.5; color: var(--ink); }
+.share-guide p { margin: 0; }
+.share-guide-live { display: block; }
+.share-guide-live a { word-break: break-all; }
+.share-steps { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; font-weight: 600; }
+.share-steps li { display: flex; align-items: center; gap: 6px; }
+.share-steps li span { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--green, #145c37); color: #fff; font-size: 12px; }
+.share-steps button { padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--green, #145c37); text-decoration: underline; cursor: pointer; }
+.share-guide-close { padding: 6px 12px; border: 1px solid var(--line-strong); border-radius: 999px; background: #fff; font: inherit; font-size: 13px; cursor: pointer; }
+@media (max-width: 767px) { .share-guide { grid-template-columns: 1fr; margin: 0 12px 8px; } .share-guide-close { justify-self: start; } }
+.editor-publish { white-space: nowrap; }

@@ -141,7 +141,7 @@ test.describe('publishing dialog', () => {
     await expect(suggestion).toBeVisible();
     await suggestion.click();
     await expect(page.locator('#slug-status')).toContainText(/available/i, { timeout: 10000 });
-    await page.getByRole('button', { name: 'Publish invitation' }).click();
+    await page.getByRole('button', { name: 'Make it live' }).click();
     await expect(page.locator('#modal-root h2')).toHaveText(/your invitation is live/i, { timeout: 20000 });
   });
 
@@ -158,7 +158,7 @@ test.describe('publishing dialog', () => {
     await page.evaluate(() => openPublish());
     await page.locator('#publishSlug').fill(firstSlug);
     await expect(page.locator('#slug-status')).toContainText(/available/i, { timeout: 10000 });
-    await page.getByRole('button', { name: 'Publish invitation' }).click();
+    await page.getByRole('button', { name: 'Make it live' }).click();
     await expect(page.locator('#modal-root h2')).toHaveText(/your invitation is live/i, { timeout: 20000 });
 
     await page.getByRole('button', { name: /change web address/i }).click();

@@ -142,9 +142,9 @@ test('the editor publishes through the existing dialog and the link is shared', 
   const slug = `figma-${randomUUID().slice(0, 6)}`;
   await page.getByLabel('Couple or celebration names').fill(title);
   await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
-  await page.getByRole('button', { name: 'Publish', exact: true }).click();
+  await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
   await page.locator('#publishSlug').fill(slug);
-  await page.getByRole('button', { name: 'Publish invitation' }).click();
+  await page.getByRole('button', { name: 'Make it live' }).click();
   await expect(page.locator('#modal-root h2')).toHaveText(/your invitation is live/i, { timeout: 20000 });
 
   const guest = await page.context().browser().newContext();
