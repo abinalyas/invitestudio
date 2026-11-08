@@ -369,3 +369,13 @@ Built with the same pipeline and no changes to the contract, which showed the ph
 ### 15.3 Wording must not name a kind of event
 
 Found in use: a Reception was added to a Minimalist invitation and the details card still said "The wedding ceremony". The details card shows the wedding's date and place, which belong to no particular event, so the template's own wording must not name one (ceremony, reception, dinner and so on); only the couple's own events do. The quality gate now fails any template whose wording or markup names a kind of event (the editor's example content is exempt, since it never publishes). The time beside the date follows the same rule: one event shows its time, several events point to the schedule, and a single event's time is never shown as the day's.
+
+### 15.4 Fourth template: Fairy Tale (implemented)
+
+The last reference, and the one with the most platform-owned parts removed. What the conversion did:
+
+- **Art**: only the four pieces the finished design actually shows (sky, castle, terrace, mist) are kept, converted from PNG to WebP (about 100 KB in all, from a 2.7 MB asset sheet). The reference's own correction CSS hid the rest (the arch, flower corners, icons, story and gallery photo crops), so they were left out rather than shipped unused. The art is low resolution; it is scaled as the reference scaled it.
+- **The title is wording, not markup**: "Once Upon" / "Our Forever" are two wording keys, used in the header and the cover, so a couple can change them.
+- **Removed**: the "Enter our fairytale" intro screen (the platform's intro settings own openings; the cover already carries the title), the falling petals on scroll (restart and cost on every keystroke in the editor), the RSVP form (a "not open yet" note instead), the `[Reception venue]` placeholder card, and the gallery's decorative placeholder tiles with their made-up captions as content: the gallery now appears only with the couple's photos, and its captions are editable wording.
+- **Events are cards, from the couple's own events** (name, date, time, venue, directions link): any number, none invented. The reference's two cards named a ceremony and a reception; the template names neither.
+- **Engine**: events now carry `date_text`, `time_text` and `map` for templates that show them.

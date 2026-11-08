@@ -125,7 +125,12 @@
     var fns = (Array.isArray(p.functions) ? p.functions : []).filter(function (f) { return f && f.visible !== false && (f.title || "").trim(); });
     var events = fns.map(function (f) {
       var d = parseDate(f.date), bits = [d ? d.short : "", showTime(f.time)].filter(Boolean);
-      return { title: f.title, venue: f.venue || "", when: bits.join(" · ") };
+      var end = showTime(f.endTime), start = showTime(f.time);
+      return {
+        title: f.title, venue: f.venue || "", when: bits.join(" · "),
+        date_text: d ? d.weekday + ", " + d.long : "", time_text: start ? (end ? start + " – " + end : start) : "",
+        map: safeHttp(f.directionsUrl)
+      };
     });
     var numbered = function (list) { return list.map(function (e, i) { e.n = String(i + 1).padStart(2, "0"); return e; }); };
     var directions = ""; fns.forEach(function (f) { if (!directions) directions = safeHttp(f.directionsUrl); });
@@ -133,7 +138,7 @@
     var story = String(p.story || "").trim();
     var example = (sample && pkg.manifest.example) || null;
     if (example && !story) story = example.story || "";
-    if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", when: "" }; });
+    if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", when: "", date_text: "", time_text: "", map: "" }; });
     events = numbered(events);
     var photos = (Array.isArray(p.photos) ? p.photos : []).map(function (ph) { return ph && { src: safePhoto(ph.data), alt: ph.alt || "" }; }).filter(function (ph) { return ph && ph.src; });
     // Photo slots: the first photos fill the template's named slots (hero, story, ...), in order. The gallery gets the

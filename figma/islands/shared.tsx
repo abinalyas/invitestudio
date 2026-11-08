@@ -345,6 +345,21 @@ export const galleryTemplates: GalleryTemplate[] = [
     image: "/assets/templates/cinematic-wide.jpg",
     phone: "/assets/templates/cinematic-phone.jpg",
   },
+  {
+    id: 16,
+    backendId: "fairy-tale",
+    title: "Fairy Tale",
+    names: "Daniel & Amelia",
+    tagline: "A pink sunset sky, a castle on the hill and script lettering: once upon a time, with a countdown to forever.",
+    tags: ["Romantic", "Storybook"],
+    opening: {
+      name: "Countdown",
+      text: "A storybook cover with your names in script and a live countdown to your date. Guests scroll through your story and your events.",
+    },
+    palette: ["#fff9f4", "#855b6c", "#59494a"],
+    image: "/assets/templates/fairy-tale-wide.jpg",
+    phone: "/assets/templates/fairy-tale-phone.jpg",
+  },
 ]
 
 // What a couple can change on any of these templates, and what guests see. Taken from the editor

@@ -111,7 +111,7 @@ for (const { manifest, parts, css } of list) {
     const { renderPackagedTemplate } = renderer();
     const t = { id, packaged: id };
     const photo = 'data:image/png;base64,iVBORw0KGgo=';
-    const out = renderPackagedTemplate({ ...sampleOf(id), photos: [{ data: photo }, { data: photo }] }, t);
+    const out = renderPackagedTemplate({ ...sampleOf(id), photos: Array.from({ length: 7 }, () => ({ data: photo })) }, t);
     assert.doesNotMatch(out, /\{\{|\}\}|<!--/);
     for (const section of manifest.sections) assert.ok(new RegExp(`data-section="${section === 'hero' ? 'hero' : section}"`).test(out), `${section} rendered`);
     for (const target of out.matchAll(/data-scroll-to="(\w+)"/g)) assert.ok(out.includes(`data-tpl-section="${target[1]}"`), `scroll target ${target[1]} exists`);
@@ -153,7 +153,7 @@ for (const { manifest, parts, css } of list) {
     const { renderPackagedTemplate } = renderer();
     const t = { id, packaged: id };
     const long = renderPackagedTemplate({ title: 'Alexandria-Catherine & Maximilian-Bartholomew', date: '2027-01-21' }, t);
-    assert.match(long, /<h1 data-long style="--nl:11">/);
+    assert.match(long, /data-long style="--nl:11"/);
     const word = renderPackagedTemplate({ title: 'Wolfeschlegelsteinhausen & Bartholomew' }, t);
     assert.match(word, /style="--nl:24"/, 'the longest word sizes the big names so it fits instead of breaking');
     const one = renderPackagedTemplate({ title: 'Anniversary party' }, t);
