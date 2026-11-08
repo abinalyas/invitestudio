@@ -219,13 +219,15 @@ export function EditorPage() {
             <Icon name="eye" size={20} /> Preview
           </button>
           <button className="editor-publish" type="button" onClick={publish}>
-            {snap.published ? "Published" : "Publish"} <Icon name={snap.published ? "check" : "chevron"} size={17} />
+            Share invitation <Icon name={snap.published ? "check" : "chevron"} size={17} />
           </button>
           <button className="editor-action editor-advanced" type="button" onClick={() => bridge.openAdvanced()}>
             Advanced editing
           </button>
         </div>
       </header>
+
+      <ShareGuide snap={snap} />
 
       <div className="editor-workspace" data-tab={mobileTab}>
         <aside className="editor-pages" id="panel-sections" aria-label="Sections">
@@ -336,7 +338,7 @@ export function EditorPage() {
                 {namesNeeded && !snap.title.trim() ? (
                   <span id="names-needed" className="field-error" role="alert">Add your names to publish. They become your web address.</span>
                 ) : (
-                  <span className="field-hint">Shown in grey until you add your own. Your names become your web address.</span>
+                  <span className="field-hint">{snap.title.trim() ? "Your names become your web address." : "Shown in grey until you add your own. Your names become your web address."}</span>
                 )}
               </label>
               <label>
@@ -410,6 +412,47 @@ export function EditorPage() {
         ))}
       </nav>
     </main>
+  );
+}
+
+// Says, before anything is clicked, what the last step does: Preview is private, Share invitation creates the link.
+// Dismissible; the same facts are in the Share dialog.
+const guideKey = "invitestudio-share-guide-dismissed";
+function ShareGuide({ snap }: { snap: EditorSnapshot }) {
+  const [hidden, setHidden] = useState(() => {
+    try { return window.localStorage.getItem(guideKey) === "1"; } catch { return false; }
+  });
+  if (snap.published && snap.publicUrl) {
+    return (
+      <p className="share-guide share-guide-live" role="note">
+        <strong>Your invitation is live</strong> at <a href={snap.publicUrl} target="_blank" rel="noopener noreferrer">{snap.publicUrl.replace(/^https?:\/\//, "")}</a>.
+        After you edit, open <strong>Share invitation</strong> and choose <strong>Update live page</strong> to show your changes.
+      </p>
+    );
+  }
+  if (hidden) return null;
+  return (
+    <div className="share-guide" role="note">
+      <ol className="share-steps" aria-label="Steps">
+        <li><span>1</span> Add your details</li>
+        <li><span>2</span> <button type="button" onClick={() => bridge.openPreview()}>Preview</button> as guests will see it</li>
+        <li><span>3</span> Share invitation</li>
+      </ol>
+      <p>
+        Preview is private. <strong>Share invitation</strong> gives your invitation a web link that anyone you send it to can open.
+        Nothing is public until you do, and you can edit afterwards or take it offline any time.
+      </p>
+      <button
+        type="button"
+        className="share-guide-close"
+        onClick={() => {
+          try { window.localStorage.setItem(guideKey, "1"); } catch { /* the guide just shows again next time */ }
+          setHidden(true);
+        }}
+      >
+        Got it
+      </button>
+    </div>
   );
 }
 

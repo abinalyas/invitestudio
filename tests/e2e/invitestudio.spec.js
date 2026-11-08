@@ -58,7 +58,7 @@ test('preview and publish dialog provide an honest path back to the invitation',
   await completeSetupSteps(page);
   await page.evaluate(() => { state.page = 'preview'; state.device = 'mobile'; render(); });
   await expect(page.locator('main')).toContainText('Mira & Arun');
-  await page.getByRole('button', { name: 'Publish', exact: true }).click();
+  await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
   await expect(page.getByText(/you can’t publish a live website yet/i)).toBeVisible();
   await page.getByRole('button', { name: /view my preview/i }).click();
   await expect(page.getByText('Website preview')).toBeVisible();

@@ -53,10 +53,10 @@ test('create, edit, save, publish, share, edit after publishing, and take offlin
   await expect(page.getByText('Website preview')).toBeVisible();
 
   // 5. Publish with a web address.
-  await page.getByRole('button', { name: 'Publish', exact: true }).click();
+  await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
   await expect(page.locator('#publishSlug')).toBeVisible();
   await page.locator('#publishSlug').fill(slug);
-  await page.getByRole('button', { name: 'Publish invitation' }).click();
+  await page.getByRole('button', { name: 'Make it live' }).click();
   await expect(page.locator('#modal-root h2')).toHaveText(/your invitation is live/i, { timeout: 20000 });
   await expect(page.locator('#modal-root')).toContainText(`/s/${slug}`);
 

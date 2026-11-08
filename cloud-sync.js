@@ -754,7 +754,7 @@
       ? `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap" role="group" aria-label="Available alternatives">${session.availability.suggestions.map(s => `<button class="btn small" type="button" data-use-suggestion="${escapeText(s)}">${escapeText(s)}</button>`).join('')}</div>`
       : '';
     const notSaved = project.cloudStatus !== 'saved'
-      ? '<p class="tiny" role="status" style="color:#6b6760;margin:8px 0 0">Saving your latest changes first. You can publish as soon as they are saved.</p>'
+      ? '<p class="tiny" role="status" style="color:#6b6760;margin:8px 0 0">Saving your latest changes first. You can go live as soon as they are saved.</p>'
       : '';
     const liveBlock = live && !session.changing
       ? `<div style="margin-top:14px;background:#f2eee6;border-radius:9px;padding:12px"><div class="tiny muted">Current public link</div><a href="${escapeText(publicLinkFor(project.publicSlug))}" target="_blank" rel="noopener" style="word-break:break-all">${escapeText(publicLinkFor(project.publicSlug))}</a><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" data-copy-public-link>Copy link</button><button class="btn small" type="button" data-change-address>Change web address</button></div></div>`
@@ -764,20 +764,31 @@
       : '';
     const error = session.error ? `<p class="tiny" role="alert" style="color:#9b5147;margin:10px 0 0">${escapeText(session.error)}</p>` : '';
     const success = session.success ? '<p class="tiny" role="status" style="color:#2f6b45;margin:10px 0 0">Your invitation is live. Share the link below.</p>' : '';
-    const primary = live ? (session.changing ? 'Change address and update' : 'Update live page') : 'Publish invitation';
+    const primary = live ? (session.changing ? 'Change address and update' : 'Update live page') : 'Make it live';
     const addressField = live && !session.changing
       ? ''
       : `<label class="tiny muted" for="publishSlug" style="display:block;margin-top:14px">Web address</label>
          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="tiny muted">${escapeText(window.location.origin)}/s/</span><input id="publishSlug" type="text" value="${escapeText(session.typed)}" maxlength="60" autocomplete="off" spellcheck="false" aria-describedby="slug-status" style="flex:1;min-width:160px;padding:9px 10px;border:1px solid #8a8276;border-radius:8px" ${session.busy ? 'disabled' : ''}></div>
-         <p id="slug-status" aria-live="polite" class="tiny" style="color:${toneColor};margin:6px 0 0">${escapeText(status.text)}</p>${suggestions}`;
+         <p id="slug-status" aria-live="polite" class="tiny" style="color:${toneColor};margin:6px 0 0">${escapeText(status.text)}</p>${suggestions}
+         <p class="tiny" style="margin:8px 0 0;word-break:break-all"><span class="muted">Your link will be</span> <strong id="link-preview">${escapeText(window.location.origin)}/s/${escapeText(session.typed || '…')}</strong></p>`;
+    // Said before anything is public, in plain words: what happens, what does not, and what can be undone.
+    const explainer = live
+      ? '<p class="tiny muted" style="margin:10px 0 0">Made changes since going live? Choose <strong>Update live page</strong> to show them. Choose <strong>Take offline</strong> to make the link stop working.</p>'
+      : `<ul style="margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px;font-size:14px;line-height:1.5">
+          <li><strong>What it does.</strong> Gives your invitation a web link. Anyone you send the link to can open it.</li>
+          <li><strong>Not public until you do this.</strong> Nobody can see your invitation yet. You can look at it as guests will see it first.</li>
+          <li><strong>Guests can’t reply online yet.</strong> Guest responses are not open, so for now the invitation is for viewing.</li>
+          <li><strong>You can change your mind.</strong> Keep editing and choose <em>Update live page</em>, or take it offline any time.</li>
+        </ul>
+        <button class="btn small" type="button" data-preview-first style="margin-top:12px">Preview it first</button>`;
     renderModal(`<div class="eyebrow">Share your invitation</div>
-      <h2 id="modal-title">${live ? 'Your invitation is live' : 'Publish your invitation'}</h2>
-      <p class="muted">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>. Guests can only see the invitation after you publish it.</p>
-      ${addressField}${changeWarning}${notSaved}${error}${success}${liveBlock}
+      <h2 id="modal-title">${live ? 'Your invitation is live' : 'Get your invitation link'}</h2>
+      <p class="muted">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>${live ? '' : ', not public yet'}.</p>
+      ${explainer}${addressField}${changeWarning}${notSaved}${error}${success}${liveBlock}
       <div class="modal-actions" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
         <button class="btn" type="button" data-publish-close>Close</button>
         ${live ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}
-        <button class="btn dark" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${session.busy ? 'Publishing…' : primary}</button>
+        <button class="btn dark" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${session.busy ? 'Going live…' : primary}</button>
       </div>`);
     wirePublishDialog(project);
     ensureAddressChecked(project);
@@ -797,6 +808,12 @@
     const root = document.querySelector('#modal-root');
     root.querySelector('[data-publish-close]')?.addEventListener('click', () => { publishSession = null; closeModal(); });
     root.querySelector('[data-publish-submit]')?.addEventListener('click', () => publishFromDialog(project));
+    root.querySelector('[data-preview-first]')?.addEventListener('click', () => {
+      publishSession = null;
+      closeModal();
+      if (window.InviteStudioBridge?.openPreview) window.InviteStudioBridge.openPreview();
+      else { state.page = 'preview'; render(); }
+    });
     root.querySelector('[data-unpublish]')?.addEventListener('click', () => unpublishFromDialog(project));
     root.querySelector('[data-copy-public-link]')?.addEventListener('click', () => copyPublicLink(publicLinkFor(project.publicSlug)));
     root.querySelector('[data-change-address]')?.addEventListener('click', () => {
@@ -834,6 +851,8 @@
       line.textContent = status.text;
       line.style.color = { ok: '#2f6b45', bad: '#9b5147', muted: '#6b6760' }[status.tone];
     }
+    const linkLine = root?.querySelector('#link-preview');
+    if (linkLine) linkLine.textContent = `${window.location.origin}/s/${publishSession.typed || '…'}`;
     const button = root?.querySelector('[data-publish-submit]');
     if (button) button.disabled = !canPublish(project, publishSession);
     root?.querySelectorAll('[data-use-suggestion]').forEach(element => element.remove());
