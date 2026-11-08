@@ -154,7 +154,8 @@ upload address stubbed (nothing touches production).
 
 ## What you need to do (outside the code)
 
-1. Create an R2 bucket (for example `invitestudio-media`) and bind it to the Pages project as `MEDIA`.
+1. Create an R2 bucket named `invitestudio-media`. The binding (`MEDIA`) is declared in `wrangler.toml`, not in the
+   dashboard (the dashboard shows it read-only because that file manages bindings).
 2. Connect a media address (a domain you own on Cloudflare) to the bucket.
 3. Run the new Supabase migration when it is ready.
 
