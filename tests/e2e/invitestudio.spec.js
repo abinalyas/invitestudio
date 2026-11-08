@@ -365,4 +365,19 @@ test.describe('guest replies', () => {
     await page.getByRole('button', { name: 'Replies', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'RSVP' })).toBeInViewport();
   });
+
+  test('the editor stays on the section you chose when the page redraws after the cloud sync', async ({ page }) => {
+    await page.route('**/api/**', route => route.abort());
+    await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding', 'minimalist'));
+    await page.locator('#projectTitle').fill('Mira & Arun');
+    await page.locator('#projectDate').fill('2027-01-20');
+    await completeSetupSteps(page);
+    await page.getByRole('button', { name: 'Replies', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'RSVP' })).toBeVisible();
+    // "Continue editing" redraws the whole page about a second later, when the draft has refreshed from the cloud.
+    await page.evaluate(() => window.render());
+    await page.waitForTimeout(300);
+    await expect(page.getByRole('heading', { name: 'RSVP' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Home' })).toHaveCount(0);
+  });
 });

@@ -106,6 +106,7 @@
     }
     return {
       available: Boolean(p),
+      draftId: p ? String(p.id || p.cloudId || '') : '',
       title: p?.title || '',
       pretitle: prefs.pretitle || 'THE WEDDING OF',
       date: p?.date || '',

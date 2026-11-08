@@ -92,6 +92,7 @@ export interface RsvpData {
 
 export type EditorSnapshot = EditorFields & {
   available: boolean;
+  draftId: string;
   templateId: string;
   templateName: string;
   publishStatus: string;

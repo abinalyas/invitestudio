@@ -100,13 +100,26 @@ function sectionHint(key: SectionKey, snap: EditorSnapshot): string {
   return closed ? "Replies closed" : "Online replies";
 }
 
+// The page redraws the whole editor whenever the draft finishes syncing with the cloud (a second or so after it
+// opens), which rebuilds this component from scratch. Where the couple was (section, phone tab, preview size) is
+// kept here, outside the component, so a redraw does not send them back to Home. A different draft starts fresh.
+const remembered: { draft: string; device: Device; active: SectionKey; mobileTab: MobileTab } = {
+  draft: "", device: "mobile", active: "home", mobileTab: "preview"
+};
+
 export function EditorPage() {
   useBridgeVersion();
   const snap = bridge.snapshot();
-  const [device, setDevice] = useState<Device>("mobile");
-  const [active, setActive] = useState<SectionKey>("home");
+  if (snap.available && remembered.draft !== snap.draftId) {
+    Object.assign(remembered, { draft: snap.draftId, device: "mobile", active: "home", mobileTab: "preview" });
+  }
+  const [device, setDeviceState] = useState<Device>(remembered.device);
+  const [active, setActiveState] = useState<SectionKey>(remembered.active);
   const [designsOpen, setDesignsOpen] = useState(false);
-  const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
+  const [mobileTab, setMobileTabState] = useState<MobileTab>(remembered.mobileTab);
+  const setDevice = (next: Device) => { remembered.device = next; setDeviceState(next); };
+  const setActive = (next: SectionKey) => { remembered.active = next; setActiveState(next); };
+  const setMobileTab = (next: MobileTab) => { remembered.mobileTab = next; setMobileTabState(next); };
   const replyCount = useReplyCount(snap);
   const controlsRef = useRef<HTMLElement>(null);
   const [picked, setPicked] = useState(false);
