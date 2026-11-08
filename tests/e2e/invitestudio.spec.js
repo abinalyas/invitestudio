@@ -138,3 +138,28 @@ test('event times are real time fields, saved as HH:MM and shown as 4:00 PM', as
   await page.evaluate(() => { current().functions[0].time = '4:00 PM'; current().functions[0].endTime = 'late'; });
   expect(await page.evaluate(() => InviteEventFields.cloudEvents(current().functions)[0])).toMatchObject({ time: '16:00', endTime: '' });
 });
+
+test('the template page shows the whole design in a phone you can scroll, and the details scroll beside it', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  // The static test server has no /templates/<n> route, so open the page the way the application does.
+  await page.evaluate(() => { history.pushState({}, '', '/templates/14'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  await expect(page.getByRole('button', { name: /live preview/i })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /start with this design/i })).toBeVisible();
+  const rendered = await page.locator('.figma-island-host').evaluate(host => {
+    const phone = host.shadowRoot.querySelector('.detail-screen');
+    const template = phone.shadowRoot.querySelector('[data-packaged-template]');
+    return { text: template.textContent.includes('Daniel'), scrolls: phone.scrollHeight > phone.clientHeight + 100 };
+  });
+  expect(rendered).toEqual({ text: true, scrolls: true });
+  // The phone stays in view while the page (the details) scrolls.
+  const top = () => page.locator('.figma-island-host').evaluate(host => Math.round(host.shadowRoot.querySelector('.detail-device').getBoundingClientRect().top));
+  const before = await top();
+  await page.mouse.move(1100, 400);
+  await page.mouse.wheel(0, 700);
+  await page.waitForTimeout(400);
+  const after = await top();
+  expect(after).toBeGreaterThan(-20);
+  expect(after).toBeLessThan(before + 1);
+});

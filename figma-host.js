@@ -371,8 +371,14 @@
     },
 
     // The real template with example content, in the existing preview dialog.
-    previewTemplate(backendTemplateId) {
-      previewTemplate(backendTemplateId);
+    // The whole design with example names and content, for the template page's phone preview. Nothing is saved.
+    renderTemplateDemo(host, backendTemplateId) {
+      const t = tpl(offeredTemplateIds.includes(backendTemplateId) ? backendTemplateId : offeredTemplateIds[0]);
+      const container = invitationShadow(host);
+      container.style.width = '100%';
+      container.style.maxWidth = '100%';
+      container.innerHTML = sitePreview(templateDemoProject(t), t, false);
+      if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
     },
 
     // ---- Setup wizard (figma/islands/Setup.tsx) ----
