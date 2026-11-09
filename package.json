@@ -12,7 +12,8 @@
     "gen:templates": "node scripts/generate-template-registry.mjs",
     "build:scene-css": "node scripts/inline-scene-css.mjs",
     "build:templates": "node scripts/build-templates.mjs",
-    "thumbs:scenes": "node scripts/generate-scene-thumbnails.mjs"
+    "thumbs:scenes": "node scripts/generate-scene-thumbnails.mjs",
+    "test:db": "node --test --test-concurrency=1 tests/db/*.test.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
