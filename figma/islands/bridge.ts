@@ -179,6 +179,7 @@ export interface InviteStudioBridge {
   addEvent(title: string): string;
   updateEvent(eventId: string, patch: EventPatch): void;
   removeEvent(eventId: string): void;
+  moveEvent(eventId: string, toIndex: number): void;
   setRsvp(value: string): void;
   setRsvpContact(type: string, value: string): void;
   setRsvpOption(key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number): void;
@@ -239,6 +240,7 @@ export const bridge = {
   addEvent: (title: string) => host().addEvent(title),
   updateEvent: (eventId: string, patch: EventPatch) => host().updateEvent(eventId, patch),
   removeEvent: (eventId: string) => host().removeEvent(eventId),
+  moveEvent: (eventId: string, toIndex: number) => host().moveEvent(eventId, toIndex),
   setRsvp: (value: string) => host().setRsvp(value),
   setRsvpContact: (type: string, value: string) => host().setRsvpContact(type, value),
   setRsvpOption: (key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number) => host().setRsvpOption(key, value),

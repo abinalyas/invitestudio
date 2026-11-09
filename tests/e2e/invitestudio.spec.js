@@ -22,6 +22,65 @@ test('homepage starts a short personalised-preview journey', async ({ page }) =>
   await expect(page.locator('main')).toContainText('Mira & Arun');
 });
 
+test.describe('events can be reordered', () => {
+  async function openEvents(page) {
+    await page.evaluate(() => { startCreate('Wedding'); });
+    await page.locator('#projectTitle').fill('Mira & Arun');
+    await page.locator('#projectDate').fill('2027-01-20');
+    await completeSetupSteps(page);
+    await page.getByRole('button', { name: /^Events/ }).click();
+    for (const name of ['Haldi', 'Sangeet', 'Reception']) {
+      await page.getByLabel('Add an event').fill(name);
+      await page.getByRole('button', { name: 'Add event' }).click();
+      await page.getByRole('button', { name: new RegExp('^' + name) }).click();   // close the form that opens for a new event
+    }
+  }
+  const order = page => page.evaluate(() => current().functions.map(f => f.title));
+  const shown = page => page.locator('.event-item .event-toggle strong').allTextContents();
+
+  test('dragging an event by its handle changes the order guests see, and it is kept', async ({ page }) => {
+    await openEvents(page);
+    const before = await order(page);
+    expect(before.slice(-3)).toEqual(['Haldi', 'Sangeet', 'Reception']);
+    const grip = page.getByRole('button', { name: /^Move Reception/ });
+    const first = page.locator('.event-item').first();
+    const from = await grip.boundingBox();
+    const to = await first.boundingBox();
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(from.x + from.width / 2, from.y - 40, { steps: 5 });
+    await page.mouse.move(from.x + from.width / 2, to.y + 4, { steps: 10 });
+    await page.mouse.up();
+    const after = await order(page);
+    expect(after[0]).toBe('Reception');
+    expect(after.slice(1)).toEqual(before.slice(0, -1));
+    expect(await shown(page)).toEqual(after);
+    // Kept on this device.
+    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('invitestudio-projects'))[0].functions.map(f => f.title));
+    expect(stored).toEqual(after);
+  });
+
+  test('the up and down arrow keys move an event, and the handle keeps focus', async ({ page }) => {
+    await openEvents(page);
+    const before = await order(page);
+    const grip = page.getByRole('button', { name: /^Move Sangeet/ });
+    await grip.focus();
+    await page.keyboard.press('ArrowUp');
+    await expect(page.locator('[role="status"]', { hasText: /Sangeet moved to position/ })).toBeAttached();
+    expect(await order(page)).toEqual([...before.slice(0, -3), 'Sangeet', 'Haldi', 'Reception']);
+    await expect(page.getByRole('button', { name: /^Move Sangeet/ })).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    expect((await order(page)).slice(-3)).toEqual(['Haldi', 'Reception', 'Sangeet']);
+    // The first event cannot move further up.
+    const firstGrip = page.locator('.event-grip').first();
+    const firstOrder = await order(page);
+    await firstGrip.focus();
+    await page.keyboard.press('ArrowUp');
+    expect(await order(page)).toEqual(firstOrder);
+  });
+});
+
 test('preview and publish dialog provide an honest path back to the invitation', async ({ page }) => {
   await page.evaluate(() => { startCreate('Wedding'); });
   await page.locator('#projectTitle').fill('Mira & Arun');
@@ -717,6 +776,12 @@ test.describe('guest replies', () => {
     await expect(dialog.getByText(/Made changes since going live/)).toHaveCount(0);
     // Opening it again later is when "update" makes sense.
     await dialog.getByRole('button', { name: 'Close' }).click();
+    // The editor then carries a prominent "live" banner whose address is a real link.
+    const banner = page.locator('.live-banner');
+    await expect(banner).toBeVisible();
+    await expect(banner.getByRole('link', { name: /\/s\/[a-z0-9-]+$/ })).toHaveAttribute('href', /\/s\/[a-z0-9-]+$/);
+    await expect(banner.getByRole('link', { name: 'Open' })).toBeVisible();
+    await expect(banner.getByRole('button', { name: 'Copy link' })).toBeVisible();
     await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
     await expect(dialog.getByRole('button', { name: 'Update live page' })).toBeVisible();
     await expect(dialog.getByText(/Made changes since going live/)).toBeVisible();
