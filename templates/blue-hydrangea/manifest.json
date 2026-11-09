@@ -64,8 +64,8 @@
     ]
   ],
   "thumbnail": {
-    "phone": ".bh-site-header{display:none!important}",
-    "wide": ".bh-site-header,.bh-hero-content,.bh-cue{display:none!important}.tpl-bh>*:not(.bh-hero){display:none!important}.bh-hero{min-height:275px!important;height:275px!important}"
+    "phone": ".bh-site-header,.bh-petals{display:none!important}",
+    "wide": ".bh-site-header,.bh-hero-content,.bh-cue,.bh-petals{display:none!important}.tpl-bh>*:not(.bh-hero){display:none!important}.bh-hero{min-height:275px!important;height:275px!important}"
   },
   "example": {
     "story": "Some moments become memories. Some people become home. We are looking forward to celebrating the beginning of our forever with the people who make life meaningful.",

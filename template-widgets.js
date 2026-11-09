@@ -2,6 +2,9 @@
  *   data-scroll-to="name"   scroll to the section marked data-tpl-section="name" inside the same invitation
  *   data-menu-toggle        open or close the template's menu (the .main-nav next to it)
  *   data-countdown="YYYY-MM-DD" with [data-cd="days|hours|minutes|seconds"] children
+ *   data-reveal             fade (and rise, or scale) in once, when scrolled into view. The template styles the hidden
+ *                           state under [data-reveal-armed]:not([data-revealed]) only, so without this script (or with
+ *                           reduced motion) everything simply stays visible. A --rd custom property sets the delay.
  * Clicks are handled once on the document (composedPath reaches inside the editor's shadow root), so
  * scrolling stays inside the editor's device frame and never changes the page address.
  * hydratePackagedTemplates(node) is called after markup is drawn into a shadow root.
@@ -31,9 +34,44 @@
       });
     });
   }
+  /* ---------- scroll reveals ---------- */
+  var revealer = null;
+  function revealObserver() {
+    if (!revealer) revealer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        en.target.setAttribute("data-revealed", "");
+        revealer.unobserve(en.target);
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+    return revealer;
+  }
+  // The box the guest actually sees the element in: the nearest scrolling ancestor (the editor's device frame), else the window.
+  function viewBox(el) {
+    for (var n = el.parentNode || el.host; n; n = n.parentNode || n.host) {
+      if (n.nodeType === 1 && n.scrollHeight > n.clientHeight + 1) {
+        var oy = window.getComputedStyle(n).overflowY;
+        if (oy === "auto" || oy === "scroll") return n.getBoundingClientRect();
+      }
+    }
+    return { top: 0, bottom: window.innerHeight };
+  }
+  function arm(scope) {
+    if (reduce() || typeof IntersectionObserver === "undefined") return;
+    Array.prototype.forEach.call(scope.querySelectorAll("[data-reveal]:not([data-reveal-armed]):not([data-revealed])"), function (el) {
+      var root = el.closest("[data-packaged-template]");
+      // The editor redraws the whole invitation on every keystroke. What is already on screen, or scrolled past, stays
+      // put instead of fading in again; only what is still below the fold waits for its reveal.
+      if (root && root.hasAttribute("data-preview") && el.getBoundingClientRect().top < viewBox(el).bottom) return;
+      el.setAttribute("data-reveal-armed", "");
+      revealObserver().observe(el);
+    });
+  }
+
   var timer = null;
   function hydrate(scope) {
     if (!scope || !scope.querySelectorAll) return;
+    arm(scope);
     Array.prototype.forEach.call(scope.querySelectorAll("[data-countdown]"), function (el) { roots.add(el); });
     if (roots.size) { tick(); if (!timer) timer = window.setInterval(function () { tick(); if (!roots.size) { window.clearInterval(timer); timer = null; } }, 1000); }
   }

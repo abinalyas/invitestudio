@@ -213,7 +213,7 @@
       body += show(sec.id);
     });
     body += show("footer");
-    return '<div class="' + esc(pkg.manifest.root) + '" data-packaged-template="' + esc(id) + '">' + body + "</div>";
+    return '<div class="' + esc(pkg.manifest.root) + '" data-packaged-template="' + esc(id) + '"' + (opts && opts.sample ? " data-preview" : "") + ">" + body + "</div>";
   }
 
   root.renderPackagedTemplate = render;

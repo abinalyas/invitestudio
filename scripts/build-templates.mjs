@@ -35,19 +35,25 @@ function splitSelectors(sel) {
   parts.push(cur);
   return parts.map(s => s.trim()).filter(Boolean);
 }
-export function scopeCss(css, scope, prefix = '') {
+// @keyframes names are global, so each is prefixed with the template's prefix and every `animation`
+// declaration that names one is rewritten to match (two templates can both define `sway`).
+export function scopeCss(css, scope, prefix = '', names) {
   css = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  names = names || [...css.matchAll(/@keyframes\s+([\w-]+)/g)].map(m => m[1]);
+  const renameAnimations = body => !names.length ? body : body.replace(/(animation(?:-name)?\s*:)([^;}]*)/g, (_, head, value) =>
+    head + value.replace(new RegExp(`(^|[\\s,])(${names.join('|')})(?=[\\s,;]|$)`, 'g'), `$1${prefix}$2`));
   return blocks(css).map(block => {
     const open = block.indexOf('{');
     if (open < 0) return block;
     const head = block.slice(0, open).trim(), body = block.slice(open + 1, block.lastIndexOf('}'));
-    if (head.startsWith('@font-face') || head.startsWith('@keyframes')) return block;
-    if (head.startsWith('@')) return `${head}{${scopeCss(body, scope, prefix)}}`;
+    if (head.startsWith('@font-face')) return block;
+    if (head.startsWith('@keyframes')) return `@keyframes ${prefix}${head.replace(/^@keyframes\s+/, '')}{${body.trim().replace(/\s*\n\s*/g, '')}}`;
+    if (head.startsWith('@')) return `${head}{${scopeCss(body, scope, prefix, names)}}`;
     const selectors = splitSelectors(head).map(s => {
       if (/^(:root|html|body)$/.test(s)) return `.${scope}`;
       return `.${scope} ${s.replace(/^(html|body)\s+/, '').replace(/\.([a-zA-Z_][\w-]*)/g, `.${prefix}$1`)}`;
     });
-    return `${selectors.join(',')}{${body.trim().replace(/\s*\n\s*/g, '')}}`;
+    return `${selectors.join(',')}{${renameAnimations(body.trim().replace(/\s*\n\s*/g, ''))}}`;
   }).join('\n');
 }
 // Class names in a designer's markup are prefixed too, so generic names (.button, .eyebrow) can never
