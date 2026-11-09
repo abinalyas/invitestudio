@@ -31,7 +31,10 @@ test('the policy blocks framing, plugins, eval and plain-HTTP third-party source
   );
   assert.deepEqual(directives['frame-ancestors'], ["'none'"]);
   assert.deepEqual(directives['object-src'], ["'none'"]);
-  assert.ok(!CONTENT_SECURITY_POLICY.includes('unsafe-eval'));
+  // eval() and new Function() stay blocked. 'wasm-unsafe-eval' (WebAssembly only, for the HEIC photo decoder) is allowed.
+  const tokens = CONTENT_SECURITY_POLICY.split(/[\s;]+/);
+  assert.ok(!tokens.includes("'unsafe-eval'"));
+  assert.deepEqual(directives['script-src'], ["'self'", "'unsafe-inline'", "'wasm-unsafe-eval'"]);
   assert.ok(!/\bhttp:\/\//.test(CONTENT_SECURITY_POLICY));
 });
 

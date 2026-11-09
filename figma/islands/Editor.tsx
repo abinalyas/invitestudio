@@ -886,7 +886,7 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,.heic,.heif"
           multiple
           disabled={full || Boolean(progress)}
           onChange={event => void add(event.target.files)}
