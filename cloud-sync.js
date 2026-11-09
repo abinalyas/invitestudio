@@ -263,7 +263,7 @@
     if (error.code === 'MEDIA_NOT_CONFIGURED') return 'Photo storage is not set up yet.';
     if (error.code === 'MEDIA_TOO_LARGE') return 'This photo is too large to store, even after shrinking it. Try a smaller or simpler photo.';
     if (error.code === 'MEDIA_DIMENSIONS') return 'This photo has an unusual size and could not be used. Try a different photo, or crop it first.';
-    if (error.code === 'MEDIA_TYPE') return 'Only JPEG, PNG and WebP photos can be used. If this is an iPhone HEIC photo, export it as a JPEG first.';
+    if (error.code === 'MEDIA_TYPE') return 'Only JPEG, PNG, WebP and HEIC photos can be used.';
     return error.message || 'This photo could not be added.';
   }
   window.setMediaAlt = async function setMediaAlt(photoId, alt) {

@@ -25,6 +25,55 @@
 
   function fail(code, message) { var e = new Error(message); e.code = code; return e; }
 
+  // iPhone photos are usually HEIC. Safari can open them, other browsers cannot, so they are decoded here by libheif
+  // (vendor/libheif-bundle.js, WebAssembly, LGPL-3.0, unmodified) into a canvas. It is only downloaded when a HEIC
+  // photo is chosen. The decoder needs 'wasm-unsafe-eval' in the page's security policy and nothing else.
+  var HEIC_TYPE = /^image\/hei[cf]/i, HEIC_NAME = /\.hei[cf]$/i, HEIC_SRC = "/vendor/libheif-bundle.js";
+  function isHeic(file) {
+    return Boolean(file) && (HEIC_TYPE.test(file.type || "") || (!/^image\//i.test(file.type || "") && HEIC_NAME.test(file.name || "")));
+  }
+  var heicLoader = null;
+  function loadHeicDecoder() {
+    if (typeof root.libheif === "function" && root.libheifReady) return Promise.resolve(root.libheifReady);
+    if (!heicLoader) {
+      heicLoader = new Promise(function (resolve, reject) {
+        var tag = document.createElement("script");
+        tag.src = HEIC_SRC;
+        tag.onload = function () {
+          try { var lib = root.libheif(); root.libheifReady = lib; resolve(lib); } catch (e) { reject(e); }
+        };
+        tag.onerror = function () { reject(new Error("load")); };
+        document.head.appendChild(tag);
+      }).catch(function (e) { heicLoader = null; throw e; });
+    }
+    return heicLoader;
+  }
+  function convertHeic(file) {
+    return Promise.all([loadHeicDecoder(), file.arrayBuffer()]).then(function (parts) {
+      var lib = parts[0], images = new lib.HeifDecoder().decode(new Uint8Array(parts[1]));
+      if (!images || !images.length) throw new Error("empty");
+      var image = images[0], w = image.get_width(), h = image.get_height();
+      if (!(w > 0 && h > 0)) throw new Error("empty");
+      if (w * h > MAX_PIXELS) throw fail("TOO_BIG", "This photo is too large to process. Choose a smaller one.");
+      var canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext("2d"), data = ctx.createImageData(w, h);
+      return new Promise(function (resolve, reject) {
+        image.display(data, function (shown) { shown ? resolve(shown) : reject(new Error("display")); });
+      }).then(function (shown) { ctx.putImageData(shown, 0, 0); return canvas; });
+    }).catch(function (e) {
+      if (e && e.code) throw e;
+      throw fail("UNREADABLE", "This HEIC photo could not be converted. Try again, or export it as a JPEG first.");
+    });
+  }
+  // Opens the photo. A HEIC photo is opened by the browser itself when it can (Safari); otherwise it is decoded here.
+  function open(file) {
+    if (!isHeic(file)) return decode(file);
+    var native = typeof createImageBitmap === "function"
+      ? createImageBitmap(file, { imageOrientation: "from-image" }) : Promise.reject(new Error("unsupported"));
+    return native.catch(function () { return convertHeic(file); });
+  }
+
   function decode(file) {
     if (typeof createImageBitmap === "function") {
       return createImageBitmap(file, { imageOrientation: "from-image" }).catch(function () { return viaImage(file); });
@@ -93,9 +142,9 @@
 
   // Resolves with { full: Blob, thumb: Blob, format, width, height }.
   function prepare(file) {
-    if (!file || !/^image\//i.test(file.type || "")) return Promise.reject(fail("NOT_IMAGE", "That file is not a photo. Choose a photo file (JPEG, PNG or WebP)."));
+    if (!file || !(/^image\//i.test(file.type || "") || isHeic(file))) return Promise.reject(fail("NOT_IMAGE", "That file is not a photo. Choose a photo file (JPEG, PNG, WebP or HEIC)."));
     if (file.size > MAX_SOURCE_BYTES) return Promise.reject(fail("TOO_BIG", "This photo is over 30 MB. Choose a smaller one."));
-    return decode(file).then(function (source) {
+    return open(file).then(function (source) {
       var sw = source.width || source.naturalWidth, sh = source.height || source.naturalHeight;
       if (!(sw > 0 && sh > 0)) throw fail("UNREADABLE", "This photo could not be read.");
       if (sw * sh > MAX_PIXELS) throw fail("TOO_BIG", "This photo is too large to process. Choose a smaller one.");
@@ -108,10 +157,10 @@
         });
       });
     }, function (e) {
-      throw e && e.code ? e : fail("UNREADABLE", "This photo could not be read. If it is an iPhone photo in HEIC format, choose it from your Photos library, or export it as a JPEG first.");
+      throw e && e.code ? e : fail("UNREADABLE", "This photo could not be read. Try a JPEG, PNG, WebP or HEIC photo.");
     });
   }
 
-  root.InviteMedia = { prepare: prepare, fitWithin: fitWithin, fitToBytes: fitToBytes, FULL_MAX_BYTES: FULL_MAX_BYTES, THUMB_MAX_BYTES: THUMB_MAX_BYTES, FULL_EDGE: FULL_EDGE, THUMB_EDGE: THUMB_EDGE };
+  root.InviteMedia = { prepare: prepare, isHeic: isHeic, fitWithin: fitWithin, fitToBytes: fitToBytes, FULL_MAX_BYTES: FULL_MAX_BYTES, THUMB_MAX_BYTES: THUMB_MAX_BYTES, FULL_EDGE: FULL_EDGE, THUMB_EDGE: THUMB_EDGE };
   if (typeof module !== "undefined" && module.exports) module.exports = root.InviteMedia;
 })(typeof globalThis !== "undefined" ? globalThis : this);

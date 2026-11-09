@@ -5,7 +5,9 @@
 // attributes. Removing it is planned future work (docs/PHASE_0_INTEGRATION_PLAN.md, 4.2).
 export const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  // 'wasm-unsafe-eval' lets the HEIC photo decoder (vendor/libheif-bundle.js) compile its WebAssembly. It does not
+  // allow eval() or new Function(), which stay blocked.
+  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: https://images.unsplash.com",
