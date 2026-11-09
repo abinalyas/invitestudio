@@ -16,6 +16,7 @@ rebuild.
 | 3 | Something unique | A **"talk to us"** route for custom work. Same contact route as extensions. |
 | 4 | What "kept" covers | The invitation page, replies, photos, private edit links: everything, as in `docs/RSVP_PLAN.md`. |
 | 5 | Changing the rules later | Yes, expected. See "Built to change". |
+| 7 | Settled answers | 8-month cap from first publishing. No event date: kept **4 months** after the last change. 14-day grace period and 14-day warning. A freed web address is held **6 months**. Contact route: **email and WhatsApp** (the details are set in one place in the site's settings, not written into pages). |
 | 6 | Publishing very early | The cap counted from the publish date means a very early publisher pays to keep the page live through their event. The app tells them the closing date when they publish. |
 
 ## What happens, in order
@@ -54,7 +55,7 @@ asks the very early to pay.
 
 - **At publishing:** the app shows the closing date. If it falls before the event, it says so and offers the paid
   extension (or "talk to us"), so it is never a surprise.
-- **Not published yet:** a draft has no cap clock. A draft is only removed by the no-event-date rule below.
+- **Not published yet:** a draft with a date has no cap clock. A draft with no date is removed by the no-event-date rule below (4 months after its last change).
 - **Unpublish and publish again:** the cap counts from the **first** publish, so it cannot be restarted.
 - **Why a cap at all:** keeping a website costs very little (photos are capped at about 3 MB per website), so this is a
   decision about what is free, not about cost. It is a setting for that reason.
@@ -100,10 +101,10 @@ asks the very early to pay.
 
 | Case | Proposed rule (to confirm) |
 |---|---|
-| **No event date** | Not deleted by the date rule. Instead: a website with **no date** is kept **12 months after its last change**, then handled like any other (hidden, 14 days grace, deleted). |
+| **No event date** | A website with **no date** is kept **4 months after its last change** (decided), then handled like any other (hidden, 14 days grace, deleted). Setting a date moves it onto the normal rule. |
 | **Several events** | The **last** event date counts. |
 | **Date changed later** | The end date moves with it (still within the cap), but never earlier than a date the couple was already shown. |
-| **Draft never published** | Same rule: no date means 12 months after its last change. A draft with a date follows the date rule. |
+| **Draft never published** | Same rule: no date means 4 months after its last change. A draft with a date has no clock until it is published, then follows the normal rule. |
 | **Unpublished by the couple** | Same end date. Unpublishing does not extend or shorten it. |
 | **Deleted by the couple** | Deleted at once, as today (this already removes photos and replies). |
 | **Web address (slug)** | Freed when the website is deleted. A deleted address could be taken by anyone, so we may hold it for 6 months first (to confirm). |
@@ -118,8 +119,12 @@ terms and on the pricing page.
 ## Contact route
 
 A "Talk to us" link, used for: keeping a website longer, custom designs ("something unique"), and getting a removed
-website back during the grace period. **A contact address is needed**: a WhatsApp number, an email, or both. The link
-opens a message with the website's address pre-filled, so we know which one it is without asking.
+website back during the grace period. **Decided: email and WhatsApp, both offered.** The WhatsApp link opens a message
+with the website's address pre-filled; the email link does the same, so we know which website it is without asking.
+
+The two contact details are stored **once, in the site's settings**, and every place that shows them reads from there,
+so changing a number or address later is one edit. They are not written into the plan or into page text. They will be
+public on the site, so use ones you are happy to publish.
 
 ## What to say on the website (when decided)
 
@@ -147,11 +152,14 @@ removed with the wedding, the address refusing a missing or wrong token, and the
 - When step 3 is ready: add one secret, `RETENTION_SWEEP_TOKEN`, to Cloudflare and to GitHub (I will give the exact
   steps), and run the migration.
 
-## Still to confirm
+## Settled (was "still to confirm")
 
-- The **no-date rule** (12 months after the last change).
-- The **8-month cap** from first publishing (and whether the cap should differ by design tier).
-- The **14-day grace period** after the end date, and the 14-day warning.
-- Holding a freed web address for **6 months**.
-- The **contact route**.
-- Which designs go in which tier, and the prices, can wait: nothing in step 1 to 4 needs them.
+- 8-month cap from first publishing, for every design for now (it can differ by tier later).
+- No-date rule: 4 months after the last change.
+- 14-day grace period after the end date, and a 14-day warning before it.
+- A freed web address is held for 6 months.
+- Contact route: email and WhatsApp.
+
+## Still open
+
+- Which designs go in which tier, and the prices. Nothing in steps 1 to 4 needs them.
