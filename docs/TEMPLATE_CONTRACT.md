@@ -379,3 +379,12 @@ The last reference, and the one with the most platform-owned parts removed. What
 - **Removed**: the "Enter our fairytale" intro screen (the platform's intro settings own openings; the cover already carries the title), the falling petals on scroll (restart and cost on every keystroke in the editor), the RSVP form (a "not open yet" note instead), the `[Reception venue]` placeholder card, and the gallery's decorative placeholder tiles with their made-up captions as content: the gallery now appears only with the couple's photos, and its captions are editable wording.
 - **Events are cards, from the couple's own events** (name, date, time, venue, directions link): any number, none invented. The reference's two cards named a ceremony and a reception; the template names neither.
 - **Engine**: events now carry `date_text`, `time_text` and `map` for templates that show them.
+
+### 15.5 Fifth template: Blue Hydrangea (implemented)
+
+Modelled on a pale-blue, botanical wedding site that opens with a video wax-seal screen. What the build did:
+
+- **No video, no opening screen.** The reference's "tap to open" video intro is left out; the cover is the first thing guests see, and the platform's intro settings own openings (as for Fairy Tale).
+- **Original artwork, drawn as SVG.** The hydrangea and orchid garlands, the countdown frame and the footer garland are generated vector art (about 100 KB in all, no photos or watercolour files from the reference). Class names, copy and layout are this repository's own.
+- **Sections**: cover (names stacked around an ampersand, date stacked as day, month and year, between two garlands), a countdown in a scalloped frame, welcome with a venue card, story (arch-shaped photo when there is one), events as a timeline, gallery and RSVP. Dress code and add-to-calendar from the reference are not in the content model, so they are not drawn.
+- **Fonts** are the self-hosted Cormorant Garamond, Pinyon Script and Montserrat; the reference's Typekit fonts are not used.

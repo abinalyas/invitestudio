@@ -360,6 +360,21 @@ export const galleryTemplates: GalleryTemplate[] = [
     image: "/assets/templates/fairy-tale-wide.jpg",
     phone: "/assets/templates/fairy-tale-phone.jpg",
   },
+  {
+    id: 17,
+    backendId: "blue-hydrangea",
+    title: "Blue Hydrangea",
+    names: "Martina & Javier",
+    tagline: "A pale blue sky framed by hydrangea and orchid garlands, with a countdown in a scalloped frame and a soft, garden-party feel.",
+    tags: ["Botanical", "Romantic"],
+    opening: {
+      name: "Countdown",
+      text: "Your names between two flower garlands, then a countdown to your date. Guests scroll through a welcome, your story and your events.",
+    },
+    palette: ["#f2f7fa", "#4d6a22", "#2f4219"],
+    image: "/assets/templates/blue-hydrangea-wide.jpg",
+    phone: "/assets/templates/blue-hydrangea-phone.jpg",
+  },
 ]
 
 // What a couple can change on any of these templates, and what guests see. Taken from the editor
