@@ -52,3 +52,18 @@ export function OccasionStrip() {
     </section>
   );
 }
+
+// "Talk to us": email and WhatsApp, each opening a message that already says what it is about (and which website, when
+// an address is given). The details come from site-config.js, in one place.
+export function TalkToUs({ topic, address, lead }: { topic: "extend" | "restore" | "custom" | "general"; address?: string; lead?: string }) {
+  const links = bridge.contactLinks(topic, address);
+  if (!links.whatsapp && !links.email) return null;
+  return (
+    <span className="talk-to-us">
+      {lead ? `${lead} ` : ""}
+      {links.whatsapp ? <a href={links.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp</a> : null}
+      {links.whatsapp && links.email ? " · " : null}
+      {links.email ? <a href={links.email}>Email</a> : null}
+    </span>
+  );
+}

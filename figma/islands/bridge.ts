@@ -112,6 +112,28 @@ export interface UploadResult {
   errors: Array<{ name: string; message: string }>;
 }
 
+export interface RetentionInfo {
+  available: boolean;
+  hasClock?: boolean;
+  endsOn?: string | null;
+  deleteOn?: string | null;
+  stage?: "keep" | "hidden" | "delete_due" | "no_clock";
+  daysLeft?: number | null;
+  graceDays?: number;
+  warnDays?: number;
+  source?: string;
+  lastEventDate?: string | null;
+  endsBeforeEvent?: boolean;
+  estimatedEndsOn?: string | null;
+  estimateBeforeEvent?: boolean;
+  closed?: boolean;
+}
+
+export interface ContactLinks {
+  whatsapp: string;
+  email: string;
+}
+
 export type EditorSnapshot = EditorFields & {
   available: boolean;
   draftId: string;
@@ -160,6 +182,8 @@ export interface InviteStudioBridge {
   setRsvp(value: string): void;
   setRsvpContact(type: string, value: string): void;
   setRsvpOption(key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number): void;
+  loadRetention(): Promise<RetentionInfo>;
+  contactLinks(topic: "extend" | "restore" | "custom" | "general", address?: string): ContactLinks;
   mediaLoad(): Promise<void>;
   mediaUpload(files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void): Promise<UploadResult>;
   mediaAlt(id: string, alt: string): Promise<void>;
@@ -219,6 +243,8 @@ export const bridge = {
   setRsvp: (value: string) => host().setRsvp(value),
   setRsvpContact: (type: string, value: string) => host().setRsvpContact(type, value),
   setRsvpOption: (key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number) => host().setRsvpOption(key, value),
+  loadRetention: () => host().loadRetention(),
+  contactLinks: (topic: "extend" | "restore" | "custom" | "general", address?: string) => host().contactLinks(topic, address),
   mediaLoad: () => host().mediaLoad(),
   mediaUpload: (files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void) => host().mediaUpload(files, onProgress),
   mediaAlt: (id: string, alt: string) => host().mediaAlt(id, alt),

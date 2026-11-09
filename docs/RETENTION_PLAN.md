@@ -143,6 +143,19 @@ They are left as they are until the prices are decided.
   (`npm run test:db`, run by hand like the cloud suite). The report's counts include how far ahead of the event websites
   were published, for tuning the cap.
 
+- **Step 2 (what couples and guests see): built.** Migration `202611090003_retention_visibility.sql`:
+  `wedding_retention_shown()` tells the editor when the website ends, how many days are left, which rule set the date,
+  and, for a website not yet published, what the date would be if it were published today. Asking also records the
+  date the couple was shown, in its own table (`retention_shown`), so a later rule change can never bring it forward.
+  It is a separate table because changing the website row would bump its version and make the editor's next save look
+  like a conflict. `wedding_ends_on()` now respects that date. The editor shows a quiet "Online until..." line, a
+  warning from 14 days before the end, a warning when the date falls before the event (and, for an unpublished draft,
+  when publishing today would), and, after it closes, when everything is deleted with a way back. The Share dialog shows
+  how long the website will stay online. A closed invitation answers guests with "This invitation has ended" (HTTP 410)
+  and the couple's way back. "Talk to us" (WhatsApp and email, each opening a message that already names the website)
+  is in the editor notices, the Share dialog, the ended page, the home page footer and the gallery. The two contact
+  details live in `site-config.js`. **Nothing closes a website yet** (step 4 sets `retention_hidden_at`).
+
 ## Order of work
 
 1. **The rule and a safe preview:** policy columns, `wedding_ends_on`, `retention_log`, and the sweep address in dry-run

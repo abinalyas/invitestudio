@@ -167,3 +167,81 @@ test('the public key cannot run the preview, the server key can', async () => {
   const anonRows = await asRole('anon', `select * from retention_runs`).catch(() => ({ rows: [] }));
   assert.equal(anonRows.rows.length, 0, 'the public key sees no run records');
 });
+
+// ---- Step 2: what couples are shown --------------------------------------------------------------------------------
+const shown = async (id, today = '2027-01-01') => (await client.query('select wedding_retention_shown($1, $2::date) as r', [id, today])).rows[0].r;
+
+test('the editor is told when the website ends, how long is left, and why', async () => {
+  const normal = await add({ date: '2027-06-15', status: 'published', published: '2027-04-01' });      // ends 2027-08-15 (event rule)
+  const r = await shown(normal, '2027-08-05');
+  assert.deepEqual([r.endsOn, r.deleteOn, r.stage, r.daysLeft, r.source, r.endsBeforeEvent, r.closed], ['2027-08-15', '2027-08-29', 'keep', 10, 'event', false, false]);
+  assert.deepEqual([r.graceDays, r.warnDays, r.hasClock], [14, 14, true]);
+  assert.equal((await shown(normal, '2027-08-20')).stage, 'hidden', 'inside the 14-day grace period');
+  assert.equal((await shown(normal, '2027-08-20')).daysLeft, -5);
+  assert.equal((await shown(normal, '2027-09-05')).stage, 'delete_due');
+
+  const early = await add({ date: '2027-06-15', status: 'published', published: '2026-08-15' });       // the cap closes it before the event
+  const e = await shown(early);
+  assert.deepEqual([e.endsOn, e.source, e.endsBeforeEvent, e.lastEventDate], ['2027-04-15', 'cap', true, '2027-06-15']);
+
+  const noDate = await add({ updated: '2027-01-10' });
+  assert.deepEqual([(await shown(noDate)).source, (await shown(noDate)).endsOn], ['no_date', '2027-05-10']);
+
+  const extended = await add({ date: '2027-06-15', status: 'published', published: '2027-04-01', keepUntil: '2029-01-01' });
+  assert.deepEqual([(await shown(extended)).source, (await shown(extended)).endsOn], ['keep_until', '2029-01-01']);
+
+  const draft = await add({ date: '2027-06-15' });
+  const d = await shown(draft);
+  assert.deepEqual([d.hasClock, d.endsOn, d.stage, d.daysLeft], [false, null, 'no_clock', null]);
+  assert.deepEqual([d.estimatedEndsOn, d.estimateBeforeEvent], ['2027-08-15', false], 'an estimate for the publish screen: 2 months after the event');
+  const farAhead = await shown(await add({ date: '2027-12-15' }), '2027-01-01');
+  assert.deepEqual([farAhead.estimatedEndsOn, farAhead.estimateBeforeEvent], ['2027-09-01', true], 'published today it would close before an event this far away');
+  assert.equal((await shown(normal, '2027-08-05')).estimatedEndsOn, null, 'a published website has no estimate');
+  assert.equal(await shown('00000000-0000-4000-8000-000000000000'), null, 'an unknown website gives nothing');
+});
+
+test('a date a couple has been shown can never move earlier, but can move later', async () => {
+  const id = await add({ date: '2027-06-15', status: 'published', published: '2027-04-01' });
+  assert.equal((await shown(id)).endsOn, '2027-08-15');
+  await client.query(`update templates set retention_months = 1 where id = 'eternal'`);        // the rule is shortened
+  try {
+    assert.equal(await endsOn(id), '2027-08-15', 'the shortened rule does not bring this one forward');
+    const fresh = await add({ date: '2027-06-15', status: 'published', published: '2027-04-01' });
+    assert.equal(await endsOn(fresh), '2027-07-15', 'a website nobody has been told about follows the new rule');
+    await client.query(`update templates set retention_months = 4 where id = 'eternal'`);      // the rule is lengthened
+    assert.equal(await endsOn(id), '2027-10-15', 'a longer rule applies');
+    assert.equal((await shown(id)).endsOn, '2027-10-15');
+    await client.query(`update templates set retention_months = 1 where id = 'eternal'`);
+    assert.equal(await endsOn(id), '2027-10-15', 'and the longer date is protected from then on');
+  } finally {
+    await client.query(`update templates set retention_months = 2 where id = 'eternal'`);
+  }
+});
+
+test('showing the date records it without touching the website row (its version must not change)', async () => {
+  const id = await add({ date: '2027-06-15', status: 'published', published: '2027-04-01' });
+  const before = (await client.query('select version, updated_at, retention_floor from weddings where id = $1', [id])).rows[0];
+  await shown(id); await shown(id);
+  const after = (await client.query('select version, updated_at, retention_floor from weddings where id = $1', [id])).rows[0];
+  assert.deepEqual(after, before);
+  assert.equal((await client.query('select count(*)::int as n from retention_shown where wedding_id = $1', [id])).rows[0].n, 1);
+  await client.query('delete from weddings where id = $1', [id]);
+  assert.equal((await client.query('select count(*)::int as n from retention_shown where wedding_id = $1', [id])).rows[0].n, 0, 'removed with the website');
+});
+
+test('a closed website says so; the public key cannot ask what a couple is shown', async () => {
+  const id = await add({ date: '2027-06-15', status: 'published', published: '2027-04-01' });
+  await client.query('update weddings set retention_hidden_at = now() where id = $1', [id]);
+  assert.equal((await shown(id)).closed, true);
+  await client.query('begin');
+  try {
+    await client.query('set local role anon');
+    await assert.rejects(client.query('select wedding_retention_shown($1)', [id]), /permission denied/);
+  } finally { await client.query('rollback'); }
+  await client.query('begin');
+  try {
+    await client.query('set local role anon');
+    const rows = await client.query('select * from retention_shown').catch(() => ({ rows: [] }));
+    assert.equal(rows.rows.length, 0);
+  } finally { await client.query('rollback'); }
+});

@@ -102,6 +102,10 @@
     listRsvps(id, editToken) {
       return request(`/weddings/${encodeURIComponent(id)}/rsvps`, { headers: { Authorization: `Bearer ${editToken}` } });
     },
+    // When the website is kept until (the editor's notice). Asking also records the date the couple is shown.
+    getRetention(id, editToken) {
+      return request(`/weddings/${encodeURIComponent(id)}/retention`, { headers: { Authorization: `Bearer ${editToken}` } });
+    },
     // Photos. The upload is a multipart form (the browser sets its content type); the rest is JSON.
     listMedia(id, editToken) {
       return request(`/weddings/${encodeURIComponent(id)}/media`, { headers: { Authorization: `Bearer ${editToken}` } });

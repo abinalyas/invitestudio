@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Icon, IconName, Logo, galleryTemplates, styleOptions } from "./shared";
 import { bridge } from "./bridge";
+import { TalkToUs } from "./extras";
 export function TemplatesPage() {
   const [query, setQuery] = useState("")
   const [sort, setSort] = useState("featured")
@@ -89,6 +90,7 @@ export function TemplatesPage() {
           <span className="section-kicker">Template gallery</span>
           <h1>Find the perfect invitation</h1>
           <p>Wedding invitations you can make your own.</p>
+          <p className="gallery-talk"><TalkToUs topic="custom" lead="Want a design made just for you? Talk to us:" /></p>
         </div>
       </section>
 
