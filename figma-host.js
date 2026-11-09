@@ -426,21 +426,18 @@
       if (window.inviteStudioApi?.enabled && typeof createCloudDraftForProject === 'function') {
         createCloudDraftForProject(p);
       }
-      state.editorMode = 'designer';
       state.page = 'editor';
       history.pushState({}, '', `/editor/${templateNumber}`);
       render();
     },
 
     startCreate(category) {
-      state.editorMode = 'designer';
       if (window.location.pathname !== '/') history.pushState({}, '', '/');
       startCreate(category);
     },
 
     // The guided setup (names, date, place, then the editor) with a design already chosen.
     startSetup(backendTemplateId) {
-      state.editorMode = 'designer';
       if (window.location.pathname !== '/') history.pushState({}, '', '/');
       startCreate('Wedding', backendTemplateId);
     },
@@ -535,12 +532,6 @@
       openPublish();
     },
 
-    openAdvanced() {
-      state.editorMode = 'advanced';
-      state.page = 'editor';
-      render();
-    },
-
     openLegacyTemplates() {
       state.page = 'templates';
       history.pushState({}, '', '/');
@@ -566,7 +557,6 @@
     },
 
     continueDraft() {
-      state.editorMode = 'designer';
       if (typeof continueLastDraft === 'function') continueLastDraft();
     },
 
@@ -596,8 +586,6 @@
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
     const editorMatch = path.match(/^\/editor\/(\d+)$/);
     if (editorMatch) {
-      // Advanced editing is the existing full editor, which has no island.
-      if (state.editorMode === 'advanced' && project()) return null;
       if (project()) return { kind: 'editor' };
       // A reload of the designer address reopens the draft this browser was editing.
       if (!restoreRequested && hasCurrentDraft() && typeof window.continueLastDraft === 'function') {
@@ -611,7 +599,7 @@
     if (detailMatch) return { kind: 'detail', props: { templateId: Number(detailMatch[1]) } };
     if (path === '/templates' && state.page !== 'templates') return { kind: 'templates' };
     if (state.page === 'home' && path === '/') return { kind: 'home' };
-    if (state.page === 'editor' && state.editorMode !== 'advanced' && project()) return { kind: 'editor' };
+    if (state.page === 'editor' && project()) return { kind: 'editor' };
     return null;
   };
 
@@ -635,7 +623,6 @@
     if (state.page === 'setup' && path !== '/') state.page = 'home'; // leaving the setup page by going back
     if (path === '/') {
       if (state.page !== 'home' && state.page !== 'editor' && state.page !== 'preview') state.page = 'home';
-      if (state.page === 'home') state.editorMode = 'designer';
     } else if (path === '/templates') {
       state.page = 'home';
     }

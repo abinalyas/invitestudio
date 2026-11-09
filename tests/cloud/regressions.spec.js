@@ -51,14 +51,6 @@ async function createWebsiteInBrowser(page, title) {
 test.describe('D0 defect 1: intro media must not break saving', () => {
   // Reproduced before the fix: an 800 KB intro image was stored on the device, but its save
   // (about 1.09 MB once base64-encoded) was rejected, so the server version never advanced.
-  test('intro image and music uploads are locked until media storage exists', async ({ page }) => {
-    const title = `Intro Locked ${randomUUID().slice(0, 6)}`;
-    await createWebsiteInBrowser(page, title);
-    await page.evaluate(() => { state.editorMode = 'advanced'; state.editorTab = 'Theme'; state.mobileEditorView = 'edit'; render(); });
-    await expect(page.locator('.editor-control', { hasText: 'Intro image' }).locator('input[type="file"]')).toBeDisabled();
-    await expect(page.locator('.editor-control', { hasText: 'Optional intro music' }).locator('input[type="file"]')).toBeDisabled();
-  });
-
   test('a draft that already holds large local intro media still saves, and the media stays off the server', async ({ page }) => {
     const title = `Legacy Media ${randomUUID().slice(0, 6)}`;
     await createWebsiteInBrowser(page, title);

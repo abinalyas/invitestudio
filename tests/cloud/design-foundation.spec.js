@@ -65,31 +65,17 @@ test('Kerala stays out of the offered catalogue until it is approved', async ({ 
   expect(offered).not.toContain('kerala-kasavu');
 });
 
-test('unsupported launch controls are gone from setup and the advanced editor', async ({ page }) => {
+test('unsupported launch controls are gone from setup', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => startCreate('Wedding'));
   await page.evaluate(() => { state.setupStep = 2; render(); });
   await expect(page.locator('#prefRsvp')).toHaveCount(1, { timeout: 15000 });
   await expect(page.locator('#prefPalette, #prefTypography, #prefLayout, #accentColor')).toHaveCount(0);
-
-  await page.evaluate(() => { ensureProject(); save(); state.editorMode = 'advanced'; state.page = 'editor'; render(); });
-  await page.evaluate(() => { state.editorTab = 'Theme'; state.mobileEditorView = 'edit'; render(); });
-  await expect(page.getByRole('button', { name: /reset theme/i })).toHaveCount(0);
-  await expect(page.getByLabel(/accent color|background color/i)).toHaveCount(0);
-  await expect(page.getByText('Opening animation', { exact: true })).toBeVisible();
-
-  await page.evaluate(() => { state.editorTab = 'Sections'; state.mobileEditorView = 'edit'; render(); });
-  await expect(page.getByRole('button', { name: /add custom section/i })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /^Move /i })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /^Edit /i })).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'Page sections' })).toBeVisible({ timeout: 15000 });
 });
 
-test('the RSVP preference (setup) and event editing (advanced editor) remain', async ({ page }) => {
+test('the RSVP preference remains in setup', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => startCreate('Wedding'));
   await page.evaluate(() => { state.setupStep = 2; render(); });
   await expect(page.locator('#prefRsvp')).toHaveCount(1, { timeout: 15000 });
-  await page.evaluate(() => { ensureProject(); save(); state.editorMode = 'advanced'; state.page = 'editor'; state.editorTab = 'Events / Functions'; render(); });
-  await expect(page.getByRole('button', { name: /add custom function/i })).toBeVisible({ timeout: 15000 });
 });

@@ -368,7 +368,6 @@
     if (!project) { toast('This draft is no longer available on this device.'); return; }
     state.currentId = project.id;
     state.page = 'editor';
-    state.editorTab = 'Sections';
     state.recoveryError = '';
     rememberDraftReference(project);
     render();
@@ -540,37 +539,6 @@
   function decorateRecoveryUi(project) {
     const note = document.querySelector('.dashboard-data-note strong');
     if (note && typeof window.draftStorageNote === 'function') note.textContent = window.draftStorageNote();
-    const toolbarLink = document.querySelector('[data-private-edit-link]');
-    if (!project?.cloudId || !tokenFor(project.cloudId) || state.page !== 'editor') {
-      toolbarLink?.remove();
-      return;
-    }
-    const actions = document.querySelector('.editor-toolbar .right');
-    if (!actions || actions.querySelector('[data-private-edit-link]')) return;
-    const button = document.createElement('button');
-    button.className = 'btn small';
-    button.type = 'button';
-    button.dataset.privateEditLink = 'true';
-    button.textContent = 'Copy private link';
-    button.title = 'Copy a private link that lets you edit this draft';
-    button.onclick = () => window.copyPrivateEditLink();
-    actions.insertBefore(button, actions.firstChild);
-    decorateTokenControls(project);
-  }
-
-  function decorateTokenControls(project) {
-    if (state.editorTab !== 'Settings') return;
-    const panel = document.querySelector('.editor-panel');
-    if (!panel || panel.querySelector('[data-edit-token-controls]')) return;
-    const controls = document.createElement('section');
-    controls.className = 'editor-control';
-    controls.dataset.editTokenControls = 'true';
-    controls.style.marginTop = '24px';
-    controls.innerHTML = `<h3>Private editing access</h3><p class="tiny muted">Anyone with this link can edit this private draft. Keep it safe and regenerate it if you think it was shared.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" data-copy-edit-link>Copy private link</button><button class="btn small" type="button" data-regenerate-edit-link>Regenerate link</button><button class="btn small" type="button" data-revoke-edit-link>Revoke all links</button></div>`;
-    controls.querySelector('[data-copy-edit-link]').onclick = () => window.copyPrivateEditLink();
-    controls.querySelector('[data-regenerate-edit-link]').onclick = () => window.regeneratePrivateEditLink();
-    controls.querySelector('[data-revoke-edit-link]').onclick = () => window.revokePrivateEditLinks();
-    panel.append(controls);
   }
 
   function markDirty(project) {
@@ -971,7 +939,9 @@
       : rsvpMode === 'contact' ? '<li><strong>Replies.</strong> Guests will see your contact details on the invitation, so they can reach you directly.</li>'
       : '<li><strong>Replies.</strong> Guests can reply from the live invitation. You see their replies under <em>Replies</em> in the editor.</li>';
     // Said before anything is public, in plain words: what happens, what does not, and what can be undone.
-    const explainer = live
+    // Straight after going live there is nothing to update yet, so the dialog only shows the link (and Close / Take offline).
+    const justWentLive = live && session.success && !session.changing;
+    const explainer = justWentLive ? '' : live
       ? '<p class="tiny muted" style="margin:10px 0 0">Made changes since going live? Choose <strong>Update live page</strong> to show them. Choose <strong>Take offline</strong> to make the link stop working.</p>'
       : `<ul style="margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px;font-size:14px;line-height:1.5">
           <li><strong>Right now it is private.</strong> Only you can see your invitation. It stays private until you choose <em>Make it live</em>. You can look at it as guests will see it first.</li>
@@ -987,7 +957,7 @@
       <div class="modal-actions" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
         <button class="btn" type="button" data-publish-close>Close</button>
         ${live ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}
-        <button class="btn dark" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${session.busy ? 'Going live…' : primary}</button>
+        ${justWentLive ? '' : `<button class="btn dark" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${session.busy ? 'Going live…' : primary}</button>`}
       </div>`);
     wirePublishDialog(project);
     ensureAddressChecked(project);

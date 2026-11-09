@@ -22,35 +22,6 @@ test('homepage starts a short personalised-preview journey', async ({ page }) =>
   await expect(page.locator('main')).toContainText('Mira & Arun');
 });
 
-test('intro style changes to a compatible signature transition', async ({ page }) => {
-  await page.evaluate(() => { startCreate('Wedding'); });
-  await page.locator('#projectTitle').fill('Mira & Arun');
-  await page.locator('#projectDate').fill('2027-01-20');
-  await completeSetupSteps(page);
-  // The designer is the default editor now; this test covers the advanced editor's intro controls.
-  await page.evaluate(() => { state.editorMode = 'advanced'; state.editorTab = 'Theme'; state.mobileEditorView = 'edit'; render(); });
-  const style = page.locator('.editor-panel select').first();
-  const transition = page.locator('#intro-transition-select');
-  await expect(style).toBeVisible();
-  await style.selectOption('floral');
-  await expect(transition).toHaveValue('floral');
-  const floralOptions = await transition.locator('option').evaluateAll(options => options.map(o => o.value));
-  expect(floralOptions).toContain('floral');
-  expect(floralOptions).not.toContain('page-turn');
-  await style.selectOption('envelope');
-  await expect(transition).toHaveValue('envelope');
-  const envelopeOptions = await transition.locator('option').evaluateAll(options => options.map(o => o.value));
-  expect(envelopeOptions).toContain('envelope');
-  expect(envelopeOptions).not.toContain('floral');
-  const expectedDefaults = {cinematic:'dissolve',floral:'floral',envelope:'envelope',monogram:'monogram',editorial:'page-turn',celebration:'confetti',nature:'scenic',type:'type-wipe',storybook:'illustration',light:'light-sweep'};
-  for (const [intro, signature] of Object.entries(expectedDefaults)) {
-    await style.selectOption(intro);
-    await expect(transition).toHaveValue(signature);
-    const values = await transition.locator('option').evaluateAll(options => options.map(o => o.value));
-    expect(values).toContain(signature);
-  }
-});
-
 test('preview and publish dialog provide an honest path back to the invitation', async ({ page }) => {
   await page.evaluate(() => { startCreate('Wedding'); });
   await page.locator('#projectTitle').fill('Mira & Arun');
@@ -718,12 +689,38 @@ test.describe('guest replies', () => {
         if (server.loseReply) return route.abort();              // the server took it; the tab never heard back
         return json({ wedding: wedding() });
       }
+      if (url.pathname === `/api/weddings/${wid}/slug-availability`) return json({ available: true, slug: url.searchParams.get('slug'), suggestions: [] });
+      if (url.pathname === `/api/weddings/${wid}/publish` && method === 'POST') {
+        const body = request.postDataJSON();
+        server.version += 1;
+        return json({ wedding: { ...wedding(), status: 'published', visibility: 'public', slug: body.slug } });
+      }
       if (url.pathname === '/api/edit-links') return json({ wedding: wedding(), photos: [] });
       return route.abort();
     });
     await page.reload();
     return { server, wid };
   }
+
+  test('straight after the first publish the dialog shows the link, with no "update" explanation or button', async ({ page }) => {
+    await savedDraftWithServer(page);
+    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await expect(page.getByLabel(/Welcome message/)).toBeVisible();
+    await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
+    const dialog = page.locator('#modal-root');
+    await expect(dialog.getByRole('button', { name: 'Make it live' })).toBeEnabled({ timeout: 15000 });
+    await dialog.getByRole('button', { name: 'Make it live' }).click();
+    await expect(dialog.locator('h2')).toHaveText(/your invitation is live/i, { timeout: 15000 });
+    await expect(dialog.getByText('Current public link')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Take offline' })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Update live page' })).toHaveCount(0);
+    await expect(dialog.getByText(/Made changes since going live/)).toHaveCount(0);
+    // Opening it again later is when "update" makes sense.
+    await dialog.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
+    await expect(dialog.getByRole('button', { name: 'Update live page' })).toBeVisible();
+    await expect(dialog.getByText(/Made changes since going live/)).toBeVisible();
+  });
 
   test('a welcome message typed just before a crash is still there when the draft is reopened', async ({ page }) => {
     const { server, wid } = await savedDraftWithServer(page);
