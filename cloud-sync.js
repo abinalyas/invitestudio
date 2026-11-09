@@ -212,6 +212,14 @@
     project.photos = localPhotos(result.photos || []);
     localSave();
   }
+  // When this website is kept until. Cached on window so the (plain) publish dialog can show the same date.
+  window.loadRetention = async function loadRetention() {
+    const { project, token, api, ready } = mediaContext();
+    if (!ready) { window.InviteRetentionLast = null; return { available: false }; }
+    const result = await api.getRetention(project.cloudId, token);
+    window.InviteRetentionLast = result && result.available ? { ...result, projectId: project.id } : null;
+    return result;
+  };
   window.loadMedia = async function loadMedia() {
     const { project, token, api, ready } = mediaContext();
     if (!project) return;
@@ -876,6 +884,14 @@
          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="tiny muted">${escapeText(window.location.origin)}/s/</span><input id="publishSlug" type="text" value="${escapeText(session.typed)}" maxlength="60" autocomplete="off" spellcheck="false" aria-describedby="slug-status" style="flex:1;min-width:160px;padding:9px 10px;border:1px solid #8a8276;border-radius:8px" ${session.busy ? 'disabled' : ''}></div>
          <p id="slug-status" aria-live="polite" class="tiny" style="color:${toneColor};margin:6px 0 0">${escapeText(status.text)}</p>${suggestions}
          <p class="tiny" style="margin:8px 0 0;word-break:break-all"><span class="muted">Your link will be</span> <strong id="link-preview">${escapeText(window.location.origin)}/s/${escapeText(session.typed || '…')}</strong></p>`;
+    // How long the website stays online: the closing date, or an estimate before it is live (docs/RETENTION_PLAN.md).
+    const kept = window.InviteRetentionLast && window.InviteRetentionLast.projectId === project.id ? window.InviteRetentionLast : null;
+    const keptDate = kept ? (kept.endsOn || kept.estimatedEndsOn) : '';
+    const keptBefore = kept ? Boolean(kept.endsBeforeEvent || kept.estimateBeforeEvent) : false;
+    const keptLinks = window.InviteContact ? window.InviteContact.links('extend', live ? publicLinkFor(project.publicSlug) : '') : null;
+    const keptBlock = keptDate
+      ? `<p class="tiny" style="margin:12px 0 0;${keptBefore ? 'color:#9b5147' : 'color:#6b6760'}" data-kept-note>${live ? 'Your website stays online until' : 'Once live, your website stays online until'} <strong>${escapeText(new Date(keptDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }))}</strong>.${keptBefore ? ' That is before your event.' : ''} Need longer? Talk to us: ${keptLinks && keptLinks.whatsapp ? `<a href="${escapeText(keptLinks.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}${keptLinks && keptLinks.whatsapp && keptLinks.email ? ' · ' : ''}${keptLinks && keptLinks.email ? `<a href="${escapeText(keptLinks.email)}">Email</a>` : ''}</p>`
+      : '';
     // Said before anything is public, in plain words: what happens, what does not, and what can be undone.
     const explainer = live
       ? '<p class="tiny muted" style="margin:10px 0 0">Made changes since going live? Choose <strong>Update live page</strong> to show them. Choose <strong>Take offline</strong> to make the link stop working.</p>'
@@ -889,7 +905,7 @@
     renderModal(`<div class="eyebrow">Share your invitation</div>
       <h2 id="modal-title">${live ? 'Your invitation is live' : 'Get your invitation link'}</h2>
       <p class="muted">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>${live ? '' : ', not public yet'}.</p>
-      ${explainer}${addressField}${changeWarning}${notSaved}${error}${success}${liveBlock}
+      ${explainer}${keptBlock}${addressField}${changeWarning}${notSaved}${error}${success}${liveBlock}
       <div class="modal-actions" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
         <button class="btn" type="button" data-publish-close>Close</button>
         ${live ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}

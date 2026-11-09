@@ -10,8 +10,8 @@
 //   the template. Photos stay disabled until persistent photo storage exists.
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
 import { Icon, IconName, Logo } from "./shared";
-import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, RsvpData } from "./bridge";
-import { useBridgeVersion } from "./extras";
+import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, RetentionInfo, RsvpData } from "./bridge";
+import { useBridgeVersion, TalkToUs } from "./extras";
 
 type SectionKey = "home" | "story" | "functions" | "gallery" | "rsvp";
 type MobileTab = "sections" | "preview" | "edit";
@@ -84,6 +84,104 @@ function useReplyCount(snap: EditorSnapshot): number | null {
     return () => { live = false; window.clearInterval(timer); document.removeEventListener("visibilitychange", onShow); };
   }, [watching, snap.published]);
   return count;
+}
+
+// When this website is kept until. Asked once the draft is saved online; refreshed when the tab is shown again.
+function useRetention(snap: EditorSnapshot): RetentionInfo | null {
+  const [info, setInfo] = useState<RetentionInfo | null>(null);
+  useEffect(() => {
+    if (!snap.hasPrivateLink) { setInfo(null); return; }
+    let live = true;
+    const refresh = () => bridge.loadRetention().then(
+      result => { if (live) setInfo(result && result.available ? result : null); },
+      () => { if (live) setInfo(null); }
+    );
+    refresh();
+    const onShow = () => { if (document.visibilityState === "visible") refresh(); };
+    document.addEventListener("visibilitychange", onShow);
+    return () => { live = false; document.removeEventListener("visibilitychange", onShow); };
+  }, [snap.hasPrivateLink, snap.published, snap.draftId]);
+  return info;
+}
+
+const longDay = (iso: string) => {
+  const date = new Date(`${iso}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+};
+
+// Tells the couple how long their website stays online. Quiet while it is far off; a warning from 14 days before, and
+// again, with a way back, once it has closed (docs/RETENTION_PLAN.md).
+function RetentionNotice({ snap }: { snap: EditorSnapshot }) {
+  const info = useRetention(snap);
+  if (!info || !info.available) return null;
+  const address = snap.publicUrl ?? undefined;
+  const downloadReplies = () => {
+    bridge.loadReplies().then(data => bridge.downloadRepliesCsv(data, snap.rsvp === "count"), () => undefined);
+  };
+  const canDownload = snap.rsvp === "count" || snap.rsvp === "rsvp";
+
+  if (info.stage === "hidden" || info.stage === "delete_due") {
+    return (
+      <div className="retention-notice alert" role="alert" data-retention="closed">
+        <p>
+          <strong>Your website closed on {longDay(info.endsOn ?? "")}.</strong>{" "}
+          Everything is deleted for good on {longDay(info.deleteOn ?? "")}. Download your replies before then.
+        </p>
+        <p className="retention-actions">
+          {canDownload ? <button type="button" className="button small outline" onClick={downloadReplies}>Download replies</button> : null}
+          <TalkToUs topic="restore" address={address} lead="Want it back? Talk to us:" />
+        </p>
+      </div>
+    );
+  }
+  if (info.stage === "keep" && info.hasClock) {
+    const days = info.daysLeft ?? 0;
+    const soon = days <= (info.warnDays ?? 14);
+    if (soon) {
+      return (
+        <div className="retention-notice warn" role="status" data-retention="soon">
+          <p>
+            <strong>Your website closes on {longDay(info.endsOn ?? "")}</strong> ({days <= 0 ? "today" : `in ${days} ${days === 1 ? "day" : "days"}`}).
+            Download your replies now, or ask us to keep it online longer.
+          </p>
+          <p className="retention-actions">
+            {canDownload ? <button type="button" className="button small outline" onClick={downloadReplies}>Download replies</button> : null}
+            <TalkToUs topic="extend" address={address} lead="Need longer? Talk to us:" />
+          </p>
+        </div>
+      );
+    }
+    if (info.endsBeforeEvent) {
+      return (
+        <div className="retention-notice warn" role="status" data-retention="before-event">
+          <p>
+            <strong>Your website will close on {longDay(info.endsOn ?? "")}, before your event on {longDay(info.lastEventDate ?? "")}.</strong>{" "}
+            To keep it online through your event, ask us to extend it.
+          </p>
+          <p className="retention-actions"><TalkToUs topic="extend" address={address} lead="Talk to us:" /></p>
+        </div>
+      );
+    }
+    if (snap.published) {
+      return (
+        <p className="retention-notice quiet" data-retention="quiet">
+          Online until {longDay(info.endsOn ?? "")}. <TalkToUs topic="extend" address={address} lead="Need longer? Talk to us:" />
+        </p>
+      );
+    }
+  }
+  if (!info.hasClock && info.estimateBeforeEvent && info.estimatedEndsOn) {
+    return (
+      <div className="retention-notice warn" role="status" data-retention="estimate-before-event">
+        <p>
+          <strong>If you publish today, your website would close on {longDay(info.estimatedEndsOn)}, before your event on {longDay(info.lastEventDate ?? "")}.</strong>{" "}
+          You can publish later, or ask us to extend it.
+        </p>
+        <p className="retention-actions"><TalkToUs topic="extend" address={address} lead="Talk to us:" /></p>
+      </div>
+    );
+  }
+  return null;
 }
 
 function sectionHint(key: SectionKey, snap: EditorSnapshot): string {
@@ -290,6 +388,7 @@ export function EditorPage() {
         </div>
       </header>
 
+      <RetentionNotice snap={snap} />
       <ShareGuide snap={snap} />
 
       <div className="editor-workspace" data-tab={mobileTab}>

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Icon, IconName, Logo, faqs, plans, templates, galleryTemplates } from "./shared";
 import { bridge } from "./bridge";
-import { RecoveryBanner } from "./extras";
+import { RecoveryBanner, TalkToUs } from "./extras";
 import { TemplateStrip } from "./TemplateStrip";
 export function HomePage() {
   const [yearly, setYearly] = useState(true)
@@ -347,6 +347,9 @@ export function HomePage() {
           <a href="#pricing">Pricing</a>
           <a href="#faq-list">FAQs</a>
         </nav>
+        <p className="footer-talk">
+          <TalkToUs topic="custom" lead="Want something unique? Talk to us:" />
+        </p>
         <div className="socials">
           <a href="#instagram" aria-label="Instagram">
             ◎

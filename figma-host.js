@@ -307,6 +307,10 @@
       notify();
     },
 
+    // Retention: when the website is kept until, and the "Talk to us" links
+    loadRetention() { return typeof window.loadRetention === 'function' ? window.loadRetention() : Promise.resolve({ available: false }); },
+    contactLinks(topic, address) { return window.InviteContact ? window.InviteContact.links(topic, address) : { whatsapp: '', email: '' }; },
+
     // Photos
     mediaLoad() { return typeof window.loadMedia === 'function' ? window.loadMedia() : Promise.resolve(); },
     mediaUpload(files, onProgress) { return window.uploadMediaPhotos(files, onProgress); },

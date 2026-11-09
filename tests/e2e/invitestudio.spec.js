@@ -448,7 +448,7 @@ test.describe('guest replies', () => {
 
   // A draft that is saved online (cloud id and edit token on this device), opened the way a returning couple opens it,
   // with a stand-in photo service. Nothing reaches production.
-  async function openSavedDraft(page, { enabled = true, reason = '' } = {}) {
+  async function openSavedDraft(page, { enabled = true, reason = '', retention = null, published = false } = {}) {
     const wid = '55555555-5555-4555-8555-555555555555', token = 'm'.repeat(43);
     const calls = { uploads: [], patches: [], deleted: [], orders: [] };
     const photos = [];
@@ -471,6 +471,8 @@ test.describe('guest replies', () => {
       const request = route.request(), url = new URL(request.url()), method = request.method();
       const json = (body, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
       const base = `/api/weddings/${wid}/media`;
+      if (url.pathname === `/api/weddings/${wid}/retention`) return json(retention || { available: false });
+      if (url.pathname === `/api/weddings/${wid}/rsvps` && method === 'GET') return json({ replies: [{ id: '99999999-9999-4999-8999-999999999999', name: 'Meera Nair', attending: true, party: 2, events: {}, needs: '', message: '', createdAt: '2027-01-01T10:00:00Z', updatedAt: '2027-01-01T10:00:00Z' }], totals: { replies: 1, attending: 1, notAttending: 0, headcount: 2, byEvent: {} } });
       if (url.pathname === base && method === 'GET') return json(view());
       if (url.pathname === base && method === 'POST') {
         const parts = parseMultipart(request);
@@ -592,5 +594,83 @@ test.describe('guest replies', () => {
     expect(sources.filter(src => /^\/media\/w\//.test(src)).length).toBeGreaterThanOrEqual(3);
     expect(sources.some(src => /-full\.webp$/.test(src))).toBe(true);
     expect(await page.locator('[data-public-invitation] img[alt="Photo 4"]').count()).toBeGreaterThan(0);
+  });
+
+  // ---- Retention: how long the website stays online (docs/RETENTION_PLAN.md, step 2) ----------------------------
+  const keepInfo = over => ({ available: true, hasClock: true, endsOn: '2027-09-20', deleteOn: '2027-10-04', stage: 'keep', daysLeft: 200, graceDays: 14, warnDays: 14, source: 'event', lastEventDate: '2027-07-20', endsBeforeEvent: false, closed: false, ...over });
+
+  test('retention: far from the end date the editor says nothing (a draft that is not live)', async ({ page }) => {
+    await openSavedDraft(page, { retention: keepInfo({}) });
+    await page.waitForTimeout(800);
+    await expect(page.locator('[data-retention]')).toHaveCount(0);
+  });
+
+  test('retention: 14 days before the end, a warning with a way to download replies and ask for more time', async ({ page }) => {
+    await openSavedDraft(page, { retention: keepInfo({ endsOn: '2027-09-20', daysLeft: 9 }) });
+    const notice = page.locator('[data-retention="soon"]');
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText('Your website closes on 20 September 2027');
+    await expect(notice).toContainText('in 9 days');
+    await expect(notice.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/919567882568\?text=.*keep%20my%20InviteStudio%20website%20online%20for%20longer/);
+    await expect(notice.getByRole('link', { name: 'Email' })).toHaveAttribute('href', /^mailto:abinalyas@gmail\.com\?subject=Keep%20my%20InviteStudio%20website%20longer/);
+    const download = page.waitForEvent('download');
+    await notice.getByRole('button', { name: 'Download replies' }).click();
+    expect((await download).suggestedFilename()).toBe('wedding-replies.csv');
+  });
+
+  test('retention: after it closes, the couple is told when everything is deleted and how to get it back', async ({ page }) => {
+    await openSavedDraft(page, { retention: keepInfo({ stage: 'hidden', endsOn: '2027-09-20', deleteOn: '2027-10-04', daysLeft: -3, closed: true }) });
+    const notice = page.locator('[data-retention="closed"]');
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText('closed on 20 September 2027');
+    await expect(notice).toContainText('deleted for good on 4 October 2027');
+    await expect(notice.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /bring%20back%20my%20InviteStudio%20website|would%20like%20it%20back/i);
+    await expect(notice.getByRole('button', { name: 'Download replies' })).toBeVisible();
+  });
+
+  test('retention: a date that falls before the event is called out', async ({ page }) => {
+    await openSavedDraft(page, { retention: keepInfo({ endsOn: '2027-06-01', lastEventDate: '2027-07-20', endsBeforeEvent: true, daysLeft: 120 }) });
+    await expect(page.locator('[data-retention="before-event"]')).toContainText('before your event on 20 July 2027');
+  });
+
+  test('retention: before the migration is run, or without a clock, there is no notice and no error', async ({ page }) => {
+    await openSavedDraft(page, { retention: { available: false } });
+    await page.waitForTimeout(800);
+    await expect(page.locator('[data-retention]')).toHaveCount(0);
+  });
+
+  test('an invitation that has ended says so to guests, with the couple\'s way back', async ({ page }) => {
+    await page.route('**/s/asha-ravi', route => route.fulfill({ contentType: 'text/html', body: require('fs').readFileSync('index.html', 'utf8') }));
+    await page.route('**/api/**', route => route.fulfill({ status: 410, contentType: 'application/json', body: JSON.stringify({ error: { code: 'ENDED', message: 'This invitation has ended.' } }) }));
+    await page.goto('/s/asha-ravi');
+    await expect(page.getByRole('heading', { name: 'This invitation has ended.' })).toBeVisible();
+    await expect(page.locator('[data-public-invitation]')).toHaveCount(0);
+    const contact = page.locator('[data-ended-contact]');
+    await expect(contact.getByRole('link', { name: 'WhatsApp us' })).toHaveAttribute('href', /^https:\/\/wa\.me\/919567882568\?text=.*asha-ravi/);
+    await expect(contact.getByRole('link', { name: 'Email us' })).toHaveAttribute('href', /^mailto:abinalyas@gmail\.com\?subject=/);
+  });
+
+  test('"Talk to us" is on the home page for people who want something unique', async ({ page }) => {
+    await page.goto('/');
+    const talk = page.locator('.footer-talk');
+    await expect(talk).toContainText('Want something unique?');
+    await expect(talk.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/919567882568\?text=.*made%20just%20for%20us/);
+    await expect(talk.getByRole('link', { name: 'Email' })).toHaveAttribute('href', /^mailto:abinalyas@gmail\.com/);
+  });
+
+  test('retention: a draft that would close before the event is warned before it is published', async ({ page }) => {
+    await openSavedDraft(page, { retention: keepInfo({ hasClock: false, endsOn: null, deleteOn: null, stage: 'no_clock', daysLeft: null, source: 'none', estimatedEndsOn: '2027-06-01', estimateBeforeEvent: true, lastEventDate: '2027-12-20' }) });
+    const notice = page.locator('[data-retention="estimate-before-event"]');
+    await expect(notice).toContainText('If you publish today, your website would close on 1 June 2027');
+    await expect(notice).toContainText('before your event on 20 December 2027');
+  });
+
+  test('retention: the Share dialog shows how long the website will stay online', async ({ page }) => {
+    await openSavedDraft(page, { retention: keepInfo({ hasClock: false, endsOn: null, deleteOn: null, stage: 'no_clock', daysLeft: null, source: 'none', estimatedEndsOn: '2027-09-20', estimateBeforeEvent: false }) });
+    await page.waitForTimeout(600);
+    await page.getByRole('button', { name: /Share invitation/ }).first().click();
+    const note = page.locator('[data-kept-note]');
+    await expect(note).toContainText('Once live, your website stays online until 20 September 2027');
+    await expect(note.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/919567882568/);
   });
 });

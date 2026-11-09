@@ -28,7 +28,13 @@ export async function onRequest(context) {
       limit: '1'
     });
     const weddings = await db(env, `weddings?${query}`);
-    if (!weddings?.[0]) throw new ApiError('Invitation not found.', 404, 'NOT_FOUND');
+    if (!weddings?.[0]) {
+      // An invitation that the cleanup has closed gets its own answer, so guests are told it has ended rather than
+      // that the link is wrong. If the retention migration has not been run, this simply stays "not found".
+      const ended = await db(env, `weddings?${new URLSearchParams({ select: 'id', slug: `eq.${slug}`, retention_hidden_at: 'not.is.null', limit: '1' })}`).catch(() => null);
+      if (ended?.[0]) throw new ApiError('This invitation has ended.', 410, 'ENDED');
+      throw new ApiError('Invitation not found.', 404, 'NOT_FOUND');
+    }
     const wedding = weddings[0];
 
     // Events come from wedding.content.functions (the single event source). Photos

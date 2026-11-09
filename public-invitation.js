@@ -67,7 +67,7 @@
       const data = await window.inviteStudioApi.getPublishedWedding(slug);
       state.publicInvitation = { status: 'ready', slug, data };
     } catch (error) {
-      state.publicInvitation = { status: error.status === 404 ? 'not-found' : 'error', slug, data: null };
+      state.publicInvitation = { status: error.status === 404 ? 'not-found' : error.status === 410 ? 'ended' : 'error', slug, data: null };
     }
     render();
   };
@@ -84,6 +84,12 @@
       body = centred('<p class="muted">Loading invitation…</p>');
     } else if (view.status === 'error') {
       body = centred('<h1 style="font-family:var(--serif);font-size:34px">We could not load this invitation.</h1><p class="muted">Check your connection and try again.</p><button class="btn dark" onclick="loadPublicInvitation(state.publicInvitation.slug)">Try again</button>');
+    } else if (view.status === 'ended') {
+      // The couple's own route back during the grace period (docs/RETENTION_PLAN.md): email or WhatsApp, with this
+      // website's address already in the message.
+      const links = window.InviteContact ? window.InviteContact.links('restore', `${window.location.origin}/s/${view.slug}`) : { whatsapp: '', email: '' };
+      const way = [links.whatsapp ? `<a class="btn small" href="${esc(links.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp us</a>` : '', links.email ? `<a class="btn small" href="${esc(links.email)}">Email us</a>` : ''].filter(Boolean).join(' ');
+      body = centred('<h1 style="font-family:var(--serif);font-size:34px">This invitation has ended.</h1><p class="muted">Invitations are online for a limited time after the celebration, and this one is no longer available.</p>' + (way ? `<p class="muted" style="margin-top:22px">Are you the couple? You may still be able to get it back.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap" data-ended-contact>${way}</div>` : '') + '<p style="margin-top:26px"><a class="btn dark" href="/">Create an InviteStudio website</a></p>');
     } else {
       body = centred('<h1 style="font-family:var(--serif);font-size:34px">This invitation is not available.</h1><p class="muted">The link may be incorrect, or the invitation is not published right now.</p><a class="btn dark" href="/">Create an InviteStudio website</a>');
     }
