@@ -382,9 +382,6 @@ export function EditorPage() {
           <button className="editor-publish" type="button" onClick={publish}>
             Share invitation <Icon name={snap.published ? "check" : "chevron"} size={17} />
           </button>
-          <button className="editor-action editor-advanced" type="button" onClick={() => bridge.openAdvanced()}>
-            Advanced editing
-          </button>
         </div>
       </header>
 
@@ -460,7 +457,6 @@ export function EditorPage() {
               <button type="button" className="btn small" onClick={() => bridge.copyPrivateLink()}>Copy private link</button>
             </div>
           ) : null}
-          <button type="button" className="btn small mobile-only" onClick={() => bridge.openAdvanced()}>Advanced editing</button>
         </aside>
 
         <section className="editor-canvas-area" id="panel-preview">

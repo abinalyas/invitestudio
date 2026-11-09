@@ -41,7 +41,8 @@ async function useTemplate(page, number) {
   await expect(page.getByRole('heading', { name: EXPECTED_TEMPLATES[number].name })).toBeVisible({ timeout: 15000 });
   await page.getByRole('button', { name: /use this template/i }).click();
   await expect(page).toHaveURL(new RegExp(`/editor/${number}$`), { timeout: 15000 });
-  await expect(page.locator('button', { hasText: /advanced editing/i }).first()).toBeAttached();
+  // The old full editor is gone: the designer is the only editor.
+  await expect(page.locator('button', { hasText: /advanced editing/i })).toHaveCount(0);
 }
 
 test('the home design renders, and only weddings are offered at launch', async ({ page }) => {
@@ -126,14 +127,6 @@ test('returning to the site offers to continue the draft', async ({ page }) => {
   await expect(banner).toBeVisible({ timeout: 15000 });
   await banner.getByRole('button', { name: /continue editing/i }).click();
   await expect(page.getByLabel('Couple or celebration names')).toHaveValue(title, { timeout: 15000 });
-});
-
-test('advanced editing opens the full editor, and the designer view returns', async ({ page }) => {
-  await useTemplate(page, 5);
-  await page.getByRole('button', { name: /advanced editing/i }).click();
-  await expect(page.locator('.editor-rail')).toBeVisible({ timeout: 15000 });
-  await page.getByRole('button', { name: /designer view/i }).click();
-  await expect(page.getByLabel('Couple or celebration names')).toBeVisible({ timeout: 15000 });
 });
 
 test('the editor publishes through the existing dialog and the link is shared', async ({ page }) => {

@@ -59,7 +59,7 @@
 .section-select strong { display: block; font-weight: 600; }
 .section-select small { display: block; font-size: 13px; color: #6b6760; }
 .section-row.is-hidden .section-select strong { color: #6b6760; }
-.section-select:focus-visible, .visibility-switch input:focus-visible + span, .design-option:focus-visible, .save-status button:focus-visible, .editor-form button:focus-visible, .visibility-field input:focus-visible, .editor-advanced:focus-visible, .editor-publish:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }
+.section-select:focus-visible, .visibility-switch input:focus-visible + span, .design-option:focus-visible, .save-status button:focus-visible, .editor-form button:focus-visible, .visibility-field input:focus-visible, .editor-publish:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }
 .visibility-switch { position: relative; display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; margin-right: 6px; cursor: pointer; }
 .visibility-switch input { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
 .visibility-switch span { position: relative; width: 40px; height: 22px; border-radius: 999px; background: #8a8276; transition: background .2s; }
@@ -120,7 +120,7 @@
   .editor-header { flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
   .editor-brand { min-width: 0; flex: 1 1 auto; }
   .editor-brand strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .device-switcher, .editor-advanced, .editor-header-actions > .editor-action:not(.editor-advanced):not(.editor-replies) { display: none; }
+  .device-switcher, .editor-header-actions > .editor-action:not(.editor-replies) { display: none; }
   .editor-header-actions { gap: 8px; }
   .save-status { min-height: 40px; padding: 0 10px; font-size: 13px; }
   .editor-workspace { display: block; min-height: 0; padding: 12px 12px 104px; }
@@ -473,6 +473,8 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
 .photo-add input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 .photo-add.disabled { opacity: .55; cursor: not-allowed; }
 .photo-add:focus-within { outline: 2px solid #145c37; outline-offset: 2px; }
+/* The generic .editor-form label rule makes labels wrap and align to the baseline, which pinned this button's text to its top edge. */
+.editor-form label.photo-add { display: inline-flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 0; }
 .photo-problems { margin: 6px 0; padding-left: 18px; color: #a3261c; font-size: .85rem; }
 .photo-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 10px; }
 .photo-list li { display: grid; grid-template-columns: 72px 1fr; gap: 12px; align-items: start; padding: 10px; border: 1px solid var(--line, #e6ddd3); border-radius: 10px; background: #fff; }
