@@ -96,6 +96,9 @@ No IP address is stored. Rate limiting uses a short-lived hashed counter.
 
 ## Retention (decision 6)
 
+> Superseded by `docs/RETENTION_PLAN.md`, which makes the keeping time a setting (per design and per website), adds a
+> grace period, and covers photos. The summary below is kept for history.
+
 Everything about a wedding (the invitation page and its replies) is deleted **2 months after the wedding date**. The
 date is the last event date, or the wedding date if there are no events.
 

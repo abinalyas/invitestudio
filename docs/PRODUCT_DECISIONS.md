@@ -79,5 +79,6 @@ These were reproduced before fixing, and each fix has regression tests:
 ## 7. Not decided here
 
 - Monetisation after early access.
+- **Keeping time and extensions:** see `docs/RETENTION_PLAN.md` (2 months by default, longer on request or for a fee, all of it configurable).
 - Image storage provider and limits (needed before hero and intro media). **Decided: Cloudflare R2; see `docs/MEDIA_PLAN.md`** (limits there are suggestions to confirm).
 - Guest-facing RSVP form design (Phase 7 design work).
