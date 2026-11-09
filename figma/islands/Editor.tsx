@@ -8,7 +8,7 @@
 //   scrolls the preview to it. Both stay in step.
 // - Only supported content is editable here. Palette, typography and layout belong to
 //   the template. Photos stay disabled until persistent photo storage exists.
-import { useEffect, useRef, useState, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { Icon, IconName, Logo } from "./shared";
 import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, RetentionInfo, RsvpData } from "./bridge";
 import { useBridgeVersion, TalkToUs } from "./extras";
@@ -590,12 +590,33 @@ function ShareGuide({ snap }: { snap: EditorSnapshot }) {
   const [hidden, setHidden] = useState(() => {
     try { return window.localStorage.getItem(guideKey) === "1"; } catch { return false; }
   });
+  const [copied, setCopied] = useState<"" | "yes" | "no">("");
+  async function copyLink(url: string) {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied("yes");
+    } catch {
+      setCopied("no");
+    }
+    window.setTimeout(() => setCopied(""), 2500);
+  }
   if (snap.published && snap.publicUrl) {
+    const url = snap.publicUrl;
     return (
-      <p className="share-guide share-guide-live" role="note">
-        <strong>Your invitation is live</strong> at <a href={snap.publicUrl} target="_blank" rel="noopener noreferrer">{snap.publicUrl.replace(/^https?:\/\//, "")}</a>.
-        After you edit, open <strong>Share invitation</strong> and choose <strong>Update live page</strong> to show your changes.
-      </p>
+      <section className="live-banner" aria-label="Your invitation is live">
+        <span className="live-badge" aria-hidden="true"><Icon name="check" size={20} /></span>
+        <div className="live-main">
+          <strong className="live-title">Your invitation is live</strong>
+          <a className="live-link" href={url} target="_blank" rel="noopener noreferrer">{url.replace(/^https?:\/\//, "")}</a>
+          <p className="live-hint">
+            Made changes? Open <strong>Share invitation</strong>, then choose <strong>Update live page</strong> to show them on this link.
+          </p>
+        </div>
+        <div className="live-actions">
+          <a className="btn small" href={url} target="_blank" rel="noopener noreferrer">Open</a>
+          <button type="button" className="btn small" onClick={() => void copyLink(url)}>{copied === "yes" ? "Copied" : copied === "no" ? "Select the link to copy" : "Copy link"}</button>
+        </div>
+      </section>
     );
   }
   if (hidden) return null;
@@ -668,6 +689,75 @@ export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
   const [name, setName] = useState("");
   const trimmed = name.trim();
   const presets = bridge.eventPresets();
+  // While an event is being dragged, the list shows the order it would land in; the change is saved when it is dropped.
+  const [drag, setDrag] = useState<{ id: string; order: string[] } | null>(null);
+  const [announce, setAnnounce] = useState("");
+  const listRef = useRef<HTMLUListElement>(null);
+  const focusGrip = useRef<string | null>(null);
+  const stopDrag = useRef<(() => void) | null>(null);
+  useEffect(() => () => stopDrag.current?.(), []);
+  useEffect(() => {
+    // Keep keyboard focus on the handle that was just used, after the list re-orders.
+    const id = focusGrip.current;
+    if (!id) return;
+    focusGrip.current = null;
+    [...(listRef.current?.querySelectorAll<HTMLElement>("[data-grip]") ?? [])].find(el => el.dataset.grip === id)?.focus();
+  });
+  const shown = drag ? (drag.order.map(id => snap.events.find(item => item.id === id)).filter(Boolean) as EventItem[]) : snap.events;
+
+  function startDrag(event: ReactPointerEvent<HTMLButtonElement>, id: string) {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    event.preventDefault();
+    setOpenId(null);
+    const startIndex = snap.events.findIndex(item => item.id === id);
+    let order = snap.events.map(item => item.id);
+    setDrag({ id, order });
+    const move = (e: PointerEvent) => {
+      const others = [...(listRef.current?.querySelectorAll<HTMLElement>("[data-event-id]") ?? [])].filter(el => el.dataset.eventId !== id);
+      let target = others.length;
+      for (let i = 0; i < others.length; i++) {
+        const box = others[i].getBoundingClientRect();
+        if (e.clientY < box.top + box.height / 2) { target = i; break; }
+      }
+      const rest = order.filter(x => x !== id);
+      const next = [...rest.slice(0, target), id, ...rest.slice(target)];
+      if (next.join("|") !== order.join("|")) {
+        order = next;
+        setDrag({ id, order });
+      }
+    };
+    const end = () => {
+      stop();
+      const to = order.indexOf(id);
+      if (to !== startIndex) {
+        bridge.moveEvent(id, to);
+        const title = snap.events[startIndex]?.title || "Event";
+        setAnnounce(`${title} moved to position ${to + 1} of ${order.length}.`);
+      }
+      setDrag(null);
+    };
+    const stop = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+      stopDrag.current = null;
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+    stopDrag.current = stop;
+  }
+
+  function gripKey(event: ReactKeyboardEvent<HTMLButtonElement>, id: string, index: number) {
+    const delta = event.key === "ArrowUp" ? -1 : event.key === "ArrowDown" ? 1 : 0;
+    if (!delta) return;
+    event.preventDefault();
+    const to = index + delta;
+    if (to < 0 || to >= snap.events.length) return;
+    focusGrip.current = id;
+    bridge.moveEvent(id, to);
+    setAnnounce(`${snap.events[index]?.title || "Event"} moved to position ${to + 1} of ${snap.events.length}.`);
+  }
 
   function quickAdd(title: string) {
     const id = bridge.addEvent(title);
@@ -684,20 +774,40 @@ export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
 
   return (
     <div className="editor-form events-panel">
-      <p className="tiny muted">Each event has its own date, venue and travel details. Events appear on the invitation in the order you add them.</p>
+      <p className="tiny muted">Each event has its own date, venue and travel details. Guests see events in the order shown here.
+        {snap.events.length > 1 ? " Drag the handle on the left to change the order, or focus it and use the up and down arrow keys." : ""}</p>
+      <p className="visually-hidden" role="status" aria-live="polite">{announce}</p>
       {snap.events.length === 0 ? <p className="empty-state">No events yet. Add the first celebration below.</p> : null}
-      <ul className="event-list">
-        {snap.events.map(item => (
-          <li key={item.id} className="event-item">
-            <button
-              type="button"
-              className="event-toggle"
-              aria-expanded={openId === item.id}
-              onClick={() => setOpenId(openId === item.id ? null : item.id)}
-            >
-              <strong>{item.title || "Untitled event"}</strong>
-              <small>{item.visible ? [item.date, item.venue].filter(Boolean).join(" · ") || "Details to add" : "Hidden from guests"}</small>
-            </button>
+      <ul className={drag ? "event-list is-dragging" : "event-list"} ref={listRef}>
+        {shown.map((item, index) => (
+          <li key={item.id} className={drag?.id === item.id ? "event-item dragging" : "event-item"} data-event-id={item.id}>
+            <div className="event-row">
+              {snap.events.length > 1 ? (
+                <button
+                  type="button"
+                  className="event-grip"
+                  data-grip={item.id}
+                  aria-label={`Move ${item.title || "Untitled event"}. Drag, or use the up and down arrow keys.`}
+                  onPointerDown={event => startDrag(event, item.id)}
+                  onKeyDown={event => gripKey(event, item.id, index)}
+                >
+                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="currentColor">
+                    <circle cx="6" cy="4" r="1.5" /><circle cx="12" cy="4" r="1.5" />
+                    <circle cx="6" cy="9" r="1.5" /><circle cx="12" cy="9" r="1.5" />
+                    <circle cx="6" cy="14" r="1.5" /><circle cx="12" cy="14" r="1.5" />
+                  </svg>
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="event-toggle"
+                aria-expanded={openId === item.id}
+                onClick={() => setOpenId(openId === item.id ? null : item.id)}
+              >
+                <strong>{item.title || "Untitled event"}</strong>
+                <small>{item.visible ? [item.date, item.venue].filter(Boolean).join(" · ") || "Details to add" : "Hidden from guests"}</small>
+              </button>
+            </div>
             {openId === item.id ? (
               <EventForm
                 key={item.id}

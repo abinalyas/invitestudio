@@ -911,7 +911,13 @@
 .figma-app .empty-state{ margin: 0; padding: 14px 16px; border-radius: 10px; background: #f7f1e9; color: #4f4b44; font-size: 15px; }
 .figma-app .event-list{ display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .figma-app .event-item{ border: 1px solid #ded9d0; border-radius: 12px; background: #fff; overflow: hidden; }
-.figma-app .event-toggle{ display: grid; gap: 2px; width: 100%; min-height: 56px; padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
+.figma-app .event-row{ display: flex; align-items: stretch; }
+.figma-app .event-grip{ flex: none; display: grid; place-items: center; width: 44px; border: 0; border-right: 1px solid #ece7dd; background: transparent; color: #6b6760; cursor: grab; touch-action: none; }
+.figma-app .event-grip:hover{ background: #f6f2ea; color: #0b2f20; }
+.figma-app .event-grip:focus-visible{ outline: 2px solid #145c37; outline-offset: -2px; background: #f6f2ea; }
+.figma-app .event-list.is-dragging, .figma-app .event-list.is-dragging *{ cursor: grabbing; user-select: none; }
+.figma-app .event-item.dragging{ border-color: #145c37; box-shadow: 0 8px 22px rgba(11, 47, 32, .22); position: relative; z-index: 1; }
+.figma-app .event-toggle{ flex: 1; min-width: 0; display: grid; gap: 2px; width: 100%; min-height: 56px; padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
 .figma-app .event-toggle small{ font-size: 13px; color: #6b6760; }
 .figma-app .event-form{ display: grid; gap: 14px; padding: 4px 14px 16px; border-top: 1px solid #ded9d0; }
 .figma-app .event-form label{ display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
@@ -1162,8 +1168,20 @@
 .figma-app .event-more > label, .figma-app .event-more > fieldset{ margin-top: 12px; }
 .figma-app .share-guide{ display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px 18px; margin: 0 20px 10px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 14px; background: #fffaf2; font-size: 13px; line-height: 1.5; color: var(--ink); }
 .figma-app .share-guide p{ margin: 0; }
-.figma-app .share-guide-live{ display: block; }
-.figma-app .share-guide-live a{ word-break: break-all; }
+.figma-app .live-banner{ display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px 16px; margin: 0 20px 12px; padding: 14px 18px; border: 1px solid #9cc9ad; border-left: 6px solid #145c37; border-radius: 14px; background: #eaf5ee; color: #0b2f20; box-shadow: 0 2px 10px rgba(20, 92, 55, .12); }
+.figma-app .live-badge{ display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #145c37; color: #fff; }
+.figma-app .live-main{ display: grid; gap: 2px; min-width: 0; }
+.figma-app .live-title{ font-size: 17px; line-height: 1.3; }
+.figma-app .live-link{ color: #0d5a2f; font-size: 16px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; word-break: break-all; }
+.figma-app .live-link:hover{ color: #083d20; }
+.figma-app .live-hint{ margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: #335044; }
+.figma-app .live-actions{ display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.figma-app .live-actions .btn{ display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
+.figma-app .live-actions .btn:hover{ background: #f3faf5; }
+.figma-app .live-actions .btn:focus-visible{ outline: 2px solid #145c37; outline-offset: 2px; }
+@media (max-width: 767px){.figma-app .live-banner{ grid-template-columns: auto 1fr; margin: 0 12px 8px; padding: 12px 14px; }
+.figma-app .live-actions{ grid-column: 1 / -1; justify-content: flex-start; }}
+.figma-app .visually-hidden{ position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .figma-app .share-steps{ display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; font-weight: 600; }
 .figma-app .share-steps li{ display: flex; align-items: center; gap: 6px; }
 .figma-app .share-steps li span{ display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--green, #145c37); color: #fff; font-size: 12px; }

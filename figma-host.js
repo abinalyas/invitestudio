@@ -275,6 +275,21 @@
       notify();
     },
 
+    // Moves an event to a new position (0 = first) in the order guests see.
+    moveEvent(eventId, toIndex) {
+      const p = project();
+      const list = p?.functions;
+      if (!Array.isArray(list)) return;
+      const from = list.findIndex(x => x.id === eventId);
+      const to = Math.max(0, Math.min(list.length - 1, Number(toIndex)));
+      if (from < 0 || !Number.isInteger(to) || to === from) return;
+      const [item] = list.splice(from, 1);
+      list.splice(to, 0, item);
+      p.updated = 'Just now';
+      save();
+      notify();
+    },
+
     removeEvent(eventId) {
       const p = project();
       if (!p) return;
