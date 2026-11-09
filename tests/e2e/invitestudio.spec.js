@@ -678,7 +678,7 @@ test.describe('guest replies', () => {
   // A draft that is saved online (cloud id and edit token on this device), served by a small stand-in for the server.
   async function savedDraftWithServer(page) {
     const wid = '77777777-7777-4777-8777-777777777777', token = 'r'.repeat(43);
-    const server = { version: 1, message: '', patches: [], dropPatches: false };
+    const server = { version: 1, message: '', patches: [], dropPatches: false, loseReply: false, getDelay: 0 };
     const wedding = () => ({
       id: wid, version: server.version, status: 'draft', visibility: 'private', slug: null, name: 'Mira & Arun', category: 'Wedding', template_id: 'savanna-sunset',
       title: 'Mira & Arun', event_date: '2027-01-20', location: '', message: server.message, story: '', hosts: '', locale: 'English', theme: {}, preferences: {},
@@ -703,13 +703,19 @@ test.describe('guest replies', () => {
     await page.route('**/api/**', route => {
       const request = route.request(), url = new URL(request.url()), method = request.method();
       const json = (body, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
-      if (url.pathname === `/api/weddings/${wid}` && method === 'GET') return json({ wedding: wedding(), photos: [] });
+      if (url.pathname === `/api/weddings/${wid}` && method === 'GET') {
+        const snapshot = { wedding: wedding(), photos: [] };     // the copy as it is when asked, even if it arrives late
+        if (!server.getDelay) return json(snapshot);
+        return new Promise(resolve => setTimeout(() => resolve(json(snapshot)), server.getDelay));
+      }
       if (url.pathname === `/api/weddings/${wid}` && method === 'PATCH') {
         if (server.dropPatches) return route.abort();           // the tab "crashed": the server never hears about this edit
         const body = request.postDataJSON();
+        if (body.version !== server.version) return json({ error: { code: 'VERSION_CONFLICT', message: 'The wedding changed elsewhere. Reload before saving.' } }, 409);
         server.patches.push(body);
         server.message = body.message ?? server.message;
         server.version += 1;
+        if (server.loseReply) return route.abort();              // the server took it; the tab never heard back
         return json({ wedding: wedding() });
       }
       if (url.pathname === '/api/edit-links') return json({ wedding: wedding(), photos: [] });
@@ -742,6 +748,38 @@ test.describe('guest replies', () => {
     await expect.poll(() => server.patches.length, { timeout: 10000 }).toBeGreaterThan(0);
     expect(server.patches[server.patches.length - 1]).toMatchObject({ message: 'Welcome from Mira and Arun', version: 1 });
     expect(server.message).toBe('Welcome from Mira and Arun');
+  });
+
+  test('a save the server accepted but the tab never heard back about does not lose the next edit', async ({ page }) => {
+    const { server } = await savedDraftWithServer(page);
+    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await expect(page.getByLabel(/Welcome message/)).toBeVisible();
+
+    server.loseReply = true;
+    await page.evaluate(() => window.InviteStudioBridge.update({ message: 'First words' }));
+    await expect.poll(() => server.patches.length, { timeout: 10000 }).toBe(1);
+    expect(server.version).toBe(2);                     // the server has it, this tab does not know
+
+    // More is typed straight away. The save of that text goes out against the old version and is refused, even though
+    // the only newer copy on the server is this tab's own.
+    await page.evaluate(() => window.InviteStudioBridge.update({ message: 'First words, then more' }));
+    server.loseReply = false;
+    await expect.poll(() => server.message, { timeout: 15000 }).toBe('First words, then more');
+    await page.reload();
+    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await expect(page.getByLabel(/Welcome message/)).toHaveValue('First words, then more');
+  });
+
+  test('text typed while the saved copy is still on its way is not replaced by it', async ({ page }) => {
+    const { server } = await savedDraftWithServer(page);
+    server.getDelay = 1500;
+    await page.reload();
+    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await expect(page.getByLabel(/Welcome message/)).toBeVisible();
+    await page.evaluate(() => window.InviteStudioBridge.update({ message: 'Typed during the load' }));
+    await page.waitForTimeout(2500);                    // the old copy has now arrived
+    await expect(page.getByLabel(/Welcome message/)).toHaveValue('Typed during the load');
+    await expect.poll(() => server.message, { timeout: 10000 }).toBe('Typed during the load');
   });
 
   test('edits that were already saved are not disturbed when the draft is reopened', async ({ page }) => {

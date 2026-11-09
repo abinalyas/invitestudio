@@ -373,7 +373,9 @@
     if (project.cloudId && tokenFor(project.cloudId) && window.inviteStudioApi?.enabled) {
       const unsent = ['pending', 'saving', 'retrying', 'error'].includes(project.cloudStatus);
       try {
+        const revisionBefore = metaFor(project).revision;
         const result = await window.inviteStudioApi.getWedding(project.cloudId, tokenFor(project.cloudId));
+        if (metaFor(project).revision !== revisionBefore) return;   // edited while this copy was on its way: keep the newer text
         if (unsent && keepsUnsentEdits(project, result.wedding)) {
           // This device holds edits the server never received (for example the tab crashed before the autosave ran).
           // Keep them and send them; never replace them with the older copy from the server.
@@ -609,12 +611,35 @@
     queueCloudSave(project);
   }
 
+  // The text fields of a draft, as the server stores them. Used to tell whether the server's copy is one this device wrote.
+  function textSnapshot(source, dateKey) {
+    const t = value => String(value || '').trim();
+    return JSON.stringify([t(source.title), t(source[dateKey]), t(source.location), t(source.message), t(source.story), t(source.hosts)]);
+  }
+
   function shouldRetry(error) {
     return !error?.code || error.status >= 500 || error.status === 408 || error.status === 429;
   }
 
   function retryDelay(attempt) {
     return Math.min(15000, 1000 * (2 ** Math.max(0, attempt - 1)));
+  }
+
+  // A version conflict can be this device's own earlier save: it reached the server, but the tab closed before the reply.
+  // When the server's text is exactly what this device has sent since its last confirmed save, take its version and send the newer edits on top.
+  // Anything else (a different copy) stays a conflict.
+  async function adoptOwnLandedWrite(project) {
+    try {
+      if (!(project.sentTexts || []).length) return false;
+      const result = await window.inviteStudioApi.getWedding(project.cloudId, tokenFor(project.cloudId));
+      const wedding = result?.wedding;
+      if (!wedding || !project.sentTexts.includes(textSnapshot(wedding, 'event_date'))) return false;
+      project.cloudVersion = wedding.version;
+      const meta = metaFor(project);
+      meta.revision += 1;
+      queueCloudSave(project, 0);
+      return true;
+    } catch { return false; }
   }
 
   async function syncProject(project, options = {}) {
@@ -628,6 +653,10 @@
     if (!Number.isInteger(version) || version < 1) return;
     const revisionAtRequest = meta.revision;
     const payload = JSON.parse(JSON.stringify(cloudPayload(project)));
+    // Remember what this device is about to send (kept on disk too). If the tab is closed after the server accepts it
+    // but before the reply arrives, the server is one version ahead of this device; this lets that be recognised as
+    // this device's own write, not another device's edit.
+    project.sentTexts = [...(project.sentTexts || []).filter(item => item !== textSnapshot(payload, 'date')), textSnapshot(payload, 'date')].slice(-6);
     meta.inFlight = true;
     project.cloudStatus = 'saving';
     paintStatus(project);
@@ -644,12 +673,19 @@
       project.cloudStatus = isCurrent ? 'saved' : 'pending';
       project.cloudSavedAt = Date.now();
       project.cloudError = '';
+      project.sentTexts = [];
       meta.retryCount = 0;
       localSave();
       paintStatus(project);
       if (!isCurrent) queueCloudSave(project);
     } catch (error) {
-      const conflict = error.code === 'VERSION_CONFLICT';
+      let conflict = error.code === 'VERSION_CONFLICT';
+      if (conflict && await adoptOwnLandedWrite(project)) {
+        project.cloudStatus = 'pending';
+        localSave();
+        paintStatus(project);
+        return;
+      }
       project.cloudStatus = conflict ? 'conflict' : 'error';
       project.cloudError = error.message;
       localSave();
@@ -747,7 +783,12 @@
         continue;
       }
       try {
+        const revisionBefore = metaFor(project).revision;
         const result = await window.inviteStudioApi.getWedding(project.cloudId, token);
+        if (metaFor(project).revision !== revisionBefore) {
+          // The person edited while this copy was on its way. Their newer text must not be replaced by it.
+          continue;
+        }
         mergeServerWedding(project, result.wedding);
         project.cloudStatus = 'saved';
         paintStatus(project);
