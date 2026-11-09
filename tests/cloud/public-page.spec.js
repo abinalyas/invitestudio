@@ -60,3 +60,18 @@ test('an invalid public address is handled without an error', async ({ page }) =
   await expect(page.getByText('This invitation is not available.')).toBeVisible({ timeout: 15000 });
   expect(errors).toEqual([]);
 });
+
+test('a live invitation has no InviteStudio header, while the not-available page keeps its way back', async ({ page, request }) => {
+  const slug = `page-${randomUUID().slice(0, 8)}`;
+  const title = `No Header ${slug}`;
+  await createPublished(request, { title, slug });
+
+  await page.goto(`/s/${slug}`);
+  await expect(page.locator('[data-public-invitation]')).toContainText(title, { timeout: 15000 });
+  await expect(page.locator('header.topbar')).toHaveCount(0);
+  await expect(page.locator('a.brand')).toHaveCount(0);
+
+  await page.goto(`/s/missing-${randomUUID().slice(0, 8)}`);
+  await expect(page.getByText('This invitation is not available.')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('a.brand')).toHaveCount(1);
+});
