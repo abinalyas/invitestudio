@@ -73,12 +73,17 @@ test('the last step says what it does before and inside the Share dialog', () =>
   const editor = read('figma/islands/Editor.tsx');
   assert.match(editor, /Share invitation <Icon/); // the header button
   assert.doesNotMatch(editor, /\{snap\.published \? "Published" : "Publish"\}/);
-  assert.match(editor, /Preview is private\./);
-  assert.match(editor, /Nothing is public until you do, and you can edit afterwards or take it offline any time\./);
+  assert.match(editor, /Right now only you can see your invitation\./);
+  assert.match(editor, /anyone who has\s+the link can open it\. You can keep editing afterwards, or take it offline any time\./);
+  assert.doesNotMatch(editor, /Nothing is public until you do/, 'one voice: private now, a link once live (no "nothing is public" next to "anyone can open it")');
   assert.match(editor, /Update live page/); // the live state explains how changes go live
   const sync = read('cloud-sync.js');
-  for (const text of ['What it does.', 'Not public until you do this.', 'Guests can’t reply online yet.', 'You can change your mind.', 'Preview it first', 'Your link will be', 'Make it live']) {
+  for (const text of ['Right now it is private.', 'Only you can see your invitation.', 'Making it live gives it a web link.', 'Anyone who has the link can open it', 'Guests can reply from the live invitation.', 'You can change your mind.', 'Preview it first', 'Your link will be', 'Make it live']) {
     assert.ok(sync.includes(text), text);
+  }
+  // Replies are live, and the panel must never say they are not, or say nobody can see what a link makes visible.
+  for (const stale of ['Guests can’t reply online yet.', 'Guest responses are not open', 'Nobody can see your invitation yet', 'Not public until you do this.']) {
+    assert.equal(sync.includes(stale), false, `stale or contradictory wording: ${stale}`);
   }
   assert.match(sync, /data-preview-first/);
   assert.doesNotMatch(sync, /Publish invitation|Publish your invitation/);

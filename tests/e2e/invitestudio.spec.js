@@ -673,4 +673,119 @@ test.describe('guest replies', () => {
     await expect(note).toContainText('Once live, your website stays online until 20 September 2027');
     await expect(note.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/919567882568/);
   });
+
+  // ---- Draft recovery and the Share panel's wording -------------------------------------------------------------
+  // A draft that is saved online (cloud id and edit token on this device), served by a small stand-in for the server.
+  async function savedDraftWithServer(page) {
+    const wid = '77777777-7777-4777-8777-777777777777', token = 'r'.repeat(43);
+    const server = { version: 1, message: '', patches: [], dropPatches: false };
+    const wedding = () => ({
+      id: wid, version: server.version, status: 'draft', visibility: 'private', slug: null, name: 'Mira & Arun', category: 'Wedding', template_id: 'savanna-sunset',
+      title: 'Mira & Arun', event_date: '2027-01-20', location: '', message: server.message, story: '', hosts: '', locale: 'English', theme: {}, preferences: {},
+      cultural_preferences: {}, sections: [], intro_settings: {}, animation_settings: {}, content: { functions: [], copy: {}, gallery: {} }, updated_at: '2026-11-09T10:00:00Z'
+    });
+    await page.route('**/api/**', route => route.abort());
+    await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding', 'minimalist'));
+    await page.locator('#projectTitle').fill('Mira & Arun');
+    await page.locator('#projectDate').fill('2027-01-20');
+    await completeSetupSteps(page);
+    await page.evaluate(({ wid, token }) => {
+      const p = current();
+      p.id = wid; p.cloudId = wid; p.cloudVersion = 1; p.cloudStatus = 'saved'; p.createRequestId = null;
+      state.currentId = wid;
+      localStorage.setItem('invitestudio-edit-tokens', JSON.stringify({ [wid]: token }));
+      save();
+      p.cloudStatus = 'saved';      // save() marks a change as unsent; this draft starts out fully saved
+      localStorage.setItem('invitestudio-projects', JSON.stringify(state.projects));
+    }, { wid, token });
+    await page.unroute('**/api/**');
+    await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
+    await page.route('**/api/**', route => {
+      const request = route.request(), url = new URL(request.url()), method = request.method();
+      const json = (body, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
+      if (url.pathname === `/api/weddings/${wid}` && method === 'GET') return json({ wedding: wedding(), photos: [] });
+      if (url.pathname === `/api/weddings/${wid}` && method === 'PATCH') {
+        if (server.dropPatches) return route.abort();           // the tab "crashed": the server never hears about this edit
+        const body = request.postDataJSON();
+        server.patches.push(body);
+        server.message = body.message ?? server.message;
+        server.version += 1;
+        return json({ wedding: wedding() });
+      }
+      if (url.pathname === '/api/edit-links') return json({ wedding: wedding(), photos: [] });
+      return route.abort();
+    });
+    await page.reload();
+    return { server, wid };
+  }
+
+  test('a welcome message typed just before a crash is still there when the draft is reopened', async ({ page }) => {
+    const { server, wid } = await savedDraftWithServer(page);
+    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await expect(page.getByLabel(/Welcome message/)).toBeVisible();
+
+    // Type the message. The moment it is typed, this device must already know the server does not have it yet.
+    server.dropPatches = true;
+    await page.evaluate(() => window.InviteStudioBridge.update({ message: 'Welcome from Mira and Arun' }));
+    const stored = await page.evaluate(wid => JSON.parse(localStorage.getItem('invitestudio-projects')).find(p => p.id === wid), wid);
+    expect(stored.message).toBe('Welcome from Mira and Arun');
+    expect(stored.cloudStatus, 'marked as not yet sent, on disk, before the autosave runs').toBe('pending');
+
+    // The tab "crashes": the autosave never reached the server. Reopen.
+    await page.reload();
+    expect(server.message, 'the server still has the old (empty) message').toBe('');
+    server.dropPatches = false;
+    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await expect(page.getByLabel(/Welcome message/)).toHaveValue('Welcome from Mira and Arun');
+
+    // And it is sent now, on top of the version it was written against.
+    await expect.poll(() => server.patches.length, { timeout: 10000 }).toBeGreaterThan(0);
+    expect(server.patches[server.patches.length - 1]).toMatchObject({ message: 'Welcome from Mira and Arun', version: 1 });
+    expect(server.message).toBe('Welcome from Mira and Arun');
+  });
+
+  test('edits that were already saved are not disturbed when the draft is reopened', async ({ page }) => {
+    const { server } = await savedDraftWithServer(page);
+    server.message = 'Saved earlier';
+    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await expect(page.getByLabel(/Welcome message/)).toHaveValue('Saved earlier');
+    expect(server.patches).toHaveLength(0);
+  });
+
+  test('the Share panel says plainly: private now, a link when made live, anyone with the link can open it', async ({ page }) => {
+    await savedDraftWithServer(page);
+    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await expect(page.getByLabel(/Welcome message/)).toBeVisible();
+    // The note above the editor
+    const guide = page.locator('.share-guide');
+    await expect(guide).toContainText('Right now only you can see your invitation');
+    await expect(guide).toContainText('anyone who has the link can open it');
+    await expect(guide).not.toContainText('Nothing is public until you do');
+    // The dialog
+    await page.getByRole('button', { name: /Share invitation/ }).first().click();
+    const dialog = page.locator('#modal-title').locator('xpath=ancestor::*[contains(@class,"modal")][1]');
+    const text = await dialog.innerText();
+    expect(text).toContain('Right now it is private.');
+    expect(text).toContain('Only you can see your invitation.');
+    expect(text).toContain('Anyone who has the link can open it');
+    expect(text).toContain('Guests can reply from the live invitation.');
+    expect(text).not.toContain('Nobody can see your invitation yet');
+    expect(text).not.toContain('can’t reply online yet');
+    expect(text).not.toContain('for now the invitation is for viewing');
+  });
+
+  test('the Share panel describes replies the way this invitation is set up', async ({ page }) => {
+    await savedDraftWithServer(page);
+    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await expect(page.getByLabel(/Welcome message/)).toBeVisible();
+    for (const [mode, expected, absent] of [['contact', 'Guests will see your contact details', 'Guests can reply from the live invitation'], ['none', null, 'Replies.']]) {
+      await page.evaluate(mode => window.InviteStudioBridge.setRsvp(mode), mode);
+      await page.getByRole('button', { name: /Share invitation/ }).first().click();
+      const dialog = page.locator('#modal-title').locator('xpath=ancestor::*[contains(@class,"modal")][1]');
+      const text = await dialog.innerText();
+      if (expected) expect(text).toContain(expected);
+      expect(text).not.toContain(absent);
+      await page.getByRole('button', { name: 'Close' }).click();
+    }
+  });
 });

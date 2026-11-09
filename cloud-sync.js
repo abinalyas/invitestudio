@@ -345,6 +345,17 @@
     }
   };
 
+  // True when the server's copy is the one these unsent edits were made on (same version), or says the same thing, so
+  // keeping the device's copy loses nothing. A server copy that is newer AND different (another device edited it) is
+  // not covered here: that one still wins, as before.
+  function keepsUnsentEdits(project, wedding) {
+    if (!wedding) return false;
+    if (Number(wedding.version) === Number(project.cloudVersion)) return true;
+    const same = (a, b) => String(a || '').trim() === String(b || '').trim();
+    return same(project.title, wedding.title) && same(project.date, wedding.event_date) && same(project.location, wedding.location)
+      && same(project.message, wedding.message) && same(project.story, wedding.story) && same(project.hosts, wedding.hosts);
+  }
+
   window.continueLastDraft = async function continueLastDraft() {
     const project = projectForReference();
     const reference = draftReference();
@@ -360,8 +371,22 @@
     rememberDraftReference(project);
     render();
     if (project.cloudId && tokenFor(project.cloudId) && window.inviteStudioApi?.enabled) {
+      const unsent = ['pending', 'saving', 'retrying', 'error'].includes(project.cloudStatus);
       try {
         const result = await window.inviteStudioApi.getWedding(project.cloudId, tokenFor(project.cloudId));
+        if (unsent && keepsUnsentEdits(project, result.wedding)) {
+          // This device holds edits the server never received (for example the tab crashed before the autosave ran).
+          // Keep them and send them; never replace them with the older copy from the server.
+          project.cloudVersion = result.wedding.version;
+          mergeRecoveredChildren(project, result);
+          const meta = metaFor(project);
+          meta.revision = Math.max(meta.revision, 1);
+          project.cloudStatus = 'pending';
+          localSave();
+          render();
+          queueCloudSave(project, 0);
+          return;
+        }
         mergeServerWedding(project, result.wedding, true);
         mergeRecoveredChildren(project, result);
         project.cloudStatus = 'saved';
@@ -575,7 +600,12 @@
   }
 
   function scheduleCloudSave(project) {
+    const wasPending = project?.cloudStatus === 'pending';
     markDirty(project);
+    // save() has just written the draft to this device, but it did so before the draft was marked as unsent. If the tab
+    // crashed now, the device would hold the new text marked "saved", and reopening would replace it with the older
+    // copy from the server. Write the "unsent" mark too (once; later keystrokes already carry it).
+    if (project?.cloudId && !wasPending) localSave();
     queueCloudSave(project);
   }
 
@@ -892,14 +922,19 @@
     const keptBlock = keptDate
       ? `<p class="tiny" style="margin:12px 0 0;${keptBefore ? 'color:#9b5147' : 'color:#6b6760'}" data-kept-note>${live ? 'Your website stays online until' : 'Once live, your website stays online until'} <strong>${escapeText(new Date(keptDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }))}</strong>.${keptBefore ? ' That is before your event.' : ''} Need longer? Talk to us: ${keptLinks && keptLinks.whatsapp ? `<a href="${escapeText(keptLinks.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}${keptLinks && keptLinks.whatsapp && keptLinks.email ? ' · ' : ''}${keptLinks && keptLinks.email ? `<a href="${escapeText(keptLinks.email)}">Email</a>` : ''}</p>`
       : '';
+    // What guests can do about replies, from the couple's own RSVP choice (kept true to what the invitation does).
+    const rsvpMode = project.preferences?.rsvp || 'count';
+    const repliesLine = rsvpMode === 'none' ? ''
+      : rsvpMode === 'contact' ? '<li><strong>Replies.</strong> Guests will see your contact details on the invitation, so they can reach you directly.</li>'
+      : '<li><strong>Replies.</strong> Guests can reply from the live invitation. You see their replies under <em>Replies</em> in the editor.</li>';
     // Said before anything is public, in plain words: what happens, what does not, and what can be undone.
     const explainer = live
       ? '<p class="tiny muted" style="margin:10px 0 0">Made changes since going live? Choose <strong>Update live page</strong> to show them. Choose <strong>Take offline</strong> to make the link stop working.</p>'
       : `<ul style="margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px;font-size:14px;line-height:1.5">
-          <li><strong>What it does.</strong> Gives your invitation a web link. Anyone you send the link to can open it.</li>
-          <li><strong>Not public until you do this.</strong> Nobody can see your invitation yet. You can look at it as guests will see it first.</li>
-          <li><strong>Guests can’t reply online yet.</strong> Guest responses are not open, so for now the invitation is for viewing.</li>
-          <li><strong>You can change your mind.</strong> Keep editing and choose <em>Update live page</em>, or take it offline any time.</li>
+          <li><strong>Right now it is private.</strong> Only you can see your invitation. It stays private until you choose <em>Make it live</em>. You can look at it as guests will see it first.</li>
+          <li><strong>Making it live gives it a web link.</strong> Anyone who has the link can open it, so share it only with the people you want to invite.</li>
+          ${repliesLine}
+          <li><strong>You can change your mind.</strong> Keep editing and choose <em>Update live page</em>, or <em>Take offline</em> any time. The link then stops working.</li>
         </ul>
         <button class="btn small" type="button" data-preview-first style="margin-top:12px">Preview it first</button>`;
     renderModal(`<div class="eyebrow">Share your invitation</div>
