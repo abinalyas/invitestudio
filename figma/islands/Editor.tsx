@@ -611,8 +611,8 @@ function ShareGuide({ snap }: { snap: EditorSnapshot }) {
         <li><span>3</span> Share invitation</li>
       </ol>
       <p>
-        Preview is private. <strong>Share invitation</strong> gives your invitation a web link that anyone you send it to can open.
-        Nothing is public until you do, and you can edit afterwards or take it offline any time.
+        Right now only you can see your invitation. <strong>Share invitation</strong> makes it live with a web link, and anyone who has
+        the link can open it. You can keep editing afterwards, or take it offline any time.
       </p>
       <button
         type="button"
