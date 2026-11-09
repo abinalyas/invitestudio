@@ -93,7 +93,7 @@
 
   // Resolves with { full: Blob, thumb: Blob, format, width, height }.
   function prepare(file) {
-    if (!file || !/^image\//i.test(file.type || "")) return Promise.reject(fail("NOT_IMAGE", "That file is not a photo. Choose a JPEG, PNG or WebP photo."));
+    if (!file || !/^image\//i.test(file.type || "")) return Promise.reject(fail("NOT_IMAGE", "That file is not a photo. Choose a photo file (JPEG, PNG or WebP)."));
     if (file.size > MAX_SOURCE_BYTES) return Promise.reject(fail("TOO_BIG", "This photo is over 30 MB. Choose a smaller one."));
     return decode(file).then(function (source) {
       var sw = source.width || source.naturalWidth, sh = source.height || source.naturalHeight;
