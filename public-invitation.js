@@ -93,6 +93,7 @@
     } else {
       body = centred('<h1 style="font-family:var(--serif);font-size:34px">This invitation is not available.</h1><p class="muted">The link may be incorrect, or the invitation is not published right now.</p><a class="btn dark" href="/">Create an InviteStudio website</a>');
     }
-    return header + body;
+    // The invitation itself carries no InviteStudio branding: guests see only the couple's page.
+    return view.status === 'ready' ? body : header + body;
   };
 })();
