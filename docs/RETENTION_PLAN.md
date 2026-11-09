@@ -132,6 +132,17 @@ The pricing and questions pages currently list plans and prices written before t
 what is true: "Every website is available for 2 months after your event (and up to 8 months from when you publish). Keep it longer from [price], or talk to us."
 They are left as they are until the prices are decided.
 
+## Progress
+
+- **Step 1 (settings and a safe preview): built.** Migration `202611090002_retention.sql` adds the per-design settings
+  (`retention_months`, `max_months_from_publish`, `tier`), the per-website ones (`first_published_at`, `keep_until`,
+  `retention_floor`), a settings row (4 months with no date, 14-day grace and warning, 6-month address hold, batch of 20,
+  safety brake at 10), `wedding_ends_on()` (the one place the rule lives) and `retention_preview()`, a report that
+  changes nothing. `POST /api/internal/retention-sweep` (secret `RETENTION_SWEEP_TOKEN`) runs the report and records a
+  one-line, counts-only summary. **No code hides or deletes anything yet.** The rules are tested in a real Postgres
+  (`npm run test:db`, run by hand like the cloud suite). The report's counts include how far ahead of the event websites
+  were published, for tuning the cap.
+
 ## Order of work
 
 1. **The rule and a safe preview:** policy columns, `wedding_ends_on`, `retention_log`, and the sweep address in dry-run

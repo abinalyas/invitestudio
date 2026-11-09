@@ -126,6 +126,9 @@ Configure these as Cloudflare Pages environment variables/secrets:
 - `MEDIA` — an **R2 bucket binding**, declared in `wrangler.toml` (`[[r2_buckets]]`, bucket `invitestudio-media`). The
   dashboard shows bindings as read-only because that file manages them. Holds the photos. Without it the editor says
   photo storage is not set up and nothing breaks. See `docs/MEDIA_PLAN.md`.
+- `RETENTION_SWEEP_TOKEN` — an encrypted secret (at least 32 random characters) that protects the cleanup address
+  `POST /api/internal/retention-sweep`. Until it is set, that address does nothing. At this step it only **reports** (a dry
+  run); see `docs/RETENTION_PLAN.md`.
 - `MEDIA_PUBLIC_URL` — optional. An `https://` media address connected to the bucket (for example
   `https://media.example.com`). When unset, photos are served from this site's own `/media/` address. When set, add the
   address to `img-src` in `_headers` and `functions/_shared/security.js` as well.

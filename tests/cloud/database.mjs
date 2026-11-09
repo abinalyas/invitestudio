@@ -42,6 +42,10 @@ const supabaseStubs = `
   grant usage on schema public to anon, authenticated, service_role;
   grant usage on schema auth to anon, authenticated, service_role;
   grant execute on function auth.uid() to anon, authenticated, service_role;
+  -- Supabase gives its server role (service_role) access to every table created in public by default. The slug migration
+  -- checks for exactly that before it runs, so it must be in place first.
+  alter default privileges in schema public grant all on tables to service_role;
+  alter default privileges in schema public grant all on sequences to service_role;
 `;
 
 export async function startDatabase({ port = 54329, dataDir }) {
