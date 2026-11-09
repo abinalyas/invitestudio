@@ -139,3 +139,9 @@ test('the template page shows the real design in a phone beside the details, wit
   assert.match(css, /@media \(min-width: 901px\) \{ \.detail-showcase \{ position: sticky;/); // stays in view while the details scroll
   assert.match(css, /\.detail-page \{ overflow: clip; \}/); // overflow hidden here would stop it sticking
 });
+
+test('the FAQ does not claim online replies are unavailable', () => {
+  const faq = read('figma/islands/shared.tsx');
+  assert.doesNotMatch(faq, /Online RSVPs are not available/);
+  assert.match(faq, /guests can reply from it/);
+});

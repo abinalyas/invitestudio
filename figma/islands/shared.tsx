@@ -204,7 +204,7 @@ export const faqs = [
   ],
   [
     "Can I collect RSVPs from my guests?",
-    "Not yet. Online RSVPs are not available. Your invitation can show your events, directions and travel details today.",
+    "Yes. Once your invitation is live, guests can reply from it with their name, whether they are coming and how many, and you see every reply in your editor and can download them as a spreadsheet. You can also switch replies off and ask guests to contact you instead.",
   ],
   [
     "Can I customise the design and content?",
