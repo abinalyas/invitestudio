@@ -228,7 +228,19 @@
     'font:600 13px/1.2 var(--sans,system-ui,sans-serif)!important;letter-spacing:0!important;text-transform:none!important;color:inherit!important;' +
     'border:1px dashed rgba(128,128,128,.8)!important;border:1px dashed color-mix(in srgb,currentColor 55%,transparent)!important}' +
     '[data-add-event]:hover,[data-add-event]:focus-visible,.edit-chip:hover,.edit-chip:focus-visible{border-style:solid!important;background:rgba(128,128,128,.14)!important;background:color-mix(in srgb,currentColor 10%,transparent)!important}' +
-    '.edit-menu{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 0}</style>';
+    '.edit-menu{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 0}' +
+    // The small bar over an event: move up, move down, remove. The notice's action (Undo) is a link-style button.
+    '.edit-event-bar{position:absolute;z-index:40;display:flex;gap:2px;padding:3px;border-radius:999px;background:#1d1f1c;box-shadow:0 4px 14px rgba(0,0,0,.25)}' +
+    '.edit-event-bar button{all:unset!important;box-sizing:border-box!important;cursor:pointer!important;width:28px!important;height:28px!important;border-radius:50%!important;text-align:center!important;' +
+    'font:600 15px/28px system-ui,sans-serif!important;color:#fff!important}' +
+    '.edit-event-bar button:hover:not([disabled]),.edit-event-bar button:focus-visible{background:rgba(255,255,255,.22)!important}' +
+    '.edit-event-bar button[disabled]{opacity:.35!important;cursor:default!important}' +
+    '.edit-hint-action{all:unset;cursor:pointer;font-weight:700;text-decoration:underline;padding:0 2px}' +
+    // On a phone the page scrolls, not the preview, so the pill is pinned to the screen, above the tab bar.
+    '@media(max-width:767px){.edit-hint{position:fixed;left:0;right:0;bottom:var(--hint-bottom,84px);z-index:30}.edit-hint-pill{bottom:0}}' +
+    // Bigger touch targets on touch screens.
+    '@media(pointer:coarse){.edit-event-bar button{width:40px!important;height:40px!important;font-size:18px!important;line-height:40px!important}' +
+    '[data-add-event],.edit-chip{padding:12px 18px!important}.edit-hint-pill button{width:32px;height:32px;line-height:32px}}</style>';
 
   // The tip is shown until it is dismissed or the person makes their first edit, and then not again on this device.
   const HINT_KEY = 'invitestudio-edit-hint-seen';
@@ -240,7 +252,7 @@
   }
   // One small pill at the bottom of the preview: the tip, or a short notice (photo progress, why photos are unavailable).
   let previewNotice = null; // { text, kind, until }
-  function pillElement(text, kind) {
+  function pillElement(text, kind, action) {
     const wrap = document.createElement('div');
     wrap.className = 'edit-hint';
     const pill = document.createElement('div');
@@ -254,18 +266,32 @@
     close.setAttribute('data-hint-close', '');
     close.setAttribute('aria-label', 'Dismiss');
     close.textContent = '\u00d7';
-    pill.append(label, close);
+    if (action) {
+      const act = document.createElement('button');
+      act.type = 'button';
+      act.className = 'edit-hint-action';
+      act.setAttribute('data-hint-action', '');
+      act.textContent = action.label;
+      pill.append(label, act, close);
+    } else {
+      pill.append(label, close);
+    }
     wrap.append(pill);
     return wrap;
   }
   function showPill(container) {
     container.querySelector('.edit-hint')?.remove();
     const notice = previewNotice && previewNotice.until > Date.now() ? previewNotice : null;
-    if (notice) container.append(pillElement(notice.text, notice.kind));
-    else if (!hintSeen() && container.querySelector('[data-edit]')) container.append(pillElement('Click any outlined text to edit it', 'tip'));
+    if (notice) container.append(pillElement(notice.text, notice.kind, notice.action));
+    else if (!hintSeen() && container.querySelector('[data-edit]')) {
+      const touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      container.append(pillElement(`${touch ? 'Tap' : 'Click'} any outlined text to edit it`, 'tip'));
+    }
+    // Above the phone's tab bar, and above its floating Edit button when that is showing.
+    container.style.setProperty('--hint-bottom', document.querySelector('.mobile-edit-pill') ? '156px' : '84px');
   }
-  function setNotice(container, text, kind = 'info', ms = 7000) {
-    const notice = { text, kind, until: Date.now() + ms };
+  function setNotice(container, text, kind = 'info', ms = 7000, action = null) {
+    const notice = { text, kind, until: Date.now() + ms, action };
     previewNotice = notice;
     showPill(container);
     window.setTimeout(() => {
@@ -345,6 +371,83 @@
     else showPill(container);
   }
 
+  // ---- Events: a small bar over the event being pointed at or edited moves it up or down, or removes it.
+  let eventBarTimer = 0;
+  function hideEventBar(container, delay) {
+    window.clearTimeout(eventBarTimer);
+    eventBarTimer = window.setTimeout(() => container.querySelector('[data-event-bar]')?.remove(), delay);
+  }
+  function barButton(label, text, attrs, disabled) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.setAttribute('aria-label', label);
+    button.title = label;
+    button.textContent = text;
+    for (const [name, value] of Object.entries(attrs)) button.setAttribute(name, value);
+    if (disabled) button.disabled = true;
+    return button;
+  }
+  function showEventBar(container, field) {
+    const id = field.dataset.id;
+    if (!id) return;
+    window.clearTimeout(eventBarTimer);
+    const existing = container.querySelector('[data-event-bar]');
+    if (existing && existing.dataset.id === id) return;
+    existing?.remove();
+    const events = bridge.snapshot().events;
+    const index = events.findIndex(event => event.id === id);
+    if (index < 0) return;
+    const bar = document.createElement('div');
+    bar.className = 'edit-event-bar';
+    bar.setAttribute('data-event-bar', '');
+    bar.dataset.id = id;
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', 'Event actions');
+    bar.append(
+      barButton('Move event up', '\u2191', { 'data-event-move': '-1' }, index === 0),
+      barButton('Move event down', '\u2193', { 'data-event-move': '1' }, index === events.length - 1),
+      barButton('Remove event', '\u00d7', { 'data-event-remove': '' }, false)
+    );
+    container.append(bar);
+    // Above the field, kept inside the preview; below it when there is no room above.
+    const box = container.getBoundingClientRect();
+    const rect = field.getBoundingClientRect();
+    const left = Math.max(4, Math.min(rect.left - box.left, box.width - bar.offsetWidth - 4));
+    let top = rect.top - box.top - bar.offsetHeight - 6;
+    if (top < 4) top = rect.bottom - box.top + 6;
+    bar.style.left = left + 'px';
+    bar.style.top = top + 'px';
+  }
+  // The preview redraws after a change: wait for an element to appear again, then run fn on it.
+  function whenFound(container, selector, fn) {
+    let tries = 0;
+    const find = () => {
+      const el = container.querySelector(selector);
+      if (el) fn(el);
+      else if (tries++ < 40) window.setTimeout(find, 50);
+    };
+    window.setTimeout(find, 0);
+  }
+  function moveEventFromPreview(container, id, delta) {
+    const events = bridge.snapshot().events;
+    const index = events.findIndex(event => event.id === id);
+    if (index < 0 || index + delta < 0 || index + delta >= events.length) return;
+    bridge.moveEvent(id, index + delta);
+    // Keep the event in view with its bar, so it can be moved again.
+    whenFound(container, `[data-edit="event:title"][data-id="${id}"]`, el => {
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      showEventBar(container, el);
+    });
+  }
+  function removeEventFromPreview(container, id) {
+    const removed = bridge.removeEvent(id);
+    if (!removed) return;
+    setNotice(container, `Removed "${removed.item.title || 'event'}".`, 'info', 9000, {
+      label: 'Undo',
+      run: () => bridge.restoreEvent(removed.item, removed.index)
+    });
+  }
+
   // ---- Events: "+ Add event" under the events list offers the quick-add choices and a custom event.
   function chip(label, onClick) {
     const button = document.createElement('button');
@@ -366,7 +469,7 @@
     const menu = document.createElement('div');
     menu.className = 'edit-menu';
     menu.setAttribute('role', 'group');
-    menu.setAttribute('aria-label', 'Add an event');
+    menu.setAttribute('aria-label', 'Event choices');
     for (const title of bridge.eventPresets().slice(0, 6)) menu.append(chip(title, () => addEventFromPreview(container, title, false)));
     menu.append(chip('Custom event', () => addEventFromPreview(container, 'New event', true)));
     wrap.append(menu);
@@ -390,9 +493,11 @@
   }
 
   function enableTextEditing(container) {
+    // Editable text is a text box that is read-only until it is activated (a button would announce it as an action).
     container.querySelectorAll('[data-edit]').forEach(el => {
       el.tabIndex = 0;
-      el.setAttribute('role', 'button');
+      el.setAttribute('role', 'textbox');
+      el.setAttribute('aria-readonly', 'true');
       el.title = 'Click to edit';
     });
     // The design's "Your photo" placeholders become buttons that add photos.
@@ -416,6 +521,21 @@
         container.querySelector('.edit-hint')?.remove();
         return;
       }
+      const action = target && target.closest('[data-hint-action]');
+      if (action) {
+        const run = previewNotice && previewNotice.action ? previewNotice.action.run : null;
+        previewNotice = null;
+        container.querySelector('.edit-hint')?.remove();
+        if (run) run();
+        return;
+      }
+      const bar = target && target.closest('[data-event-bar]');
+      if (bar) {
+        const move = target.closest('[data-event-move]');
+        if (move) moveEventFromPreview(container, bar.dataset.id, Number(move.getAttribute('data-event-move')));
+        else if (target.closest('[data-event-remove]')) removeEventFromPreview(container, bar.dataset.id);
+        return;
+      }
       const addEvent = target && target.closest('[data-add-event]');
       if (addEvent) {
         toggleEventMenu(container, addEvent);
@@ -427,6 +547,21 @@
       }
       const el = fieldOf(event);
       if (el) startEditing(el);
+    });
+    // The event bar follows the pointer or focus; it stays while the pointer is on it.
+    container.addEventListener('mouseover', event => {
+      const target = event.target instanceof Element ? event.target : null;
+      const field = target && target.closest('[data-edit^="event:"]');
+      if (field) showEventBar(container, field);
+      else if (target && target.closest('[data-event-bar]')) window.clearTimeout(eventBarTimer);
+      else if (container.querySelector('[data-event-bar]')) hideEventBar(container, 350);
+    });
+    container.addEventListener('focusin', event => {
+      const field = event.target instanceof Element ? event.target.closest('[data-edit^="event:"]') : null;
+      if (field) showEventBar(container, field);
+    });
+    container.addEventListener('focusout', event => {
+      if (event.target instanceof Element && event.target.closest('[data-edit^="event:"]')) hideEventBar(container, 600);
     });
     container.addEventListener('keydown', event => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -473,6 +608,7 @@
     let cancelled = false;
     el.textContent = plain;
     el.contentEditable = 'true';
+    el.removeAttribute('aria-readonly');
     el.spellcheck = false;
     el.focus();
     const range = document.createRange();
@@ -501,6 +637,7 @@
       el.removeEventListener('paste', onPaste);
       el.removeEventListener('blur', onBlur);
       el.contentEditable = 'false';
+      el.setAttribute('aria-readonly', 'true');
       const value = multiline
         ? el.innerText.split(/\n+/).map(line => line.trim()).filter(Boolean).join('\n')
         : el.textContent.trim();
@@ -627,10 +764,27 @@
       notify();
     },
 
+    // Returns what was removed and where, so the caller can offer to undo it.
     removeEvent(eventId) {
       const p = project();
-      if (!p) return;
-      p.functions = (p.functions || []).filter(x => x.id !== eventId);
+      if (!p) return null;
+      const list = p.functions || [];
+      const index = list.findIndex(x => x.id === eventId);
+      const item = index >= 0 ? list[index] : null;
+      p.functions = list.filter(x => x.id !== eventId);
+      p.updated = 'Just now';
+      save();
+      notify();
+      return item ? { item, index } : null;
+    },
+
+    // Puts a removed event back where it was, with all its details.
+    restoreEvent(item, index) {
+      const p = project();
+      if (!p || !item || !item.id) return;
+      if (!Array.isArray(p.functions)) p.functions = [];
+      if (p.functions.some(x => x.id === item.id)) return;
+      p.functions.splice(Math.max(0, Math.min(p.functions.length, Number(index) || 0)), 0, item);
       p.updated = 'Just now';
       save();
       notify();
@@ -757,6 +911,7 @@
       container.style.width = widths[device] || '100%';
       container.style.maxWidth = '100%';
       container.style.margin = '0 auto';
+      container.style.position = 'relative'; // the event bar is placed inside it
       // full=false: the editor canvas shows the invitation without its intro overlay.
       // Until the couple adds their names, the preview shows the template's example names.
       const shown = String(p.title || '').trim() ? p : { ...p, title: SAMPLE_NAMES, name: SAMPLE_NAMES };

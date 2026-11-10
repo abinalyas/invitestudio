@@ -201,8 +201,14 @@
     String(a + ' ' + b).split(/[\s-]+/).forEach(function (w) { longest = Math.max(longest, Array.from(w).length); });
     return longest;
   }
-  function namesHtml(a, b) {
-    return '<h2 class="sx-names" style="--nl:' + longestWord(a, b) + '"><span class="sx-nm">' + esc(a) + '</span>' + (b ? '<span class="sx-amp">&amp;</span><span class="sx-nm">' + esc(b) + '</span>' : '') + '</h2>';
+  // In the editor preview an element can be marked for click-to-edit (the editor reads data-edit and data-raw, see
+  // figma-host.js). The published page gets no extra attributes.
+  function ea(d, field, raw, extra) {
+    return d && d.editable ? ' data-edit="' + field + '" data-raw="' + esc(raw == null ? '' : raw) + '"' + (extra || '') : '';
+  }
+  function namesHtml(a, b, d) {
+    return '<h2 class="sx-names" style="--nl:' + longestWord(a, b) + '"><span class="sx-nm"' + ea(d, 'names:first', a, ' data-other="' + esc(b) + '"') + '>' + esc(a) + '</span>' +
+      (b ? '<span class="sx-amp">&amp;</span><span class="sx-nm"' + ea(d, 'names:second', b, ' data-other="' + esc(a) + '"') + '>' + esc(b) + '</span>' : '') + '</h2>';
   }
   function dateLine(f, withWeekday) {
     return f ? (withWeekday ? f.wd.toUpperCase() + ' ' : '') + f.day + ' ' + f.mon.toUpperCase() + ' ' + f.yr : DEFAULTS.date.toUpperCase();
@@ -210,20 +216,21 @@
 
   function coverScene(key, d) {
     var S = SCENES[key], f = d.date, c;
-    var venueBlock = '<div class="sx-cv-bot sx-rv" style="--d:3">' + (d.venue ? '<p class="sx-caps">' + esc(d.venue) + '</p>' : '') + (d.place ? '<p class="sx-caps">' + esc(d.place) + '</p>' : '') + '</div>';
+    var venueBlock = '<div class="sx-cv-bot sx-rv" style="--d:3">' + (d.venue ? '<p class="sx-caps"' + ea(d, 'location:venue', d.venue, ' data-other="' + esc(d.place) + '"') + '>' + esc(d.venue) + '</p>' : '') + (d.place ? '<p class="sx-caps"' + ea(d, 'location:place', d.place, ' data-other="' + esc(d.venue) + '"') + '>' + esc(d.place) + '</p>' : '') + '</div>';
     if (key === 'savanna') {
       c = '<section class="sx-scene sx-cover in" data-section="hero"><div class="sx-art">' + S.art() + '</div>' +
-        '<div class="sx-cv-top"><p class="sx-caps sx-rv" style="--d:0">' + esc(d.pretitle) + '</p><div class="sx-rv" style="--d:1">' + namesHtml(d.a, d.b) + '</div><p class="sx-caps sx-rv" style="--d:2">' + esc(dateLine(f, true)) + '</p></div>' + venueBlock + CHEV + '</section>';
+        '<div class="sx-cv-top"><p class="sx-caps sx-rv" style="--d:0"' + ea(d, 'pretitle', d.pretitle) + '>' + esc(d.pretitle) + '</p><div class="sx-rv" style="--d:1">' + namesHtml(d.a, d.b, d) + '</div><p class="sx-caps sx-rv" style="--d:2"' + ea(d, 'date', d.dateIso) + '>' + esc(dateLine(f, true)) + '</p></div>' + venueBlock + CHEV + '</section>';
     } else if (key === 'palmera') {
       c = '<section class="sx-scene sx-cover in" data-section="hero"><div class="sx-art">' + S.art() + '</div>' +
-        '<div class="sx-cv-top"><p class="sx-caps sx-rv" style="--d:0">' + esc(d.pretitle) + '</p><div class="sx-rv" style="--d:1">' + namesHtml(d.a, d.b) + '</div></div>' +
-        '<div class="sx-cv-bot sx-rv" style="--d:2"><p class="sx-caps">' + esc(dateLine(f, false)) + '</p>' + (d.place || d.venue ? '<p class="sx-caps">' + esc(d.place || d.venue) + '</p>' : '') + '</div>' + CHEV + '</section>';
+        '<div class="sx-cv-top"><p class="sx-caps sx-rv" style="--d:0"' + ea(d, 'pretitle', d.pretitle) + '>' + esc(d.pretitle) + '</p><div class="sx-rv" style="--d:1">' + namesHtml(d.a, d.b, d) + '</div></div>' +
+        '<div class="sx-cv-bot sx-rv" style="--d:2"><p class="sx-caps"' + ea(d, 'date', d.dateIso) + '>' + esc(dateLine(f, false)) + '</p>' + (d.place || d.venue ? '<p class="sx-caps"' + ea(d, 'location', d.location) + '>' + esc(d.place || d.venue) + '</p>' : '') + '</div>' + CHEV + '</section>';
     } else if (key === 'lunaria') {
       c = '<section class="sx-scene sx-cover in" data-section="hero"><div class="sx-art">' + S.art() + '</div>' +
-        '<div class="sx-cv-mid"><p class="sx-caps sx-rv" style="--d:0">' + esc(d.pretitle) + '</p><div class="sx-rv" style="--d:1">' + namesHtml(d.a, d.b) + '</div><p class="sx-caps sx-rv" style="--d:2">' + esc(dateLine(f, false)) + '</p></div>' + venueBlock + CHEV + '</section>';
+        '<div class="sx-cv-mid"><p class="sx-caps sx-rv" style="--d:0"' + ea(d, 'pretitle', d.pretitle) + '>' + esc(d.pretitle) + '</p><div class="sx-rv" style="--d:1">' + namesHtml(d.a, d.b, d) + '</div><p class="sx-caps sx-rv" style="--d:2"' + ea(d, 'date', d.dateIso) + '>' + esc(dateLine(f, false)) + '</p></div>' + venueBlock + CHEV + '</section>';
     } else {
-      c = '<section class="sx-scene sx-cover sx-cv in" data-section="hero" style="padding:0"><div class="sx-stage"></div>' +
-        '<div class="sx-stage-content"><p class="sx-caps">' + esc(d.pretitle) + '</p>' + namesHtml(d.a, d.b) + '<p class="sx-caps">' + esc(dateLine(f, true)) + '</p>' + (d.venue || d.place ? '<p class="sx-caps" style="opacity:.7">' + esc([d.venue, d.place].filter(Boolean).join(', ')) + '</p>' : '') + '</div>' +
+      // In the editor the curtains start open: they would close again after every save and cover the text being edited.
+      c = '<section class="sx-scene sx-cover sx-cv in' + (d.editable ? ' opened' : '') + '" data-section="hero" style="padding:0"><div class="sx-stage"></div>' +
+        '<div class="sx-stage-content"><p class="sx-caps"' + ea(d, 'pretitle', d.pretitle) + '>' + esc(d.pretitle) + '</p>' + namesHtml(d.a, d.b, d) + '<p class="sx-caps"' + ea(d, 'date', d.dateIso) + '>' + esc(dateLine(f, true)) + '</p>' + (d.venue || d.place ? '<p class="sx-caps" style="opacity:.7"' + ea(d, 'location', d.location) + '>' + esc([d.venue, d.place].filter(Boolean).join(', ')) + '</p>' : '') + '</div>' +
         '<div class="sx-curtain l"></div><div class="sx-curtain r"></div><div class="sx-valance"></div>' +
         '<div class="sx-emboss">' + esc(d.a) + (d.b ? '<br>&amp; ' + esc(d.b) : '') + '</div><p class="sx-hint">Tap to open</p>' +
         '<button class="sx-hit" type="button" data-sx-open aria-label="Open the curtains"></button>' + CHEV + '</section>';
@@ -239,22 +246,22 @@
 
   function messageScene(key, d) {
     return scene(key, 'welcome',
-      '<p class="sx-caps sx-rv" style="--d:0">' + esc(d.hosts || DEFAULTS.hosts) + '</p>' +
-      '<p class="sx-script sx-h sx-rv" style="--d:1">' + esc(d.title) + '</p>' +
-      '<p class="sx-body sx-rv" style="--d:2">' + esc(d.message) + '</p>');
+      '<p class="sx-caps sx-rv" style="--d:0"' + ea(d, 'hosts', d.hosts || DEFAULTS.hosts) + '>' + esc(d.hosts || DEFAULTS.hosts) + '</p>' +
+      '<p class="sx-script sx-h sx-rv" style="--d:1"' + ea(d, 'title', d.title) + '>' + esc(d.title) + '</p>' +
+      '<p class="sx-body sx-rv" style="--d:2"' + ea(d, 'message', d.message) + '>' + esc(d.message) + '</p>');
   }
   function whereScene(key, d) {
     var f = d.date, h = '';
-    if (f) { h += '<p class="sx-caps sx-rv" style="--d:0">' + esc(f.wd) + '</p><div class="sx-date sx-rv" style="--d:1"><span class="sx-day">' + f.day + '</span><span class="sx-caps">' + esc(f.mon + ' ' + f.yr) + '</span></div>'; }
+    if (f) { h += '<p class="sx-caps sx-rv" style="--d:0">' + esc(f.wd) + '</p><div class="sx-date sx-rv" style="--d:1"' + ea(d, 'date', d.dateIso) + '><span class="sx-day">' + f.day + '</span><span class="sx-caps">' + esc(f.mon + ' ' + f.yr) + '</span></div>'; }
     if (d.time) { h += '<p class="sx-caps sx-rv" style="--d:2">' + esc(d.time) + '</p>'; }
-    if (d.venue) { h += '<p class="sx-script sx-rv" style="--d:3;font-size:34px">' + esc(d.venue) + '</p>'; }
-    if (d.place) { h += '<p class="sx-body sx-rv" style="--d:3">' + esc(d.place) + '</p>'; }
+    if (d.venue) { h += '<p class="sx-script sx-rv" style="--d:3;font-size:34px"' + ea(d, 'location:venue', d.venue, ' data-other="' + esc(d.place) + '"') + '>' + esc(d.venue) + '</p>'; }
+    if (d.place) { h += '<p class="sx-body sx-rv" style="--d:3"' + ea(d, 'location:place', d.place, ' data-other="' + esc(d.venue) + '"') + '>' + esc(d.place) + '</p>'; }
     if (d.mapUrl) { h += '<a class="sx-link sx-rv" style="--d:4" href="' + esc(d.mapUrl) + '" target="_blank" rel="noopener noreferrer">Open in maps</a>'; }
     if (d.dress) { h += '<p class="sx-body sx-rv" style="--d:5;margin-top:8px"><strong style="font-weight:600;color:var(--sx-ink)">Dress code.</strong> ' + esc(d.dress) + '</p>'; }
     return scene(key, 'welcome', h);
   }
   function storyScene(key, d) {
-    return scene(key, 'story', '<p class="sx-caps sx-rv" style="--d:0">The story</p><p class="sx-script sx-h sx-rv" style="--d:1">' + esc(d.storyTitle) + '</p><p class="sx-body sx-rv" style="--d:2">' + esc(d.story) + '</p>');
+    return scene(key, 'story', '<p class="sx-caps sx-rv" style="--d:0">The story</p><p class="sx-script sx-h sx-rv" style="--d:1"' + ea(d, 'storyTitle', d.storyTitle) + '>' + esc(d.storyTitle) + '</p><p class="sx-body sx-rv" style="--d:2"' + ea(d, 'storyCopy', d.story, ' data-multiline="1"') + '>' + esc(d.story) + '</p>');
   }
   function schedScene(key, d) {
     var multi = {}; d.fns.forEach(function (f) { multi[f.date || ''] = 1; });
@@ -263,12 +270,20 @@
       var fd = fmtDate(f.date), time = [showTime(f.time), showTime(f.endTime)].filter(Boolean).join(' to ');
       var left = manyDays ? (fd ? esc(fd.short) : '') + (time ? '<small>' + esc(time) + '</small>' : '') : esc(time || (fd ? fd.short : ''));
       var sub = [f.venue, f.description].filter(Boolean).map(esc).join(' · ');
-      return '<li><span class="sx-tm">' + left + '</span><span class="sx-ev">' + esc(f.title) + (sub ? '<small>' + sub + '</small>' : '') + '</span></li>';
+      var title = f.id && d.editable ? '<span' + ea(d, 'event:title', f.title, ' data-id="' + esc(f.id) + '"') + '>' + esc(f.title) + '</span>' : esc(f.title);
+      return '<li><span class="sx-tm">' + left + '</span><span class="sx-ev">' + title + (sub ? '<small>' + sub + '</small>' : '') + '</span></li>';
     }).join('');
-    return scene(key, 'functions', '<p class="sx-caps sx-rv" style="--d:0">The celebrations</p><p class="sx-script sx-h sx-rv" style="--d:1">Schedule</p><ul class="sx-sched sx-rv" style="--d:2">' + rows + '</ul>');
+    return scene(key, 'functions', '<p class="sx-caps sx-rv" style="--d:0">The celebrations</p><p class="sx-script sx-h sx-rv" style="--d:1">Schedule</p><ul class="sx-sched sx-rv" style="--d:2">' + rows + '</ul>' +
+      (d.editable ? '<div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div>' : ''));
+  }
+  // Before any photo is added, the editor shows two placeholders that open the file picker.
+  function placeholders(d) {
+    if (!d.editable) { return ''; }
+    var box = '<span data-photo-add style="display:flex;align-items:center;justify-content:center;height:150px;border-radius:8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Your photo</span>';
+    return box + box;
   }
   function galleryScene(key, d) {
-    return scene(key, 'gallery', '<p class="sx-script sx-h sx-rv" style="--d:0">Gallery</p><div class="sx-gallery sx-rv" style="--d:1">' + d.photos.map(function (ph) { return '<img src="' + esc(ph.data) + '" alt="' + esc(ph.alt || 'Event photo') + '" loading="lazy">'; }).join('') + '</div>');
+    return scene(key, 'gallery', '<p class="sx-script sx-h sx-rv" style="--d:0">Gallery</p><div class="sx-gallery sx-rv" style="--d:1">' + (d.photos.length ? d.photos.map(function (ph) { return '<img src="' + esc(ph.data) + '" alt="' + esc(ph.alt || 'Event photo') + '" loading="lazy">'; }).join('') : placeholders(d)) + '</div>');
   }
   // The response line comes from rsvp-view.js, so every design says the same thing.
   function rsvpLine(d) {
@@ -286,7 +301,7 @@
   function closingScene(key, d) {
     return scene(key, 'rsvp',
       '<p class="sx-caps sx-rv" style="--d:0">Save the date</p>' +
-      '<p class="sx-script sx-h sx-rv" style="--d:1">' + esc(d.date ? d.date.day + ' ' + d.date.mon + ' ' + d.date.yr : DEFAULTS.date) + '</p>' +
+      '<p class="sx-script sx-h sx-rv" style="--d:1"' + ea(d, 'date', d.dateIso) + '>' + esc(d.date ? d.date.day + ' ' + d.date.mon + ' ' + d.date.yr : DEFAULTS.date) + '</p>' +
       rsvpLine(d) +
       '<p class="sx-body sx-more sx-rv" style="--d:3">With love, ' + esc(d.b ? d.a + ' & ' + d.b : d.a) + '</p>');
   }
@@ -295,7 +310,7 @@
   }
 
   // Renders a project as a scene template. Mirrors the shared renderer's data and section rules.
-  function renderSceneTemplate(p, t) {
+  function renderSceneTemplate(p, t, opts) {
     var key = t && t.scene;
     if (!SCENES[key]) { return ''; }
     p = p || {};
@@ -306,6 +321,7 @@
     var dress = ''; fns.forEach(function (f) { if (!dress && f.dressCode) { dress = f.dressCode; } });
     var d = {
       title: title, a: n[0], b: n[1], date: fmtDate(p.date), venue: venue, place: place,
+      editable: Boolean(opts && opts.editable), dateIso: /^\d{4}-\d{2}-\d{2}$/.test(p.date || '') ? p.date : '', location: String(p.location || '').trim(),
       pretitle: (p.preferences && p.preferences.pretitle) || (!p.category || p.category === 'Wedding' ? 'The wedding of' : p.category),
       hosts: p.hosts || '', message: p.message || DEFAULTS.message,
       story: p.story || '', storyTitle: (p.preferences && p.preferences.storyTitle) || 'Our story',
@@ -319,8 +335,8 @@
       hero: function () { return coverScene(key, d); },
       welcome: function () { return messageScene(key, d) + (d.date || d.venue || d.place ? whereScene(key, d) : ''); },
       story: function () { return d.story ? storyScene(key, d) : ''; },
-      functions: function () { return d.fns.length ? schedScene(key, d) : ''; },
-      gallery: function () { return d.photos.length ? galleryScene(key, d) : ''; },
+      functions: function () { return d.fns.length || d.editable ? schedScene(key, d) : ''; },
+      gallery: function () { return d.photos.length || d.editable ? galleryScene(key, d) : ''; },
       rsvp: function () { return closingScene(key, d); }
     };
     var body = registry.map(function (sec) {

@@ -376,7 +376,7 @@ for (const entry of list) {
     // Nothing clickable (buttons, links) and no attribute may carry an edit span.
     assert.equal(/<(button|a)\b[^>]*>[^<]*<span data-edit/.test(editor), false, `${id}: a button or link contains an edit span`);
     assert.equal(/="[^"]*<span data-edit/.test(editor), false, `${id}: an attribute contains an edit span`);
-    assert.equal((editor.match(/data-add-event/g) || []).length, 1, `${id} should offer one "+ Add event" button`);
+    assert.equal((editor.match(/data-add-event/g) || []).length, 1, `${id} should offer one "+ Add an event" button`);
     const published = ctx.renderPackagedTemplate(project, t, { sample: false });
     assert.equal(published.includes('data-edit'), false);
     assert.equal(published.includes('data-multiline'), false);
@@ -384,7 +384,7 @@ for (const entry of list) {
     assert.match(published, /Rose Hall/);
   });
 
-  test(`${id}: the example events shown before the couple adds their own are not editable, and still offer "+ Add event"`, () => {
+  test(`${id}: the example events shown before the couple adds their own are not editable, and still offer "+ Add an event"`, () => {
     const ctx = renderer();
     const project = { ...sampleOf(id), title: 'Ava & Ben', functions: [] };
     const editor = ctx.renderPackagedTemplate(project, { packaged: id }, { sample: true, editable: true });
@@ -393,6 +393,6 @@ for (const entry of list) {
     const exampleTitles = ((entry.manifest || {}).example || {}).events?.map(e => e.title) || [];
     assert.ok(exampleTitles.length > 0, `${id}: no example events found to check`);
     for (const title of exampleTitles) assert.ok(editor.includes(title.replace(/&/g, '&amp;')), `${id}: the example event "${title}" is missing from the editor preview`);
-    assert.equal((editor.match(/data-add-event/g) || []).length, 1, `${id} should offer "+ Add event" beside the example events`);
+    assert.equal((editor.match(/data-add-event/g) || []).length, 1, `${id} should offer "+ Add an event" beside the example events`);
   });
 }
