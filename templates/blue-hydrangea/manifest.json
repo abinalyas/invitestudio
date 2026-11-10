@@ -1,0 +1,254 @@
+{
+  "id": "blue-hydrangea",
+  "name": "Blue Hydrangea",
+  "version": 1,
+  "root": "tpl-bh",
+  "prefix": "bh-",
+  "sections": [
+    "hero",
+    "welcome",
+    "story",
+    "functions",
+    "gallery",
+    "rsvp"
+  ],
+  "photoSlots": [
+    "story"
+  ],
+  "galleryMin": 2,
+  "fonts": [
+    "Cormorant Garamond",
+    "Pinyon Script",
+    "Montserrat"
+  ],
+  "contrast": [
+    [
+      "#2f4219",
+      "#f2f7fa",
+      "ink on sky"
+    ],
+    [
+      "#51642f",
+      "#f2f7fa",
+      "muted on sky"
+    ],
+    [
+      "#3d6b8f",
+      "#f2f7fa",
+      "blue on sky"
+    ],
+    [
+      "#2f4219",
+      "#e3eef5",
+      "ink on mist"
+    ],
+    [
+      "#51642f",
+      "#e3eef5",
+      "muted on mist"
+    ],
+    [
+      "#2f4219",
+      "#ffffff",
+      "ink on card"
+    ],
+    [
+      "#51642f",
+      "#ffffff",
+      "muted on card"
+    ],
+    [
+      "#ffffff",
+      "#4d6a22",
+      "button"
+    ]
+  ],
+  "thumbnail": {
+    "phone": ".bh-site-header,.bh-petals{display:none!important}",
+    "wide": ".bh-site-header,.bh-hero-content,.bh-cue,.bh-petals{display:none!important}.tpl-bh>*:not(.bh-hero){display:none!important}.bh-hero{min-height:275px!important;height:275px!important}"
+  },
+  "example": {
+    "story": "Some moments become memories. Some people become home. We are looking forward to celebrating the beginning of our forever with the people who make life meaningful.",
+    "events": [
+      {
+        "title": "Our first celebration",
+        "venue": "Your venue"
+      },
+      {
+        "title": "Our second celebration",
+        "venue": "Your venue"
+      }
+    ],
+    "photos": 4
+  },
+  "copy": {
+    "nav_welcome": {
+      "label": "Menu: welcome",
+      "default": "Welcome",
+      "max": 16,
+      "section": "home"
+    },
+    "nav_story": {
+      "label": "Menu: story",
+      "default": "Our story",
+      "max": 16,
+      "section": "home"
+    },
+    "nav_schedule": {
+      "label": "Menu: events",
+      "default": "Schedule",
+      "max": 16,
+      "section": "home"
+    },
+    "nav_gallery": {
+      "label": "Menu: gallery",
+      "default": "Gallery",
+      "max": 16,
+      "section": "gallery"
+    },
+    "nav_rsvp": {
+      "label": "Menu: RSVP",
+      "default": "RSVP",
+      "max": 16,
+      "section": "home"
+    },
+    "hero_eyebrow": {
+      "label": "Line above the names",
+      "default": "We are getting married",
+      "max": 40,
+      "section": "home"
+    },
+    "cue": {
+      "label": "Scroll prompt",
+      "default": "Discover",
+      "max": 24,
+      "section": "home"
+    },
+    "countdown_title": {
+      "label": "Countdown: title",
+      "default": "Countdown",
+      "max": 30,
+      "section": "home"
+    },
+    "countdown_sub": {
+      "label": "Countdown: line before the date",
+      "default": "Until",
+      "max": 24,
+      "section": "home"
+    },
+    "countdown_note": {
+      "label": "Countdown: text underneath",
+      "default": "We are so happy to celebrate this day with you.",
+      "max": 90,
+      "section": "home"
+    },
+    "welcome_title": {
+      "label": "Welcome: title",
+      "default": "Welcome",
+      "max": 30,
+      "section": "home"
+    },
+    "hosts_line": {
+      "label": "Welcome: line above the names (when no hosts are entered)",
+      "default": "Together with their families",
+      "max": 50,
+      "section": "home"
+    },
+    "invitation_lead": {
+      "label": "Welcome: invitation line",
+      "default": "request the honor of your presence as they exchange vows of marriage",
+      "max": 90,
+      "section": "home"
+    },
+    "invitation_note": {
+      "label": "Welcome text (when no welcome message)",
+      "default": "Having you with us means the world. We can’t wait to celebrate together.",
+      "max": 160,
+      "section": "home"
+    },
+    "venue_eyebrow": {
+      "label": "Venue: small heading",
+      "default": "Where we celebrate",
+      "max": 30,
+      "section": "home"
+    },
+    "directions": {
+      "label": "Venue: map link",
+      "default": "Open in maps",
+      "max": 24,
+      "section": "home"
+    },
+    "story_eyebrow": {
+      "label": "Story: small heading",
+      "default": "How it all started",
+      "max": 34,
+      "section": "story"
+    },
+    "story_title": {
+      "label": "Story: title",
+      "default": "Our *Story*",
+      "max": 30,
+      "section": "story"
+    },
+    "schedule_eyebrow": {
+      "label": "Events: small heading",
+      "default": "The celebration",
+      "max": 34,
+      "section": "functions"
+    },
+    "schedule_title": {
+      "label": "Events: title",
+      "default": "Schedule",
+      "max": 30,
+      "section": "functions"
+    },
+    "view_location": {
+      "label": "Events: map link",
+      "default": "View location",
+      "max": 24,
+      "section": "functions"
+    },
+    "gallery_eyebrow": {
+      "label": "Gallery: small heading",
+      "default": "Little glimpses of us",
+      "max": 34,
+      "section": "gallery"
+    },
+    "gallery_title": {
+      "label": "Gallery: title",
+      "default": "Our *Memories*",
+      "max": 30,
+      "section": "gallery"
+    },
+    "rsvp_eyebrow": {
+      "label": "RSVP: small heading",
+      "default": "Kindly reply",
+      "max": 34,
+      "section": "rsvp"
+    },
+    "rsvp_title": {
+      "label": "RSVP: title",
+      "default": "Will you *join us?*",
+      "max": 30,
+      "section": "rsvp"
+    },
+    "rsvp_intro": {
+      "label": "RSVP: text",
+      "default": "Your presence would make our day even more special.",
+      "max": 100,
+      "section": "rsvp"
+    },
+    "rsvp_note": {
+      "label": "RSVP: closing line",
+      "default": "We can’t wait to celebrate with you.",
+      "max": 60,
+      "section": "rsvp"
+    },
+    "footer_last": {
+      "label": "Footer: closing line",
+      "default": "With love and gratitude",
+      "max": 50,
+      "section": "home"
+    }
+  }
+}

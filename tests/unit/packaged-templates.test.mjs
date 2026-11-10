@@ -97,11 +97,16 @@ for (const { manifest, parts, css } of list) {
   test(`${id}: stylesheet is scoped, container based and self contained`, () => {
     for (const rule of css.split('\n')) {
       if (!rule.trim() || rule.startsWith('@font-face')) continue;
-      assert.match(rule, /^(\.|@container|@media)/, rule.slice(0, 60));
+      assert.match(rule, /^(\.|@container|@media|@keyframes )/, rule.slice(0, 60));
     }
     assert.doesNotMatch(css, /\d(vw|vh|svh|dvh)\b/, 'size by the invitation (cqw), not the window');
     assert.doesNotMatch(css, /position:\s*fixed/);
     assert.doesNotMatch(css, /@media\s*\(\s*(max|min)-width/, 'viewport media queries do not match inside the editor frame; use @container');
+    // Motion: keyframe names are global, so they carry the template's prefix; every animation has a reduced-motion variant;
+    // and anything hidden for a reveal is hidden only once the platform has armed it, so content never depends on a script.
+    for (const [, name] of css.matchAll(/@keyframes ([\w-]+)/g)) assert.ok(name.startsWith(manifest.prefix), `keyframes ${name} must start with ${manifest.prefix}`);
+    if (/animation\s*:|@keyframes|\[data-reveal/.test(css)) assert.match(css, /@media\(prefers-reduced-motion:reduce\)/, 'animated templates need a reduced-motion variant');
+    for (const rule of css.split('\n')) if (/opacity:0[;}]/.test(rule) && /data-reveal/.test(rule)) assert.match(rule, /\[data-reveal-armed\]:not\(\[data-revealed\]\)/, 'reveal hidden state must wait for the widget');
     assert.doesNotMatch(css, /url\(["']?https?:/);
     assert.doesNotMatch(css, /@import/);
     for (const [, url] of css.matchAll(/url\("([^"]+)"\)/g)) assert.ok(existsSync(join(root, url)), `${url} exists`);
@@ -207,9 +212,15 @@ test('scopeCss prefixes every rule and keeps at-rules', () => {
   assert.equal(out, '.tpl-x a.z-k,.tpl-x b{color:red}\n@container (max-width:10px){.tpl-x p{x:y}}\n@font-face{font-family:F}\n.tpl-x{margin:0}');
 });
 
-test('countdown and menu behaviour is provided by the platform, not the template', () => {
+test('scopeCss gives keyframes the template prefix and rewrites the animations that use them', () => {
+  const out = scopeCss('@keyframes sway{from{rotate:0deg}to{rotate:1deg}}.a{animation:sway 4s ease-in-out infinite,fade 1s}@media(prefers-reduced-motion:reduce){.a{animation:none}}', 'tpl-x', 'z-');
+  assert.equal(out, '@keyframes z-sway{from{rotate:0deg}to{rotate:1deg}}\n.tpl-x .z-a{animation:z-sway 4s ease-in-out infinite,fade 1s}\n@media(prefers-reduced-motion:reduce){.tpl-x .z-a{animation:none}}');
+});
+
+test('countdown, menu and scroll-reveal behaviour is provided by the platform, not the template', () => {
   const widgets = readFileSync(join(root, 'template-widgets.js'), 'utf8');
-  for (const marker of ['data-scroll-to', 'data-menu-toggle', 'data-countdown']) assert.ok(widgets.includes(marker), marker);
+  for (const marker of ['data-scroll-to', 'data-menu-toggle', 'data-countdown', 'data-reveal', 'data-reveal-armed', 'data-revealed']) assert.ok(widgets.includes(marker), marker);
+  assert.match(widgets, /prefers-reduced-motion/, 'reveals are off for reduced motion');
   assert.ok(html.includes('/template-widgets.js') && html.includes('/packaged-templates.js') && html.includes('/templates/templates.generated.js'));
 });
 
