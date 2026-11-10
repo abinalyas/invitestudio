@@ -14,8 +14,8 @@
 <section class="hero" data-tpl-section="home" data-section="hero">
   <div class="hero-copy">
     <p class="eyebrow"><span class="eyebrow-line"></span> {{upper:edit:copy:eyebrow}} <span class="eyebrow-line"></span></p>
-    <h1<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}">{{a}}<!--if b--> <em>&amp;</em><br>{{b}}<!--/if--><span class="period">.</span></h1>
-    <p class="hero-date">{{upper:date_long}}<!--if place_or_venue--> <span>·</span> {{upper:place_or_venue}}<!--/if--></p>
+    <h1<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <em>&amp;</em><br>{{edit:b}}<!--/if--><span class="period">.</span></h1>
+    <p class="hero-date">{{upper:edit:date_long}}<!--if place_or_venue--> <span>·</span> {{upper:place_or_venue}}<!--/if--></p>
     <!--if welcome--><button class="text-link" type="button" data-scroll-to="invitation">{{upper:copy:cta}} <span aria-hidden="true">↓</span></button><!--/if-->
   </div>
   <figure class="hero-image">
@@ -52,8 +52,8 @@
     <div class="details-info">
       <p class="eyebrow">{{upper:edit:copy:details_kicker}}</p>
       <h2>{{em:edit:copy:details_title}}</h2>
-      <!--if has_venue--><div class="detail-row"><span>{{upper:copy:label_venue}}</span><strong>{{venue}}</strong></div><!--/if-->
-      <!--if place--><div class="detail-row"><span>{{upper:copy:label_location}}</span><strong>{{place}}</strong></div><!--/if-->
+      <!--if has_venue--><div class="detail-row"><span>{{upper:copy:label_venue}}</span><strong>{{edit:venue}}</strong></div><!--/if-->
+      <!--if place--><div class="detail-row"><span>{{upper:copy:label_location}}</span><strong>{{edit:place}}</strong></div><!--/if-->
       <div class="detail-row"><span>{{upper:copy:label_time}}</span><strong>{{time_text}}</strong></div>
     </div>
   </div>
@@ -61,7 +61,7 @@
 <!--if show_venue--><section class="location section-pad" data-tpl-section="location" data-section="welcome">
   <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:location_eyebrow}}</p></div>
   <div class="location-layout">
-    <div><h2>{{em:edit:copy:location_title}}</h2><p>{{venue}}<!--if place--><br>{{place}}<!--/if--></p><!--if map_url--><a class="dark-button" href="{{map_url}}" target="_blank" rel="noopener">{{upper:copy:directions}} <span aria-hidden="true">↗</span></a><!--/if--></div>
+    <div><h2>{{em:edit:copy:location_title}}</h2><p>{{edit:venue}}<!--if place--><br>{{edit:place}}<!--/if--></p><!--if map_url--><a class="dark-button" href="{{map_url}}" target="_blank" rel="noopener">{{upper:copy:directions}} <span aria-hidden="true">↗</span></a><!--/if--></div>
     <div class="place-panel" aria-hidden="true"><span>{{venue}}</span><!--if place--><small>{{upper:place}}</small><!--/if--></div>
   </div>
 </section><!--/if-->
@@ -71,7 +71,7 @@
   <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:story_eyebrow}}</p></div>
   <div class="story-body">
     <h2>{{em:edit:copy:story_title}}</h2>
-    <div class="story-copy"><!--each story_paras--><p>{{.}}</p><!--/each--><span class="story-number">{{ia}}<!--if ib--> <span>+</span> {{ib}}<!--/if--></span></div>
+    <div class="story-copy"><!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p>{{.}}</p><!--/each--><!--if editable--></span><!--/if--><span class="story-number">{{ia}}<!--if ib--> <span>+</span> {{ib}}<!--/if--></span></div>
   </div>
 </section>
 
@@ -79,7 +79,7 @@
 <section class="timeline section-pad" data-tpl-section="schedule" data-section="functions">
   <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:schedule_eyebrow}}</p></div>
   <div class="timeline-content"><h2>{{em:edit:copy:schedule_title}}</h2>
-    <div class="timeline-list"><!--each events--><div class="timeline-item"><span>•</span><div><strong>{{title}}</strong><!--if venue--><p>{{venue}}</p><!--/if--></div><!--if when--><small>{{upper:when}}</small><!--/if--></div><!--/each--></div>
+    <div class="timeline-list"><!--each events--><div class="timeline-item"><span>•</span><div><strong>{{edit:event_title}}</strong><!--if venue--><p>{{edit:event_venue}}</p><!--/if--></div><!--if when--><small>{{upper:when}}</small><!--/if--></div><!--/each--></div>
   </div>
 </section>
 

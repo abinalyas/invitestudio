@@ -204,7 +204,8 @@
   // and the preview stay in step. Only the editor canvas gets these marks; the published page never does.
   const EDIT_STYLE = '<style>[data-edit]{cursor:text;outline:1px dashed rgba(20,92,55,.35);outline-offset:6px;border-radius:2px}' +
     '[data-edit]:hover{outline-color:#145c37}' +
-    '[data-edit][contenteditable="true"]{outline:2px solid #145c37;background:rgba(255,255,255,.12)}</style>';
+    '[data-edit][contenteditable="true"]{outline:2px solid #145c37;background:rgba(255,255,255,.12)}' +
+    '[data-multiline]{display:block}</style>';
 
   function enableTextEditing(container) {
     container.querySelectorAll('[data-edit]').forEach(el => {
@@ -231,8 +232,30 @@
     });
   }
 
+  // The date opens the browser's own date picker; the choice is saved as the event date.
+  function pickDate(el) {
+    const root = el.getRootNode();
+    const input = document.createElement('input');
+    input.type = 'date';
+    input.value = el.dataset.raw || '';
+    input.setAttribute('aria-label', 'Date');
+    const r = el.getBoundingClientRect();
+    input.style.cssText = `position:fixed;left:${r.left}px;top:${r.top}px;width:${Math.max(r.width, 160)}px;height:${Math.max(r.height, 40)}px;opacity:0;border:0;padding:0;z-index:9999`;
+    const done = () => input.remove();
+    input.addEventListener('change', () => {
+      if (input.value && input.value !== el.dataset.raw) bridge.update({ date: input.value });
+      done();
+    });
+    input.addEventListener('keydown', event => { if (event.key === 'Escape') done(); });
+    root.appendChild(input);
+    input.focus();
+    try { input.showPicker(); } catch { input.click(); }
+  }
+
   function startEditing(el) {
     const field = el.dataset.edit;
+    if (field === 'date') { pickDate(el); return; }
+    const multiline = el.dataset.multiline === '1'; // the story: Enter starts a new paragraph, Ctrl/Cmd+Enter saves
     const shown = el.innerHTML; // restored on cancel or when nothing changed
     const plain = el.dataset.raw !== undefined ? el.dataset.raw : el.textContent; // the value as typed, not uppercased
     let cancelled = false;
@@ -247,37 +270,57 @@
     selection.addRange(range);
 
     const onKeydown = event => {
-      if (event.key === 'Enter') {
-        event.preventDefault(); // one line: Enter saves
+      if (event.key === 'Enter' && (!multiline || event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
         el.blur();
       } else if (event.key === 'Escape') {
         cancelled = true;
         el.blur();
       }
     };
-    // Pasted text keeps its words but not its formatting, and line breaks become spaces.
+    // Pasted text keeps its words but not its formatting; one-line fields also turn line breaks into spaces.
     const onPaste = event => {
       event.preventDefault();
-      const text = (event.clipboardData || window.clipboardData).getData('text/plain').replace(/\s*\r?\n\s*/g, ' ');
-      document.execCommand('insertText', false, text);
+      const text = (event.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, multiline ? text : text.replace(/\s*\r?\n\s*/g, ' '));
     };
     const onBlur = () => {
       el.removeEventListener('keydown', onKeydown);
       el.removeEventListener('paste', onPaste);
       el.removeEventListener('blur', onBlur);
       el.contentEditable = 'false';
-      const value = el.textContent.trim();
+      const value = multiline
+        ? el.innerText.split(/\n+/).map(line => line.trim()).filter(Boolean).join('\n')
+        : el.textContent.trim();
+      const before = multiline ? plain.split(/\n+/).map(line => line.trim()).filter(Boolean).join('\n') : plain.trim();
       // Cancelled, unchanged, or a blank name (a blank name would fall back to the example names): keep what was there.
-      if (cancelled || value === plain.trim() || (field === 'title' && !value)) {
+      if (cancelled || value === before || (field === 'title' && !value)) {
         el.innerHTML = shown;
         return;
       }
-      if (field.indexOf('copy:') === 0) bridge.setCopy(field.slice(5), value); // wording, as the panel saves it
-      else bridge.update({ [field]: value }); // re-renders the preview and updates the panel field
+      // The names are one title: a half can be cleared, but not both halves together.
+      if (field.indexOf('names:') === 0 && ![value, el.dataset.other].join('').trim()) {
+        el.innerHTML = shown;
+        return;
+      }
+      saveField(el, field, value);
     };
     el.addEventListener('keydown', onKeydown);
     el.addEventListener('paste', onPaste);
     el.addEventListener('blur', onBlur);
+  }
+
+  // Saves one edited value through the same calls the panel makes.
+  function saveField(el, field, value) {
+    if (field.indexOf('copy:') === 0) return bridge.setCopy(field.slice(5), value);
+    if (field === 'location:venue') return bridge.update({ location: [value, el.dataset.other].filter(Boolean).join(', ') });
+    if (field === 'location:place') return bridge.update({ location: [el.dataset.other, value].filter(Boolean).join(', ') });
+    if (field === 'names:first') return bridge.update({ title: [value, el.dataset.other].filter(Boolean).join(' & ') });
+    if (field === 'names:second') return bridge.update({ title: [el.dataset.other, value].filter(Boolean).join(' & ') });
+    if (field === 'event:title') return bridge.updateEvent(el.dataset.id, { title: value });
+    if (field === 'event:venue') return bridge.updateEvent(el.dataset.id, { venue: value });
+    if (field === 'storyCopy') return bridge.update({ storyCopy: value });
+    return bridge.update({ [field]: value }); // title, message, hosts: re-renders the preview and updates the panel field
   }
 
   const widths = { desktop: '100%', tablet: '768px', mobile: '390px' };
