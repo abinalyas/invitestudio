@@ -83,8 +83,16 @@
   }
   function truthy(v) { return Array.isArray(v) ? v.length > 0 : Boolean(v); }
 
+  // Fields the couple can change by clicking their text in the editor preview: marker key -> the field it edits.
+  var EDITABLE = { names: "title", closing_note: "message" };
+
   function value(expr, chain, ctx) {
     var ops = expr.split(":"), mods = [], out;
+    if (ops[0] === "edit") {
+      // {{edit:key}}: the same value as {{key}}, wrapped for in-place editing only when the editor asks for it.
+      out = esc(lookup(chain, ops[1]));
+      return ctx.editable && EDITABLE[ops[1]] ? '<span data-edit="' + EDITABLE[ops[1]] + '">' + out + "</span>" : out;
+    }
     while (ops.length && (ops[0] === "upper" || ops[0] === "em")) mods.push(ops.shift());
     out = esc(ops[0] === "copy" ? ctx.copy(ops[1]) : lookup(chain, ops.join(":")));
     mods.forEach(function (m) {
@@ -202,7 +210,7 @@
     var visible = {};
     DEFAULT_SECTIONS.forEach(function (s) { visible[s] = false; });
     registry.forEach(function (sec) { if (sec && DEFAULT_SECTIONS.indexOf(sec.id) >= 0 && sec.visible !== false) visible[sec.id] = true; });
-    var d = derive(p, pkg, visible, Boolean(opts && opts.sample)), chain = [d.values], ctx = { copy: d.copy };
+    var d = derive(p, pkg, visible, Boolean(opts && opts.sample)), chain = [d.values], ctx = { copy: d.copy, editable: Boolean(opts && opts.editable) };
     var show = function (name) { return evaluate(cachedParse(pkg.parts[name] || "").kids, chain, ctx); };
     var body = show("header");
     registry.forEach(function (sec) {

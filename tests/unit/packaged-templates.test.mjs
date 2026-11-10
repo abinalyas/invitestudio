@@ -281,3 +281,23 @@ for (const { manifest: t } of list) {
     assert.doesNotMatch(run({ rsvp: 'none', rsvpContact: number }), /data-rsvp-open|wa\.me|Replies are closed/);
   });
 }
+
+test('the editor preview marks names and the closing note as click-to-edit; the published page does not', () => {
+  const ctx = renderer();
+  const project = { ...sampleOf('minimalist'), title: 'Ava & Ben', message: 'Please join us' };
+  const t = { packaged: 'minimalist' };
+  const editor = ctx.renderPackagedTemplate(project, t, { sample: false, editable: true });
+  assert.match(editor, /<span data-edit="title">Ava &amp; Ben<\/span>/);
+  assert.match(editor, /<span data-edit="message">Please join us<\/span>/);
+  const published = ctx.renderPackagedTemplate(project, t, { sample: false });
+  assert.equal(published.includes('data-edit'), false);
+  assert.match(published, /Ava &amp; Ben/);
+});
+
+test('text typed into a click-to-edit field is escaped, so it cannot inject markup', () => {
+  const ctx = renderer();
+  const project = { ...sampleOf('minimalist'), title: '<img src=x onerror=alert(1)>', message: '' };
+  const editor = ctx.renderPackagedTemplate(project, { packaged: 'minimalist' }, { sample: false, editable: true });
+  assert.equal(editor.includes('<img src=x'), false);
+  assert.match(editor, /&lt;img src=x onerror=alert\(1\)&gt;/);
+});
