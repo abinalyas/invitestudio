@@ -217,7 +217,18 @@
     'width:max-content;max-width:calc(100% - 24px);padding:8px 8px 8px 14px;border-radius:999px;background:#1d1f1c;color:#fff;' +
     'font:500 12px/1.3 var(--sans,system-ui,sans-serif);letter-spacing:0;text-transform:none;box-shadow:0 6px 20px rgba(0,0,0,.25)}' +
     '.edit-hint-pill button{all:unset;cursor:pointer;width:22px;height:22px;border-radius:50%;text-align:center;font-size:15px;line-height:22px;color:#fff}' +
-    '.edit-hint-pill button:hover,.edit-hint-pill button:focus-visible{background:rgba(255,255,255,.2)}</style>';
+    '.edit-hint-pill button:hover,.edit-hint-pill button:focus-visible{background:rgba(255,255,255,.2)}' +
+    '.edit-hint-pill[data-kind="error"]{background:#8a1c1c}' +
+    // Photo placeholders open the file picker; the add-event button and its choices sit under the events list.
+    '[data-photo-add]{cursor:pointer;outline:1px dashed rgba(128,128,128,.7);outline:1px dashed color-mix(in srgb,currentColor 45%,transparent);outline-offset:-6px}' +
+    '[data-photo-add]:hover,[data-photo-add]:focus-visible{outline-style:solid;background:rgba(128,128,128,.14);background:color-mix(in srgb,currentColor 10%,transparent)}' +
+    '[data-add-wrap]{text-align:center;margin:20px 0 0;padding:0 12px}' +
+    // !important: a design's own button styles must not turn these into plain text.
+    '[data-add-event],.edit-chip{all:unset!important;box-sizing:border-box!important;cursor:pointer!important;display:inline-block!important;padding:9px 16px!important;border-radius:999px!important;' +
+    'font:600 13px/1.2 var(--sans,system-ui,sans-serif)!important;letter-spacing:0!important;text-transform:none!important;color:inherit!important;' +
+    'border:1px dashed rgba(128,128,128,.8)!important;border:1px dashed color-mix(in srgb,currentColor 55%,transparent)!important}' +
+    '[data-add-event]:hover,[data-add-event]:focus-visible,.edit-chip:hover,.edit-chip:focus-visible{border-style:solid!important;background:rgba(128,128,128,.14)!important;background:color-mix(in srgb,currentColor 10%,transparent)!important}' +
+    '.edit-menu{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 0}</style>';
 
   // The tip is shown until it is dismissed or the person makes their first edit, and then not again on this device.
   const HINT_KEY = 'invitestudio-edit-hint-seen';
@@ -227,10 +238,155 @@
   function markHintSeen() {
     try { localStorage.setItem(HINT_KEY, '1'); } catch { /* the tip may come back; nothing else depends on it */ }
   }
-  function editHint(container) {
-    if (hintSeen() || !container.querySelector('[data-edit]')) return '';
-    return '<div class="edit-hint"><div class="edit-hint-pill" role="note"><span>Click any outlined text to edit it</span>' +
-      '<button type="button" data-hint-close aria-label="Dismiss tip">&times;</button></div></div>';
+  // One small pill at the bottom of the preview: the tip, or a short notice (photo progress, why photos are unavailable).
+  let previewNotice = null; // { text, kind, until }
+  function pillElement(text, kind) {
+    const wrap = document.createElement('div');
+    wrap.className = 'edit-hint';
+    const pill = document.createElement('div');
+    pill.className = 'edit-hint-pill';
+    pill.dataset.kind = kind;
+    pill.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+    const label = document.createElement('span');
+    label.textContent = text;
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.setAttribute('data-hint-close', '');
+    close.setAttribute('aria-label', 'Dismiss');
+    close.textContent = '\u00d7';
+    pill.append(label, close);
+    wrap.append(pill);
+    return wrap;
+  }
+  function showPill(container) {
+    container.querySelector('.edit-hint')?.remove();
+    const notice = previewNotice && previewNotice.until > Date.now() ? previewNotice : null;
+    if (notice) container.append(pillElement(notice.text, notice.kind));
+    else if (!hintSeen() && container.querySelector('[data-edit]')) container.append(pillElement('Click any outlined text to edit it', 'tip'));
+  }
+  function setNotice(container, text, kind = 'info', ms = 7000) {
+    const notice = { text, kind, until: Date.now() + ms };
+    previewNotice = notice;
+    showPill(container);
+    window.setTimeout(() => {
+      if (previewNotice !== notice) return;
+      previewNotice = null;
+      if (container.isConnected) showPill(container);
+    }, ms + 50);
+  }
+
+  // ---- Photos: a placeholder in the gallery opens the file picker and uploads the way the Photos panel does.
+  const SLOT_NAMES = { hero: 'cover picture', story: 'story picture', venue: 'venue picture' };
+  const PHOTO_OFF_NOTES = {
+    NOT_SAVED_ONLINE: 'Photos need your invitation to be saved online. Open it with your private link, or wait until it finishes saving.',
+    NO_STORAGE: "Photo storage is not set up yet. Until it is, your invitation uses the design's own pictures.",
+    MIGRATION_PENDING: 'Photo storage is being set up. Please try again later.'
+  };
+  function startPhotoAdd(container) {
+    const snap = bridge.snapshot();
+    if (!snap.media.loaded) {
+      void bridge.mediaLoad();
+      setNotice(container, 'Checking photo storage. Try again in a moment.', 'info', 3500);
+      return;
+    }
+    if (!snap.media.enabled) {
+      setNotice(container, PHOTO_OFF_NOTES[snap.media.reason] || 'Photos are not available right now.', 'error', 10000);
+      return;
+    }
+    if (snap.photos.length >= snap.media.limits.photos) {
+      setNotice(container, `Photo limit reached (${snap.media.limits.photos}). Remove a photo in the Photos panel to add another.`, 'error', 9000);
+      return;
+    }
+    container.querySelector('input[data-photo-input]')?.remove();
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*,.heic,.heif';
+    input.multiple = true;
+    input.hidden = true;
+    input.setAttribute('data-photo-input', '');
+    input.addEventListener('change', () => {
+      const files = Array.from(input.files || []);
+      input.remove();
+      if (files.length) void addPhotos(container, files);
+    });
+    container.append(input);
+    input.click();
+  }
+  async function addPhotos(container, files) {
+    const before = bridge.snapshot();
+    const start = before.photos.length;
+    setNotice(container, `Adding photo 1 of ${files.length}\u2026`, 'info', 180000);
+    let result;
+    try {
+      result = await bridge.mediaUpload(files, p => setNotice(container, `Adding photo ${p.index} of ${p.total}\u2026`, 'info', 180000));
+    } catch {
+      setNotice(container, 'The photos could not be added. Check your connection and try again.', 'error', 9000);
+      return;
+    }
+    const errors = (result && result.errors) || [];
+    const added = (result && result.added) || 0;
+    let text = '';
+    if (added) {
+      // The first photos fill the design's large pictures and the rest form the gallery: say where these went.
+      const pieces = [];
+      for (let i = 0; i < added; i += 1) {
+        const slot = before.photoSlots[start + i];
+        if (slot) pieces.push(`1 to the ${SLOT_NAMES[slot] || 'large picture'}`);
+      }
+      const gallery = added - pieces.length;
+      if (gallery > 0) pieces.push(`${gallery} to the gallery`);
+      text = `Added ${added} ${added === 1 ? 'photo' : 'photos'}: ${pieces.join(', ')}.`;
+    }
+    if (errors.length) {
+      const problems = errors.slice(0, 2).map(error => (error.name ? `${error.name}: ${error.message}` : error.message)).join(' ');
+      text = `${text} ${problems}${errors.length > 2 ? ' \u2026' : ''}`.trim();
+    }
+    if (text) setNotice(container, text, errors.length ? 'error' : 'info', errors.length ? 12000 : 8000);
+    else showPill(container);
+  }
+
+  // ---- Events: "+ Add event" under the events list offers the quick-add choices and a custom event.
+  function chip(label, onClick) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'edit-chip';
+    button.textContent = label;
+    button.addEventListener('click', onClick);
+    return button;
+  }
+  function toggleEventMenu(container, button) {
+    const wrap = button.closest('[data-add-wrap]');
+    if (!wrap) return;
+    const open = wrap.querySelector('.edit-menu');
+    if (open) {
+      open.remove();
+      button.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    const menu = document.createElement('div');
+    menu.className = 'edit-menu';
+    menu.setAttribute('role', 'group');
+    menu.setAttribute('aria-label', 'Add an event');
+    for (const title of bridge.eventPresets().slice(0, 6)) menu.append(chip(title, () => addEventFromPreview(container, title, false)));
+    menu.append(chip('Custom event', () => addEventFromPreview(container, 'New event', true)));
+    wrap.append(menu);
+    button.setAttribute('aria-expanded', 'true');
+  }
+  function addEventFromPreview(container, title, rename) {
+    const id = bridge.addEvent(title);
+    if (!id) return;
+    // The preview redraws after the save: wait for the new event, bring it into view, and (custom) start renaming it.
+    let tries = 0;
+    const find = () => {
+      const el = container.querySelector(`[data-edit="event:title"][data-id="${id}"]`);
+      if (el) {
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        if (rename) startEditing(el);
+      } else if (tries++ < 40) {
+        window.setTimeout(find, 50);
+      }
+    };
+    window.setTimeout(find, 0);
   }
 
   function enableTextEditing(container) {
@@ -239,6 +395,13 @@
       el.setAttribute('role', 'button');
       el.title = 'Click to edit';
     });
+    // The design's "Your photo" placeholders become buttons that add photos.
+    container.querySelectorAll('[data-photo-add]').forEach(el => {
+      el.tabIndex = 0;
+      el.setAttribute('role', 'button');
+      el.title = 'Click to add photos';
+      el.textContent = '+ Add photos';
+    });
     if (container.dataset.editWired) return;
     container.dataset.editWired = '1';
     const fieldOf = event => {
@@ -246,17 +409,35 @@
       return el && el.contentEditable !== 'true' ? el : null;
     };
     container.addEventListener('click', event => {
-      if (event.target instanceof Element && event.target.closest('[data-hint-close]')) {
-        markHintSeen();
+      const target = event.target instanceof Element ? event.target : null;
+      if (target && target.closest('[data-hint-close]')) {
+        if (previewNotice) previewNotice = null;
+        else markHintSeen();
         container.querySelector('.edit-hint')?.remove();
+        return;
+      }
+      const addEvent = target && target.closest('[data-add-event]');
+      if (addEvent) {
+        toggleEventMenu(container, addEvent);
+        return;
+      }
+      if (target && target.closest('[data-photo-add]')) {
+        startPhotoAdd(container);
         return;
       }
       const el = fieldOf(event);
       if (el) startEditing(el);
     });
     container.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const photo = event.target instanceof Element ? event.target.closest('[data-photo-add]') : null;
+      if (photo) {
+        event.preventDefault();
+        startPhotoAdd(container);
+        return;
+      }
       const el = fieldOf(event);
-      if (el && (event.key === 'Enter' || event.key === ' ')) {
+      if (el) {
         event.preventDefault();
         startEditing(el);
       }
@@ -580,7 +761,7 @@
       // Until the couple adds their names, the preview shows the template's example names.
       const shown = String(p.title || '').trim() ? p : { ...p, title: SAMPLE_NAMES, name: SAMPLE_NAMES };
       container.innerHTML = sitePreview(shown, tpl(p.templateId), false, { editable: true }) + EDIT_STYLE;
-      container.insertAdjacentHTML('beforeend', editHint(container));
+      showPill(container);
       if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
       enableTextEditing(container);
     },

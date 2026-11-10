@@ -77,14 +77,14 @@
   <div class="section-top"><p class="eyebrow">{{upper:edit:copy:schedule_eyebrow}}</p><h2>{{em:edit:copy:schedule_title}}</h2><p class="section-intro">{{edit:copy:schedule_intro}}</p></div>
   <div class="timeline" style="--n:{{events_count}}">
     <!--each events--><div class="timeline-row"><span>{{n}}</span><h3>{{edit:event_title}}</h3><p><!--if venue-->{{edit:event_venue}}<!--/if--></p><!--if when--><small>{{upper:when}}</small><!--/if--></div><!--/each-->
-  </div>
+  </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add event</button></div><!--/if-->
 </section>
 
 <!--part:gallery-->
 <section class="moments section-dark" data-tpl-section="moments" data-section="gallery">
   <div class="section-top"><p class="eyebrow">{{upper:edit:copy:gallery_eyebrow}}</p><h2>{{em:edit:copy:gallery_title}}</h2><p class="section-intro">{{edit:copy:gallery_intro}}</p></div>
   <div class="gallery">
-    <!--each photos--><figure><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph">Your photo</span><!--/if--><!--if caption--><figcaption>{{upper:caption}}</figcaption><!--/if--></figure><!--/each-->
+    <!--each photos--><figure><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--><!--if caption--><figcaption>{{upper:caption}}</figcaption><!--/if--></figure><!--/each-->
   </div>
 </section>
 

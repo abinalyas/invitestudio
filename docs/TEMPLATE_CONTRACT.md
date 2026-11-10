@@ -413,3 +413,9 @@ Wrap the story paragraphs once, so they are edited as one block:
 `<!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras-->…<!--/each--><!--if editable--></span><!--/if-->`
 
 Rules: never put a marker inside an attribute, an SVG `<text>`, a `<button>` or an `<a>` (clicking those navigates), and leave navigation, buttons and small labels unmarked. `tests/unit/packaged-templates.test.mjs` checks every template for these.
+
+### Add-event button and photo placeholders (editor preview only)
+
+- After the events list, add `<!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add event</button></div><!--/if-->`. It offers the quick-add choices and a custom event, and a new custom event opens ready to rename. Use `data-` attributes, not classes: the build prefixes class names.
+- On the gallery's "Your photo" placeholder, add `<!--if editable--> data-photo-add<!--/if-->` inside the tag. In the editor it becomes "+ Add photos" and opens the file picker; the notice names where the photos went (the design's large pictures fill first, then the gallery).
+- The design's example events (shown before the couple adds their own) have no id, so they are not editable; `{{edit:event_title}}` and `{{edit:event_venue}}` still show their wording.

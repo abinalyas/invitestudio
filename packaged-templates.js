@@ -117,7 +117,11 @@
     if (field === "location:venue") extra = ' data-other="' + esc(lookup(chain, "place")) + '"';
     if (field === "location:place") extra = ' data-other="' + esc(lookup(chain, "venue")) + '"';
     // An event's title or venue is saved against the event itself.
-    if (field.indexOf("event:") === 0) extra = ' data-id="' + esc(lookup(chain, "event_id")) + '"';
+    if (field.indexOf("event:") === 0) {
+      var eventId = lookup(chain, "event_id");
+      if (!eventId) return out; // the design's example events are placeholders until the couple adds their own
+      extra = ' data-id="' + esc(eventId) + '"';
+    }
     if (field === "names:first") extra = ' data-other="' + esc(lookup(chain, "b")) + '"';
     if (field === "names:second") extra = ' data-other="' + esc(lookup(chain, "a")) + '"';
     return '<span data-edit="' + field + '" data-raw="' + raw + '"' + extra + ">" + out + "</span>";
@@ -171,7 +175,7 @@
     var story = String(p.story || "").trim();
     var example = (sample && pkg.manifest.example) || null;
     if (example && !story) story = example.story || "";
-    if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", when: "", date_text: "", time_text: "", map: "" }; });
+    if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", event_id: "", event_title: e.title, event_venue: e.venue || "", when: "", date_text: "", time_text: "", map: "" }; });
     events = numbered(events);
     var photos = (Array.isArray(p.photos) ? p.photos : []).map(function (ph) { return ph && { src: safePhoto(ph.data), thumb: safePhoto(ph.thumb), alt: ph.alt || "" }; }).filter(function (ph) { return ph && ph.src; });
     // Photo slots: the first photos fill the template's named slots (hero, story, ...), in order. The gallery gets the

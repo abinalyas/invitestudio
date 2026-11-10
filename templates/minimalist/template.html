@@ -79,13 +79,13 @@
 <section class="timeline section-pad" data-tpl-section="schedule" data-section="functions">
   <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:schedule_eyebrow}}</p></div>
   <div class="timeline-content"><h2>{{em:edit:copy:schedule_title}}</h2>
-    <div class="timeline-list"><!--each events--><div class="timeline-item"><span>•</span><div><strong>{{edit:event_title}}</strong><!--if venue--><p>{{edit:event_venue}}</p><!--/if--></div><!--if when--><small>{{upper:when}}</small><!--/if--></div><!--/each--></div>
+    <div class="timeline-list"><!--each events--><div class="timeline-item"><span>•</span><div><strong>{{edit:event_title}}</strong><!--if venue--><p>{{edit:event_venue}}</p><!--/if--></div><!--if when--><small>{{upper:when}}</small><!--/if--></div><!--/each--></div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add event</button></div><!--/if-->
   </div>
 </section>
 
 <!--part:gallery-->
 <section class="gallery section-pad" data-tpl-section="gallery" data-section="gallery">
-  <div class="photo-grid"><!--each photos--><figure><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph">Your photo</span><!--/if--></figure><!--/each--></div>
+  <div class="photo-grid"><!--each photos--><figure><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each--></div>
   <p class="gallery-caption">{{upper:edit:copy:gallery_caption}}</p>
 </section>
 

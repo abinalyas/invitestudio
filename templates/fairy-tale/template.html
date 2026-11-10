@@ -68,7 +68,7 @@
         <!--if venue--><p class="event-venue">{{edit:event_venue}}</p><!--/if-->
         <!--if map--><a class="text-link" href="{{map}}" target="_blank" rel="noopener noreferrer">{{upper:copy:view_location}} ↗</a><!--/if-->
       </article><!--/each-->
-    </div>
+    </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add event</button></div><!--/if-->
   </div>
 </section>
 
@@ -80,7 +80,7 @@
       <p class="section-text">{{edit:copy:gallery_intro}}</p>
     </div>
     <div class="gallery-grid">
-      <!--each photos--><figure class="gallery-item"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph">Your photo</span><!--/if--><!--if caption--><figcaption>{{caption}}</figcaption><!--/if--></figure><!--/each-->
+      <!--each photos--><figure class="gallery-item"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--><!--if caption--><figcaption>{{caption}}</figcaption><!--/if--></figure><!--/each-->
     </div>
   </div>
 </section>
