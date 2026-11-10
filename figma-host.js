@@ -202,10 +202,36 @@
   // Click-to-edit in the editor preview: the template marks the text the couple can change with data-edit
   // (see packaged-templates.js). Editing one saves through the same bridge.update the panel uses, so the panel
   // and the preview stay in step. Only the editor canvas gets these marks; the published page never does.
-  const EDIT_STYLE = '<style>[data-edit]{cursor:text;outline:1px dashed rgba(20,92,55,.35);outline-offset:6px;border-radius:2px}' +
-    '[data-edit]:hover{outline-color:#145c37}' +
-    '[data-edit][contenteditable="true"]{outline:2px solid #145c37;background:rgba(255,255,255,.12)}' +
-    '[data-multiline]{display:block}</style>';
+  // The outlines follow each design's own text colour (currentColor), so they show on dark designs as well as light ones.
+  // The first declaration of each pair is a fallback for browsers without color-mix.
+  const EDIT_STYLE = '<style>[data-edit]{cursor:text;border-radius:2px;outline:1px dashed rgba(128,128,128,.7);outline-offset:2px;' +
+    'outline:1px dashed color-mix(in srgb,currentColor 38%,transparent);transition:outline-color .15s,background-color .15s}' +
+    '[data-edit]:hover{outline:1.5px solid rgba(128,128,128,.95);outline:1.5px solid color-mix(in srgb,currentColor 85%,transparent);' +
+    'background:rgba(128,128,128,.12);background:color-mix(in srgb,currentColor 9%,transparent)}' +
+    '[data-edit]:focus-visible{outline:2px solid currentColor}' +
+    '[data-edit][contenteditable="true"]{outline:2px solid currentColor;background:rgba(128,128,128,.18);background:color-mix(in srgb,currentColor 12%,transparent)}' +
+    '[data-multiline]{display:block}' +
+    // A small tip pinned to the bottom of the preview. It takes no space in the layout.
+    '.edit-hint{position:sticky;bottom:0;height:0;z-index:50}' +
+    '.edit-hint-pill{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;' +
+    'width:max-content;max-width:calc(100% - 24px);padding:8px 8px 8px 14px;border-radius:999px;background:#1d1f1c;color:#fff;' +
+    'font:500 12px/1.3 var(--sans,system-ui,sans-serif);letter-spacing:0;text-transform:none;box-shadow:0 6px 20px rgba(0,0,0,.25)}' +
+    '.edit-hint-pill button{all:unset;cursor:pointer;width:22px;height:22px;border-radius:50%;text-align:center;font-size:15px;line-height:22px;color:#fff}' +
+    '.edit-hint-pill button:hover,.edit-hint-pill button:focus-visible{background:rgba(255,255,255,.2)}</style>';
+
+  // The tip is shown until it is dismissed or the person makes their first edit, and then not again on this device.
+  const HINT_KEY = 'invitestudio-edit-hint-seen';
+  function hintSeen() {
+    try { return localStorage.getItem(HINT_KEY) === '1'; } catch { return false; }
+  }
+  function markHintSeen() {
+    try { localStorage.setItem(HINT_KEY, '1'); } catch { /* the tip may come back; nothing else depends on it */ }
+  }
+  function editHint(container) {
+    if (hintSeen() || !container.querySelector('[data-edit]')) return '';
+    return '<div class="edit-hint"><div class="edit-hint-pill" role="note"><span>Click any outlined text to edit it</span>' +
+      '<button type="button" data-hint-close aria-label="Dismiss tip">&times;</button></div></div>';
+  }
 
   function enableTextEditing(container) {
     container.querySelectorAll('[data-edit]').forEach(el => {
@@ -220,6 +246,11 @@
       return el && el.contentEditable !== 'true' ? el : null;
     };
     container.addEventListener('click', event => {
+      if (event.target instanceof Element && event.target.closest('[data-hint-close]')) {
+        markHintSeen();
+        container.querySelector('.edit-hint')?.remove();
+        return;
+      }
       const el = fieldOf(event);
       if (el) startEditing(el);
     });
@@ -303,6 +334,7 @@
         el.innerHTML = shown;
         return;
       }
+      markHintSeen(); // they have found it, so the tip is not needed again
       saveField(el, field, value);
     };
     el.addEventListener('keydown', onKeydown);
@@ -548,6 +580,7 @@
       // Until the couple adds their names, the preview shows the template's example names.
       const shown = String(p.title || '').trim() ? p : { ...p, title: SAMPLE_NAMES, name: SAMPLE_NAMES };
       container.innerHTML = sitePreview(shown, tpl(p.templateId), false, { editable: true }) + EDIT_STYLE;
+      container.insertAdjacentHTML('beforeend', editHint(container));
       if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
       enableTextEditing(container);
     },
