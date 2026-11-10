@@ -199,6 +199,86 @@
     return host.shadowRoot.querySelector('.invitation-canvas');
   }
 
+  // Click-to-edit in the editor preview: the template marks the text the couple can change with data-edit
+  // (see packaged-templates.js). Editing one saves through the same bridge.update the panel uses, so the panel
+  // and the preview stay in step. Only the editor canvas gets these marks; the published page never does.
+  const EDIT_STYLE = '<style>[data-edit]{cursor:text;outline:1px dashed rgba(20,92,55,.35);outline-offset:6px;border-radius:2px}' +
+    '[data-edit]:hover{outline-color:#145c37}' +
+    '[data-edit][contenteditable="true"]{outline:2px solid #145c37;background:rgba(255,255,255,.12)}</style>';
+
+  function enableTextEditing(container) {
+    container.querySelectorAll('[data-edit]').forEach(el => {
+      el.tabIndex = 0;
+      el.setAttribute('role', 'button');
+      el.title = 'Click to edit';
+    });
+    if (container.dataset.editWired) return;
+    container.dataset.editWired = '1';
+    const fieldOf = event => {
+      const el = event.target instanceof Element ? event.target.closest('[data-edit]') : null;
+      return el && el.contentEditable !== 'true' ? el : null;
+    };
+    container.addEventListener('click', event => {
+      const el = fieldOf(event);
+      if (el) startEditing(el);
+    });
+    container.addEventListener('keydown', event => {
+      const el = fieldOf(event);
+      if (el && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        startEditing(el);
+      }
+    });
+  }
+
+  function startEditing(el) {
+    const field = el.dataset.edit;
+    const shown = el.innerHTML; // restored on cancel or when nothing changed
+    const plain = el.dataset.raw !== undefined ? el.dataset.raw : el.textContent; // the value as typed, not uppercased
+    let cancelled = false;
+    el.textContent = plain;
+    el.contentEditable = 'true';
+    el.spellcheck = false;
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const onKeydown = event => {
+      if (event.key === 'Enter') {
+        event.preventDefault(); // one line: Enter saves
+        el.blur();
+      } else if (event.key === 'Escape') {
+        cancelled = true;
+        el.blur();
+      }
+    };
+    // Pasted text keeps its words but not its formatting, and line breaks become spaces.
+    const onPaste = event => {
+      event.preventDefault();
+      const text = (event.clipboardData || window.clipboardData).getData('text/plain').replace(/\s*\r?\n\s*/g, ' ');
+      document.execCommand('insertText', false, text);
+    };
+    const onBlur = () => {
+      el.removeEventListener('keydown', onKeydown);
+      el.removeEventListener('paste', onPaste);
+      el.removeEventListener('blur', onBlur);
+      el.contentEditable = 'false';
+      const value = el.textContent.trim();
+      // Cancelled, unchanged, or a blank name (a blank name would fall back to the example names): keep what was there.
+      if (cancelled || value === plain.trim() || (field === 'title' && !value)) {
+        el.innerHTML = shown;
+        return;
+      }
+      bridge.update({ [field]: value }); // re-renders the preview and updates the panel field
+    };
+    el.addEventListener('keydown', onKeydown);
+    el.addEventListener('paste', onPaste);
+    el.addEventListener('blur', onBlur);
+  }
+
   const widths = { desktop: '100%', tablet: '768px', mobile: '390px' };
 
   const bridge = {
@@ -423,8 +503,9 @@
       // full=false: the editor canvas shows the invitation without its intro overlay.
       // Until the couple adds their names, the preview shows the template's example names.
       const shown = String(p.title || '').trim() ? p : { ...p, title: SAMPLE_NAMES, name: SAMPLE_NAMES };
-      container.innerHTML = sitePreview(shown, tpl(p.templateId), false);
+      container.innerHTML = sitePreview(shown, tpl(p.templateId), false, { editable: true }) + EDIT_STYLE;
       if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
+      enableTextEditing(container);
     },
 
     createDraft(backendTemplateId, templateNumber, sampleNames) {

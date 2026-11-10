@@ -35,13 +35,13 @@
 
 <!--part:welcome-->
 <section class="invitation section-pad" data-tpl-section="invitation" data-section="welcome">
-  <p class="eyebrow"><!--if hosts_line-->{{upper:hosts_line}}<!--else-->{{upper:copy:invitation_eyebrow}}<!--/if--></p>
+  <p class="eyebrow"><!--if hosts_line-->{{upper:edit:hosts_line}}<!--else-->{{upper:copy:invitation_eyebrow}}<!--/if--></p>
   <div class="invitation-content">
     <h2>{{em:copy:invitation_title}}</h2>
     <div class="invitation-note">
       <span class="small-rule"></span>
-      <p>{{closing_note}}</p>
-      <p class="signature">{{names}}</p>
+      <p>{{edit:closing_note}}</p>
+      <p class="signature">{{edit:names}}</p>
     </div>
   </div>
 </section>

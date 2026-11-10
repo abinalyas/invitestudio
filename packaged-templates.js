@@ -83,14 +83,22 @@
   }
   function truthy(v) { return Array.isArray(v) ? v.length > 0 : Boolean(v); }
 
+  // Fields the couple can change by clicking their text in the editor preview: marker key -> the field it edits.
+  var EDITABLE = { names: "title", closing_note: "message", hosts_line: "hosts" };
+
   function value(expr, chain, ctx) {
-    var ops = expr.split(":"), mods = [], out;
+    var ops = expr.split(":"), mods = [], out, field = null, raw;
     while (ops.length && (ops[0] === "upper" || ops[0] === "em")) mods.push(ops.shift());
-    out = esc(ops[0] === "copy" ? ctx.copy(ops[1]) : lookup(chain, ops.join(":")));
+    // {{edit:key}} (or {{upper:edit:key}}): the same value as {{key}}, marked for in-place editing. The editor
+    // gets the plain value in data-raw, so an uppercased line is edited as typed, not in capitals.
+    if (ops[0] === "edit") { ops.shift(); field = EDITABLE[ops.join(":")] || null; }
+    raw = esc(ops[0] === "copy" ? ctx.copy(ops[1]) : lookup(chain, ops.join(":")));
+    out = raw;
     mods.forEach(function (m) {
       if (m === "upper") out = out.toUpperCase();
       if (m === "em") out = out.replace(/\*([^*]+)\*/g, "<em>$1</em>");
     });
+    if (field && ctx.editable) return '<span data-edit="' + field + '" data-raw="' + raw + '">' + out + "</span>";
     return out;
   }
   function branch(n, wantElse) {
@@ -202,7 +210,7 @@
     var visible = {};
     DEFAULT_SECTIONS.forEach(function (s) { visible[s] = false; });
     registry.forEach(function (sec) { if (sec && DEFAULT_SECTIONS.indexOf(sec.id) >= 0 && sec.visible !== false) visible[sec.id] = true; });
-    var d = derive(p, pkg, visible, Boolean(opts && opts.sample)), chain = [d.values], ctx = { copy: d.copy };
+    var d = derive(p, pkg, visible, Boolean(opts && opts.sample)), chain = [d.values], ctx = { copy: d.copy, editable: Boolean(opts && opts.editable) };
     var show = function (name) { return evaluate(cachedParse(pkg.parts[name] || "").kids, chain, ctx); };
     var body = show("header");
     registry.forEach(function (sec) {
