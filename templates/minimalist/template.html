@@ -13,7 +13,7 @@
 <!--part:hero-->
 <section class="hero" data-tpl-section="home" data-section="hero">
   <div class="hero-copy">
-    <p class="eyebrow"><span class="eyebrow-line"></span> {{upper:copy:eyebrow}} <span class="eyebrow-line"></span></p>
+    <p class="eyebrow"><span class="eyebrow-line"></span> {{upper:edit:copy:eyebrow}} <span class="eyebrow-line"></span></p>
     <h1<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}">{{a}}<!--if b--> <em>&amp;</em><br>{{b}}<!--/if--><span class="period">.</span></h1>
     <p class="hero-date">{{upper:date_long}}<!--if place_or_venue--> <span>·</span> {{upper:place_or_venue}}<!--/if--></p>
     <!--if welcome--><button class="text-link" type="button" data-scroll-to="invitation">{{upper:copy:cta}} <span aria-hidden="true">↓</span></button><!--/if-->
@@ -24,7 +24,7 @@
   <!--if date--><div class="hero-index" aria-hidden="true">{{upper:month_short}}<br><strong>{{day}}</strong><br>{{year}}</div><!--/if-->
 </section>
 <!--if date--><section class="countdown-section" aria-label="{{copy:countdown_eyebrow}}">
-  <div class="countdown-intro"><p class="eyebrow">{{upper:copy:countdown_eyebrow}}</p><h2>{{em:copy:countdown_title}}</h2></div>
+  <div class="countdown-intro"><p class="eyebrow">{{upper:edit:copy:countdown_eyebrow}}</p><h2>{{em:edit:copy:countdown_title}}</h2></div>
   <div class="countdown" role="timer" aria-live="off" data-countdown="{{date_iso}}">
     <div><strong data-cd="days">—</strong><span>DAYS</span></div><i></i>
     <div><strong data-cd="hours">—</strong><span>HOURS</span></div><i></i>
@@ -35,9 +35,9 @@
 
 <!--part:welcome-->
 <section class="invitation section-pad" data-tpl-section="invitation" data-section="welcome">
-  <p class="eyebrow"><!--if hosts_line-->{{upper:edit:hosts_line}}<!--else-->{{upper:copy:invitation_eyebrow}}<!--/if--></p>
+  <p class="eyebrow"><!--if hosts_line-->{{upper:edit:hosts_line}}<!--else-->{{upper:edit:copy:invitation_eyebrow}}<!--/if--></p>
   <div class="invitation-content">
-    <h2>{{em:copy:invitation_title}}</h2>
+    <h2>{{em:edit:copy:invitation_title}}</h2>
     <div class="invitation-note">
       <span class="small-rule"></span>
       <p>{{edit:closing_note}}</p>
@@ -46,12 +46,12 @@
   </div>
 </section>
 <section class="details section-pad" data-tpl-section="details" data-section="welcome">
-  <div class="section-heading"><p class="eyebrow">{{upper:copy:details_eyebrow}}</p></div>
+  <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:details_eyebrow}}</p></div>
   <div class="details-main">
     <div class="details-date"><!--if date--><span class="month">{{upper:month_long}}</span><strong>{{day}}</strong><span class="year">{{upper:weekday}} · {{year}}</span><!--else--><strong class="tba">{{copy:date_pending}}</strong><!--/if--></div>
     <div class="details-info">
-      <p class="eyebrow">{{upper:copy:details_kicker}}</p>
-      <h2>{{em:copy:details_title}}</h2>
+      <p class="eyebrow">{{upper:edit:copy:details_kicker}}</p>
+      <h2>{{em:edit:copy:details_title}}</h2>
       <!--if has_venue--><div class="detail-row"><span>{{upper:copy:label_venue}}</span><strong>{{venue}}</strong></div><!--/if-->
       <!--if place--><div class="detail-row"><span>{{upper:copy:label_location}}</span><strong>{{place}}</strong></div><!--/if-->
       <div class="detail-row"><span>{{upper:copy:label_time}}</span><strong>{{time_text}}</strong></div>
@@ -59,26 +59,26 @@
   </div>
 </section>
 <!--if show_venue--><section class="location section-pad" data-tpl-section="location" data-section="welcome">
-  <div class="section-heading"><p class="eyebrow">{{upper:copy:location_eyebrow}}</p></div>
+  <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:location_eyebrow}}</p></div>
   <div class="location-layout">
-    <div><h2>{{em:copy:location_title}}</h2><p>{{venue}}<!--if place--><br>{{place}}<!--/if--></p><!--if map_url--><a class="dark-button" href="{{map_url}}" target="_blank" rel="noopener">{{upper:copy:directions}} <span aria-hidden="true">↗</span></a><!--/if--></div>
+    <div><h2>{{em:edit:copy:location_title}}</h2><p>{{venue}}<!--if place--><br>{{place}}<!--/if--></p><!--if map_url--><a class="dark-button" href="{{map_url}}" target="_blank" rel="noopener">{{upper:copy:directions}} <span aria-hidden="true">↗</span></a><!--/if--></div>
     <div class="place-panel" aria-hidden="true"><span>{{venue}}</span><!--if place--><small>{{upper:place}}</small><!--/if--></div>
   </div>
 </section><!--/if-->
 
 <!--part:story-->
 <section class="story section-pad" data-tpl-section="story" data-section="story">
-  <div class="section-heading"><p class="eyebrow">{{upper:copy:story_eyebrow}}</p></div>
+  <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:story_eyebrow}}</p></div>
   <div class="story-body">
-    <h2>{{em:copy:story_title}}</h2>
+    <h2>{{em:edit:copy:story_title}}</h2>
     <div class="story-copy"><!--each story_paras--><p>{{.}}</p><!--/each--><span class="story-number">{{ia}}<!--if ib--> <span>+</span> {{ib}}<!--/if--></span></div>
   </div>
 </section>
 
 <!--part:functions-->
 <section class="timeline section-pad" data-tpl-section="schedule" data-section="functions">
-  <div class="section-heading"><p class="eyebrow">{{upper:copy:schedule_eyebrow}}</p></div>
-  <div class="timeline-content"><h2>{{em:copy:schedule_title}}</h2>
+  <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:schedule_eyebrow}}</p></div>
+  <div class="timeline-content"><h2>{{em:edit:copy:schedule_title}}</h2>
     <div class="timeline-list"><!--each events--><div class="timeline-item"><span>•</span><div><strong>{{title}}</strong><!--if venue--><p>{{venue}}</p><!--/if--></div><!--if when--><small>{{upper:when}}</small><!--/if--></div><!--/each--></div>
   </div>
 </section>
@@ -86,19 +86,19 @@
 <!--part:gallery-->
 <section class="gallery section-pad" data-tpl-section="gallery" data-section="gallery">
   <div class="photo-grid"><!--each photos--><figure><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph">Your photo</span><!--/if--></figure><!--/each--></div>
-  <p class="gallery-caption">{{upper:copy:gallery_caption}}</p>
+  <p class="gallery-caption">{{upper:edit:copy:gallery_caption}}</p>
 </section>
 
 <!--part:rsvp-->
 <section class="rsvp section-pad" data-tpl-section="rsvp" data-section="rsvp">
-  <p class="eyebrow">{{upper:copy:rsvp_eyebrow}}</p>
-  <h2>{{em:copy:rsvp_title}}</h2>
-  <div class="rsvp-side"><p class="rsvp-lead">{{copy:rsvp_lead}}</p><!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if--></div>
+  <p class="eyebrow">{{upper:edit:copy:rsvp_eyebrow}}</p>
+  <h2>{{em:edit:copy:rsvp_title}}</h2>
+  <div class="rsvp-side"><p class="rsvp-lead">{{edit:copy:rsvp_lead}}</p><!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if--></div>
 </section>
 
 <!--part:footer-->
 <footer class="footer">
   <button class="footer-mark" type="button" data-scroll-to="home" aria-label="Back to the top">{{ia}}<!--if ib--><span>/</span>{{ib}}<!--/if--></button>
-  <p>{{upper:copy:footer_line}}</p>
+  <p>{{upper:edit:copy:footer_line}}</p>
   <span>{{upper:footer_names}}<!--if date--> · {{date_dots}}<!--/if--></span>
 </footer>
