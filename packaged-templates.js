@@ -84,10 +84,15 @@
   function truthy(v) { return Array.isArray(v) ? v.length > 0 : Boolean(v); }
 
   // Fields the couple can change by clicking their text in the editor preview: marker key -> the field it edits.
-  var EDITABLE = { names: "title", closing_note: "message", hosts_line: "hosts" };
+  var EDITABLE = {
+    names: "title", closing_note: "message", hosts_line: "hosts",
+    venue: "location:venue", place: "location:place",   // the panel's location is "Venue, Place"; each part is edited on its own
+    event_title: "event:title", event_venue: "event:venue",
+    date_long: "date"                                    // the date opens a date picker; its raw value is date_iso
+  };
 
   function value(expr, chain, ctx) {
-    var ops = expr.split(":"), mods = [], out, field = null, raw;
+    var ops = expr.split(":"), mods = [], out, field = null, base, extra = "";
     while (ops.length && (ops[0] === "upper" || ops[0] === "em")) mods.push(ops.shift());
     // {{edit:key}} (or {{upper:edit:key}}): the same value as {{key}}, marked for in-place editing. The editor
     // gets the plain value in data-raw, so an uppercased line is edited as typed, not in capitals.
@@ -96,14 +101,21 @@
       // Wording (copy:key) is saved through the panel's wording path; the others through their own field.
       field = ops[0] === "copy" ? "copy:" + ops[1] : EDITABLE[ops.join(":")] || null;
     }
-    raw = esc(ops[0] === "copy" ? ctx.copy(ops[1]) : lookup(chain, ops.join(":")));
-    out = raw;
+    base = esc(ops[0] === "copy" ? ctx.copy(ops[1]) : lookup(chain, ops.join(":")));
+    out = base;
     mods.forEach(function (m) {
       if (m === "upper") out = out.toUpperCase();
       if (m === "em") out = out.replace(/\*([^*]+)\*/g, "<em>$1</em>");
     });
-    if (field && ctx.editable) return '<span data-edit="' + field + '" data-raw="' + raw + '">' + out + "</span>";
-    return out;
+    if (!field || !ctx.editable) return out;
+    var raw = base;
+    if (field === "date") raw = esc(lookup(chain, "date_iso"));
+    // A location part is saved together with the other part, so the editor needs that too.
+    if (field === "location:venue") extra = ' data-other="' + esc(lookup(chain, "place")) + '"';
+    if (field === "location:place") extra = ' data-other="' + esc(lookup(chain, "venue")) + '"';
+    // An event's title or venue is saved against the event itself.
+    if (field.indexOf("event:") === 0) extra = ' data-id="' + esc(lookup(chain, "event_id")) + '"';
+    return '<span data-edit="' + field + '" data-raw="' + raw + '"' + extra + ">" + out + "</span>";
   }
   function branch(n, wantElse) {
     var i = n.kids.indexOf(ELSE);
@@ -143,6 +155,7 @@
       var end = showTime(f.endTime), start = showTime(f.time);
       return {
         title: f.title, venue: f.venue || "", when: bits.join(" · "),
+        event_id: f.id || "", event_title: f.title, event_venue: f.venue || "",
         date_text: d ? d.weekday + ", " + d.long : "", time_text: start ? (end ? start + " – " + end : start) : "",
         map: safeHttp(f.directionsUrl)
       };
@@ -179,7 +192,7 @@
       hosts_line: String(p.hosts || "").trim() || copy("hosts_line"),
       closing_note: String(p.message || "").trim() || copy(["invitation_note", "note_text", "details_note"].filter(function (k) { return manifest.copy[k]; })[0] || "details_note"),
       time_text: timeText(fns, timed, copy),
-      story: Boolean(story) && visible.story, story_paras: story ? story.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean) : [],
+      story: Boolean(story) && visible.story, story_raw: story, story_paras: story ? story.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean) : [],
       events: visible.functions ? events : [], events_count: Math.min(Math.max(events.length, 1), 3),
       hero_photo: slots.indexOf("hero") >= 0 && photos[slots.indexOf("hero")] ? photos[slots.indexOf("hero")].src : "",
       story_photo: slots.indexOf("story") >= 0 && photos[slots.indexOf("story")] ? photos[slots.indexOf("story")].src : "",
@@ -215,6 +228,8 @@
     DEFAULT_SECTIONS.forEach(function (s) { visible[s] = false; });
     registry.forEach(function (sec) { if (sec && DEFAULT_SECTIONS.indexOf(sec.id) >= 0 && sec.visible !== false) visible[sec.id] = true; });
     var d = derive(p, pkg, visible, Boolean(opts && opts.sample)), chain = [d.values], ctx = { copy: d.copy, editable: Boolean(opts && opts.editable) };
+    // The story is edited as one block in the editor, so the template only wraps it there.
+    d.values.editable = ctx.editable;
     var show = function (name) { return evaluate(cachedParse(pkg.parts[name] || "").kids, chain, ctx); };
     var body = show("header");
     registry.forEach(function (sec) {

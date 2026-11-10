@@ -324,3 +324,25 @@ test('headings and eyebrows are click-to-edit as wording, keeping their typed te
   assert.equal(published.includes('data-edit'), false);
   assert.match(published, /Join <em>us<\/em> today/);
 });
+
+test('location, events, date and story are click-to-edit in the editor only, and keep their saved values', () => {
+  const ctx = renderer();
+  const project = {
+    ...sampleOf('minimalist'), title: 'Ava & Ben', date: '2027-06-19', location: 'The Garden Estate, Kent',
+    story: 'We met in March.\n\nWe married in June.',
+    functions: [{ id: 'ev-1', title: 'Mehndi', date: '2027-06-18', time: '16:00', venue: 'Rose Hall', visible: true }]
+  };
+  const t = { packaged: 'minimalist' };
+  const editor = ctx.renderPackagedTemplate(project, t, { sample: false, editable: true });
+  assert.match(editor, /<span data-edit="date" data-raw="2027-06-19"[^>]*>JUNE 19, 2027<\/span>|<span data-edit="date" data-raw="2027-06-19"[^>]*>[^<]*<\/span>/);
+  assert.match(editor, /<span data-edit="location:venue" data-raw="The Garden Estate" data-other="Kent">The Garden Estate<\/span>/);
+  assert.match(editor, /<span data-edit="location:place" data-raw="Kent" data-other="The Garden Estate">Kent<\/span>/);
+  assert.match(editor, /<span data-edit="event:title" data-raw="Mehndi" data-id="ev-1">Mehndi<\/span>/);
+  assert.match(editor, /<span data-edit="event:venue" data-raw="Rose Hall" data-id="ev-1">Rose Hall<\/span>/);
+  assert.match(editor, /<span data-edit="storyCopy" data-multiline="1" data-raw="We met in March\.\n\nWe married in June\.">/);
+  const published = ctx.renderPackagedTemplate(project, t, { sample: false });
+  assert.equal(published.includes('data-edit'), false);
+  assert.equal(published.includes('data-multiline'), false);
+  assert.match(published, /Rose Hall/);
+  assert.match(published, /We met in March\./);
+});
