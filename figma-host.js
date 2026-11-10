@@ -272,7 +272,8 @@
         el.innerHTML = shown;
         return;
       }
-      bridge.update({ [field]: value }); // re-renders the preview and updates the panel field
+      if (field.indexOf('copy:') === 0) bridge.setCopy(field.slice(5), value); // wording, as the panel saves it
+      else bridge.update({ [field]: value }); // re-renders the preview and updates the panel field
     };
     el.addEventListener('keydown', onKeydown);
     el.addEventListener('paste', onPaste);

@@ -312,3 +312,15 @@ test('the hosts line is click-to-edit; an uppercased line keeps its typed text f
   assert.equal(published.includes('data-edit'), false);
   assert.match(published, /MR AND MRS SHAH/);
 });
+
+test('headings and eyebrows are click-to-edit as wording, keeping their typed text (including *emphasis*)', () => {
+  const ctx = renderer();
+  const project = { ...sampleOf('minimalist'), title: 'Ava & Ben', copy: { invitation_title: 'Join *us* today' } };
+  const t = { packaged: 'minimalist' };
+  const editor = ctx.renderPackagedTemplate(project, t, { sample: false, editable: true });
+  assert.match(editor, /<span data-edit="copy:invitation_title" data-raw="Join \*us\* today">Join <em>us<\/em> today<\/span>/);
+  assert.match(editor, /<span data-edit="copy:eyebrow" data-raw="[^"]+">[^<]+<\/span>/);
+  const published = ctx.renderPackagedTemplate(project, t, { sample: false });
+  assert.equal(published.includes('data-edit'), false);
+  assert.match(published, /Join <em>us<\/em> today/);
+});

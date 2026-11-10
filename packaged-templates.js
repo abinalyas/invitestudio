@@ -91,7 +91,11 @@
     while (ops.length && (ops[0] === "upper" || ops[0] === "em")) mods.push(ops.shift());
     // {{edit:key}} (or {{upper:edit:key}}): the same value as {{key}}, marked for in-place editing. The editor
     // gets the plain value in data-raw, so an uppercased line is edited as typed, not in capitals.
-    if (ops[0] === "edit") { ops.shift(); field = EDITABLE[ops.join(":")] || null; }
+    if (ops[0] === "edit") {
+      ops.shift();
+      // Wording (copy:key) is saved through the panel's wording path; the others through their own field.
+      field = ops[0] === "copy" ? "copy:" + ops[1] : EDITABLE[ops.join(":")] || null;
+    }
     raw = esc(ops[0] === "copy" ? ctx.copy(ops[1]) : lookup(chain, ops.join(":")));
     out = raw;
     mods.forEach(function (m) {
