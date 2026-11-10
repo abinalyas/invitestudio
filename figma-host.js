@@ -233,8 +233,10 @@
 
   function startEditing(el) {
     const field = el.dataset.edit;
-    const before = el.textContent;
+    const shown = el.innerHTML; // restored on cancel or when nothing changed
+    const plain = el.dataset.raw !== undefined ? el.dataset.raw : el.textContent; // the value as typed, not uppercased
     let cancelled = false;
+    el.textContent = plain;
     el.contentEditable = 'true';
     el.spellcheck = false;
     el.focus();
@@ -266,8 +268,8 @@
       el.contentEditable = 'false';
       const value = el.textContent.trim();
       // Cancelled, unchanged, or a blank name (a blank name would fall back to the example names): keep what was there.
-      if (cancelled || value === before.trim() || (field === 'title' && !value)) {
-        el.textContent = before;
+      if (cancelled || value === plain.trim() || (field === 'title' && !value)) {
+        el.innerHTML = shown;
         return;
       }
       bridge.update({ [field]: value }); // re-renders the preview and updates the panel field
