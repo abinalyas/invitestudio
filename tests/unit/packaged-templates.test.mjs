@@ -346,3 +346,13 @@ test('location, events, date and story are click-to-edit in the editor only, and
   assert.match(published, /Rose Hall/);
   assert.match(published, /We met in March\./);
 });
+
+test('the hero names are click-to-edit as two halves that save together', () => {
+  const ctx = renderer();
+  const project = { ...sampleOf('minimalist'), title: 'Ava & Ben' };
+  const editor = ctx.renderPackagedTemplate(project, { packaged: 'minimalist' }, { sample: false, editable: true });
+  assert.match(editor, /<span data-edit="names:first" data-raw="Ava" data-other="Ben">Ava<\/span>/);
+  assert.match(editor, /<span data-edit="names:second" data-raw="Ben" data-other="Ava">Ben<\/span>/);
+  const published = ctx.renderPackagedTemplate(project, { packaged: 'minimalist' }, { sample: false });
+  assert.equal(published.includes('data-edit'), false);
+});

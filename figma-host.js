@@ -298,6 +298,11 @@
         el.innerHTML = shown;
         return;
       }
+      // The names are one title: a half can be cleared, but not both halves together.
+      if (field.indexOf('names:') === 0 && ![value, el.dataset.other].join('').trim()) {
+        el.innerHTML = shown;
+        return;
+      }
       saveField(el, field, value);
     };
     el.addEventListener('keydown', onKeydown);
@@ -310,6 +315,8 @@
     if (field.indexOf('copy:') === 0) return bridge.setCopy(field.slice(5), value);
     if (field === 'location:venue') return bridge.update({ location: [value, el.dataset.other].filter(Boolean).join(', ') });
     if (field === 'location:place') return bridge.update({ location: [el.dataset.other, value].filter(Boolean).join(', ') });
+    if (field === 'names:first') return bridge.update({ title: [value, el.dataset.other].filter(Boolean).join(' & ') });
+    if (field === 'names:second') return bridge.update({ title: [el.dataset.other, value].filter(Boolean).join(' & ') });
     if (field === 'event:title') return bridge.updateEvent(el.dataset.id, { title: value });
     if (field === 'event:venue') return bridge.updateEvent(el.dataset.id, { venue: value });
     if (field === 'storyCopy') return bridge.update({ storyCopy: value });

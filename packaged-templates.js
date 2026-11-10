@@ -88,7 +88,8 @@
     names: "title", closing_note: "message", hosts_line: "hosts",
     venue: "location:venue", place: "location:place",   // the panel's location is "Venue, Place"; each part is edited on its own
     event_title: "event:title", event_venue: "event:venue",
-    date_long: "date"                                    // the date opens a date picker; its raw value is date_iso
+    date_long: "date",                                   // the date opens a date picker; its raw value is date_iso
+    a: "names:first", b: "names:second"                  // the big names in the hero: both halves are saved as "A & B"
   };
 
   function value(expr, chain, ctx) {
@@ -115,6 +116,8 @@
     if (field === "location:place") extra = ' data-other="' + esc(lookup(chain, "venue")) + '"';
     // An event's title or venue is saved against the event itself.
     if (field.indexOf("event:") === 0) extra = ' data-id="' + esc(lookup(chain, "event_id")) + '"';
+    if (field === "names:first") extra = ' data-other="' + esc(lookup(chain, "b")) + '"';
+    if (field === "names:second") extra = ' data-other="' + esc(lookup(chain, "a")) + '"';
     return '<span data-edit="' + field + '" data-raw="' + raw + '"' + extra + ">" + out + "</span>";
   }
   function branch(n, wantElse) {
