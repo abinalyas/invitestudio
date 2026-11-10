@@ -416,6 +416,14 @@ Rules: never put a marker inside an attribute, an SVG `<text>`, a `<button>` or 
 
 ### Add-event button and photo placeholders (editor preview only)
 
-- After the events list, add `<!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add event</button></div><!--/if-->`. It offers the quick-add choices and a custom event, and a new custom event opens ready to rename. Use `data-` attributes, not classes: the build prefixes class names.
+- After the events list, add `<!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->`. It offers the quick-add choices and a custom event, and a new custom event opens ready to rename. Use `data-` attributes, not classes: the build prefixes class names.
 - On the gallery's "Your photo" placeholder, add `<!--if editable--> data-photo-add<!--/if-->` inside the tag. In the editor it becomes "+ Add photos" and opens the file picker; the notice names where the photos went (the design's large pictures fill first, then the gallery).
 - The design's example events (shown before the couple adds their own) have no id, so they are not editable; `{{edit:event_title}}` and `{{edit:event_venue}}` still show their wording.
+
+### Scene templates (Savanna Sunset, Palmera Beach, Curtain Call, Lunaria)
+
+They build their markup in `scene-templates.js` rather than from `template.html`, and have no wording keys, so only the couple's own details are editable (names, pre-title, hosts, welcome message, date, venue and place or the whole location, story and its title, event titles). In the editor preview `renderSceneTemplate(project, template, { editable: true })` adds the same `data-edit` / `data-raw` attributes through the `ea()` helper, shows the schedule and gallery sections even when empty (with "+ Add an event" and photo placeholders), and opens Curtain Call's curtains so the cover can be edited. With no options the output is unchanged. `tests/unit/scene-templates.test.mjs` checks that every scene template marks the same fields and that the published page has none.
+
+### Event controls and notices
+
+Pointing at (or focusing) an event title shows a small bar over it to move the event up or down, or remove it; removing shows an "Undo" notice that puts it back in the same place with all its details. The tip and these notices share one pill at the bottom of the preview, pinned above the tab bar on phones.

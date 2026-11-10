@@ -145,3 +145,45 @@ test('the designs offered in the app (index.html) are the same ones the gallery 
   const designed = readCatalogue().templates.filter(template => template.scene || template.packaged).map(template => template.id).sort();
   assert.deepEqual(offered, designed);
 });
+
+test('the editor preview marks each scene template for click-to-edit and the published page has none', () => {
+  for (const template of sceneTemplates) {
+    const renderer = loadRenderer();
+    const editor = renderer.renderSceneTemplate(project, template, { editable: true });
+    const kinds = new Set([...editor.matchAll(/data-edit="([^"]+)"/g)].map(match => match[1]));
+    for (const wanted of ['names:first', 'names:second', 'pretitle', 'date', 'hosts', 'message', 'storyCopy', 'storyTitle', 'event:title']) {
+      assert.ok(kinds.has(wanted), `${template.id} should mark ${wanted}; found ${[...kinds].join(', ')}`);
+    }
+    assert.ok(kinds.has('location:venue') || kinds.has('location'), `${template.id} should mark the location`);
+    assert.match(editor, /data-edit="date" data-raw="2027-08-24"/);
+    assert.match(editor, /data-edit="event:title" data-raw="Welcome Dinner" data-id="1"/);
+    assert.equal(editor.includes('Hidden event'), false);
+    const published = renderer.renderSceneTemplate(project, template);
+    for (const hook of ['data-edit', 'data-add-event', 'data-photo-add', 'data-multiline']) {
+      assert.equal(published.includes(hook), false, `${template.id}: the published page contains ${hook}`);
+    }
+  }
+});
+
+test('the editor shows an empty schedule with "+ Add an event" and photo placeholders; the published page leaves them out', () => {
+  for (const template of sceneTemplates) {
+    const renderer = loadRenderer();
+    const bare = { title: 'Ava & Ben', functions: [], photos: [] };
+    const editor = renderer.renderSceneTemplate(bare, template, { editable: true });
+    assert.equal((editor.match(/data-add-event/g) || []).length, 1, `${template.id} should offer "+ Add an event"`);
+    assert.equal((editor.match(/data-photo-add/g) || []).length, 2, `${template.id} should offer photo placeholders`);
+    const published = renderer.renderSceneTemplate(bare, template);
+    assert.equal(published.includes('The celebrations'), false);
+    assert.equal(published.includes('Gallery'), false);
+  }
+});
+
+test('text typed into a scene template field is escaped in the editor preview', () => {
+  const renderer = loadRenderer();
+  const nasty = { ...project, title: '<img src=x onerror=alert(1)> & Ben', hosts: '"><script>alert(1)</script>' };
+  for (const template of sceneTemplates) {
+    const editor = renderer.renderSceneTemplate(nasty, template, { editable: true });
+    assert.equal(/<img src=x/.test(editor), false, `${template.id}: markup was injected`);
+    assert.equal(/<script>alert/.test(editor), false, `${template.id}: a script was injected`);
+  }
+});
