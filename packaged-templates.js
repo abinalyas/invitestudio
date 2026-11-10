@@ -89,7 +89,8 @@
     venue: "location:venue", place: "location:place",   // the panel's location is "Venue, Place"; each part is edited on its own
     event_title: "event:title", event_venue: "event:venue",
     date_long: "date",                                   // the date opens a date picker; its raw value is date_iso
-    a: "names:first", b: "names:second"                  // the big names in the hero: both halves are saved as "A & B"
+    a: "names:first", b: "names:second",                 // the big names in the hero: both halves are saved as "A & B"
+    place_or_venue: "location"                           // a combined line: edits the whole "Venue, Place"; raw is location_raw
   };
 
   function value(expr, chain, ctx) {
@@ -111,11 +112,16 @@
     if (!field || !ctx.editable) return out;
     var raw = base;
     if (field === "date") raw = esc(lookup(chain, "date_iso"));
+    if (field === "location") raw = esc(lookup(chain, "location_raw"));
     // A location part is saved together with the other part, so the editor needs that too.
     if (field === "location:venue") extra = ' data-other="' + esc(lookup(chain, "place")) + '"';
     if (field === "location:place") extra = ' data-other="' + esc(lookup(chain, "venue")) + '"';
     // An event's title or venue is saved against the event itself.
-    if (field.indexOf("event:") === 0) extra = ' data-id="' + esc(lookup(chain, "event_id")) + '"';
+    if (field.indexOf("event:") === 0) {
+      var eventId = lookup(chain, "event_id");
+      if (!eventId) return out; // the design's example events are placeholders until the couple adds their own
+      extra = ' data-id="' + esc(eventId) + '"';
+    }
     if (field === "names:first") extra = ' data-other="' + esc(lookup(chain, "b")) + '"';
     if (field === "names:second") extra = ' data-other="' + esc(lookup(chain, "a")) + '"';
     return '<span data-edit="' + field + '" data-raw="' + raw + '"' + extra + ">" + out + "</span>";
@@ -169,7 +175,7 @@
     var story = String(p.story || "").trim();
     var example = (sample && pkg.manifest.example) || null;
     if (example && !story) story = example.story || "";
-    if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", when: "", date_text: "", time_text: "", map: "" }; });
+    if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", event_id: "", event_title: e.title, event_venue: e.venue || "", when: "", date_text: "", time_text: "", map: "" }; });
     events = numbered(events);
     var photos = (Array.isArray(p.photos) ? p.photos : []).map(function (ph) { return ph && { src: safePhoto(ph.data), thumb: safePhoto(ph.thumb), alt: ph.alt || "" }; }).filter(function (ph) { return ph && ph.src; });
     // Photo slots: the first photos fill the template's named slots (hero, story, ...), in order. The gallery gets the
@@ -190,7 +196,7 @@
       long_names: long, name_len: longestWord(n), crest_size: namesLen > 17 ? Math.max(6, Math.round(100 * 17 / namesLen) / 10) : 10, stamp_y: 91,
       date: date ? true : false, date_long: date ? date.long : DEFAULTS.date, weekday: date ? date.weekday : "", date_num: date ? date.num : "", date_iso: date ? date.iso : "",
       day: date ? date.day : "", month_long: date ? date.month_long : "", month_short: date ? date.month_short : "", year: date ? date.year : "", date_dots: date ? date.dots : "",
-      venue: venue, place: place, has_venue: Boolean(venue), place_or_venue: place || venue,
+      venue: venue, place: place, has_venue: Boolean(venue), place_or_venue: place || venue, location_raw: String(p.location || "").trim(),
       footer_names: n[1] ? n[0] + " & " + n[1] : n[0],
       hosts_line: String(p.hosts || "").trim() || copy("hosts_line"),
       closing_note: String(p.message || "").trim() || copy(["invitation_note", "note_text", "details_note"].filter(function (k) { return manifest.copy[k]; })[0] || "details_note"),

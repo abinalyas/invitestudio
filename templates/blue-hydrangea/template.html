@@ -18,45 +18,45 @@
   <div class="garland garland-r" aria-hidden="true"></div>
   <div class="petals" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
   <div class="hero-content">
-    <p class="eyebrow" data-reveal style="--rd:.2s">{{upper:copy:hero_eyebrow}}</p>
-    <h1 data-reveal<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}"><span class="name">{{a}}</span><!--if b--><span class="amp">&amp;</span><span class="name">{{b}}</span><!--/if--></h1>
-    <!--if date--><p class="hero-date" data-reveal style="--rd:.9s"><span>{{day}}</span><span>{{upper:month_short}}</span><span>{{year}}</span></p><!--else--><p class="hero-date hero-date-text" data-reveal style="--rd:.9s">{{date_long}}</p><!--/if-->
+    <p class="eyebrow" data-reveal style="--rd:.2s">{{upper:edit:copy:hero_eyebrow}}</p>
+    <h1 data-reveal<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}"><span class="name">{{edit:a}}</span><!--if b--><span class="amp">&amp;</span><span class="name">{{edit:b}}</span><!--/if--></h1>
+    <!--if date--><p class="hero-date" data-reveal style="--rd:.9s"><span>{{day}}</span><span>{{upper:month_short}}</span><span>{{year}}</span></p><!--else--><p class="hero-date hero-date-text" data-reveal style="--rd:.9s">{{edit:date_long}}</p><!--/if-->
   </div>
   <!--if date--><button class="cue" type="button" data-scroll-to="countdown" data-reveal="fade" style="--rd:1.5s">{{upper:copy:cue}}<span aria-hidden="true">⌄</span></button><!--/if-->
 </section>
 <!--if date--><section class="countdown-section" data-tpl-section="countdown" aria-label="{{copy:countdown_title}}">
   <div class="count-frame" data-reveal="scale">
-    <h2>{{copy:countdown_title}}</h2>
-    <p class="count-sub">{{upper:copy:countdown_sub}} {{upper:date_long}}</p>
+    <h2>{{edit:copy:countdown_title}}</h2>
+    <p class="count-sub">{{upper:edit:copy:countdown_sub}} {{upper:edit:date_long}}</p>
     <div class="countdown" role="timer" aria-live="off" data-countdown="{{date_iso}}">
       <div><strong data-cd="days">—</strong><span>DAYS</span></div><i></i>
       <div><strong data-cd="hours">—</strong><span>HOURS</span></div><i></i>
       <div><strong data-cd="minutes">—</strong><span>MINUTES</span></div>
     </div>
   </div>
-  <p class="count-note" data-reveal style="--rd:.2s">{{copy:countdown_note}}</p>
+  <p class="count-note" data-reveal style="--rd:.2s">{{edit:copy:countdown_note}}</p>
 </section><!--/if-->
 
 <!--part:welcome-->
 <section class="invitation section" data-tpl-section="invitation" data-section="welcome">
   <div class="spray" aria-hidden="true" data-reveal="fade"></div>
   <div class="wrap narrow">
-    <h2 class="title" data-reveal>{{copy:welcome_title}}</h2>
-    <p class="hosts" data-reveal style="--rd:.1s">{{hosts_line}}</p>
-    <p class="inv-name" data-reveal style="--rd:.2s">{{a}}</p>
-    <!--if b--><p class="inv-and" data-reveal style="--rd:.3s">and</p><p class="inv-name" data-reveal style="--rd:.4s">{{b}}</p><!--/if-->
-    <p class="inv-lead" data-reveal style="--rd:.5s">{{copy:invitation_lead}}</p>
+    <h2 class="title" data-reveal>{{edit:copy:welcome_title}}</h2>
+    <p class="hosts" data-reveal style="--rd:.1s">{{edit:hosts_line}}</p>
+    <p class="inv-name" data-reveal style="--rd:.2s">{{edit:a}}</p>
+    <!--if b--><p class="inv-and" data-reveal style="--rd:.3s">and</p><p class="inv-name" data-reveal style="--rd:.4s">{{edit:b}}</p><!--/if-->
+    <p class="inv-lead" data-reveal style="--rd:.5s">{{edit:copy:invitation_lead}}</p>
     <div class="rule" data-reveal="fade" style="--rd:.6s"></div>
-    <!--if date--><p class="inv-date" data-reveal style="--rd:.6s"><span>{{upper:weekday}}</span>{{date_long}}</p><!--/if-->
-    <p class="inv-note" data-reveal style="--rd:.7s">{{closing_note}}</p>
+    <!--if date--><p class="inv-date" data-reveal style="--rd:.6s"><span>{{upper:weekday}}</span>{{edit:date_long}}</p><!--/if-->
+    <p class="inv-note" data-reveal style="--rd:.7s">{{edit:closing_note}}</p>
   </div>
 </section>
 <!--if show_venue--><section class="venue section" data-tpl-section="venue" data-section="welcome">
   <div class="wrap narrow">
     <div class="venue-card" data-reveal>
-      <p class="eyebrow">{{upper:copy:venue_eyebrow}}</p>
-      <h3>{{venue}}</h3>
-      <!--if place--><p class="venue-place">{{upper:place}}</p><!--/if-->
+      <p class="eyebrow">{{upper:edit:copy:venue_eyebrow}}</p>
+      <h3>{{edit:venue}}</h3>
+      <!--if place--><p class="venue-place">{{upper:edit:place}}</p><!--/if-->
       <!--if map_url--><a class="text-link" href="{{map_url}}" target="_blank" rel="noopener noreferrer">{{upper:copy:directions}} ↗</a><!--/if-->
     </div>
   </div>
@@ -66,12 +66,12 @@
 <section class="story section" data-tpl-section="story" data-section="story">
   <div class="wrap">
     <div class="heading" data-reveal>
-      <p class="eyebrow">{{upper:copy:story_eyebrow}}</p>
-      <h2 class="title">{{em:copy:story_title}}</h2>
+      <p class="eyebrow">{{upper:edit:copy:story_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:story_title}}</h2>
     </div>
     <div class="story-layout">
       <!--if story_photo--><div class="story-photo" data-reveal="scale"><img src="{{story_photo}}" alt="" loading="lazy"></div><!--/if-->
-      <div class="story-copy"><!--each story_paras--><p data-reveal>{{.}}</p><!--/each--></div>
+      <div class="story-copy"><!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p data-reveal>{{.}}</p><!--/each--><!--if editable--></span><!--/if--></div>
     </div>
   </div>
 </section>
@@ -80,19 +80,19 @@
 <section class="schedule section" data-tpl-section="schedule" data-section="functions">
   <div class="wrap narrow">
     <div class="heading" data-reveal>
-      <p class="eyebrow">{{upper:copy:schedule_eyebrow}}</p>
-      <h2 class="title">{{em:copy:schedule_title}}</h2>
+      <p class="eyebrow">{{upper:edit:copy:schedule_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:schedule_title}}</h2>
     </div>
     <ol class="events">
       <!--each events--><li class="event" data-reveal>
         <div class="event-when"><!--if time_text--><strong>{{time_text}}</strong><!--/if--><!--if date_text--><span>{{date_text}}</span><!--/if--></div>
         <div class="event-what">
-          <h3>{{title}}</h3>
-          <!--if venue--><p class="event-venue">{{venue}}</p><!--/if-->
+          <h3>{{edit:event_title}}</h3>
+          <!--if venue--><p class="event-venue">{{edit:event_venue}}</p><!--/if-->
           <!--if map--><a class="text-link" href="{{map}}" target="_blank" rel="noopener noreferrer">{{upper:copy:view_location}} ↗</a><!--/if-->
         </div>
       </li><!--/each-->
-    </ol>
+    </ol><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add event</button></div><!--/if-->
   </div>
 </section>
 
@@ -100,14 +100,14 @@
 <section class="gallery section" data-tpl-section="gallery" data-section="gallery">
   <div class="wrap">
     <div class="heading" data-reveal>
-      <p class="eyebrow">{{upper:copy:gallery_eyebrow}}</p>
-      <h2 class="title">{{em:copy:gallery_title}}</h2>
+      <p class="eyebrow">{{upper:edit:copy:gallery_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:gallery_title}}</h2>
     </div>
   </div>
   <div class="marquee" data-reveal="fade">
     <div class="marquee-track">
-      <div class="marquee-set"><!--each photos--><figure class="gallery-item"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph">Your photo</span><!--/if--></figure><!--/each--></div>
-      <div class="marquee-set" aria-hidden="true"><!--each photos--><figure class="gallery-item"><!--if src--><img src="{{src}}" alt="" loading="lazy"><!--else--><span class="photo-ph">Your photo</span><!--/if--></figure><!--/each--></div>
+      <div class="marquee-set"><!--each photos--><figure class="gallery-item"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each--></div>
+      <div class="marquee-set" aria-hidden="true"><!--each photos--><figure class="gallery-item"><!--if src--><img src="{{src}}" alt="" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each--></div>
     </div>
   </div>
 </section>
@@ -116,19 +116,19 @@
 <section class="rsvp section" data-tpl-section="rsvp" data-section="rsvp">
   <div class="wrap narrow">
     <div class="heading" data-reveal>
-      <p class="eyebrow">{{upper:copy:rsvp_eyebrow}}</p>
-      <h2 class="title">{{em:copy:rsvp_title}}</h2>
-      <p class="lead" data-reveal style="--rd:.15s">{{copy:rsvp_intro}}</p>
+      <p class="eyebrow">{{upper:edit:copy:rsvp_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:rsvp_title}}</h2>
+      <p class="lead" data-reveal style="--rd:.15s">{{edit:copy:rsvp_intro}}</p>
     </div>
     <div data-reveal style="--rd:.3s"><!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if--></div>
-    <p class="rsvp-note" data-reveal style="--rd:.45s">{{copy:rsvp_note}}</p>
+    <p class="rsvp-note" data-reveal style="--rd:.45s">{{edit:copy:rsvp_note}}</p>
   </div>
 </section>
 
 <!--part:footer-->
 <footer class="site-footer">
   <div class="row" aria-hidden="true" data-reveal="fade"></div>
-  <p class="footer-names" data-reveal style="--nl:{{name_len}}">{{a}}<!--if b--> <span class="amp">&amp;</span> {{b}}<!--/if--></p>
+  <p class="footer-names" data-reveal style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <span class="amp">&amp;</span> {{edit:b}}<!--/if--></p>
   <p class="footer-date" data-reveal style="--rd:.3s">{{footer_line}}</p>
-  <p class="footer-last" data-reveal style="--rd:.45s">{{copy:footer_last}}</p>
+  <p class="footer-last" data-reveal style="--rd:.45s">{{edit:copy:footer_last}}</p>
 </footer>

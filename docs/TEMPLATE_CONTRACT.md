@@ -390,3 +390,32 @@ Modelled on a pale-blue, botanical wedding site that opens with a video wax-seal
 - **Fonts** are the self-hosted Cormorant Garamond, Pinyon Script and Montserrat; the reference's Typekit fonts are not used.
 - **Motion** (the reference is animated, so this one is too). The platform gained the `reveal` widget from section 9: mark an element `data-reveal` (or `data-reveal="fade"` / `"scale"`, with a `--rd` delay) and `template-widgets.js` fades it in once as it scrolls into view. The template hides it only under `[data-reveal-armed]:not([data-revealed])`, so without the script, or with reduced motion, everything is simply visible. In the editor preview (`data-preview`) what is on screen or already scrolled past is never re-hidden, so typing does not replay the animation. Blue Hydrangea uses it for a staged cover entrance (about 2 seconds), scroll reveals on every section, and ambient loops: swaying garlands, a drifting sky, drifting petals, a bobbing "Discover" cue, a breathing countdown frame, and a slowly scrolling gallery strip that pauses on hover.
 - **Keyframes are allowed in templates now.** `scopeCss` gives every `@keyframes` the template's prefix and rewrites the `animation` declarations that use it, so two templates can both define `sway`. The gate requires that a template with any animation also has a `prefers-reduced-motion` rule. Loops use the individual `rotate`, `translate` and `scale` properties so they never fight the reveal's `transform`.
+
+## Click-to-edit markers (editor preview only)
+
+In the editor preview the couple can click text to edit it in place. A template opts a piece of text in with an `edit:` marker; the published page renders the same text with no extra markup.
+
+| Marker | Edits |
+|---|---|
+| `{{edit:names}}` | the couple's names as one title (use it where the full names appear) |
+| `{{edit:a}}` / `{{edit:b}}` | the first and second name; saved together as "A & B" |
+| `{{edit:closing_note}}` | the welcome message |
+| `{{edit:hosts_line}}` | the hosts line |
+| `{{edit:venue}}` / `{{edit:place}}` | the two halves of "Venue, Place"; saved together |
+| `{{edit:place_or_venue}}` | the whole location, for a design that shows one combined line |
+| `{{edit:date_long}}` | the date (opens a date picker) |
+| `{{edit:copy:key}}` | one wording key from the manifest |
+| `{{edit:event_title}}` / `{{edit:event_venue}}` | an event's title and venue, inside `<!--each events-->` |
+
+Modifiers go first: `{{upper:edit:copy:key}}`, `{{em:edit:copy:key}}`. The editor edits the value as typed, not the uppercased or emphasised text.
+
+Wrap the story paragraphs once, so they are edited as one block:
+`<!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras-->…<!--/each--><!--if editable--></span><!--/if-->`
+
+Rules: never put a marker inside an attribute, an SVG `<text>`, a `<button>` or an `<a>` (clicking those navigates), and leave navigation, buttons and small labels unmarked. `tests/unit/packaged-templates.test.mjs` checks every template for these.
+
+### Add-event button and photo placeholders (editor preview only)
+
+- After the events list, add `<!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add event</button></div><!--/if-->`. It offers the quick-add choices and a custom event, and a new custom event opens ready to rename. Use `data-` attributes, not classes: the build prefixes class names.
+- On the gallery's "Your photo" placeholder, add `<!--if editable--> data-photo-add<!--/if-->` inside the tag. In the editor it becomes "+ Add photos" and opens the file picker; the notice names where the photos went (the design's large pictures fill first, then the gallery).
+- The design's example events (shown before the couple adds their own) have no id, so they are not editable; `{{edit:event_title}}` and `{{edit:event_venue}}` still show their wording.

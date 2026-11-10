@@ -356,3 +356,43 @@ test('the hero names are click-to-edit as two halves that save together', () => 
   const published = ctx.renderPackagedTemplate(project, { packaged: 'minimalist' }, { sample: false });
   assert.equal(published.includes('data-edit'), false);
 });
+
+for (const entry of list) {
+  const id = entry.id || entry.manifest?.id;
+  test(`${id}: the editor preview marks its text for click-to-edit and the published page has none`, () => {
+    const ctx = renderer();
+    const project = {
+      ...sampleOf(id), title: 'Ava & Ben', date: '2027-06-19', location: 'The Garden Estate, Kent', message: 'Please join us',
+      hosts: 'Mr and Mrs Shah', story: 'We met in March.',
+      functions: [{ id: 'ev-1', title: 'Mehndi', date: '2027-06-18', time: '16:00', venue: 'Rose Hall', visible: true }]
+    };
+    const t = { packaged: id };
+    const editor = ctx.renderPackagedTemplate(project, t, { sample: false, editable: true });
+    const kinds = new Set([...editor.matchAll(/data-edit="([^"]+)"/g)].map(m => m[1].split(':')[0] === 'copy' ? 'copy' : m[1]));
+    for (const wanted of ['names:first', 'date', 'storyCopy', 'copy', 'event:title', 'event:venue', 'message']) {
+      assert.ok(kinds.has(wanted), `${id} should mark ${wanted}; found ${[...kinds].join(', ')}`);
+    }
+    assert.ok(kinds.has('location:venue') || kinds.has('location'), `${id} should mark the location`);
+    // Nothing clickable (buttons, links) and no attribute may carry an edit span.
+    assert.equal(/<(button|a)\b[^>]*>[^<]*<span data-edit/.test(editor), false, `${id}: a button or link contains an edit span`);
+    assert.equal(/="[^"]*<span data-edit/.test(editor), false, `${id}: an attribute contains an edit span`);
+    assert.equal((editor.match(/data-add-event/g) || []).length, 1, `${id} should offer one "+ Add event" button`);
+    const published = ctx.renderPackagedTemplate(project, t, { sample: false });
+    assert.equal(published.includes('data-edit'), false);
+    assert.equal(published.includes('data-multiline'), false);
+    assert.equal(published.includes('data-add-event'), false);
+    assert.match(published, /Rose Hall/);
+  });
+
+  test(`${id}: the example events shown before the couple adds their own are not editable, and still offer "+ Add event"`, () => {
+    const ctx = renderer();
+    const project = { ...sampleOf(id), title: 'Ava & Ben', functions: [] };
+    const editor = ctx.renderPackagedTemplate(project, { packaged: id }, { sample: true, editable: true });
+    assert.equal(editor.includes('data-edit="event:'), false, `${id}: an example event is editable`);
+    // They still show their wording: an empty title would leave blank rows in the editor preview.
+    const exampleTitles = ((entry.manifest || {}).example || {}).events?.map(e => e.title) || [];
+    assert.ok(exampleTitles.length > 0, `${id}: no example events found to check`);
+    for (const title of exampleTitles) assert.ok(editor.includes(title.replace(/&/g, '&amp;')), `${id}: the example event "${title}" is missing from the editor preview`);
+    assert.equal((editor.match(/data-add-event/g) || []).length, 1, `${id} should offer "+ Add event" beside the example events`);
+  });
+}
