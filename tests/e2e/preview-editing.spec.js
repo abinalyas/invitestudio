@@ -318,3 +318,28 @@ test('Velvet Reveal: click to start, the video opening offers its button, openin
   await screen.getByRole('button', { name: /reveal the date/i }).click();
   await expect.poll(zone).toMatchObject({ scratched: true });
 });
+
+// The slow first-visit sync of saved drafts used to redraw the page when it finished, so a visitor who had already started
+// the opening in the template page's phone found it back at "Click to start".
+test('template page: the drafts sync finishing late does not reset the phone preview', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.addInitScript(() => {
+    window.INVITESTUDIO_API_ENABLED = true;
+    localStorage.setItem('invitestudio-projects', JSON.stringify([{ id: 'p1', cloudId: 'w1', name: 'Ava and Ben', title: 'Ava & Ben', category: 'Wedding', templateId: 'bloom-reveal', status: 'Draft', cloudStatus: 'saved', functions: [], photos: [] }]));
+    localStorage.setItem('invitestudio-edit-tokens', JSON.stringify({ w1: 'token-1' }));
+  });
+  await page.route('**/api/weddings/w1**', async route => {
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ wedding: { id: 'w1', version: 1, status: 'draft', title: 'Ava & Ben', event_date: '2027-06-19' }, events: [], photos: [] }) });
+  });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/18'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  await screen.getByText('Click to start').click();
+  const waiting = () => screen.evaluate(el => el.shadowRoot.querySelector('[data-intro]')?.hasAttribute('data-wait'));
+  await expect.poll(waiting).toBe(false);
+  // Well after the sync has answered, the opening is still the one the visitor started (still playing, or lifted), never back to waiting.
+  await page.waitForTimeout(4000);
+  expect(await screen.evaluate(el => { const n = el.shadowRoot.querySelector('[data-intro]'); return !n || !n.hasAttribute('data-wait'); })).toBe(true);
+});

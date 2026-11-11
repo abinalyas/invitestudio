@@ -769,7 +769,11 @@
       }
     }
     localSave();
-    if (state.page === 'home' || state.page === 'dashboard' || state.page === 'editor') {
+    // A template's own page (/templates/<n>) shows nothing from the drafts. Drawing it again would throw away what the
+    // visitor is doing in its phone preview (for example the opening they have just started) the moment this
+    // slower, first-visit request finishes.
+    const onTemplatePage = /^\/templates\/\d+\/?$/.test(window.location.pathname);
+    if (!onTemplatePage && (state.page === 'home' || state.page === 'dashboard' || state.page === 'editor')) {
       render();
       paintStatus(typeof current === 'function' ? current() : null);
     }
