@@ -5,6 +5,12 @@
  *   data-reveal             fade (and rise, or scale) in once, when scrolled into view. The template styles the hidden
  *                           state under [data-reveal-armed]:not([data-revealed]) only, so without this script (or with
  *                           reduced motion) everything simply stays visible. A --rd custom property sets the delay.
+ *   data-intro              an opening screen (a template declares one in its manifest). It is the first thing in the
+ *                           invitation; the platform sizes it to what the guest sees (the scrolling frame, else the window),
+ *                           holds the page still while it plays, and lifts it after data-intro-ms. data-intro-skip ends it,
+ *                           data-intro-replay (anywhere in the invitation) plays it again, and it is skipped under reduced
+ *                           motion or once seen this session. With data-wait (the template page's phone) it waits for a click on
+ *                           data-intro-start, and an "intro-done" event is sent when it lifts.
  * Clicks are handled once on the document (composedPath reaches inside the editor's shadow root), so
  * scrolling stays inside the editor's device frame and never changes the page address.
  * hydratePackagedTemplates(node) is called after markup is drawn into a shadow root.
@@ -47,15 +53,78 @@
     return revealer;
   }
   // The box the guest actually sees the element in: the nearest scrolling ancestor (the editor's device frame), else the window.
-  function viewBox(el) {
+  function scroller(el) {
     for (var n = el.parentNode || el.host; n; n = n.parentNode || n.host) {
       if (n.nodeType === 1 && n.scrollHeight > n.clientHeight + 1) {
         var oy = window.getComputedStyle(n).overflowY;
-        if (oy === "auto" || oy === "scroll") return n.getBoundingClientRect();
+        if (oy === "auto" || oy === "scroll") return n;
       }
     }
-    return { top: 0, bottom: window.innerHeight };
+    return null;
   }
+  function viewBox(el) {
+    var n = scroller(el);
+    return n ? n.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+  }
+
+  /* ---------- opening screen ---------- */
+  var introState = new WeakMap(), introHtml = new WeakMap();
+  function introKey(el) {
+    var root = el.closest("[data-packaged-template]");
+    return "introSeen:" + window.location.pathname + ":" + (root ? root.getAttribute("data-packaged-template") : "");
+  }
+  function seen(key) { try { return window.sessionStorage.getItem(key) === "1"; } catch (e) { return false; } }
+  function remember(key) { try { window.sessionStorage.setItem(key, "1"); } catch (e) { /* played again next time */ } }
+  function forget(key) { try { window.sessionStorage.removeItem(key); } catch (e) { /* nothing to forget */ } }
+  function sizeIntro(el, frame) { el.style.setProperty("--intro-h", (frame ? frame.clientHeight : window.innerHeight) + "px"); }
+  function setupIntro(el) {
+    // Kept clean (not waiting, not started) so it can be played again.
+    var clean = el.cloneNode(true); clean.removeAttribute("data-wait");
+    introHtml.set(el, clean.outerHTML);
+    el.setAttribute("data-intro-ready", "");
+    var wait = el.hasAttribute("data-wait"), key = introKey(el);
+    if (reduce() || (!wait && seen(key))) { el.setAttribute("data-done", ""); return; }
+    var frame = scroller(el), box = frame || document.documentElement, before = box.style.overflow;
+    sizeIntro(el, frame);
+    box.style.overflow = "hidden"; // the page stays still behind the opening
+    introState.set(el, { key: key, demo: wait, frame: frame, timer: 0, finished: false, unlock: function () { box.style.overflow = before; } });
+    if (!wait) startIntro(el);
+  }
+  function startIntro(el) {
+    var st = introState.get(el);
+    if (!st || st.finished || st.timer) return;
+    el.removeAttribute("data-wait");
+    st.timer = window.setTimeout(function () { finishIntro(el); }, parseInt(el.getAttribute("data-intro-ms"), 10) || 9400);
+  }
+  function finishIntro(el) {
+    var st = introState.get(el);
+    if (!st || st.finished) return;
+    st.finished = true;
+    window.clearTimeout(st.timer);
+    if (!st.demo) remember(st.key);
+    st.unlock();
+    el.removeAttribute("data-wait");
+    el.setAttribute("data-leaving", "");
+    window.setTimeout(function () {
+      el.setAttribute("data-done", "");
+      el.dispatchEvent(new CustomEvent("intro-done", { bubbles: true, composed: true }));
+    }, 900);
+  }
+  function replayIntro(scope) {
+    var el = scope && scope.querySelector("[data-intro]"), html = el && introHtml.get(el);
+    if (!el || !html) return;
+    forget(introKey(el));
+    var frame = scroller(el);
+    if (frame) frame.scrollTo(0, 0); else window.scrollTo(0, 0);
+    el.outerHTML = html;
+    hydrate(scope);
+  }
+  window.addEventListener("resize", function () {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-intro]:not([data-done])"), function (el) {
+      var st = introState.get(el);
+      if (st && !st.frame) sizeIntro(el, null);
+    });
+  });
   function arm(scope) {
     if (reduce() || typeof IntersectionObserver === "undefined") return;
     Array.prototype.forEach.call(scope.querySelectorAll("[data-reveal]:not([data-reveal-armed]):not([data-revealed])"), function (el) {
@@ -71,6 +140,7 @@
   var timer = null;
   function hydrate(scope) {
     if (!scope || !scope.querySelectorAll) return;
+    Array.prototype.forEach.call(scope.querySelectorAll("[data-intro]:not([data-intro-ready])"), setupIntro);
     arm(scope);
     Array.prototype.forEach.call(scope.querySelectorAll("[data-countdown]"), function (el) { roots.add(el); });
     if (roots.size) { tick(); if (!timer) timer = window.setInterval(function () { tick(); if (!roots.size) { window.clearInterval(timer); timer = null; } }, 1000); }
@@ -87,6 +157,13 @@
     if (toggle) {
       var nav = toggle.parentNode.querySelector("[data-nav]");
       if (nav) { var open = !nav.hasAttribute("data-open"); if (open) nav.setAttribute("data-open", ""); else nav.removeAttribute("data-open"); toggle.setAttribute("aria-expanded", String(open)); }
+      return;
+    }
+    var overlay = closest(path, function (n) { return n.hasAttribute("data-intro"); });
+    if (closest(path, function (n) { return n.hasAttribute("data-intro-start"); })) { if (overlay) startIntro(overlay); return; }
+    if (closest(path, function (n) { return n.hasAttribute("data-intro-skip"); })) { if (overlay) finishIntro(overlay); return; }
+    if (closest(path, function (n) { return n.hasAttribute("data-intro-replay"); })) {
+      replayIntro(closest(path, function (n) { return n.hasAttribute("data-packaged-template"); }));
       return;
     }
     var link = closest(path, function (n) { return n.hasAttribute("data-scroll-to"); });

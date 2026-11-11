@@ -964,7 +964,8 @@
       const container = invitationShadow(host);
       container.style.width = '100%';
       container.style.maxWidth = '100%';
-      container.innerHTML = sitePreview(templateDemoProject(t), t, false);
+      // A design with an opening screen waits for a click in the phone, so a visitor starts it themselves.
+      container.innerHTML = sitePreview(templateDemoProject(t), t, false, { intro: 'wait' });
       if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
     },
 

@@ -169,3 +169,48 @@ svg{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-l
 .footer-row{flex-direction:column;gap:10px}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
+
+/* Opening: the full-screen watercolor reveal. The platform holds the page still and lifts this at the end. */
+.intro{position:sticky;top:0;z-index:60;height:var(--intro-h,640px);margin-bottom:calc(var(--intro-h,640px) * -1);background:var(--paper);overflow:hidden;opacity:1;transition:opacity .9s ease;text-align:center}
+.intro[data-leaving]{opacity:0;pointer-events:none}
+.intro[data-done]{display:none}
+.intro[data-wait] *{animation-play-state:paused!important}
+.intro-art{position:absolute;inset:0;width:100%;height:100%;display:block}
+.intro-art-tall{display:none}
+@container (max-width:699px){.intro-art-wide{display:none}.intro-art-tall{display:block}}
+.intro .bl{transform-box:fill-box;transform-origin:center;transform:scale(0);animation:intro-bloom 2.4s cubic-bezier(.2,.7,.2,1) var(--d) forwards}
+.intro .lf{stroke-dasharray:1;stroke-dashoffset:1;animation:intro-draw var(--t) ease-in-out var(--d) forwards}
+.intro .intro-full{opacity:0;animation:intro-fade 1.6s ease 5.6s forwards}
+.intro-drop,.intro-wash{position:absolute;inset:0;pointer-events:none}
+.intro-drop{background:radial-gradient(circle at 50% 50%,rgba(217,154,159,.55) 0,rgba(217,154,159,.25) 8%,transparent 9%);transform:scale(.2);opacity:0;animation:intro-drop 1.5s ease .2s forwards}
+.intro-wash{background:radial-gradient(ellipse farthest-side at 50% 50%,rgba(246,232,214,.0) 30%,rgba(246,232,214,.75) 100%);opacity:0;animation:intro-fade 2s ease 2.6s forwards}
+.intro-copy{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);padding:0 8%;display:flex;flex-direction:column;align-items:center;gap:12px}
+.intro-copy>*{opacity:0;translate:0 10px;animation:intro-rise 1s ease forwards}
+.intro-eyebrow{font:500 .62rem/1.6 var(--sans);letter-spacing:.3em;color:var(--gold-text);animation-delay:4.2s!important}
+.intro-names{font:400 clamp(3rem,13cqw,6.4rem)/.95 var(--script);color:var(--green);margin:0;overflow-wrap:anywhere;animation-delay:4.9s!important}
+.intro-names i{color:var(--rose-text);font-size:.6em}
+.intro-line{font:500 .62rem/1.6 var(--sans);letter-spacing:.3em;color:var(--ink);margin:0;animation-delay:5.9s!important}
+.intro-date{font:400 1.1rem/1.4 var(--serif);letter-spacing:.2em;color:var(--green);margin:0;animation-delay:6.5s!important}
+.intro-open{font:500 .6rem/1.6 var(--sans);letter-spacing:.3em;color:var(--rose-text);animation-delay:7.3s!important}
+.intro-ghost{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);margin:0;padding:0 8%;font:400 clamp(3rem,13cqw,6.4rem)/.95 var(--script);color:var(--green);opacity:.16;overflow-wrap:anywhere}
+.intro-ghost i{font-size:.6em}
+.intro-petals i{position:absolute;top:-20px;width:12px;height:16px;border-radius:70% 0 70% 0;background:var(--rose);opacity:0;animation:petal 6s ease-in infinite}
+.intro-petals i:nth-child(1){left:22%;animation-delay:2.2s}
+.intro-petals i:nth-child(2){left:58%;animation-delay:3.6s}
+.intro-petals i:nth-child(3){left:80%;animation-delay:5s}
+.intro-start{position:absolute;top:14px;left:50%;translate:-50% 0;z-index:3;display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;background:var(--green);color:var(--card);font:500 .62rem/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;box-shadow:0 8px 22px rgba(72,92,72,.35);animation:intro-pulse 1.8s ease-in-out infinite}
+.intro-start svg{width:14px;height:14px;fill:currentColor}
+.intro:not([data-wait]) .intro-start{display:none}
+.intro-skip{position:absolute;right:14px;bottom:14px;z-index:3;display:inline-flex;align-items:center;gap:6px;font:500 .58rem/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--ink);padding:10px 12px;background:rgba(255,250,242,.7);border-radius:999px}
+.intro-skip svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.6}
+.intro[data-wait] .intro-skip{display:none}
+.replay{display:inline-flex;align-items:center;gap:8px;margin-top:18px;font:500 .6rem/1.6 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--green);border-bottom:1px solid var(--gold);padding-bottom:3px}
+.replay svg{width:12px;height:12px;fill:currentColor}
+@keyframes intro-bloom{to{transform:scale(1)}}
+@keyframes intro-draw{to{stroke-dashoffset:0}}
+@keyframes intro-fade{to{opacity:1}}
+@keyframes intro-rise{to{opacity:1;translate:0 0}}
+@keyframes intro-drop{0%{opacity:0;transform:scale(.2)}30%{opacity:1}100%{opacity:0;transform:scale(5)}}
+@keyframes intro-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@media(prefers-reduced-motion:reduce){.intro{display:none}}
+.intro:not([data-wait]) .intro-ghost{display:none}

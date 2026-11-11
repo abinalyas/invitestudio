@@ -226,6 +226,7 @@
   }
 
   var DEFAULT_SECTIONS = ["hero", "welcome", "story", "functions", "gallery", "rsvp"];
+  // opts.intro: "play" runs the template's opening screen, "wait" holds it until it is clicked (the template page's phone).
   // opts.sample: the editor's preview fills empty sections with the template's own example content so the
   // template looks complete. The published page never does (render without opts): it leaves empty sections out.
   function render(p, t, opts) {
@@ -240,7 +241,14 @@
     // The story is edited as one block in the editor, so the template only wraps it there.
     d.values.editable = ctx.editable;
     var show = function (name) { return evaluate(cachedParse(pkg.parts[name] || "").kids, chain, ctx); };
-    var body = show("header");
+    // An opening screen. Only a template that declares one (manifest.intro) has it, only where guests see the invitation
+    // ("play") or in the template page's phone preview ("wait" for a click), never in the editor, and not when the couple
+    // turned it off. The platform's intro widget (template-widgets.js) runs it.
+    var introOn = Boolean(pkg.manifest.intro && opts && (opts.intro === "play" || opts.intro === "wait") && !ctx.editable && !(p.introSettings && p.introSettings.enabled === false));
+    d.values.intro = introOn;
+    d.values.intro_wait = introOn && opts.intro === "wait";
+    d.values.intro_ms = (pkg.manifest.intro && pkg.manifest.intro.duration) || 9400;
+    var body = (introOn ? show("intro") : "") + show("header");
     registry.forEach(function (sec) {
       if (!sec || sec.visible === false || DEFAULT_SECTIONS.indexOf(sec.id) < 0) return;
       if (sec.id === "story" && !d.values.story) return;
