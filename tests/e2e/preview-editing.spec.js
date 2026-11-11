@@ -266,3 +266,23 @@ test.describe('on a phone', () => {
     await expect.poll(async () => (await snapshot(page)).events.map(event => event.title)).toEqual(['Sangeet', 'Mehndi', 'Wedding']);
   });
 });
+
+// Bloom Reveal opens with a full-screen watercolor intro. On the template page the phone waits for a click.
+test('template page: the Bloom Reveal phone shows a click hint, and the invitation starts when it is clicked', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/18'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  const intro = () => screen.evaluate(el => {
+    const node = el.shadowRoot.querySelector('[data-intro]');
+    return node && { waiting: node.hasAttribute('data-wait'), done: node.hasAttribute('data-done'), locked: getComputedStyle(el).overflow === 'hidden' };
+  });
+  await expect.poll(intro).toMatchObject({ waiting: true, done: false, locked: true });
+  const hint = screen.getByText('Click to start');
+  await expect(hint).toBeVisible();
+  await hint.click();
+  await expect.poll(async () => (await intro()).waiting).toBe(false);
+  // The intro lifts by itself, and the phone can scroll again.
+  await expect.poll(intro, { timeout: 15000 }).toMatchObject({ done: true, locked: false });
+});

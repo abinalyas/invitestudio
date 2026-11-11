@@ -301,6 +301,39 @@
       "default": "Back to top",
       "max": 24,
       "section": "home"
+    },
+    "intro_eyebrow": {
+      "label": "Opening: small line",
+      "default": "With joyful hearts",
+      "max": 30,
+      "section": "home"
+    },
+    "intro_line": {
+      "label": "Opening: line under the names",
+      "default": "Are getting married",
+      "max": 30,
+      "section": "home"
+    },
+    "intro_open": {
+      "label": "Opening: prompt",
+      "default": "Open our invitation",
+      "max": 30,
+      "section": "home"
+    },
+    "intro_skip": {
+      "label": "Opening: skip button",
+      "default": "Skip intro",
+      "max": 20,
+      "section": "home"
+    },
+    "closing_replay": {
+      "label": "Closing: replay button",
+      "default": "Replay the invitation",
+      "max": 30,
+      "section": "home"
     }
+  },
+  "intro": {
+    "duration": 9400
   }
 }

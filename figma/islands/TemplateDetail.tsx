@@ -14,7 +14,9 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
   // Scroll cue: shown while the invitation can scroll and is still at the top.
   const updateCue = () => {
     const element = screenRef.current
-    setCue(Boolean(element) && element!.scrollHeight > element!.clientHeight + 24 && element!.scrollTop < 24)
+    // While the opening screen is still up, the cue would point at something hidden behind it.
+    const opening = Boolean(element?.shadowRoot?.querySelector("[data-intro]:not([data-done])"))
+    setCue(!opening && Boolean(element) && element!.scrollHeight > element!.clientHeight + 24 && element!.scrollTop < 24)
   }
 
   // The real template, with example names and content, inside the phone. It stays beside the details.
@@ -24,7 +26,9 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
     screenRef.current.scrollTop = 0
     updateCue()
     const timer = window.setTimeout(updateCue, 500)
-    return () => window.clearTimeout(timer)
+    const node = screenRef.current
+    node.addEventListener("intro-done", updateCue)
+    return () => { window.clearTimeout(timer); node.removeEventListener("intro-done", updateCue) }
   }, [template.backendId])
 
   return (

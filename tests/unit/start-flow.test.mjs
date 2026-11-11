@@ -55,7 +55,7 @@ test('the countdown widget does not rewrite unchanged text (that retriggered its
     documentElement: {}, addEventListener() {},
     querySelectorAll: selector => (selector === '[data-countdown]' ? [countdown] : [])
   };
-  const win = { matchMedia: () => ({ matches: false }), setInterval: () => 1, clearInterval() {} };
+  const win = { matchMedia: () => ({ matches: false }), setInterval: () => 1, addEventListener() {}, clearInterval() {} };
   class FakeObserver { constructor(cb) { observerCallback = cb; } observe() {} }
   const source = readFileSync(join(root, 'template-widgets.js'), 'utf8');
   vm.runInNewContext(source, { window: win, document: doc, MutationObserver: FakeObserver, Date, Math, String, isNaN });
