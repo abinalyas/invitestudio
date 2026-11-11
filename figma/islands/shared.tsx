@@ -375,6 +375,21 @@ export const galleryTemplates: GalleryTemplate[] = [
     image: "/assets/templates/blue-hydrangea-wide.jpg",
     phone: "/assets/templates/blue-hydrangea-phone.jpg",
   },
+  {
+    id: 18,
+    backendId: "bloom-reveal",
+    title: "Bloom Reveal",
+    names: "Meera & Abin",
+    tagline: "A watercolour border of peonies and roses that blooms in from the corners, with a live countdown and soft script lettering.",
+    tags: ["Botanical", "Romantic"],
+    opening: {
+      name: "Bloom reveal",
+      text: "Watercolour flowers bloom in from the corners around your names, then a countdown to your date. Guests scroll through your story, your events and a reply button.",
+    },
+    palette: ["#fbf1e3", "#485c48", "#4a403a"],
+    image: "/assets/templates/bloom-reveal-wide.jpg",
+    phone: "/assets/templates/bloom-reveal-phone.jpg",
+  },
 ]
 
 // What a couple can change on any of these templates, and what guests see. Taken from the editor

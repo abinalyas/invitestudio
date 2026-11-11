@@ -1,0 +1,144 @@
+<!--part:header-->
+<header class="site-header">
+  <button class="brand" type="button" data-scroll-to="home" aria-label="{{names}} home">{{ia}}<!--if ib--><span>&amp;</span>{{ib}}<!--/if--></button>
+  <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
+    <svg class="icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    <svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+  <nav class="nav" data-nav aria-label="Main navigation">
+    <!--if story--><button type="button" data-scroll-to="story">{{upper:copy:nav_story}}</button><!--/if-->
+    <!--if events--><button type="button" data-scroll-to="details">{{upper:copy:nav_details}}</button><!--/if-->
+    <!--if show_gallery--><button type="button" data-scroll-to="gallery">{{upper:copy:nav_gallery}}</button><!--/if-->
+    <button type="button" data-scroll-to="rsvp">{{upper:copy:nav_rsvp}}</button>
+    <button class="nav-reply" type="button" data-scroll-to="rsvp">{{upper:copy:nav_reply}}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg></button>
+  </nav>
+</header>
+
+<!--part:hero-->
+<section class="hero" data-tpl-section="home" data-section="hero"<!--if editable--> data-still<!--/if-->>
+  <div class="bloom" aria-hidden="true"></div>
+  <div class="petals" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="hero-content">
+    <p class="kicker" data-reveal style="--rd:.6s"><i></i><span>{{upper:edit:copy:hero_eyebrow}}</span><i></i></p>
+    <p class="script" data-reveal style="--rd:.8s">{{edit:hosts_line}}</p>
+    <h1 data-reveal<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}"><span class="name">{{edit:a}}</span><!--if b--><em class="amp">&amp;</em><span class="name">{{edit:b}}</span><!--/if--></h1>
+    <div class="rule" aria-hidden="true" data-reveal="fade" style="--rd:1.2s"><svg viewBox="0 0 24 24"><path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9"/></svg></div>
+    <p class="invite" data-reveal style="--rd:1.3s">{{edit:copy:invitation_lead}}</p>
+    <!--if date-->
+    <div class="hero-date" data-reveal style="--rd:1.5s"<!--if editable--> data-edit="date" data-raw="{{date_iso}}"<!--/if-->><span>{{weekday}}</span><strong>{{day}}</strong><span>{{month_long}} · {{year}}</span></div>
+    <div class="countdown" role="timer" aria-live="off" data-countdown="{{date_iso}}" data-reveal style="--rd:1.7s">
+      <div><strong data-cd="days">—</strong><small>days</small></div><i>·</i>
+      <div><strong data-cd="hours">—</strong><small>hours</small></div><i>·</i>
+      <div><strong data-cd="minutes">—</strong><small>minutes</small></div><i>·</i>
+      <div><strong data-cd="seconds">—</strong><small>seconds</small></div>
+    </div>
+    <!--else-->
+    <p class="hero-date-text" data-reveal style="--rd:1.5s">{{edit:date_long}}</p>
+    <!--/if-->
+  </div>
+  <!--if date--><!--if welcome--><button class="cue" type="button" data-scroll-to="invitation" data-reveal="fade" style="--rd:2s"><span>{{upper:copy:cue}}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6.5 13.5 12 19l5.5-5.5"/></svg></button><!--/if--><!--/if-->
+</section>
+
+<!--part:welcome-->
+<section class="welcome section" data-tpl-section="invitation" data-section="welcome">
+  <div class="wrap narrow">
+    <div class="heading" data-reveal>
+      <p class="eyebrow">{{upper:edit:copy:welcome_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:welcome_title}}</h2>
+      <svg class="divider" viewBox="0 0 120 34" aria-hidden="true" data-reveal="fade"><path pathLength="1" d="M8 17 C34 17 49 17 112 17 M37 17 C31 7 22 5 16 7 C19 15 27 18 37 17 M55 17 C57 7 66 4 74 6 C72 14 65 18 55 17 M76 17 C73 26 64 29 57 27 C60 20 67 16 76 17 M94 17 C98 8 106 7 113 10 C110 17 102 19 94 17"/></svg>
+    </div>
+    <p class="note" data-reveal style="--rd:.1s">{{edit:closing_note}}</p>
+    <!--if show_venue--><div class="venue-card" data-tpl-section="venue" data-reveal style="--rd:.2s">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6.5-5.6 6.5-11a6.5 6.5 0 0 0-13 0c0 5.4 6.5 11 6.5 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>
+      <p class="eyebrow">{{upper:edit:copy:venue_eyebrow}}</p>
+      <h3>{{edit:venue}}</h3>
+      <!--if place--><p class="place">{{edit:place}}</p><!--/if-->
+      <!--if map_url--><a class="link" href="{{map_url}}" target="_blank" rel="noopener noreferrer">{{upper:copy:directions}}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg></a><!--/if-->
+    </div><!--/if-->
+  </div>
+</section>
+
+<!--part:story-->
+<section class="story section" data-tpl-section="story" data-section="story">
+  <div class="wrap story-layout">
+    <figure class="story-panel" data-reveal="scale">
+      <!--if story_photo--><img src="{{story_photo}}" alt="" loading="lazy"><!--else--><div class="story-art" aria-hidden="true"></div><!--/if-->
+      <figcaption>{{edit:copy:story_note}}</figcaption>
+    </figure>
+    <div class="story-copy">
+      <div data-reveal>
+        <p class="eyebrow">{{upper:edit:copy:story_eyebrow}}</p>
+        <p class="script">{{edit:copy:story_script}}</p>
+        <h2 class="title">{{em:edit:copy:story_title}}</h2>
+        <svg class="divider" viewBox="0 0 120 34" aria-hidden="true" data-reveal="fade"><path pathLength="1" d="M8 17 C34 17 49 17 112 17 M37 17 C31 7 22 5 16 7 C19 15 27 18 37 17 M55 17 C57 7 66 4 74 6 C72 14 65 18 55 17 M76 17 C73 26 64 29 57 27 C60 20 67 16 76 17 M94 17 C98 8 106 7 113 10 C110 17 102 19 94 17"/></svg>
+      </div>
+      <div class="paras"><!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p data-reveal>{{.}}</p><!--/each--><!--if editable--></span><!--/if--></div>
+      <p class="signature" data-reveal>{{edit:copy:story_signoff}} <span>{{edit:names}}</span></p>
+    </div>
+  </div>
+</section>
+
+<!--part:functions-->
+<section class="details section" data-tpl-section="details" data-section="functions">
+  <div class="wrap">
+    <div class="heading" data-reveal>
+      <p class="eyebrow">{{upper:edit:copy:details_eyebrow}}</p>
+      <p class="script">{{edit:copy:details_script}}</p>
+      <h2 class="title">{{em:edit:copy:details_title}}</h2>
+      <svg class="divider" viewBox="0 0 120 34" aria-hidden="true" data-reveal="fade"><path pathLength="1" d="M8 17 C34 17 49 17 112 17 M37 17 C31 7 22 5 16 7 C19 15 27 18 37 17 M55 17 C57 7 66 4 74 6 C72 14 65 18 55 17 M76 17 C73 26 64 29 57 27 C60 20 67 16 76 17 M94 17 C98 8 106 7 113 10 C110 17 102 19 94 17"/></svg>
+    </div>
+    <div class="event-grid">
+      <!--each events--><article class="event-card" data-reveal>
+        <p class="card-top"><span>{{n}}</span></p>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.7a4.3 4.3 0 0 1 7.5 2.6C19.5 15.9 12 20.5 12 20.5Z"/></svg>
+        <h3>{{edit:event_title}}</h3>
+        <!--if venue--><p class="venue">{{edit:event_venue}}</p><!--/if-->
+        <div class="meta">
+          <!--if date_text--><span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="1.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>{{date_text}}</span><!--/if-->
+          <span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><!--if time_text-->{{time_text}}<!--else-->{{copy:time_unknown}}<!--/if--></span>
+        </div>
+        <!--if map--><a class="link" href="{{map}}" target="_blank" rel="noopener noreferrer">{{upper:copy:directions}}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg></a><!--/if-->
+      </article><!--/each-->
+    </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
+  </div>
+</section>
+
+<!--part:gallery-->
+<section class="gallery section" data-tpl-section="gallery" data-section="gallery">
+  <div class="wrap">
+    <div class="heading" data-reveal>
+      <p class="eyebrow">{{upper:edit:copy:gallery_eyebrow}}</p>
+      <p class="script">{{edit:copy:gallery_script}}</p>
+      <h2 class="title">{{em:edit:copy:gallery_title}}</h2>
+      <svg class="divider" viewBox="0 0 120 34" aria-hidden="true" data-reveal="fade"><path pathLength="1" d="M8 17 C34 17 49 17 112 17 M37 17 C31 7 22 5 16 7 C19 15 27 18 37 17 M55 17 C57 7 66 4 74 6 C72 14 65 18 55 17 M76 17 C73 26 64 29 57 27 C60 20 67 16 76 17 M94 17 C98 8 106 7 113 10 C110 17 102 19 94 17"/></svg>
+    </div>
+    <div class="photo-grid">
+      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each-->
+    </div>
+  </div>
+</section>
+
+<!--part:rsvp-->
+<section class="rsvp section" data-tpl-section="rsvp" data-section="rsvp">
+  <div class="wrap narrow">
+    <div class="heading" data-reveal>
+      <p class="eyebrow">{{upper:edit:copy:rsvp_eyebrow}}</p>
+      <p class="script">{{edit:copy:rsvp_script}}</p>
+      <h2 class="title">{{em:edit:copy:rsvp_title}}</h2>
+      <svg class="divider" viewBox="0 0 120 34" aria-hidden="true" data-reveal="fade"><path pathLength="1" d="M8 17 C34 17 49 17 112 17 M37 17 C31 7 22 5 16 7 C19 15 27 18 37 17 M55 17 C57 7 66 4 74 6 C72 14 65 18 55 17 M76 17 C73 26 64 29 57 27 C60 20 67 16 76 17 M94 17 C98 8 106 7 113 10 C110 17 102 19 94 17"/></svg>
+      <p class="lead" data-reveal style="--rd:.15s">{{edit:copy:rsvp_intro}}</p>
+    </div>
+    <div class="reply" data-reveal style="--rd:.3s"><!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if--></div>
+    <p class="rsvp-note" data-reveal style="--rd:.45s">{{edit:copy:rsvp_note}}</p>
+  </div>
+</section>
+
+<!--part:footer-->
+<footer class="site-footer">
+  <p class="script" data-reveal>{{edit:copy:closing_script}}</p>
+  <p class="footer-names" data-reveal style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <em>&amp;</em> {{edit:b}}<!--/if--></p>
+  <svg class="divider" viewBox="0 0 120 34" aria-hidden="true" data-reveal="fade"><path pathLength="1" d="M8 17 C34 17 49 17 112 17 M37 17 C31 7 22 5 16 7 C19 15 27 18 37 17 M55 17 C57 7 66 4 74 6 C72 14 65 18 55 17 M76 17 C73 26 64 29 57 27 C60 20 67 16 76 17 M94 17 C98 8 106 7 113 10 C110 17 102 19 94 17"/></svg>
+  <p class="closing-line" data-reveal style="--rd:.3s">{{edit:copy:closing_line}}</p>
+  <p class="footer-date" data-reveal style="--rd:.4s">{{footer_line}}</p>
+  <div class="footer-row" data-reveal="fade" style="--rd:.5s"><span>{{upper:edit:copy:footer_made}}</span><button type="button" data-scroll-to="home">{{upper:copy:footer_top}} ↑</button></div>
+</footer>
