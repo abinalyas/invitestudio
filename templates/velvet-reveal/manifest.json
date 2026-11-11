@@ -1,0 +1,235 @@
+{
+  "id": "velvet-reveal",
+  "name": "Velvet Reveal",
+  "version": 1,
+  "root": "tpl-vr",
+  "prefix": "vr-",
+  "sections": [
+    "hero",
+    "welcome",
+    "story",
+    "functions",
+    "rsvp"
+  ],
+  "photoSlots": [],
+  "galleryMin": 99,
+  "fonts": [
+    "Cormorant Garamond",
+    "DM Sans"
+  ],
+  "contrast": [
+    [
+      "#f6f0e5",
+      "#0b2119",
+      "ivory on emerald"
+    ],
+    [
+      "#d6b77a",
+      "#0b2119",
+      "gold on emerald"
+    ],
+    [
+      "#b9bdaf",
+      "#0b2119",
+      "muted on emerald"
+    ],
+    [
+      "#f6f0e5",
+      "#102c21",
+      "ivory on card"
+    ],
+    [
+      "#d6b77a",
+      "#102c21",
+      "gold on card"
+    ],
+    [
+      "#b9bdaf",
+      "#102c21",
+      "muted on card"
+    ],
+    [
+      "#f6f0e5",
+      "#08150f",
+      "ivory on deep"
+    ],
+    [
+      "#d6b77a",
+      "#08150f",
+      "gold on deep"
+    ],
+    [
+      "#0b2119",
+      "#d6b77a",
+      "button"
+    ],
+    [
+      "#f6f0e5",
+      "#080d0a",
+      "opening button"
+    ]
+  ],
+  "thumbnail": {
+    "phone": ".vr-site-header,.vr-intro,.vr-cue,.vr-dust,.vr-countdown{display:none!important}.vr-glow,.vr-curtain,.vr-arch path,.vr-hero-eyebrow,.vr-hero h1 .vr-name,.vr-hero h1 .vr-amp,.vr-hero-sub{animation:none!important;opacity:1!important}.vr-arch path{stroke-dashoffset:0!important}",
+    "wide": ".vr-site-header,.vr-intro,.vr-cue,.vr-dust,.vr-countdown{display:none!important}.tpl-vr>*:not(.vr-hero){display:none!important}.vr-hero{min-height:275px!important;height:275px!important}.vr-glow,.vr-curtain,.vr-arch path,.vr-hero-eyebrow,.vr-hero h1 .vr-name,.vr-hero h1 .vr-amp,.vr-hero-sub{animation:none!important;opacity:1!important}.vr-arch path{stroke-dashoffset:0!important}"
+  },
+  "example": {
+    "story": "From a chance meeting to a thousand small moments, our story has become our favourite place to be. Now, with the people we love close by, we are ready for the next chapter.\n\nWe would be so happy to have you with us as we celebrate our families and dance into everything that comes next.",
+    "events": [
+      {
+        "title": "The first gathering",
+        "venue": "Your venue"
+      },
+      {
+        "title": "The second gathering",
+        "venue": "Your venue"
+      }
+    ],
+    "photos": 0
+  },
+  "copy": {
+    "nav_date": {
+      "label": "Menu: date",
+      "default": "Date",
+      "max": 16,
+      "section": "home"
+    },
+    "nav_story": {
+      "label": "Menu: story",
+      "default": "Story",
+      "max": 16,
+      "section": "home"
+    },
+    "nav_events": {
+      "label": "Menu: events",
+      "default": "Events",
+      "max": 16,
+      "section": "home"
+    },
+    "nav_rsvp": {
+      "label": "Menu: RSVP",
+      "default": "RSVP",
+      "max": 16,
+      "section": "home"
+    },
+    "invitation_lead": {
+      "label": "Line under the names",
+      "default": "invite you to celebrate with them",
+      "max": 60,
+      "section": "home"
+    },
+    "cue": {
+      "label": "Scroll hint",
+      "default": "Scroll to the date",
+      "max": 24,
+      "section": "home"
+    },
+    "date_title": {
+      "label": "Date: heading",
+      "default": "Save the *Date*",
+      "max": 30,
+      "section": "home"
+    },
+    "date_lead": {
+      "label": "Date: line under the heading",
+      "default": "Gently scratch the gold to discover the day.",
+      "max": 70,
+      "section": "home"
+    },
+    "date_kicker": {
+      "label": "Date: line above the date",
+      "default": "We are getting married on",
+      "max": 40,
+      "section": "home"
+    },
+    "scratch_label": {
+      "label": "Date: gold foil text",
+      "default": "Scratch to reveal",
+      "max": 24,
+      "section": "home"
+    },
+    "reveal_button": {
+      "label": "Date: reveal button",
+      "default": "Reveal the date",
+      "max": 24,
+      "section": "home"
+    },
+    "story_title": {
+      "label": "Story: heading",
+      "default": "Our *Story*",
+      "max": 30,
+      "section": "story"
+    },
+    "details_title": {
+      "label": "Events: heading",
+      "default": "Events",
+      "max": 30,
+      "section": "functions"
+    },
+    "time_unknown": {
+      "label": "Events: when no time is set",
+      "default": "Time to be confirmed",
+      "max": 30,
+      "section": "functions"
+    },
+    "directions": {
+      "label": "Directions link",
+      "default": "Get directions",
+      "max": 24,
+      "section": "functions"
+    },
+    "rsvp_title": {
+      "label": "Reply: heading",
+      "default": "RSVP",
+      "max": 30,
+      "section": "rsvp"
+    },
+    "rsvp_intro": {
+      "label": "Reply: line",
+      "default": "We would be honoured by your presence.",
+      "max": 70,
+      "section": "rsvp"
+    },
+    "closing_love": {
+      "label": "Closing: line",
+      "default": "With love",
+      "max": 24,
+      "section": "home"
+    },
+    "closing_replay": {
+      "label": "Closing: replay button",
+      "default": "Replay the opening",
+      "max": 30,
+      "section": "home"
+    },
+    "footer_made": {
+      "label": "Footer: left",
+      "default": "Made with love",
+      "max": 30,
+      "section": "home"
+    },
+    "footer_top": {
+      "label": "Footer: back to top",
+      "default": "Back to top",
+      "max": 24,
+      "section": "home"
+    },
+    "invitation_note": {
+      "label": "Welcome message (when empty)",
+      "default": "Having you with us means the world. We can’t wait to celebrate together.",
+      "max": 160,
+      "section": "home"
+    },
+    "intro_open": {
+      "label": "Opening: button",
+      "default": "Open Invitation",
+      "max": 24,
+      "section": "home"
+    }
+  },
+  "intro": {
+    "duration": 9400,
+    "manual": true,
+    "buttonAt": 3.5
+  }
+}

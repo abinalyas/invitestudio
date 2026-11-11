@@ -1,0 +1,129 @@
+<!--part:intro-->
+<div class="intro" data-intro data-intro-manual data-intro-ms="{{intro_ms}}" data-intro-at="{{intro_at}}"<!--if intro_wait--> data-wait<!--/if--> role="dialog" aria-label="Opening">
+  <div class="intro-stage" aria-hidden="true">
+    <img class="intro-poster" src="/templates/velvet-reveal/assets/poster.jpg" alt="">
+    <video class="intro-video" muted playsinline preload="none" poster="/templates/velvet-reveal/assets/poster.jpg" data-src-wide="/templates/velvet-reveal/assets/opening-wide.mp4" data-src-tall="/templates/velvet-reveal/assets/opening-tall.mp4" tabindex="-1"></video>
+    <div class="intro-vignette"></div>
+    <div class="intro-bloom"></div>
+  </div>
+  <button class="intro-open" type="button" data-intro-open>{{upper:copy:intro_open}}</button>
+  <!--if intro_wait--><button class="intro-start" type="button" data-intro-start><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>Click to start</button><!--/if-->
+</div>
+
+<!--part:header-->
+<header class="site-header">
+  <button class="brand" type="button" data-scroll-to="home" aria-label="{{names}} home">{{ia}}<!--if ib--><span>&amp;</span>{{ib}}<!--/if--></button>
+  <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
+    <svg class="icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    <svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+  <nav class="nav" data-nav aria-label="Main navigation">
+    <!--if welcome--><button type="button" data-scroll-to="invitation">{{upper:copy:nav_date}}</button><!--/if-->
+    <!--if story--><button type="button" data-scroll-to="story">{{upper:copy:nav_story}}</button><!--/if-->
+    <!--if events--><button type="button" data-scroll-to="details">{{upper:copy:nav_events}}</button><!--/if-->
+    <button type="button" data-scroll-to="rsvp">{{upper:copy:nav_rsvp}}</button>
+  </nav>
+</header>
+
+<!--part:hero-->
+<section class="hero" data-tpl-section="home" data-section="hero"<!--if editable--> data-still<!--/if-->>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="curtain curtain-l" aria-hidden="true"></div>
+  <div class="curtain curtain-r" aria-hidden="true"></div>
+  <div class="dust" aria-hidden="true"><span style="left:11%;animation-delay:0.0s;animation-duration:9s;width:2px;height:2px"></span><span style="left:48%;animation-delay:1.7s;animation-duration:12s;width:3px;height:3px"></span><span style="left:85%;animation-delay:3.4s;animation-duration:15s;width:4px;height:4px"></span><span style="left:22%;animation-delay:5.1s;animation-duration:11s;width:2px;height:2px"></span><span style="left:59%;animation-delay:6.8s;animation-duration:14s;width:3px;height:3px"></span><span style="left:96%;animation-delay:8.5s;animation-duration:10s;width:4px;height:4px"></span><span style="left:33%;animation-delay:1.2s;animation-duration:13s;width:2px;height:2px"></span><span style="left:70%;animation-delay:2.9s;animation-duration:9s;width:3px;height:3px"></span><span style="left:7%;animation-delay:4.6s;animation-duration:12s;width:4px;height:4px"></span><span style="left:44%;animation-delay:6.3s;animation-duration:15s;width:2px;height:2px"></span><span style="left:81%;animation-delay:8.0s;animation-duration:11s;width:3px;height:3px"></span><span style="left:18%;animation-delay:0.7s;animation-duration:14s;width:4px;height:4px"></span><span style="left:55%;animation-delay:2.4s;animation-duration:10s;width:2px;height:2px"></span><span style="left:92%;animation-delay:4.1s;animation-duration:13s;width:3px;height:3px"></span><span style="left:29%;animation-delay:5.8s;animation-duration:9s;width:4px;height:4px"></span><span style="left:66%;animation-delay:7.5s;animation-duration:12s;width:2px;height:2px"></span></div>
+  <svg class="arch" viewBox="0 0 460 560" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><path d="M16 560V230a214 214 0 0 1 428 0v330" pathLength="1"/><path class="in" d="M40 560V234a190 190 0 0 1 380 0v326" pathLength="1"/></svg>
+  <div class="hero-body">
+    <p class="hero-eyebrow">{{upper:edit:hosts_line}}</p>
+    <h1<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}"><span class="name">{{edit:a}}</span><!--if b--><em class="amp">&amp;</em><span class="name">{{edit:b}}</span><!--/if--></h1>
+    <p class="hero-sub">{{edit:copy:invitation_lead}}</p>
+  </div>
+  <!--if welcome--><button class="cue" type="button" data-scroll-to="invitation" aria-label="{{copy:cue}}"><span></span></button><!--/if-->
+</section>
+
+<!--part:welcome-->
+<section class="date section" data-tpl-section="invitation" data-section="welcome">
+  <div class="wrap narrow">
+    <div class="heading" data-reveal>
+      <h2 class="title">{{em:edit:copy:date_title}}</h2>
+      <p class="lead">{{edit:copy:date_lead}}</p>
+    </div>
+    <p class="note" data-reveal>{{edit:closing_note}}</p>
+    <!--if date-->
+    <div class="stage" data-scratch<!--if editable--> data-scratched<!--/if--> data-scratch-label="{{copy:scratch_label}}">
+      <div class="sparkles" aria-hidden="true"><i>✦</i><i>✦</i><i>✦</i></div>
+      <div class="scratch-card" data-scratch-card>
+        <div class="scratch-date">
+          <span class="scratch-kicker">{{upper:copy:date_kicker}}</span>
+          <span class="scratch-text"<!--if editable--> data-edit="date" data-raw="{{date_iso}}"<!--/if-->>{{date_long}}</span>
+        </div>
+        <span class="shine" aria-hidden="true"></span>
+      </div>
+      <button class="scratch-btn" type="button" data-scratch-reveal>{{copy:reveal_button}}</button>
+      <div class="countdown" role="timer" aria-live="off" data-countdown="{{date_iso}}">
+        <div><strong data-cd="days">—</strong><small>days</small></div>
+        <div><strong data-cd="hours">—</strong><small>hours</small></div>
+        <div><strong data-cd="minutes">—</strong><small>minutes</small></div>
+        <div><strong data-cd="seconds">—</strong><small>seconds</small></div>
+      </div>
+    </div>
+    <!--else-->
+    <p class="no-date" data-reveal>{{edit:date_long}}</p>
+    <!--/if-->
+  </div>
+</section>
+
+<!--part:story-->
+<section class="story section alt" data-tpl-section="story" data-section="story">
+  <div class="wrap narrow">
+    <div class="heading" data-reveal>
+      <svg class="divider" viewBox="0 0 120 12" aria-hidden="true"><path d="M2 6h46M72 6h46"/><path d="M60 1 65 6 60 11 55 6Z"/></svg>
+      <h2 class="title">{{em:edit:copy:story_title}}</h2>
+    </div>
+    <div class="story-body">
+      <span class="story-line" aria-hidden="true"></span>
+      <div class="paras"><!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p data-reveal>{{.}}</p><!--/each--><!--if editable--></span><!--/if--></div>
+    </div>
+  </div>
+</section>
+
+<!--part:functions-->
+<section class="details section" data-tpl-section="details" data-section="functions">
+  <div class="wrap">
+    <div class="heading" data-reveal>
+      <svg class="divider" viewBox="0 0 120 12" aria-hidden="true"><path d="M2 6h46M72 6h46"/><path d="M60 1 65 6 60 11 55 6Z"/></svg>
+      <h2 class="title">{{edit:copy:details_title}}</h2>
+      <!--if venue--><p class="lead">{{edit:venue}}<!--if place-->, {{edit:place}}<!--/if--></p><!--/if-->
+    </div>
+    <div class="event-grid">
+      <!--each events--><article class="event-card" data-reveal>
+        <span class="icon" aria-hidden="true">✦</span>
+        <h3>{{edit:event_title}}</h3>
+        <p class="time"><!--if time_text-->{{time_text}}<!--else-->{{copy:time_unknown}}<!--/if--></p>
+        <!--if date_text--><p class="when">{{date_text}}</p><!--/if-->
+        <!--if venue--><p class="venue">{{edit:event_venue}}</p><!--/if-->
+        <!--if map--><a class="link" href="{{map}}" target="_blank" rel="noopener noreferrer">{{upper:copy:directions}}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg></a><!--/if-->
+      </article><!--/each-->
+    </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
+  </div>
+</section>
+
+<!--part:rsvp-->
+<section class="rsvp section alt" data-tpl-section="rsvp" data-section="rsvp">
+  <div class="wrap narrow">
+    <div class="heading" data-reveal>
+      <svg class="divider" viewBox="0 0 120 12" aria-hidden="true"><path d="M2 6h46M72 6h46"/><path d="M60 1 65 6 60 11 55 6Z"/></svg>
+      <h2 class="title">{{edit:copy:rsvp_title}}</h2>
+      <p class="lead">{{edit:copy:rsvp_intro}}</p>
+    </div>
+    <div class="reply" data-reveal style="--rd:.3s"><!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if--></div>
+  </div>
+</section>
+
+<!--part:footer-->
+<footer class="site-footer">
+  <p class="footer-names" data-reveal style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <em>&amp;</em> {{edit:b}}<!--/if--></p>
+  <p class="footer-love" data-reveal>{{edit:copy:closing_love}} <span aria-hidden="true">♥</span></p>
+  <!--if intro--><button class="replay" type="button" data-intro-replay><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>{{copy:closing_replay}}</button><!--/if-->
+  <p class="footer-date" data-reveal>{{footer_line}}</p>
+  <div class="footer-row"><span>{{upper:edit:copy:footer_made}}</span><button type="button" data-scroll-to="home">{{upper:copy:footer_top}} ↑</button></div>
+</footer>

@@ -143,7 +143,7 @@ for (const { manifest, parts, css } of list) {
     const t = { id, packaged: id };
     const published = renderPackagedTemplate({ title: 'Sam' }, t);
     const editing = renderPackagedTemplate({ title: 'Sam' }, t, { sample: true });
-    for (const section of ['story', 'functions', 'gallery']) {
+    for (const section of ['story', 'functions', 'gallery'].filter(s => manifest.sections.includes(s))) {
       assert.doesNotMatch(published, new RegExp(`data-section="${section}"`));
       assert.match(editing, new RegExp(`data-section="${section}"`), `${section} shows example content`);
     }
@@ -396,3 +396,36 @@ for (const entry of list) {
     assert.equal((editor.match(/data-add-event/g) || []).length, 1, `${id} should offer "+ Add an event" beside the example events`);
   });
 }
+
+test('Velvet Reveal: the video opening is drawn only when asked for, waits for a click on the template page, and never in the editor', () => {
+  const { renderPackagedTemplate } = renderer();
+  const t = { id: 'velvet-reveal', packaged: 'velvet-reveal' };
+  const project = { ...sampleOf('velvet-reveal') };
+  const plain = renderPackagedTemplate(project, t);
+  assert.doesNotMatch(plain, /data-intro\b/, 'no opening unless the page asks for one');
+  assert.doesNotMatch(plain, /data-intro-replay/);
+  const play = renderPackagedTemplate(project, t, { intro: 'play' });
+  assert.match(play, /data-intro data-intro-manual/);
+  assert.match(play, /data-intro-open/);
+  assert.match(play, /data-src-wide="\/templates\/velvet-reveal\/assets\/opening-wide\.mp4"/);
+  assert.match(play, /data-src-tall="\/templates\/velvet-reveal\/assets\/opening-tall\.mp4"/);
+  assert.doesNotMatch(play, /<video[^>]*\ssrc=/, 'only the video that fits the screen is downloaded, chosen by the platform');
+  assert.doesNotMatch(play, /data-wait|data-intro-start/);
+  assert.match(play, /data-intro-replay/, 'the closing offers to replay it');
+  const wait = renderPackagedTemplate(project, t, { intro: 'wait' });
+  assert.match(wait, /data-wait/);
+  assert.match(wait, /data-intro-start/);
+  const editor = renderPackagedTemplate(project, t, { intro: 'play', editable: true });
+  assert.doesNotMatch(editor, /data-intro\b/, 'the editor preview never plays the opening');
+  assert.match(editor, /data-scratched/, 'the editor shows the date, not the foil');
+  assert.match(play, /data-scratch(?!ed)/);
+  assert.doesNotMatch(play, /data-scratched/);
+});
+
+test('the scratch foil and the video opening are platform behaviour: the widget draws the canvas and plays the video', () => {
+  const widgets = readFileSync(join(root, 'template-widgets.js'), 'utf8');
+  assert.match(widgets, /data-scratch-canvas/);
+  assert.match(widgets, /data-intro-open/);
+  assert.match(widgets, /video\.play/);
+  assert.doesNotMatch(readFileSync(join(root, 'templates/velvet-reveal/template.html'), 'utf8'), /<canvas|<script/);
+});

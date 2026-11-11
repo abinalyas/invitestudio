@@ -3,7 +3,7 @@
 const zlib = require('node:zlib');
 const { test, expect, devices } = require('@playwright/test');
 
-const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'blue-hydrangea', 'bloom-reveal'];
+const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'blue-hydrangea', 'bloom-reveal', 'velvet-reveal'];
 const SCENES = ['savanna-sunset', 'palmera-beach', 'curtain-call', 'lunaria-moon'];
 const ALL = [...PACKAGED, ...SCENES];
 
@@ -285,4 +285,36 @@ test('template page: the Bloom Reveal phone shows a click hint, and the invitati
   await expect.poll(async () => (await intro()).waiting).toBe(false);
   // The intro lifts by itself, and the phone can scroll again.
   await expect.poll(intro, { timeout: 15000 }).toMatchObject({ done: true, locked: false });
+});
+
+// Velvet Reveal: a video opening with an Open Invitation button, then a gold foil that hides the date.
+test('Velvet Reveal: click to start, the video opening offers its button, opening it lifts it; the foil hides the date until revealed', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/19'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  const intro = () => screen.evaluate(el => {
+    const node = el.shadowRoot.querySelector('[data-intro]');
+    const video = node && node.querySelector('video');
+    return node && { waiting: node.hasAttribute('data-wait'), button: node.hasAttribute('data-button'), opening: node.hasAttribute('data-opening'), done: node.hasAttribute('data-done'), locked: getComputedStyle(el).overflow === 'hidden', src: video ? video.getAttribute('src') : null };
+  });
+  await expect.poll(intro).toMatchObject({ waiting: true, button: false, done: false, locked: true, src: null });
+  await screen.getByText('Click to start').click();
+  // The phone is portrait, so only the portrait video is fetched.
+  await expect.poll(intro).toMatchObject({ waiting: false, src: '/templates/velvet-reveal/assets/opening-tall.mp4' });
+  // The button always appears (with the video, or a moment later when it cannot play), and the page stays still until it is pressed.
+  await expect.poll(async () => (await intro()).button, { timeout: 10000 }).toBe(true);
+  expect(await intro()).toMatchObject({ done: false, locked: true });
+  await screen.getByRole('button', { name: /open invitation/i }).click();
+  await expect.poll(intro, { timeout: 8000 }).toMatchObject({ done: true, locked: false });
+  // Save the date: the foil covers the date until it is scratched away or revealed with the button.
+  await screen.evaluate(el => el.shadowRoot.querySelector('[data-tpl-section="invitation"]').scrollIntoView());
+  const zone = () => screen.evaluate(el => {
+    const z = el.shadowRoot.querySelector('[data-scratch]');
+    return { armed: z.hasAttribute('data-scratch-armed'), scratched: z.hasAttribute('data-scratched'), canvas: Boolean(z.querySelector('canvas')) };
+  });
+  await expect.poll(zone).toEqual({ armed: true, scratched: false, canvas: true });
+  await screen.getByRole('button', { name: /reveal the date/i }).click();
+  await expect.poll(zone).toMatchObject({ scratched: true });
 });
