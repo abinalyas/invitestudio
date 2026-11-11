@@ -402,6 +402,17 @@ Converted from a React and Vite prototype (a watercolour wedding invitation with
 - **Fonts** are the self-hosted Cormorant Garamond, Italianno and DM Sans (already in `assets/scene-fonts`), not Google Fonts.
 - **Registered** like the others: catalogue and offered list in `index.html`, the server allow-list, a migration (`202611110001_bloom_reveal_template.sql`, to be applied in Supabase before the frontend is deployed), the Figma gallery, thumbnails, and click-to-edit markers from the start.
 
+### 15.7 Seventh template: Velvet Reveal (implemented)
+
+Converted from a React and Vite prototype (emerald velvet, champagne gold) whose heart is a full-screen video opening. What the conversion did:
+
+- **Video openings are platform behaviour now.** A template declares `"intro": {"manual": true, "buttonAt": 3.5}` and draws an `intro` part holding a `<video>` with `data-src-wide` and `data-src-tall` (no `src`) plus a `[data-intro-open]` button. `template-widgets.js` picks the one that fits the frame (portrait or landscape, so only one file is downloaded), plays it muted, shows the button once the video reaches `data-intro-at` seconds, or after a short wait if the video cannot play (autoplay refused, failed, slow), and lifts the opening when the button is pressed. The template styles the reveal under `[data-opening]` (a light bloom and fade of about 1.2 s); the platform then marks `data-done`. Under reduced motion the opening is skipped. The closing offers "Replay the opening".
+- **The template page** shows the same click hint as Bloom Reveal ("Click to start") at the top of the phone: nothing plays until it is clicked.
+- **The scratch card is a platform widget** (`data-scratch`): the platform draws the gold foil on a canvas over `[data-scratch-card]`, clears it as the guest scratches, dissolves the rest at half scratched with a small petal burst, and sets `data-scratched`. A "Reveal the date" button (`[data-scratch-reveal]`, shown only once the foil is armed) does the same for keyboard and screen reader users, and without canvas support the date is simply shown. The countdown, inside the same `data-scratch` element, appears after the reveal. The editor preview marks the card `data-scratched` so the date can be clicked and edited.
+- **Artwork**: the prototype's procedural placeholder videos (landscape and portrait) and poster are included, re-encoded (H.264, no audio, about 1.5 MB for both). They are placeholders: the final video replaces `opening-wide.mp4`, `opening-tall.mp4` and `poster.jpg` in `templates/velvet-reveal/assets/` with no code change.
+- **Removed or changed**: the Google Fonts request (the self-hosted Cormorant Garamond and DM Sans are used), the letter-by-letter names and parallax (scripts), the three colour themes, the fixed navigation pill (the platform header is used), the hard-coded "wedding" and RSVP form copy (the platform draws the Reply button), and the editor and server of the prototype.
+- **Wording**: 22 keys, all editable. No gallery or photo slots: the design has none, and the gate now only requires the sections a manifest lists.
+
 ## Click-to-edit markers (editor preview only)
 
 In the editor preview the couple can click text to edit it in place. A template opts a piece of text in with an `edit:` marker; the published page renders the same text with no extra markup.

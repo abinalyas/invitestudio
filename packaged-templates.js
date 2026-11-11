@@ -248,6 +248,7 @@
     d.values.intro = introOn;
     d.values.intro_wait = introOn && opts.intro === "wait";
     d.values.intro_ms = (pkg.manifest.intro && pkg.manifest.intro.duration) || 9400;
+  d.values.intro_at = (pkg.manifest.intro && pkg.manifest.intro.buttonAt) || 3.5;
     var body = (introOn ? show("intro") : "") + show("header");
     registry.forEach(function (sec) {
       if (!sec || sec.visible === false || DEFAULT_SECTIONS.indexOf(sec.id) < 0) return;

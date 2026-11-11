@@ -390,6 +390,21 @@ export const galleryTemplates: GalleryTemplate[] = [
     image: "/assets/templates/bloom-reveal-wide.jpg",
     phone: "/assets/templates/bloom-reveal-phone.jpg",
   },
+  {
+    id: 19,
+    backendId: "velvet-reveal",
+    title: "Velvet Reveal",
+    names: "Isabel & Julian",
+    tagline: "Emerald velvet curtains part on a full-screen opening, then a gold foil to scratch away to find the date.",
+    tags: ["Cinematic", "Romantic"],
+    opening: {
+      name: "Velvet curtains",
+      text: "A full-screen video of velvet curtains parting, with an Open Invitation button. Then your names in an arch, a gold foil to scratch for the date, a countdown, your story and your events.",
+    },
+    palette: ["#0b2119", "#d6b77a", "#f6f0e5"],
+    image: "/assets/templates/velvet-reveal-wide.jpg",
+    phone: "/assets/templates/velvet-reveal-phone.jpg",
+  },
 ]
 
 // What a couple can change on any of these templates, and what guests see. Taken from the editor
