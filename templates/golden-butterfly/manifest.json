@@ -1,0 +1,287 @@
+{
+  "id": "golden-butterfly",
+  "name": "Golden Butterfly",
+  "version": 1,
+  "root": "tpl-gb",
+  "prefix": "gb-",
+  "sections": [
+    "hero",
+    "welcome",
+    "story",
+    "functions",
+    "gallery",
+    "rsvp"
+  ],
+  "photoSlots": [],
+  "galleryMin": 2,
+  "fonts": [
+    "Cormorant Garamond",
+    "DM Sans"
+  ],
+  "contrast": [
+    [
+      "#f2eadb",
+      "#090806",
+      "cream on ink"
+    ],
+    [
+      "#c7a56a",
+      "#090806",
+      "gold on ink"
+    ],
+    [
+      "#b7aa93",
+      "#090806",
+      "muted on ink"
+    ],
+    [
+      "#e8d2a5",
+      "#090806",
+      "light gold on ink"
+    ],
+    [
+      "#b7aa93",
+      "#14110c",
+      "muted on dark"
+    ],
+    [
+      "#c7a56a",
+      "#14110c",
+      "gold on dark"
+    ],
+    [
+      "#211b12",
+      "#eae0ce",
+      "ink on paper"
+    ],
+    [
+      "#765b32",
+      "#eae0ce",
+      "gold text on paper"
+    ],
+    [
+      "#5f523d",
+      "#eae0ce",
+      "muted on paper"
+    ],
+    [
+      "#100e09",
+      "#c7a56a",
+      "button"
+    ],
+    [
+      "#f2eadb",
+      "#030302",
+      "intro button"
+    ]
+  ],
+  "thumbnail": {
+    "phone": ".gb-site-header,.gb-intro,.gb-scroll-cue,.gb-butterfly,.gb-btn{display:none!important}.gb-hero-copy,.gb-hero-copy *{animation:none!important;opacity:1!important}",
+    "wide": ".gb-site-header,.gb-intro,.gb-scroll-cue,.gb-btn{display:none!important}.tpl-gb>*:not(.gb-hero){display:none!important}.gb-hero{min-height:275px!important;height:275px!important}.gb-hero-copy,.gb-hero-copy *{animation:none!important;opacity:1!important}"
+  },
+  "example": {
+    "story": "From a chance meeting to a thousand small moments, our story has become our favourite place to be. Now, with the people we love close by, we are ready for the next chapter.\n\nWe would be so happy to have you with us as we celebrate our families and dance into everything that comes next.",
+    "events": [
+      {
+        "title": "The first gathering",
+        "venue": "Your venue"
+      },
+      {
+        "title": "The second gathering",
+        "venue": "Your venue"
+      }
+    ],
+    "photos": 3
+  },
+  "copy": {
+    "nav_celebration": {
+      "label": "Menu: celebration",
+      "default": "The celebration",
+      "max": 20,
+      "section": "home"
+    },
+    "nav_venues": {
+      "label": "Menu: venues",
+      "default": "Venues",
+      "max": 16,
+      "section": "functions"
+    },
+    "nav_story": {
+      "label": "Menu: note",
+      "default": "A note",
+      "max": 16,
+      "section": "story"
+    },
+    "nav_gallery": {
+      "label": "Menu: gallery",
+      "default": "Gallery",
+      "max": 16,
+      "section": "gallery"
+    },
+    "nav_rsvp": {
+      "label": "Menu: RSVP",
+      "default": "RSVP",
+      "max": 16,
+      "section": "home"
+    },
+    "hero_note": {
+      "label": "Line under the date",
+      "default": "Two hearts · One beautiful beginning",
+      "max": 50,
+      "section": "home"
+    },
+    "hero_button": {
+      "label": "Cover button",
+      "default": "Discover the invitation",
+      "max": 30,
+      "section": "home"
+    },
+    "cue": {
+      "label": "Scroll hint",
+      "default": "Scroll to explore",
+      "max": 24,
+      "section": "home"
+    },
+    "welcome_eyebrow": {
+      "label": "Welcome: small heading",
+      "default": "A day to remember",
+      "max": 34,
+      "section": "home"
+    },
+    "welcome_title": {
+      "label": "Welcome: heading",
+      "default": "Some moments become memories. *Some become forever.*",
+      "max": 70,
+      "section": "home"
+    },
+    "invitation_note": {
+      "label": "Welcome message (when empty)",
+      "default": "With hearts full of joy, we invite you to be part of our celebration. Your presence will make our beginning even more meaningful.",
+      "max": 200,
+      "section": "home"
+    },
+    "story_eyebrow": {
+      "label": "Note: small heading",
+      "default": "A little note from us",
+      "max": 34,
+      "section": "story"
+    },
+    "story_signoff": {
+      "label": "Note: sign-off",
+      "default": "With love,",
+      "max": 24,
+      "section": "story"
+    },
+    "point_day": {
+      "label": "Note: label under the day",
+      "default": "The day we celebrate",
+      "max": 30,
+      "section": "story"
+    },
+    "point_year": {
+      "label": "Note: label under the year",
+      "default": "A new beginning",
+      "max": 30,
+      "section": "story"
+    },
+    "details_eyebrow": {
+      "label": "Venues: small heading",
+      "default": "The celebration",
+      "max": 34,
+      "section": "functions"
+    },
+    "details_title": {
+      "label": "Venues: heading",
+      "default": "Where we say *forever*",
+      "max": 40,
+      "section": "functions"
+    },
+    "details_lead": {
+      "label": "Venues: line",
+      "default": "We would be delighted to celebrate with you.",
+      "max": 70,
+      "section": "functions"
+    },
+    "time_unknown": {
+      "label": "Venues: when no time is set",
+      "default": "Time to be announced",
+      "max": 30,
+      "section": "functions"
+    },
+    "directions": {
+      "label": "Directions link",
+      "default": "View location",
+      "max": 24,
+      "section": "functions"
+    },
+    "gallery_eyebrow": {
+      "label": "Gallery: small heading",
+      "default": "A glimpse of our celebration",
+      "max": 40,
+      "section": "gallery"
+    },
+    "gallery_title": {
+      "label": "Gallery: heading",
+      "default": "The golden *moments*",
+      "max": 40,
+      "section": "gallery"
+    },
+    "gallery_lead": {
+      "label": "Gallery: line",
+      "default": "A little space for the memories we will make.",
+      "max": 60,
+      "section": "gallery"
+    },
+    "rsvp_eyebrow": {
+      "label": "Reply: small heading",
+      "default": "We hope you can join us",
+      "max": 40,
+      "section": "rsvp"
+    },
+    "rsvp_title": {
+      "label": "Reply: heading",
+      "default": "Kindly *reply*",
+      "max": 30,
+      "section": "rsvp"
+    },
+    "rsvp_intro": {
+      "label": "Reply: line",
+      "default": "Please let us know if you will be celebrating with us.",
+      "max": 70,
+      "section": "rsvp"
+    },
+    "footer_eyebrow": {
+      "label": "Closing: small heading",
+      "default": "With love and gratitude",
+      "max": 40,
+      "section": "home"
+    },
+    "footer_top": {
+      "label": "Footer: back to top",
+      "default": "Back to top",
+      "max": 24,
+      "section": "home"
+    },
+    "footer_made": {
+      "label": "Footer: last line",
+      "default": "Made with love",
+      "max": 30,
+      "section": "home"
+    },
+    "closing_replay": {
+      "label": "Footer: replay the opening",
+      "default": "Replay the opening",
+      "max": 30,
+      "section": "home"
+    },
+    "intro_skip": {
+      "label": "Opening: skip button",
+      "default": "Skip intro",
+      "max": 20,
+      "section": "home"
+    }
+  },
+  "intro": {
+    "duration": 7500
+  }
+}

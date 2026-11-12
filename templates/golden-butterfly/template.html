@@ -1,0 +1,138 @@
+<!--part:intro-->
+<div class="intro" data-intro data-intro-ms="{{intro_ms}}"<!--if intro_wait--> data-wait<!--/if--> role="dialog" aria-label="Opening">
+  <video class="intro-video" muted playsinline preload="none" data-src-wide="/templates/golden-butterfly/assets/intro.mp4" tabindex="-1"></video>
+  <!--if intro_wait--><button class="intro-start" type="button" data-intro-start><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>Click to start</button><!--/if-->
+  <button class="intro-skip" type="button" data-intro-skip>{{upper:copy:intro_skip}}</button>
+</div>
+
+<!--part:header-->
+<header class="site-header">
+  <button class="brand" type="button" data-scroll-to="home" aria-label="{{names}} home">{{ia}}<!--if ib--><span>&amp;</span>{{ib}}<!--/if--></button>
+  <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
+    <svg class="icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    <svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+  <nav class="nav" data-nav aria-label="Main navigation">
+    <!--if welcome--><button type="button" data-scroll-to="invitation">{{upper:copy:nav_celebration}}</button><!--/if-->
+    <!--if events--><button type="button" data-scroll-to="details">{{upper:copy:nav_venues}}</button><!--/if-->
+    <!--if story--><button type="button" data-scroll-to="story">{{upper:copy:nav_story}}</button><!--/if-->
+    <!--if show_gallery--><button type="button" data-scroll-to="gallery">{{upper:copy:nav_gallery}}</button><!--/if-->
+    <button type="button" data-scroll-to="rsvp">{{upper:copy:nav_rsvp}}</button>
+  </nav>
+</header>
+
+<!--part:hero-->
+<section class="hero" data-tpl-section="home" data-section="hero"<!--if editable--> data-still<!--/if-->>
+  <div class="particles" aria-hidden="true"></div>
+  <div class="particles-extra" aria-hidden="true"></div>
+  <img class="orn tl" src="/templates/golden-butterfly/assets/ornament.webp" alt="" aria-hidden="true"><img class="orn tr" src="/templates/golden-butterfly/assets/ornament.webp" alt="" aria-hidden="true"><img class="orn bl" src="/templates/golden-butterfly/assets/ornament.webp" alt="" aria-hidden="true"><img class="orn br" src="/templates/golden-butterfly/assets/ornament.webp" alt="" aria-hidden="true">
+  <img class="butterfly b1" src="/templates/golden-butterfly/assets/butterfly-1.svg" alt="" aria-hidden="true"><img class="butterfly b2" src="/templates/golden-butterfly/assets/butterfly-3.svg" alt="" aria-hidden="true"><img class="butterfly b3" src="/templates/golden-butterfly/assets/butterfly-2.svg" alt="" aria-hidden="true">
+  <div class="hero-copy">
+    <p class="eyebrow">{{upper:edit:hosts_line}}</p>
+    <h1<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}"><span class="name">{{edit:a}}</span><!--if b--><span class="amp">&amp;</span><span class="name">{{edit:b}}</span><!--/if--></h1>
+    <!--if date--><p class="hero-date"<!--if editable--> data-edit="date" data-raw="{{date_iso}}"<!--/if-->>{{weekday}} · {{day}} {{month_long}} {{year}}</p><!--else--><p class="hero-date">{{edit:date_long}}</p><!--/if-->
+    <p class="hero-note">{{upper:edit:copy:hero_note}}</p>
+    <!--if welcome--><button class="btn" type="button" data-scroll-to="invitation">{{copy:hero_button}} <span aria-hidden="true">↓</span></button><!--/if-->
+  </div>
+  <p class="scroll-cue">{{upper:copy:cue}}</p>
+</section>
+
+<!--part:welcome-->
+<section class="celebration" data-tpl-section="invitation" data-section="welcome">
+  <div class="wrap narrow" data-reveal>
+    <p class="eyebrow">{{upper:edit:copy:welcome_eyebrow}}</p>
+    <h2 class="statement">{{em:edit:copy:welcome_title}}</h2>
+    <img class="divider" src="/templates/golden-butterfly/assets/divider.svg" alt="">
+    <p class="invitation-text">{{edit:closing_note}}</p>
+    <!--if date-->
+    <div class="countdown" role="timer" aria-live="off" data-countdown="{{date_iso}}">
+      <div><strong data-cd="days">—</strong><span>days</span></div>
+      <div><strong data-cd="hours">—</strong><span>hours</span></div>
+      <div><strong data-cd="minutes">—</strong><span>minutes</span></div>
+      <div><strong data-cd="seconds">—</strong><span>seconds</span></div>
+    </div>
+    <!--/if-->
+  </div>
+</section>
+
+<!--part:story-->
+<section class="story" data-tpl-section="story" data-section="story">
+  <div class="wrap story-layout">
+    <div class="story-art" aria-hidden="true" data-reveal="fade">
+      <div class="flight"><img class="story-butterfly" src="/templates/golden-butterfly/assets/butterfly-1.svg" alt=""><i></i><i></i><i></i></div>
+    </div>
+    <div class="story-copy" data-reveal>
+      <p class="eyebrow">{{upper:edit:copy:story_eyebrow}}</p>
+      <h2 class="title">{{edit:copy:story_signoff}}<em>{{edit:names}}</em></h2>
+      <div class="paras"><!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p>{{.}}</p><!--/each--><!--if editable--></span><!--/if--></div>
+      <!--if date-->
+      <div class="points">
+        <div><strong>{{day}} {{month_long}}</strong><span>{{upper:copy:point_day}}</span></div>
+        <div><strong>{{year}}</strong><span>{{upper:copy:point_year}}</span></div>
+      </div>
+      <!--/if-->
+    </div>
+  </div>
+</section>
+
+<!--part:functions-->
+<section class="venues" data-tpl-section="details" data-section="functions">
+  <img class="orn tl" src="/templates/golden-butterfly/assets/ornament.webp" alt="" aria-hidden="true"><img class="orn tr" src="/templates/golden-butterfly/assets/ornament.webp" alt="" aria-hidden="true"><img class="orn bl" src="/templates/golden-butterfly/assets/ornament.webp" alt="" aria-hidden="true"><img class="orn br" src="/templates/golden-butterfly/assets/ornament.webp" alt="" aria-hidden="true">
+  <div class="wrap">
+    <div class="heading" data-reveal>
+      <p class="eyebrow">{{upper:edit:copy:details_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:details_title}}</h2>
+      <p class="lead">{{edit:copy:details_lead}}</p>
+      <!--if venue--><p class="where">{{edit:venue}}<!--if place-->, {{edit:place}}<!--/if--></p><!--/if-->
+    </div>
+    <div class="venue-grid">
+      <!--each events--><article class="venue-card" data-reveal>
+        <p class="venue-number">{{n}} · {{edit:event_title}}</p>
+        <img class="card-art" src="/templates/golden-butterfly/assets/butterfly-2.svg" alt="" aria-hidden="true">
+        <!--if venue--><h3>{{edit:event_venue}}</h3><!--/if-->
+        <!--if date_text--><p class="when">{{date_text}}</p><!--/if-->
+        <p class="time-note"><!--if time_text-->{{time_text}}<!--else-->{{copy:time_unknown}}<!--/if--></p>
+        <!--if map--><a class="btn dark" href="{{map}}" target="_blank" rel="noopener noreferrer">{{copy:directions}} ↗</a><!--/if-->
+      </article><!--/each-->
+    </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
+  </div>
+</section>
+
+<!--part:gallery-->
+<section class="gallery" data-tpl-section="gallery" data-section="gallery">
+  <div class="wrap">
+    <div class="heading" data-reveal>
+      <p class="eyebrow">{{upper:edit:copy:gallery_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:gallery_title}}</h2>
+      <p class="lead">{{edit:copy:gallery_lead}}</p>
+    </div>
+    <div class="photo-grid">
+      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each-->
+    </div>
+  </div>
+</section>
+
+<!--part:rsvp-->
+<section class="rsvp" data-tpl-section="rsvp" data-section="rsvp">
+  <div class="wrap narrow">
+    <div class="heading" data-reveal>
+      <p class="eyebrow">{{upper:edit:copy:rsvp_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:rsvp_title}}</h2>
+      <p class="lead">{{edit:copy:rsvp_intro}}</p>
+    </div>
+    <div class="reply" data-reveal style="--rd:.3s"><!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if--></div>
+  </div>
+</section>
+
+<!--part:footer-->
+<footer class="site-footer">
+  <p class="eyebrow">{{upper:edit:copy:footer_eyebrow}}</p>
+  <p class="footer-names" style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <i>&amp;</i> {{edit:b}}<!--/if--></p>
+  <p class="footer-date">{{footer_line}}</p>
+  <div class="footer-links">
+    <button type="button" data-scroll-to="home">{{upper:copy:footer_top}} ↑</button>
+    <!--if intro--><button type="button" data-intro-replay>{{upper:copy:closing_replay}}</button><!--/if-->
+    <button type="button" data-scroll-to="rsvp">{{upper:copy:nav_rsvp}}</button>
+  </div>
+  <p class="footer-made">{{upper:edit:copy:footer_made}}</p>
+</footer>

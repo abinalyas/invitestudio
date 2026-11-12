@@ -68,6 +68,7 @@ export const LAUNCH_TEMPLATE_IDS = Object.freeze([
   'bloom-reveal',
   'velvet-reveal',
   'under-the-same-moon',
+  'golden-butterfly',
 ]);
 
 export function isLaunchTemplate(id) {

@@ -420,6 +420,21 @@ export const galleryTemplates: GalleryTemplate[] = [
     image: "/assets/templates/under-the-same-moon-wide.jpg",
     phone: "/assets/templates/under-the-same-moon-phone.jpg",
   },
+  {
+    id: 21,
+    backendId: "golden-butterfly",
+    title: "Golden Butterfly",
+    names: "Priya & Daniel",
+    tagline: "A short film of golden butterflies opens a black-and-gold invitation, with floating butterflies and a countdown.",
+    tags: ["Cinematic", "Romantic"],
+    opening: {
+      name: "Butterfly film",
+      text: "A short film of golden butterflies plays first, then your names over gold light with butterflies drifting past, a countdown, your note, your venues on ivory paper and a reply button.",
+    },
+    palette: ["#090806", "#c7a56a", "#f2eadb"],
+    image: "/assets/templates/golden-butterfly-wide.jpg",
+    phone: "/assets/templates/golden-butterfly-phone.jpg",
+  },
 ]
 
 // What a couple can change on any of these templates, and what guests see. Taken from the editor

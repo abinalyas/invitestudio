@@ -423,6 +423,16 @@ Converted from a React and Vite prototype (a moonlit wedding invitation with a s
 - **Sections**: cover, invitation with the date foil, story over a lantern night with fireflies, events (with a corner ornament on each card), a countdown band (inside the events part, drawn only when there is a date), gallery, reply and closing. 37 wording keys, all editable; click-to-edit and "+ Add an event" from the start.
 - **Removed**: the gallery lightbox and the RSVP form (scripts; the platform draws the Reply button), the hard-coded venues, times and names, and the Google Fonts request (self-hosted Cormorant Garamond and DM Sans replace Italiana and Manrope).
 
+### 15.9 Ninth template: Golden Butterfly (implemented)
+
+Converted from a single-file static prototype (black and gold, an opening film of golden butterflies, floating butterfly artwork). What the conversion did:
+
+- **Opening**: a timed film opening like Under the Same Moon's (section 15.8): the `intro` part holds a muted `<video data-src-wide>` and a Skip button, the manifest's `intro.duration` (7.5 s) is the film's length, and the platform lifts it when the film ends, on Skip, or after that time. The prototype's "ending" black fade became the platform's fade-out. Its autoplay-retry and "tap to enter" fallbacks are gone: a muted film is allowed to autoplay, and if it cannot play the timer lifts the opening.
+- **Cover**: gold bokeh, drifting dust, four corner ornaments (one WebP, mirrored in CSS) and three butterflies that float; the cover's animations are held while the opening is up.
+- **Sections**: the celebration (statement and a live countdown), a note from the couple with the flying butterfly, the venues on ivory paper (one card for each of the couple's own events; the prototype's two venue drawings were specific to its venues and are replaced by a small butterfly), gallery, reply and closing. 31 wording keys, all editable; click-to-edit and "+ Add an event" from the start.
+- **Removed**: the gallery lightbox, the sound button, the demo RSVP form (the platform draws the Reply button), the hard-coded venues, times and names, and the Google Fonts request.
+- **Artwork**: five small SVGs (butterflies, dust, divider), five WebP backgrounds and ornaments, and the film re-encoded (about 0.9 MB, from 1.9 MB).
+
 ## Click-to-edit markers (editor preview only)
 
 In the editor preview the couple can click text to edit it in place. A template opts a piece of text in with an `edit:` marker; the published page renders the same text with no extra markup.
