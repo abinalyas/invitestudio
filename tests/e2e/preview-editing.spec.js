@@ -3,7 +3,7 @@
 const zlib = require('node:zlib');
 const { test, expect, devices } = require('@playwright/test');
 
-const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'blue-hydrangea', 'bloom-reveal', 'velvet-reveal', 'under-the-same-moon', 'golden-butterfly'];
+const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'blue-hydrangea', 'bloom-reveal', 'velvet-reveal', 'under-the-same-moon', 'golden-butterfly', 'cherry-blossom'];
 const SCENES = ['savanna-sunset', 'palmera-beach', 'curtain-call', 'lunaria-moon'];
 const ALL = [...PACKAGED, ...SCENES];
 
@@ -386,4 +386,35 @@ test('Golden Butterfly: click to start plays the film, it lifts by itself, and t
   await expect.poll(intro, { timeout: 20000 }).toMatchObject({ done: true, locked: false });
   const days = await screen.evaluate(el => el.shadowRoot.querySelector('[data-cd="days"]').textContent);
   expect(days).toMatch(/^\d+$/);
+});
+
+// Cherry Blossom: a timed film opening, then a date that stays hidden until the blossoms are tapped three times.
+test('Cherry Blossom: the film lifts by itself, and three taps on the blossoms uncover the date', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/22'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  const intro = () => screen.evaluate(el => {
+    const node = el.shadowRoot.querySelector('[data-intro]');
+    const video = node && node.querySelector('video');
+    return node && { waiting: node.hasAttribute('data-wait'), done: node.hasAttribute('data-done'), src: video ? video.getAttribute('src') : null };
+  });
+  await expect.poll(intro).toMatchObject({ waiting: true, done: false, src: null });
+  await screen.getByText('Click to start').click();
+  await expect.poll(intro).toMatchObject({ waiting: false, src: '/templates/cherry-blossom/assets/opening.mp4' });
+  await expect.poll(intro, { timeout: 20000 }).toMatchObject({ done: true });
+  const state = () => screen.evaluate(el => {
+    const z = el.shadowRoot.querySelector('[data-tap]');
+    const date = z.querySelector('.cb-hero-date');
+    return { tapped: z.getAttribute('data-tapped'), done: z.hasAttribute('data-tap-done'), dateShown: getComputedStyle(date).display !== 'none', hint: z.querySelector('[data-tap-hint]').textContent };
+  });
+  expect(await state()).toMatchObject({ tapped: '0', done: false, dateShown: false });
+  const button = screen.locator('[data-tap-button]');
+  await button.click();
+  expect(await state()).toMatchObject({ tapped: '1', done: false, dateShown: false, hint: 'Just 2 more taps…' });
+  await button.click();
+  expect(await state()).toMatchObject({ tapped: '2', hint: 'Just 1 more tap…' });
+  await button.click();
+  expect(await state()).toMatchObject({ tapped: '3', done: true, dateShown: true, hint: 'A date to remember' });
 });

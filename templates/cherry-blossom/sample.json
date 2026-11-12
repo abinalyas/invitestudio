@@ -1,0 +1,27 @@
+{
+  "title": "Hannah & Theo",
+  "date": "2027-08-24",
+  "location": "Rosewood Hall, Winchester, Hampshire",
+  "message": "We would be so happy to have you with us as we make it official, celebrate our families, and dance into everything that comes next.",
+  "hosts": "Together with our families",
+  "story": "From a chance meeting to a thousand small moments, our story has become our favourite place to be. Now, with the people we love close by, we’re ready for the next chapter.\n\nWe would be so happy to have you with us as we make it official, celebrate our families, and dance into everything that comes next.",
+  "functions": [
+    {
+      "title": "The ceremony",
+      "date": "2027-08-24",
+      "time": "",
+      "venue": "Rosewood Hall",
+      "directionsUrl": "https://maps.google.com/?q=Rosewood+Hall+Winchester",
+      "visible": true
+    },
+    {
+      "title": "The reception",
+      "date": "2027-08-24",
+      "time": "18:30",
+      "venue": "The Orangery, Winchester",
+      "directionsUrl": "https://maps.google.com/?q=The+Orangery+Winchester",
+      "visible": true
+    }
+  ],
+  "photos": []
+}
