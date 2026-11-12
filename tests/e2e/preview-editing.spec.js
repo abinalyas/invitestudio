@@ -418,3 +418,45 @@ test('Cherry Blossom: the film lifts by itself, and three taps on the blossoms u
   await button.click();
   expect(await state()).toMatchObject({ tapped: '3', done: true, dateShown: true, hint: 'A date to remember' });
 });
+
+// Background music: a round on/off button, started by the first touch, remembered when turned off, stopped when the page is left.
+test('music: the first tap starts the track, the button turns it off and on, the choice is remembered, and leaving the page stops it', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.addInitScript(() => {
+    window.__audio = { plays: [], pauses: 0 };
+    HTMLMediaElement.prototype.play = function () { window.__audio.plays.push(this.getAttribute('data-src') || this.currentSrc); Object.defineProperty(this, 'paused', { value: false, configurable: true }); this.dispatchEvent(new Event('playing')); return Promise.resolve(); };
+    HTMLMediaElement.prototype.pause = function () { window.__audio.pauses++; Object.defineProperty(this, 'paused', { value: true, configurable: true }); this.dispatchEvent(new Event('pause')); };
+  });
+  const open = async () => {
+    await page.goto('/');
+    await page.evaluate(() => { history.pushState({}, '', '/templates/18'); state.page = 'home'; render(); });
+    await expect(page.locator('.figma-island-host .detail-screen')).toBeVisible();
+  };
+  await open();
+  const screen = page.locator('.figma-island-host .detail-screen');
+  const toggle = () => screen.evaluate(el => { const b = el.shadowRoot.querySelector('[data-sound-toggle]'); return { state: b.getAttribute('data-sound'), pressed: b.getAttribute('aria-pressed'), label: b.getAttribute('aria-label'), src: b.getAttribute('data-sound-src') }; });
+  // Before any touch the page is silent and the button says so.
+  expect(await toggle()).toMatchObject({ state: 'off', pressed: 'false', label: 'Turn the music on', src: '/assets/music/romantic-piano.mp3' });
+  expect(await page.evaluate(() => window.__audio.plays.length)).toBe(0);
+  // The first tap anywhere in the page (here, the opening's own "Click to start") starts the music.
+  await screen.getByText('Click to start').click();
+  await expect.poll(toggle).toMatchObject({ state: 'on', pressed: 'true', label: 'Turn the music off' });
+  expect(await page.evaluate(() => window.__audio.plays)).toEqual(['/assets/music/romantic-piano.mp3']);
+  // The button turns it off, and the choice is remembered.
+  await screen.locator('[data-sound-toggle]').click();
+  await expect.poll(toggle, { timeout: 5000 }).toMatchObject({ state: 'off', pressed: 'false' });
+  expect(await page.evaluate(() => localStorage.getItem('invitestudio-sound'))).toBe('off');
+  // A new visit stays silent after a tap, until the guest turns the music on again.
+  await open();
+  await screen.getByText('Click to start').click();
+  await page.waitForTimeout(400);
+  expect(await toggle()).toMatchObject({ state: 'off' });
+  expect(await page.evaluate(() => window.__audio.plays.length)).toBe(0);
+  await screen.locator('[data-sound-toggle]').click();
+  await expect.poll(toggle).toMatchObject({ state: 'on' });
+  expect(await page.evaluate(() => localStorage.getItem('invitestudio-sound'))).toBe('on');
+  // Leaving the page stops it.
+  const before = await page.evaluate(() => window.__audio.pauses);
+  await page.evaluate(() => { history.pushState({}, '', '/'); state.page = 'home'; render(); });
+  await expect.poll(() => page.evaluate(() => window.__audio.pauses)).toBeGreaterThan(before);
+});

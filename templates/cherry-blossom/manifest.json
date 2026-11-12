@@ -4,6 +4,7 @@
   "version": 1,
   "root": "tpl-cb",
   "prefix": "cb-",
+  "music": { "src": "/assets/music/romantic-piano.mp3", "volume": 0.35 },
   "sections": [
     "hero",
     "story",

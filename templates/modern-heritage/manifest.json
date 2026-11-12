@@ -4,6 +4,7 @@
   "version": 1,
   "root": "tpl-mh",
   "prefix": "mh-",
+  "music": { "src": "/assets/music/wedding-music-1.mp3", "volume": 0.35 },
   "sections": ["hero", "welcome", "story", "functions", "gallery", "rsvp"],
   "fonts": ["Cormorant Garamond", "Libre Baskerville"],
   "contrast": [["#433b32", "#f4eedf", "ink on ivory"], ["#6f6554", "#f4eedf", "muted on ivory"], ["#34493a", "#f4eedf", "green on ivory"], ["#7a6539", "#f4eedf", "gold text on ivory"], ["#7a6539", "#f8f3e9", "gold text on paper"], ["#6f6554", "#f8f3e9", "muted on paper"], ["#f4eedf", "#34493a", "ivory on green"], ["#d0b98a", "#34493a", "light gold on green"], ["#d7c8aa", "#34493a", "pale on green"], ["#e5d9c4", "#34493a", "note on green"], ["#d0b98a", "#26372c", "light gold on footer"], ["#b39c72", "#26372c", "footer small"], ["#e9dfcb", "#26372c", "footer text"], ["#e9dfcb", "#34493a", "banner"]],

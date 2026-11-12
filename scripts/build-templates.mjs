@@ -78,7 +78,9 @@ export function loadTemplates() {
     const base = join(dir, d.name);
     const manifest = JSON.parse(readFileSync(join(base, 'manifest.json'), 'utf8'));
     const parts = splitParts(readFileSync(join(base, 'template.html'), 'utf8'));
-    const css = scopeCss(readFileSync(join(base, 'template.css'), 'utf8'), manifest.root, manifest.prefix);
+    // Every template also gets the platform's sound button styles (templates/_shared/sound.css).
+    const shared = readFileSync(join(dir, '_shared/sound.css'), 'utf8');
+    const css = scopeCss(readFileSync(join(base, 'template.css'), 'utf8') + '\n' + shared, manifest.root, manifest.prefix);
     for (const name of Object.keys(parts)) parts[name] = prefixClasses(parts[name], manifest.prefix);
     return { manifest, parts, css };
   });
