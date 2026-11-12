@@ -3,7 +3,7 @@
 const zlib = require('node:zlib');
 const { test, expect, devices } = require('@playwright/test');
 
-const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'blue-hydrangea', 'bloom-reveal', 'velvet-reveal', 'under-the-same-moon'];
+const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'blue-hydrangea', 'bloom-reveal', 'velvet-reveal', 'under-the-same-moon', 'golden-butterfly'];
 const SCENES = ['savanna-sunset', 'palmera-beach', 'curtain-call', 'lunaria-moon'];
 const ALL = [...PACKAGED, ...SCENES];
 
@@ -366,4 +366,24 @@ test('Under the Same Moon: click to start plays the film, it lifts by itself, an
   await expect.poll(zone).toEqual({ armed: true, scratched: false });
   await screen.getByRole('button', { name: /reveal the date/i }).click();
   await expect.poll(zone).toMatchObject({ scratched: true });
+});
+
+// Golden Butterfly: a timed film opening (no button) on the template page, then the countdown.
+test('Golden Butterfly: click to start plays the film, it lifts by itself, and the countdown runs', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/21'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  const intro = () => screen.evaluate(el => {
+    const node = el.shadowRoot.querySelector('[data-intro]');
+    const video = node && node.querySelector('video');
+    return node && { waiting: node.hasAttribute('data-wait'), done: node.hasAttribute('data-done'), locked: getComputedStyle(el).overflow === 'hidden', src: video ? video.getAttribute('src') : null };
+  });
+  await expect.poll(intro).toMatchObject({ waiting: true, done: false, locked: true, src: null });
+  await screen.getByText('Click to start').click();
+  await expect.poll(intro).toMatchObject({ waiting: false, src: '/templates/golden-butterfly/assets/intro.mp4' });
+  await expect.poll(intro, { timeout: 20000 }).toMatchObject({ done: true, locked: false });
+  const days = await screen.evaluate(el => el.shadowRoot.querySelector('[data-cd="days"]').textContent);
+  expect(days).toMatch(/^\d+$/);
 });

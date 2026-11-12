@@ -1,0 +1,176 @@
+/* Golden Butterfly. Plain page CSS; scripts/build-templates.mjs scopes it under .tpl-gb and prefixes class names.
+ * Layout responds to the width of the invitation (container queries, cqw), not the browser window. */
+@font-face{font-family:"Cormorant Garamond";font-weight:400;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/cormorant-garamond-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"Cormorant Garamond";font-weight:400;font-style:italic;font-display:swap;src:url("/assets/scene-fonts/cormorant-garamond-latin-400-italic.woff2") format("woff2")}
+@font-face{font-family:"Cormorant Garamond";font-weight:500;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/cormorant-garamond-latin-500-normal.woff2") format("woff2")}
+@font-face{font-family:"DM Sans";font-weight:400;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/dm-sans-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"DM Sans";font-weight:500;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/dm-sans-latin-500-normal.woff2") format("woff2")}
+
+*{box-sizing:border-box}
+:root{--ink:#090806;--ink2:#14110c;--gold:#c7a56a;--gold2:#e8d2a5;--cream:#f2eadb;--muted:#b7aa93;--line:rgba(210,180,125,.34);--paper-ink:#211b12;--paper-gold:#765b32;--paper-muted:#5f523d;--ease:cubic-bezier(.22,1,.36,1);--serif:"Cormorant Garamond",Georgia,serif;--sans:"DM Sans",system-ui,sans-serif;
+  container-type:inline-size;position:relative;width:100%;margin:0;background:var(--ink);color:var(--cream);font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.6;letter-spacing:.02em;overflow:clip}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+h1,h2,h3,p,figure{margin-top:0}
+figure{margin:0;padding:0}
+svg{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+[data-tpl-section]{scroll-margin-top:72px}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
+
+/* motion: scroll reveals are driven by the platform (data-reveal); content stays visible without it */
+[data-reveal]{transition:opacity .9s ease var(--rd,0s),transform .9s ease var(--rd,0s)}
+[data-reveal-armed]:not([data-revealed]){opacity:0;transform:translateY(28px)}
+[data-reveal="fade"][data-reveal-armed]:not([data-revealed]){transform:none}
+[data-reveal="scale"][data-reveal-armed]:not([data-revealed]){transform:scale(.96)}
+@keyframes float{0%,100%{transform:translate3d(0,0,0) rotate(-8deg)}50%{transform:translate3d(18px,-28px,0) rotate(9deg)}}
+@keyframes drift{0%,100%{transform:translate3d(0,8px,0) rotate(-4deg)}25%{transform:translate3d(16px,-18px,0) rotate(3deg)}55%{transform:translate3d(-10px,-30px,0) rotate(-2deg)}78%{transform:translate3d(-18px,-5px,0) rotate(5deg)}}
+@keyframes flutter{0%,100%{transform:perspective(700px) rotateY(0) scale(1)}50%{transform:perspective(700px) rotateY(24deg) scale(.96,1.02)}}
+@keyframes speck{0%,100%{transform:translate3d(0,14px,0) scale(.5);opacity:0}45%{opacity:.8}75%{transform:translate3d(10px,-26px,0) scale(1.2);opacity:.25}}
+@keyframes cue{0%{transform:scaleY(.3);transform-origin:top;opacity:.2}50%{transform:scaleY(1);opacity:1}100%{transform:scaleY(.3);transform-origin:bottom;opacity:.2}}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.45),0 0 0 0 rgba(199,165,106,.5)}50%{box-shadow:0 8px 22px rgba(0,0,0,.45),0 0 0 9px rgba(199,165,106,0)}}
+
+/* opening: a short film of golden butterflies; it lifts when it ends (or on Skip), the platform fades it out */
+.intro{position:sticky;top:0;z-index:60;height:var(--intro-h,640px);margin-bottom:calc(var(--intro-h,640px) * -1);background:#030302;overflow:hidden;opacity:1;transition:opacity 1.1s ease}
+.intro[data-leaving]{opacity:0;pointer-events:none}
+.intro[data-done]{display:none}
+.intro-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:#030302}
+.intro-skip{position:absolute;right:max(16px,3cqw);bottom:max(18px,3cqw);z-index:3;padding:10px 14px;border:1px solid rgba(214,189,138,.4);background:rgba(8,7,5,.4);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#e8d2a5;font:500 .58rem/1 var(--sans);letter-spacing:.18em}
+.intro-skip:hover,.intro-skip:focus-visible{background:#c7a56a;color:#090806}
+.intro[data-wait] .intro-skip{display:none}
+.intro-start{position:absolute;top:14px;left:50%;translate:-50% 0;z-index:3;display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;background:var(--gold);color:#090806;font:500 .62rem/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;box-shadow:0 8px 22px rgba(0,0,0,.45);animation:pulse 1.8s ease-in-out infinite}
+.intro-start svg{width:14px;height:14px;fill:currentColor;stroke:none}
+.intro:not([data-wait]) .intro-start{display:none}
+
+/* header */
+.site-header{position:sticky;top:0;z-index:40;height:68px;padding:0 5cqw;display:flex;align-items:center;justify-content:space-between;background:rgba(9,8,6,.88);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.brand{font:400 1.45rem/1 var(--serif);letter-spacing:.12em;color:var(--gold2)}
+.brand span{font-size:.7em;color:#c7a56a;padding:0 .25em}
+.nav{display:flex;align-items:center;gap:clamp(16px,2.6cqw,30px)}
+.nav button{font:400 .65rem/1 var(--sans);letter-spacing:.18em;color:var(--cream);opacity:.8;padding:12px 0;transition:color .2s,opacity .2s}
+.nav button:hover,.nav button:focus-visible{color:var(--gold2);opacity:1}
+.menu-toggle{display:none;color:var(--gold2)}
+.menu-toggle svg{width:24px;height:24px}
+.menu-toggle .icon-close{display:none}
+.menu-toggle[aria-expanded="true"] .icon-open{display:none}
+.menu-toggle[aria-expanded="true"] .icon-close{display:block}
+
+/* cover: gold bokeh, drifting dust, corner ornaments and three butterflies; held until the opening has lifted */
+.hero{position:relative;isolation:isolate;min-height:clamp(680px,64cqw,900px);display:grid;place-items:center;text-align:center;overflow:clip;background:linear-gradient(rgba(8,7,5,.6),rgba(8,7,5,.73)),url("/templates/golden-butterfly/assets/bokeh.webp") center/cover,#090806}
+.hero:before{content:"";position:absolute;inset:16px;border:1px solid var(--line);pointer-events:none;z-index:1}
+.hero:after{content:"";position:absolute;inset:24px;border:1px solid rgba(199,165,106,.13);pointer-events:none;z-index:1}
+.intro:not([data-done])~.hero *{animation-play-state:paused}
+.hero[data-still] *{animation:none!important}
+.particles,.particles-extra{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen}
+.particles{background:url("/templates/golden-butterfly/assets/dust.svg") center/cover;opacity:.22}
+.particles-extra{background:url("/templates/golden-butterfly/assets/particles.webp") center/cover;opacity:.12}
+.orn{position:absolute;width:clamp(76px,11cqw,150px);height:auto;opacity:.58;pointer-events:none;z-index:1}
+.tl{top:0;left:0}
+.tr{top:0;right:0;transform:scaleX(-1)}
+.bl{bottom:0;left:0;transform:scaleY(-1)}
+.br{bottom:0;right:0;transform:scale(-1,-1)}
+.butterfly{position:absolute;width:clamp(44px,7cqw,92px);opacity:.68;filter:drop-shadow(0 0 14px rgba(233,200,123,.4));animation:float 9s ease-in-out infinite;pointer-events:none}
+.b1{top:23%;left:12%;animation-delay:-2s}
+.b2{right:13%;top:34%;width:55px;animation-delay:-5s}
+.b3{bottom:18%;left:24%;width:42px;animation-delay:-7s}
+.hero-copy{position:relative;z-index:2;width:min(900px,100%);padding:90px 6cqw 80px;animation:rise 1.2s var(--ease) .2s both}
+.eyebrow{font:500 .68rem/1.6 var(--sans);letter-spacing:.32em;color:var(--gold);margin:0}
+.hero h1{margin:26px 0 16px;font:300 min(clamp(3.8rem,12cqw,9rem),calc(165cqw / var(--nl,8)))/.8 var(--serif);letter-spacing:.04em;color:#f3e4c4}
+.hero h1 .name{display:block}
+.hero h1 .amp{display:block;margin:.4em 0;font-size:.38em;letter-spacing:.32em}
+.hero-date{margin:0;font:italic 400 clamp(1.1rem,2.6cqw,1.3rem)/1.5 var(--serif);letter-spacing:.2em;color:var(--gold2)}
+.hero-note{margin:26px 0 30px;font:400 .72rem/1.7 var(--sans);letter-spacing:.18em;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:14px 24px;border:1px solid var(--gold);color:var(--gold2);font:500 .68rem/1.4 var(--sans);letter-spacing:.16em;text-transform:uppercase;transition:background .35s,color .35s,box-shadow .35s}
+.btn:hover,.btn:focus-visible{background:var(--gold);color:#090806;box-shadow:0 0 30px rgba(199,165,106,.25)}
+.scroll-cue{position:absolute;left:50%;bottom:30px;z-index:2;translate:-50% 0;margin:0;font:500 .58rem/1.6 var(--sans);letter-spacing:.28em;color:var(--muted)}
+.scroll-cue:after{content:"";display:block;width:1px;height:34px;background:var(--gold);margin:10px auto 0;animation:cue 1.7s infinite}
+
+/* sections */
+.celebration,.story,.venues,.gallery,.rsvp{position:relative;padding:clamp(64px,10cqw,112px) 6cqw;overflow:clip}
+.wrap{width:min(1100px,100%);margin:0 auto}
+.wrap.narrow{width:min(760px,100%)}
+.celebration{text-align:center;background:linear-gradient(120deg,#15120d,#080705 65%)}
+.statement{margin:24px auto;max-width:850px;font:300 clamp(2.2rem,5.4cqw,4.4rem)/1.08 var(--serif);color:#eadcc0;overflow-wrap:anywhere}
+.statement em,.title em{font-style:italic;color:var(--gold2)}
+.statement em{display:block}
+.divider{width:170px;height:20px;object-fit:contain;margin:24px auto;opacity:.85}
+.invitation-text{max-width:620px;margin:20px auto;color:var(--muted);line-height:1.9;font-size:.92rem}
+.countdown{display:flex;justify-content:center;gap:clamp(18px,5cqw,70px);margin-top:48px}
+.countdown div{min-width:60px}
+.countdown strong{display:block;font:300 clamp(2.4rem,5.4cqw,4rem)/1.1 var(--serif);color:var(--gold2)}
+.countdown span{font:500 .58rem/1.6 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.title{margin:18px 0;font:300 clamp(2.6rem,6cqw,4.8rem)/1 var(--serif);color:inherit;overflow-wrap:anywhere}
+.heading{text-align:center;margin:0 auto 52px;max-width:660px}
+.lead{margin:0 auto;max-width:34rem;color:var(--muted);font-size:.88rem;line-height:1.8}
+
+/* a note from us */
+.story{background:#0d0b08 url("/templates/golden-butterfly/assets/silk.webp") center/cover}
+.story-layout{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(36px,7cqw,70px);align-items:center}
+.story-art{display:grid;place-items:center;min-height:380px;position:relative}
+.flight{position:relative;width:min(72%,390px);height:340px;display:grid;place-items:center;animation:drift 8s ease-in-out infinite}
+.flight:before{content:"";position:absolute;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,rgba(216,180,109,.11) 0,rgba(216,180,109,.03) 48%,transparent 72%);filter:blur(8px)}
+.story-butterfly{position:relative;z-index:2;width:min(100%,340px);filter:drop-shadow(0 0 16px rgba(208,168,93,.4)) drop-shadow(0 0 38px rgba(208,168,93,.13));animation:flutter 1.35s ease-in-out infinite;transform-origin:50% 48%}
+.flight i{position:absolute;width:4px;height:4px;border-radius:50%;background:#e8d2a5;box-shadow:0 0 12px 3px rgba(215,180,107,.5);opacity:0;animation:speck 4.5s ease-in-out infinite}
+.flight i:nth-of-type(1){left:16%;top:60%;animation-delay:-1.2s}
+.flight i:nth-of-type(2){right:12%;top:35%;animation-delay:-3s}
+.flight i:nth-of-type(3){left:32%;top:20%;animation-delay:-2.1s}
+.story-copy{text-align:left}
+.story-copy .title{color:var(--cream)}
+.story-copy .title em{display:block}
+.paras p{margin:0 0 1.2em;color:var(--muted);line-height:2;font-size:.92rem;white-space:pre-line;overflow-wrap:anywhere}
+.points{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:30px}
+.points div{border-top:1px solid var(--line);padding-top:14px}
+.points strong{display:block;margin-bottom:5px;font:400 1.4rem/1.3 var(--serif);color:var(--gold2)}
+.points span{font:500 .62rem/1.5 var(--sans);letter-spacing:.14em;color:var(--muted)}
+
+/* venues on ivory paper */
+.venues{background:#eae0ce url("/templates/golden-butterfly/assets/paper.webp") center/cover;color:var(--paper-ink);text-align:center}
+.venues .orn{opacity:.22;filter:sepia(.25)}
+.venues .wrap{position:relative}
+.venues .eyebrow{color:var(--paper-gold)}
+.venues .title{color:var(--paper-ink)}
+.venues .title em{color:var(--paper-gold)}
+.venues .lead{color:var(--paper-muted)}
+.where{margin:14px 0 0;font:500 1.2rem/1.4 var(--serif);color:var(--paper-ink)}
+.venue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:26px}
+.venue-card{position:relative;padding:34px 28px 32px;text-align:center;background:rgba(246,240,230,.67);border:1px solid rgba(158,131,91,.4);transition:transform .4s,box-shadow .4s}
+.venue-card:hover{transform:translateY(-6px);box-shadow:0 20px 45px rgba(90,69,32,.1)}
+.venue-number{margin:0;font:italic 400 1.05rem/1.4 var(--serif);color:var(--paper-gold);overflow-wrap:anywhere}
+.card-art{width:96px;height:auto;margin:18px auto 14px}
+.venue-card h3{margin:10px 0;font:500 1.65rem/1.2 var(--serif);letter-spacing:.04em;color:var(--paper-ink);overflow-wrap:anywhere}
+.venue-card .when{margin:0;font:400 .84rem/1.7 var(--sans);color:var(--paper-muted)}
+.time-note{margin:6px 0 18px;font:500 .66rem/1.6 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--paper-gold)}
+.btn.dark{color:var(--paper-gold);border-color:rgba(118,91,50,.6)}
+.btn.dark:hover,.btn.dark:focus-visible{background:var(--paper-gold);color:#f2eadb}
+
+/* gallery */
+.gallery{background:#14110c;text-align:center}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px}
+.tile{position:relative;aspect-ratio:4/5;overflow:clip;background:#211a0e}
+.tile:after{content:"";position:absolute;inset:0;border:1px solid rgba(208,180,123,.33);pointer-events:none}
+.tile img{width:100%;height:100%;object-fit:cover;transition:transform .8s}
+.tile:hover img{transform:scale(1.05)}
+.tile .photo-ph{display:grid;place-items:center;height:100%;padding:16px;font:italic 400 1.2rem/1.3 var(--serif);color:var(--gold2)}
+
+/* reply */
+.rsvp{text-align:center;background:linear-gradient(rgba(8,7,5,.87),rgba(8,7,5,.93)),url("/templates/golden-butterfly/assets/satin.webp") center/cover,#090806}
+.reply{text-align:center;margin-top:10px}
+.rsvp-status{font:italic 400 1.15rem/1.5 var(--serif);margin:0}
+.rsvp-link{text-decoration:underline;color:var(--gold2)}
+.rsvp-open{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 34px;background:var(--gold);color:#100e09;font:500 .7rem/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;transition:background .25s}
+.rsvp-open:hover,.rsvp-open:focus-visible{background:var(--gold2)}
+
+/* closing */
+.site-footer{padding:75px 6cqw 40px;text-align:center;background:#070605}
+.footer-names{margin:14px 0 0;font:300 min(clamp(2.8rem,7cqw,5.6rem),calc(150cqw / var(--nl,8)))/1.1 var(--serif);letter-spacing:.06em;color:#ead8b4;overflow-wrap:anywhere}
+.footer-names i{font-size:.55em;color:#c7a56a}
+.footer-date{margin:16px 0 26px;font:400 .66rem/1.6 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.footer-links{display:flex;justify-content:center;gap:22px;flex-wrap:wrap}
+.footer-links button{font:500 .62rem/1.6 var(--sans);letter-spacing:.15em;color:var(--gold2)}
+.footer-links button:hover,.footer-links button:focus-visible{color:var(--cream)}
+.footer-made{margin:50px 0 0;font:400 .56rem/1.6 var(--sans);letter-spacing:.2em;color:var(--muted)}
+
+@container (max-width:800px){.site-header{height:64px}.menu-toggle{display:block}.nav{display:none;position:absolute;top:64px;left:5cqw;right:5cqw;flex-direction:column;align-items:stretch;gap:0;padding:12px 22px 18px;background:rgba(13,11,8,.97);border:1px solid var(--line);text-align:center}.nav[data-open]{display:flex}.nav button{padding:16px 0;border-top:1px solid rgba(210,180,125,.12)}.nav button:first-child{border-top:0}.story-layout{grid-template-columns:1fr}.story-art{min-height:300px}.flight{height:270px}.story-copy{text-align:center}}
+@container (max-width:640px){.hero{min-height:clamp(700px,175cqw,880px)}.hero:before{inset:10px}.hero:after{inset:16px}.b1{left:5%;top:25%}.b2{right:5%;top:30%}.b3{left:13%;bottom:15%}.countdown{gap:16px}.countdown div{min-width:54px}.countdown strong{font-size:2.5rem}.points{gap:14px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}.intro{display:none}}
