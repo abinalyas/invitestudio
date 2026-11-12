@@ -3,7 +3,7 @@
 const zlib = require('node:zlib');
 const { test, expect, devices } = require('@playwright/test');
 
-const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'blue-hydrangea', 'bloom-reveal', 'velvet-reveal'];
+const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'blue-hydrangea', 'bloom-reveal', 'velvet-reveal', 'under-the-same-moon'];
 const SCENES = ['savanna-sunset', 'palmera-beach', 'curtain-call', 'lunaria-moon'];
 const ALL = [...PACKAGED, ...SCENES];
 
@@ -342,4 +342,28 @@ test('template page: the drafts sync finishing late does not reset the phone pre
   // Well after the sync has answered, the opening is still the one the visitor started (still playing, or lifted), never back to waiting.
   await page.waitForTimeout(4000);
   expect(await screen.evaluate(el => { const n = el.shadowRoot.querySelector('[data-intro]'); return !n || !n.hasAttribute('data-wait'); })).toBe(true);
+});
+
+// Under the Same Moon: a short timed video opening that lifts by itself (or on Skip), then the date under gold foil.
+test('Under the Same Moon: click to start plays the film, it lifts by itself, and the foil hides the date', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/20'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  const intro = () => screen.evaluate(el => {
+    const node = el.shadowRoot.querySelector('[data-intro]');
+    const video = node && node.querySelector('video');
+    return node && { waiting: node.hasAttribute('data-wait'), done: node.hasAttribute('data-done'), locked: getComputedStyle(el).overflow === 'hidden', src: video ? video.getAttribute('src') : null };
+  });
+  await expect.poll(intro).toMatchObject({ waiting: true, done: false, locked: true, src: null });
+  await screen.getByText('Click to start').click();
+  await expect.poll(intro).toMatchObject({ waiting: false, src: '/templates/under-the-same-moon/assets/intro.mp4' });
+  // No button to press: the film ends by itself (about six seconds) and the page is free again.
+  await expect.poll(intro, { timeout: 15000 }).toMatchObject({ done: true, locked: false });
+  await screen.evaluate(el => el.shadowRoot.querySelector('[data-tpl-section="invitation"]').scrollIntoView());
+  const zone = () => screen.evaluate(el => { const z = el.shadowRoot.querySelector('[data-scratch]'); return { armed: z.hasAttribute('data-scratch-armed'), scratched: z.hasAttribute('data-scratched') }; });
+  await expect.poll(zone).toEqual({ armed: true, scratched: false });
+  await screen.getByRole('button', { name: /reveal the date/i }).click();
+  await expect.poll(zone).toMatchObject({ scratched: true });
 });

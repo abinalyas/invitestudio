@@ -1,0 +1,165 @@
+<!--part:intro-->
+<div class="intro" data-intro data-intro-ms="{{intro_ms}}"<!--if intro_wait--> data-wait<!--/if--> role="dialog" aria-label="Opening">
+  <div class="intro-stage" aria-hidden="true">
+    <img class="intro-poster" src="/templates/under-the-same-moon/assets/landscape.webp" alt="">
+    <video class="intro-video" muted playsinline preload="none" poster="/templates/under-the-same-moon/assets/landscape.webp" data-src-wide="/templates/under-the-same-moon/assets/intro.mp4" tabindex="-1"></video>
+  </div>
+  <!--if intro_wait--><button class="intro-start" type="button" data-intro-start><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>Click to start</button><!--/if-->
+  <button class="intro-skip" type="button" data-intro-skip>{{copy:intro_skip}} <span aria-hidden="true">↗</span></button>
+</div>
+
+<!--part:header-->
+<header class="site-header">
+  <button class="brand" type="button" data-scroll-to="home" aria-label="{{names}} home">{{ia}}<!--if ib--><span>&amp;</span>{{ib}}<!--/if--></button>
+  <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
+    <svg class="icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    <svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+  <nav class="nav" data-nav aria-label="Main navigation">
+    <!--if welcome--><button type="button" data-scroll-to="invitation">{{copy:nav_invitation}}</button><!--/if-->
+    <!--if story--><button type="button" data-scroll-to="story">{{copy:nav_story}}</button><!--/if-->
+    <!--if events--><button type="button" data-scroll-to="details">{{copy:nav_events}}</button><!--/if-->
+    <!--if show_gallery--><button type="button" data-scroll-to="gallery">{{copy:nav_gallery}}</button><!--/if-->
+    <button type="button" data-scroll-to="rsvp">{{copy:nav_rsvp}}</button>
+  </nav>
+</header>
+
+<!--part:hero-->
+<section class="hero" data-tpl-section="home" data-section="hero"<!--if editable--> data-still<!--/if-->>
+  <div class="hero-photo" aria-hidden="true"></div>
+  <div class="hero-shade" aria-hidden="true"></div>
+  <div class="stars" aria-hidden="true"><i style="left:8%;top:18%;animation-delay:0.00s;--s:2.5px"></i><i style="left:17%;top:36%;animation-delay:-0.73s;--s:1.6px"></i><i style="left:25%;top:12%;animation-delay:-1.46s;--s:1.6px"></i><i style="left:32%;top:27%;animation-delay:-2.19s;--s:1.6px"></i><i style="left:41%;top:9%;animation-delay:-2.92s;--s:1.6px"></i><i style="left:48%;top:33%;animation-delay:-3.65s;--s:2.5px"></i><i style="left:56%;top:17%;animation-delay:-4.38s;--s:1.6px"></i><i style="left:63%;top:29%;animation-delay:-5.11s;--s:1.6px"></i><i style="left:72%;top:11%;animation-delay:-5.84s;--s:1.6px"></i><i style="left:81%;top:34%;animation-delay:0.00s;--s:1.6px"></i><i style="left:91%;top:18%;animation-delay:-0.73s;--s:2.5px"></i><i style="left:13%;top:40%;animation-delay:-1.46s;--s:1.6px"></i><i style="left:23%;top:31%;animation-delay:-2.19s;--s:1.6px"></i><i style="left:37%;top:22%;animation-delay:-2.92s;--s:1.6px"></i><i style="left:68%;top:36%;animation-delay:-3.65s;--s:1.6px"></i><i style="left:78%;top:25%;animation-delay:-4.38s;--s:2.5px"></i><i style="left:89%;top:40%;animation-delay:-5.11s;--s:1.6px"></i><i style="left:54%;top:38%;animation-delay:-5.84s;--s:1.6px"></i><i style="left:6%;top:43%;animation-delay:0.00s;--s:1.6px"></i><i style="left:96%;top:32%;animation-delay:-0.73s;--s:1.6px"></i><i style="left:45%;top:27%;animation-delay:-1.46s;--s:2.5px"></i><i style="left:30%;top:42%;animation-delay:-2.19s;--s:1.6px"></i><i style="left:74%;top:41%;animation-delay:-2.92s;--s:1.6px"></i><i style="left:58%;top:30%;animation-delay:-3.65s;--s:1.6px"></i><i style="left:19%;top:24%;animation-delay:-4.38s;--s:1.6px"></i><i style="left:84%;top:26%;animation-delay:-5.11s;--s:2.5px"></i><i style="left:39%;top:42%;animation-delay:-5.84s;--s:1.6px"></i><i style="left:94%;top:38%;animation-delay:0.00s;--s:1.6px"></i></div>
+  <div class="cloud cloud-far" aria-hidden="true"></div>
+  <div class="cloud cloud-mid" aria-hidden="true"></div>
+  <div class="mist" aria-hidden="true"></div>
+  <div class="hero-content">
+    <p class="eyebrow hero-kicker">{{upper:edit:copy:hero_kicker}}</p>
+    <h1<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}"><span class="name">{{edit:a}}</span><!--if b--><span class="amp">&amp;</span><span class="name">{{edit:b}}</span><!--/if--></h1>
+    <!--if date--><p class="hero-date"<!--if editable--> data-edit="date" data-raw="{{date_iso}}"<!--/if-->>{{day}} {{month_long}} {{year}}</p><!--else--><p class="hero-date">{{edit:date_long}}</p><!--/if-->
+    <!--if events--><button class="hero-save" type="button" data-scroll-to="details">{{copy:hero_save}} <span aria-hidden="true">↘</span></button><!--/if-->
+  </div>
+  <!--if welcome--><button class="cue" type="button" data-scroll-to="invitation"><span>{{upper:copy:cue}}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6.5 13.5 12 19l5.5-5.5"/></svg></button><!--/if-->
+</section>
+
+<!--part:welcome-->
+<section class="invitation" data-tpl-section="invitation" data-section="welcome">
+  <div class="wrap narrow">
+    <div data-reveal>
+      <p class="eyebrow gold">{{upper:edit:copy:invite_eyebrow}}</p>
+      <span class="rule" aria-hidden="true">✳</span>
+      <p class="quote">{{edit:closing_note}}</p>
+      <div class="signature">
+        <span>{{edit:hosts_line}}</span>
+        <strong>{{edit:names}}</strong>
+        <span>{{edit:copy:invite_line}}</span>
+      </div>
+      <img class="flourish" src="/templates/under-the-same-moon/assets/flourish.webp" alt="" loading="lazy">
+    </div>
+    <!--if date-->
+    <div class="stage" data-scratch<!--if editable--> data-scratched<!--/if--> data-scratch-label="{{copy:scratch_label}}">
+      <div class="scratch-card" data-scratch-card>
+        <div class="scratch-date">
+          <span class="scratch-kicker">{{upper:copy:date_kicker}}</span>
+          <span class="scratch-text"<!--if editable--> data-edit="date" data-raw="{{date_iso}}"<!--/if-->>{{date_long}}</span>
+        </div>
+        <span class="shine" aria-hidden="true"></span>
+      </div>
+      <button class="scratch-btn" type="button" data-scratch-reveal>{{copy:reveal_button}}</button>
+    </div>
+    <!--/if-->
+  </div>
+</section>
+
+<!--part:story-->
+<section class="story" data-tpl-section="story" data-section="story">
+  <div class="story-bg" aria-hidden="true"></div>
+  <img class="story-moon" src="/templates/under-the-same-moon/assets/moon.webp" alt="">
+  <div class="fireflies" aria-hidden="true"><i style="left:12%;top:30%;animation-delay:0.00s;animation-duration:7s"></i><i style="left:22%;top:62%;animation-delay:-1.15s;animation-duration:8s"></i><i style="left:31%;top:20%;animation-delay:-2.30s;animation-duration:9s"></i><i style="left:43%;top:76%;animation-delay:-3.45s;animation-duration:10s"></i><i style="left:51%;top:34%;animation-delay:-4.60s;animation-duration:11s"></i><i style="left:62%;top:14%;animation-delay:-5.75s;animation-duration:7s"></i><i style="left:71%;top:63%;animation-delay:-6.90s;animation-duration:8s"></i><i style="left:82%;top:28%;animation-delay:0.00s;animation-duration:9s"></i><i style="left:91%;top:55%;animation-delay:-1.15s;animation-duration:10s"></i><i style="left:18%;top:82%;animation-delay:-2.30s;animation-duration:11s"></i><i style="left:38%;top:47%;animation-delay:-3.45s;animation-duration:7s"></i><i style="left:57%;top:88%;animation-delay:-4.60s;animation-duration:8s"></i><i style="left:75%;top:40%;animation-delay:-5.75s;animation-duration:9s"></i><i style="left:88%;top:78%;animation-delay:-6.90s;animation-duration:10s"></i></div>
+  <div class="wrap narrow story-copy" data-reveal>
+    <p class="eyebrow">{{upper:edit:copy:story_eyebrow}}</p>
+    <h2 class="title">{{em:edit:copy:story_title}}</h2>
+    <div class="paras"><!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p>{{.}}</p><!--/each--><!--if editable--></span><!--/if--></div>
+    <p class="note">{{edit:copy:story_note}} <span>{{edit:names}}</span></p>
+  </div>
+</section>
+
+<!--part:functions-->
+<section class="events" data-tpl-section="details" data-section="functions">
+  <div class="wrap">
+    <div class="heading" data-reveal>
+      <p class="eyebrow gold">{{upper:edit:copy:details_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:details_title}}</h2>
+      <p class="lead">{{edit:copy:details_lead}}</p>
+      <!--if venue--><p class="where">{{edit:venue}}<!--if place-->, {{edit:place}}<!--/if--></p><!--/if-->
+    </div>
+    <div class="event-grid">
+      <!--each events--><article class="event-card" data-reveal>
+        <img class="corner c-tl" src="/templates/under-the-same-moon/assets/corner.webp" alt="" aria-hidden="true"><img class="corner c-tr" src="/templates/under-the-same-moon/assets/corner.webp" alt="" aria-hidden="true"><img class="corner c-bl" src="/templates/under-the-same-moon/assets/corner.webp" alt="" aria-hidden="true"><img class="corner c-br" src="/templates/under-the-same-moon/assets/corner.webp" alt="" aria-hidden="true">
+        <p class="card-top">{{n}} <i>—</i> {{upper:copy:event_tag}}</p>
+        <span class="mark" aria-hidden="true"></span>
+        <h3>{{edit:event_title}}</h3>
+        <!--if date_text--><p class="when">{{date_text}}</p><!--/if-->
+        <!--if venue--><p class="venue">{{edit:event_venue}}</p><!--/if-->
+        <p class="time"><!--if time_text-->{{time_text}}<!--else-->{{copy:time_unknown}}<!--/if--></p>
+        <!--if map--><a class="link" href="{{map}}" target="_blank" rel="noopener noreferrer">{{copy:directions}}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg></a><!--/if-->
+      </article><!--/each-->
+    </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
+  </div>
+</section>
+<!--if date-->
+<section class="countdown" data-tpl-section="countdown">
+  <div class="glow" aria-hidden="true"></div>
+  <div class="wrap" data-reveal>
+    <p class="eyebrow">{{upper:edit:copy:countdown_eyebrow}}</p>
+    <h2 class="title">{{em:edit:copy:countdown_title}}</h2>
+    <div class="timer" role="timer" aria-live="off" data-countdown="{{date_iso}}">
+      <div><strong data-cd="days">—</strong><small>days</small></div>
+      <div><strong data-cd="hours">—</strong><small>hours</small></div>
+      <div><strong data-cd="minutes">—</strong><small>minutes</small></div>
+      <div><strong data-cd="seconds">—</strong><small>seconds</small></div>
+    </div>
+    <p class="countdown-note">{{edit:copy:countdown_note}}</p>
+    <img class="phases" src="/templates/under-the-same-moon/assets/phases.webp" alt="" loading="lazy">
+  </div>
+</section>
+<!--/if-->
+
+<!--part:gallery-->
+<section class="gallery" data-tpl-section="gallery" data-section="gallery">
+  <div class="wrap">
+    <div class="heading" data-reveal>
+      <p class="eyebrow gold">{{upper:edit:copy:gallery_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:gallery_title}}</h2>
+    </div>
+    <div class="photo-grid">
+      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each-->
+    </div>
+  </div>
+</section>
+
+<!--part:rsvp-->
+<section class="rsvp" data-tpl-section="rsvp" data-section="rsvp">
+  <div class="rsvp-backdrop" aria-hidden="true"></div>
+  <div class="wrap narrow">
+    <div class="heading" data-reveal>
+      <p class="eyebrow">{{upper:edit:copy:rsvp_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:rsvp_title}}</h2>
+      <p class="lead">{{edit:copy:rsvp_intro}}</p>
+    </div>
+    <div class="reply" data-reveal style="--rd:.3s"><!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if--></div>
+  </div>
+</section>
+
+<!--part:footer-->
+<footer class="site-footer">
+  <div class="closing-photo" aria-hidden="true"></div>
+  <div class="closing-shade" aria-hidden="true"></div>
+  <div class="closing-content" data-reveal>
+    <p class="eyebrow">{{upper:edit:copy:closing_eyebrow}}</p>
+    <p class="closing-title" style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <i>&amp;</i> {{edit:b}}<!--/if--></p>
+    <p class="closing-date">{{footer_line}}</p>
+    <p class="closing-line">{{edit:copy:closing_line}}</p>
+    <!--if intro--><button class="replay" type="button" data-intro-replay><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>{{copy:closing_replay}}</button><!--/if-->
+  </div>
+  <div class="footer-row"><button type="button" data-scroll-to="home">{{upper:copy:footer_top}} ↑</button><span>{{upper:edit:copy:footer_made}}</span></div>
+</footer>
