@@ -405,6 +405,21 @@ export const galleryTemplates: GalleryTemplate[] = [
     image: "/assets/templates/velvet-reveal-wide.jpg",
     phone: "/assets/templates/velvet-reveal-phone.jpg",
   },
+  {
+    id: 20,
+    backendId: "under-the-same-moon",
+    title: "Under the Same Moon",
+    names: "Naomi & Rafael",
+    tagline: "A moonlit lake under a slowly turning moon, a gold foil to scratch for the date, and a lantern-lit story.",
+    tags: ["Celestial", "Romantic"],
+    opening: {
+      name: "Moonlit sky",
+      text: "A short film of the night sky opens the invitation. Then your names over a moonlit lake, a gold foil to scratch for the date, your story, your events and a countdown.",
+    },
+    palette: ["#090f25", "#c9ae83", "#f7f3ea"],
+    image: "/assets/templates/under-the-same-moon-wide.jpg",
+    phone: "/assets/templates/under-the-same-moon-phone.jpg",
+  },
 ]
 
 // What a couple can change on any of these templates, and what guests see. Taken from the editor

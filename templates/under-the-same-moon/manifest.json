@@ -1,0 +1,318 @@
+{
+  "id": "under-the-same-moon",
+  "name": "Under the Same Moon",
+  "version": 1,
+  "root": "tpl-um",
+  "prefix": "um-",
+  "sections": [
+    "hero",
+    "welcome",
+    "story",
+    "functions",
+    "gallery",
+    "rsvp"
+  ],
+  "photoSlots": [],
+  "galleryMin": 2,
+  "fonts": [
+    "Cormorant Garamond",
+    "DM Sans"
+  ],
+  "contrast": [
+    [
+      "#f7f3ea",
+      "#090f25",
+      "ivory on night"
+    ],
+    [
+      "#c9ae83",
+      "#090f25",
+      "gold on night"
+    ],
+    [
+      "#b9bccd",
+      "#090f25",
+      "muted on night"
+    ],
+    [
+      "#f7f3ea",
+      "#151b39",
+      "ivory on indigo"
+    ],
+    [
+      "#c9ae83",
+      "#151b39",
+      "gold on indigo"
+    ],
+    [
+      "#1e2538",
+      "#f7f3ea",
+      "ink on ivory"
+    ],
+    [
+      "#5b5a68",
+      "#f7f3ea",
+      "muted on ivory"
+    ],
+    [
+      "#7a6140",
+      "#f7f3ea",
+      "gold text on ivory"
+    ],
+    [
+      "#090f25",
+      "#c9ae83",
+      "button"
+    ],
+    [
+      "#f7f3ea",
+      "#050916",
+      "intro button"
+    ]
+  ],
+  "thumbnail": {
+    "phone": ".um-site-header,.um-intro,.um-cue,.um-stars,.um-hero-save{display:none!important}.um-hero-content,.um-cloud{animation:none!important;opacity:1!important}",
+    "wide": ".um-site-header,.um-intro,.um-cue,.um-stars,.um-hero-save{display:none!important}.tpl-um>*:not(.um-hero){display:none!important}.um-hero{min-height:275px!important;height:275px!important}.um-hero-content,.um-cloud{animation:none!important;opacity:1!important}"
+  },
+  "example": {
+    "story": "From a chance meeting to a thousand small moments, our story has become our favourite place to be. Now, with the people we love close by, we are ready for the next chapter.\n\nWe would be so happy to have you with us as we celebrate our families and dance into everything that comes next.",
+    "events": [
+      {
+        "title": "The first gathering",
+        "venue": "Your venue"
+      },
+      {
+        "title": "The second gathering",
+        "venue": "Your venue"
+      }
+    ],
+    "photos": 3
+  },
+  "copy": {
+    "nav_invitation": {
+      "label": "Menu: invitation",
+      "default": "Invitation",
+      "max": 16,
+      "section": "home"
+    },
+    "nav_story": {
+      "label": "Menu: story",
+      "default": "Our story",
+      "max": 16,
+      "section": "home"
+    },
+    "nav_events": {
+      "label": "Menu: events",
+      "default": "Events",
+      "max": 16,
+      "section": "home"
+    },
+    "nav_gallery": {
+      "label": "Menu: gallery",
+      "default": "Gallery",
+      "max": 16,
+      "section": "gallery"
+    },
+    "nav_rsvp": {
+      "label": "Menu: RSVP",
+      "default": "RSVP",
+      "max": 16,
+      "section": "home"
+    },
+    "hero_kicker": {
+      "label": "Line above the names",
+      "default": "A celestial love story",
+      "max": 40,
+      "section": "home"
+    },
+    "hero_save": {
+      "label": "Link under the date",
+      "default": "Save the date",
+      "max": 24,
+      "section": "home"
+    },
+    "cue": {
+      "label": "Scroll hint",
+      "default": "Scroll to discover",
+      "max": 24,
+      "section": "home"
+    },
+    "invite_eyebrow": {
+      "label": "Invitation: small heading",
+      "default": "With love, from our families",
+      "max": 40,
+      "section": "home"
+    },
+    "invitation_note": {
+      "label": "Welcome message (when empty)",
+      "default": "Under the same moon, and surrounded by the love of our families, we invite you to join us as we begin our forever.",
+      "max": 160,
+      "section": "home"
+    },
+    "invite_line": {
+      "label": "Invitation: line under the names",
+      "default": "invite you to celebrate with them",
+      "max": 50,
+      "section": "home"
+    },
+    "date_kicker": {
+      "label": "Date: line above the date",
+      "default": "Save the date",
+      "max": 30,
+      "section": "home"
+    },
+    "scratch_label": {
+      "label": "Date: gold foil text",
+      "default": "Scratch to reveal",
+      "max": 24,
+      "section": "home"
+    },
+    "reveal_button": {
+      "label": "Date: reveal button",
+      "default": "Reveal the date",
+      "max": 24,
+      "section": "home"
+    },
+    "story_eyebrow": {
+      "label": "Story: small heading",
+      "default": "A story still unfolding",
+      "max": 40,
+      "section": "story"
+    },
+    "story_title": {
+      "label": "Story: heading",
+      "default": "Our *story*",
+      "max": 30,
+      "section": "story"
+    },
+    "story_note": {
+      "label": "Story: sign-off",
+      "default": "A note from",
+      "max": 30,
+      "section": "story"
+    },
+    "details_eyebrow": {
+      "label": "Events: small heading",
+      "default": "The day we have been waiting for",
+      "max": 50,
+      "section": "functions"
+    },
+    "details_title": {
+      "label": "Events: heading",
+      "default": "Join *us*",
+      "max": 30,
+      "section": "functions"
+    },
+    "details_lead": {
+      "label": "Events: line",
+      "default": "One day, a lifetime of memories.",
+      "max": 60,
+      "section": "functions"
+    },
+    "event_tag": {
+      "label": "Events: tag on each card",
+      "default": "The gathering",
+      "max": 24,
+      "section": "functions"
+    },
+    "time_unknown": {
+      "label": "Events: when no time is set",
+      "default": "Time to be confirmed",
+      "max": 30,
+      "section": "functions"
+    },
+    "directions": {
+      "label": "Directions link",
+      "default": "View directions",
+      "max": 24,
+      "section": "functions"
+    },
+    "countdown_eyebrow": {
+      "label": "Countdown: small heading",
+      "default": "The days are drawing near",
+      "max": 40,
+      "section": "home"
+    },
+    "countdown_title": {
+      "label": "Countdown: heading",
+      "default": "Until our *forever*",
+      "max": 40,
+      "section": "home"
+    },
+    "countdown_note": {
+      "label": "Countdown: note",
+      "default": "Counting down to the day.",
+      "max": 50,
+      "section": "home"
+    },
+    "gallery_eyebrow": {
+      "label": "Gallery: small heading",
+      "default": "A few little moments",
+      "max": 40,
+      "section": "gallery"
+    },
+    "gallery_title": {
+      "label": "Gallery: heading",
+      "default": "Under the *same moon*",
+      "max": 40,
+      "section": "gallery"
+    },
+    "rsvp_eyebrow": {
+      "label": "Reply: small heading",
+      "default": "Kindly reply",
+      "max": 34,
+      "section": "rsvp"
+    },
+    "rsvp_title": {
+      "label": "Reply: heading",
+      "default": "Will you join *us?*",
+      "max": 40,
+      "section": "rsvp"
+    },
+    "rsvp_intro": {
+      "label": "Reply: line",
+      "default": "Your presence would make our day even more special.",
+      "max": 90,
+      "section": "rsvp"
+    },
+    "closing_eyebrow": {
+      "label": "Closing: small heading",
+      "default": "Under the same moon",
+      "max": 40,
+      "section": "home"
+    },
+    "closing_line": {
+      "label": "Closing: line",
+      "default": "Forever begins beneath the same sky.",
+      "max": 60,
+      "section": "home"
+    },
+    "closing_replay": {
+      "label": "Closing: replay button",
+      "default": "Replay the opening",
+      "max": 30,
+      "section": "home"
+    },
+    "footer_top": {
+      "label": "Footer: back to top",
+      "default": "Back to the beginning",
+      "max": 30,
+      "section": "home"
+    },
+    "footer_made": {
+      "label": "Footer: right",
+      "default": "With love",
+      "max": 30,
+      "section": "home"
+    },
+    "intro_skip": {
+      "label": "Opening: skip button",
+      "default": "Skip introduction",
+      "max": 24,
+      "section": "home"
+    }
+  },
+  "intro": {
+    "duration": 5600
+  }
+}

@@ -413,6 +413,16 @@ Converted from a React and Vite prototype (emerald velvet, champagne gold) whose
 - **Removed or changed**: the Google Fonts request (the self-hosted Cormorant Garamond and DM Sans are used), the letter-by-letter names and parallax (scripts), the three colour themes, the fixed navigation pill (the platform header is used), the hard-coded "wedding" and RSVP form copy (the platform draws the Reply button), and the editor and server of the prototype.
 - **Wording**: 22 keys, all editable. No gallery or photo slots: the design has none, and the gate now only requires the sections a manifest lists.
 
+### 15.8 Eighth template: Under the Same Moon (implemented)
+
+Converted from a React and Vite prototype (a moonlit wedding invitation with a short video opening and a scratch-to-reveal date). What the conversion did:
+
+- **Timed video opening.** The `intro` part holds a `<video>` with `data-src-wide` (one file; the film is landscape) and no `data-intro-manual`. The platform now plays the video of any opening that has one, and a timed opening ends when its video ends, after `data-intro-ms` (the manifest's `intro.duration`, 5.6 s here), or on **Skip**. The film is muted, so browsers allow it to autoplay; if it cannot play, the poster (the moonlit landscape) stays until the timer lifts it. On the template page the phone waits for a click, as for the other openings.
+- **Scratch card**: the same platform widget as Velvet Reveal (`data-scratch`). Here the glowing "fireflies" that rise on reveal are the widget's burst particles, styled by the template (`[data-scratch-burst] i`).
+- **Artwork**: nine pieces (moonlit landscape, turning-moon cut-out, clouds, paper, orbit pattern, lanterns, corner ornament, floral divider, lunar phases) re-encoded as WebP (about 330 KB in all, from 9 MB) plus the five-second film (about 215 KB). The hero's own moon is part of the landscape picture, so the prototype's separate rotating moon was dropped there; it stays, faint, in the story section.
+- **Sections**: cover, invitation with the date foil, story over a lantern night with fireflies, events (with a corner ornament on each card), a countdown band (inside the events part, drawn only when there is a date), gallery, reply and closing. 37 wording keys, all editable; click-to-edit and "+ Add an event" from the start.
+- **Removed**: the gallery lightbox and the RSVP form (scripts; the platform draws the Reply button), the hard-coded venues, times and names, and the Google Fonts request (self-hosted Cormorant Garamond and DM Sans replace Italiana and Manrope).
+
 ## Click-to-edit markers (editor preview only)
 
 In the editor preview the couple can click text to edit it in place. A template opts a piece of text in with an `edit:` marker; the published page renders the same text with no extra markup.

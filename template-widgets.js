@@ -11,6 +11,7 @@
  *                           data-intro-replay (anywhere in the invitation) plays it again, and it is skipped under reduced
  *                           motion or once seen this session. With data-wait (the template page's phone) it waits for a click on
  *                           data-intro-start, and an "intro-done" event is sent when it lifts.
+ *                           A timed opening may hold a video too (below): it ends when the video does, or after data-intro-ms.
  *                           With data-intro-manual (an opening with a video and an "open" button) there is no timer:
  *                           the video in it (data-src-wide / data-src-tall, only the one that fits the frame is
  *                           downloaded) plays muted, the button [data-intro-open] appears at data-intro-at seconds (or
@@ -98,26 +99,32 @@
     introState.set(el, { key: key, demo: wait, frame: frame, timer: 0, timers: [], video: null, started: false, finished: false, unlock: function () { box.style.overflow = before; } });
     if (!wait) startIntro(el);
   }
-  // An opening that ends when the guest presses its button: a muted video, and the button once it has had time to play.
-  function playOpening(el, st) {
-    var showButton = function () { el.setAttribute("data-button", ""); };
-    var at = parseFloat(el.getAttribute("data-intro-at")) || 3.5;
+  // The opening's muted video, if it has one: only the file that fits the frame (portrait or landscape) is fetched.
+  // `onTime` hears the playback position; `onFail` hears that the video cannot play (an error; autoplay refused is not one).
+  function startVideo(el, st, onTime, onFail) {
     var video = el.querySelector("video[data-src-wide],video[data-src-tall]");
-    // The button never depends on the video alone.
-    st.timers.push(window.setTimeout(showButton, at * 1000 + 500));
-    if (!video) return;
+    if (!video) return null;
     var w = st.frame ? st.frame.clientWidth : window.innerWidth, h = st.frame ? st.frame.clientHeight : window.innerHeight;
     var wide = video.getAttribute("data-src-wide"), tall = video.getAttribute("data-src-tall");
     var src = h > w ? (tall || wide) : (wide || tall);
-    if (!src) return;
+    if (!src) return null;
     st.video = video;
     video.muted = true; video.defaultMuted = true;
     video.addEventListener("playing", function () { el.setAttribute("data-playing", ""); });
-    video.addEventListener("timeupdate", function () { if (video.currentTime >= at) showButton(); });
-    video.addEventListener("error", showButton);
+    if (onTime) video.addEventListener("timeupdate", function () { onTime(video.currentTime); });
+    video.addEventListener("error", function () { if (onFail) onFail(); });
     video.src = src;
     var attempt = video.play && video.play();
-    if (attempt && attempt.catch) attempt.catch(function () { /* autoplay refused: the poster and the button stay */ });
+    if (attempt && attempt.catch) attempt.catch(function () { /* autoplay refused: the poster stays */ });
+    return video;
+  }
+  // An opening that ends when the guest presses its button: the button appears once the video has had time to play.
+  function playOpening(el, st) {
+    var showButton = function () { el.setAttribute("data-button", ""); };
+    var at = parseFloat(el.getAttribute("data-intro-at")) || 3.5;
+    // The button never depends on the video alone.
+    st.timers.push(window.setTimeout(showButton, at * 1000 + 500));
+    startVideo(el, st, function (t) { if (t >= at) showButton(); }, showButton);
   }
   function startIntro(el) {
     var st = introState.get(el);
@@ -125,7 +132,11 @@
     st.started = true;
     el.removeAttribute("data-wait");
     if (el.hasAttribute("data-intro-manual")) { playOpening(el, st); return; }
-    st.timer = window.setTimeout(function () { finishIntro(el); }, parseInt(el.getAttribute("data-intro-ms"), 10) || 9400);
+    // A timed opening ends after data-intro-ms, or sooner when its video ends (or cannot play).
+    var finish = function () { finishIntro(el); };
+    st.timer = window.setTimeout(finish, parseInt(el.getAttribute("data-intro-ms"), 10) || 9400);
+    var video = startVideo(el, st, null, finish);
+    if (video) video.addEventListener("ended", finish);
   }
   function finishIntro(el, quick) {
     var st = introState.get(el);

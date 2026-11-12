@@ -88,6 +88,6 @@ test('review designs render but cannot be created until approved', () => {
 test('defect 2: every design used by the Figma islands is registered', () => {
   const shared = readFileSync(join(root, 'figma/islands/shared.tsx'), 'utf8');
   const mapped = [...shared.matchAll(/^\s+backendId: "([^"]+)"/gm)].map(match => match[1]);
-  assert.equal(mapped.length, 11); // the four scene templates, Modern Heritage, Minimalist, Cinematic, Fairy Tale, Blue Hydrangea, Bloom Reveal and Velvet Reveal are the only designs offered for now
+  assert.equal(mapped.length, 12); // the four scene templates, Modern Heritage, Minimalist, Cinematic, Fairy Tale, Blue Hydrangea, Bloom Reveal, Velvet Reveal and Under the Same Moon are the only designs offered for now
   for (const templateId of mapped) assert.ok(isLaunchTemplate(templateId), templateId);
 });
