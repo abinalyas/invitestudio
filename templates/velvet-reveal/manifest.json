@@ -4,6 +4,7 @@
   "version": 1,
   "root": "tpl-vr",
   "prefix": "vr-",
+  "music": { "src": "/assets/music/romantic.mp3", "volume": 0.35 },
   "sections": [
     "hero",
     "welcome",

@@ -1,0 +1,10 @@
+/* The sound button every packaged template gets from the platform (drawn by packaged-templates.js, run by template-widgets.js).
+ * It is a round button at the bottom corner of the invitation. Attribute selectors only, so it looks the same on every design. */
+[data-sound-bar]{position:sticky;bottom:0;z-index:55;height:0;pointer-events:none}
+[data-sound-toggle]{position:absolute;right:16px;bottom:16px;width:44px;height:44px;display:grid;place-items:center;padding:0;border-radius:50%;background:rgba(20,18,16,.66);color:#fff;border:1px solid rgba(255,255,255,.3);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 6px 18px rgba(0,0,0,.3);cursor:pointer;pointer-events:auto;transition:transform .2s,background .2s}
+[data-sound-toggle]:hover,[data-sound-toggle]:focus-visible{transform:scale(1.06);background:rgba(20,18,16,.85)}
+[data-sound-toggle]:focus-visible{outline:2px solid #fff;outline-offset:3px}
+[data-sound-toggle] svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+[data-sound-toggle] [data-snd="on"]{display:none}
+[data-sound-toggle][data-sound="on"] [data-snd="on"]{display:block}
+[data-sound-toggle][data-sound="on"] [data-snd="off"]{display:none}

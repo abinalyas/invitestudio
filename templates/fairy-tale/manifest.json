@@ -4,6 +4,7 @@
   "version": 1,
   "root": "tpl-ft",
   "prefix": "ft-",
+  "music": { "src": "/assets/music/garden-ceremony-glow.mp3", "volume": 0.35 },
   "sections": ["hero", "story", "functions", "gallery", "rsvp"],
   "photoSlots": ["story"],
   "galleryMin": 2,

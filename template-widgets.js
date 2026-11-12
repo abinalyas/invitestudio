@@ -16,6 +16,10 @@
  *                           the video in it (data-src-wide / data-src-tall, only the one that fits the frame is
  *                           downloaded) plays muted, the button [data-intro-open] appears at data-intro-at seconds (or
  *                           after a short wait if the video cannot play), and clicking it lifts the opening.
+ *   data-sound-toggle       the round music on/off button the platform adds to a template that has music (manifest "music"). The first
+ *                           tap, key press or click on the page starts the track (browsers allow no sound before that), the button
+ *                           shows whether it is playing, and turning it off is remembered. The track stops when the page is redrawn
+ *                           without a button (leaving the page) and pauses while the tab is hidden.
  *   data-tap="3"            tap a button [data-tap-button] that many times to reveal what follows (the date). Each tap plays a small
  *                           chime made in the browser (only once the guest has tapped). data-tap-armed shows the tapping state
  *                           (data-tapped counts), data-tap-done the revealed one; the hint [data-tap-hint] counts down with the
@@ -167,6 +171,73 @@
     if (!st || st.finished || el.hasAttribute("data-opening")) return;
     el.setAttribute("data-opening", "");
     window.setTimeout(function () { finishIntro(el, true); }, reduce() ? 250 : 1200);
+  }
+
+  /* ---------- background music ---------- */
+  // One track plays at a time, from the first button on the page (several can exist while the page redraws). Browsers do not let
+  // a page start sound before the guest has touched it, so the track starts on the first tap, key press or click anywhere on the
+  // page (a tap on the opening's own button counts), and the button shows what is really happening. Turning it off is remembered.
+  var SOUND_KEY = "invitestudio-sound", soundButtons = new Set(), soundAudio = null, soundWanted = false, soundTimer = 0, soundResume = false;
+  function soundOff() { try { return window.localStorage.getItem(SOUND_KEY) === "off"; } catch (e) { return false; } }
+  function soundSave(on) { try { window.localStorage.setItem(SOUND_KEY, on ? "on" : "off"); } catch (e) { /* asked again next time */ } }
+  function soundPaint() {
+    var on = Boolean(soundAudio && !soundAudio.paused);
+    soundButtons.forEach(function (b) {
+      b.setAttribute("data-sound", on ? "on" : "off");
+      b.setAttribute("aria-pressed", String(on));
+      b.setAttribute("aria-label", on ? "Turn the music off" : "Turn the music on");
+    });
+  }
+  function soundSync() {
+    soundButtons.forEach(function (b) { if (!b.isConnected) soundButtons.delete(b); });
+    if (!soundButtons.size) { soundWanted = false; if (soundAudio) { try { soundAudio.pause(); } catch (e) { /* stopped already */ } window.clearInterval(soundTimer); } }
+    soundPaint();
+  }
+  function soundFade(to, done) {
+    window.clearInterval(soundTimer);
+    var a = soundAudio;
+    if (!a) return;
+    soundTimer = window.setInterval(function () {
+      var v = a.volume, step = 0.04;
+      if (Math.abs(v - to) <= step) { a.volume = to; window.clearInterval(soundTimer); if (done) done(); return; }
+      a.volume = v < to ? v + step : v - step;
+    }, 60);
+  }
+  function soundPlay() {
+    var first = null;
+    soundButtons.forEach(function (b) { if (!first && b.isConnected) first = b; });
+    if (!first) return;
+    var src = first.getAttribute("data-sound-src"), vol = Math.min(1, Math.max(0.05, parseFloat(first.getAttribute("data-sound-volume")) || 0.35));
+    if (!soundAudio) { soundAudio = new Audio(); soundAudio.loop = true; soundAudio.preload = "none"; soundAudio.addEventListener("pause", soundPaint); soundAudio.addEventListener("playing", soundPaint); }
+    if (soundAudio.getAttribute("data-src") !== src) { soundAudio.setAttribute("data-src", src); soundAudio.src = src; }
+    if (!soundAudio.paused) return;
+    soundAudio.volume = 0;
+    var attempt = soundAudio.play();
+    // If the browser refuses (it wants a different kind of touch), the next gesture tries again.
+    var started = function () { soundWanted = true; soundPaint(); soundFade(vol); };
+    var refused = function () { soundWanted = false; soundPaint(); };
+    if (attempt && attempt.then) attempt.then(started, refused); else started();
+  }
+  function soundStop() {
+    if (!soundAudio) return;
+    soundFade(0, function () { try { soundAudio.pause(); } catch (e) { /* stopped already */ } soundPaint(); });
+  }
+  // The first touch of the page starts the music, unless the guest turned it off before.
+  function soundGesture(e) {
+    if (soundWanted || soundOff() || !soundButtons.size) return;
+    var path = e.composedPath ? e.composedPath() : [e.target];
+    for (var i = 0; i < path.length; i++) { if (path[i] && path[i].nodeType === 1 && path[i].hasAttribute("data-sound-toggle")) return; }
+    soundPlay();
+  }
+  ["pointerdown", "keydown", "touchend"].forEach(function (name) { document.addEventListener(name, soundGesture, { capture: true, passive: true }); });
+  document.addEventListener("visibilitychange", function () {
+    if (!soundAudio) return;
+    if (document.hidden) { soundResume = !soundAudio.paused; if (soundResume) soundAudio.pause(); }
+    else if (soundResume) { soundResume = false; soundAudio.play().then(soundPaint, soundPaint); }
+  });
+  function soundToggle() {
+    if (soundAudio && !soundAudio.paused) { soundSave(false); soundWanted = true; soundStop(); }
+    else { soundSave(true); soundWanted = true; soundPlay(); }
   }
 
   /* ---------- tap to reveal ---------- */
@@ -346,6 +417,8 @@
     Array.prototype.forEach.call(scope.querySelectorAll("[data-intro]:not([data-intro-ready])"), setupIntro);
     Array.prototype.forEach.call(scope.querySelectorAll("[data-scratch]:not([data-scratch-ready])"), setupScratch);
     Array.prototype.forEach.call(scope.querySelectorAll("[data-tap]:not([data-tap-ready])"), setupTap);
+    Array.prototype.forEach.call(scope.querySelectorAll("[data-sound-toggle]"), function (b) { soundButtons.add(b); });
+    soundSync();
     arm(scope);
     Array.prototype.forEach.call(scope.querySelectorAll("[data-countdown]"), function (el) { roots.add(el); });
     if (roots.size) { tick(); if (!timer) timer = window.setInterval(function () { tick(); if (!roots.size) { window.clearInterval(timer); timer = null; } }, 1000); }
@@ -368,6 +441,7 @@
     if (closest(path, function (n) { return n.hasAttribute("data-intro-start"); })) { if (overlay) startIntro(overlay); return; }
     if (closest(path, function (n) { return n.hasAttribute("data-intro-skip"); })) { if (overlay) finishIntro(overlay); return; }
     if (closest(path, function (n) { return n.hasAttribute("data-intro-open"); })) { if (overlay) openIntro(overlay); return; }
+    if (closest(path, function (n) { return n.hasAttribute("data-sound-toggle"); })) { soundToggle(); return; }
     if (closest(path, function (n) { return n.hasAttribute("data-tap-button"); })) {
       var tapper = closest(path, function (n) { return n.hasAttribute("data-tap"); });
       if (tapper) tapOnce(tapper);

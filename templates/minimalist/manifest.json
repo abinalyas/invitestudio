@@ -4,6 +4,7 @@
   "version": 1,
   "root": "tpl-mn",
   "prefix": "mn-",
+  "music": { "src": "/assets/music/romantic-piano.mp3", "volume": 0.35 },
   "sections": ["hero", "welcome", "story", "functions", "gallery", "rsvp"],
   "heroPhoto": true,
   "fonts": ["DM Serif Display", "Inter"],

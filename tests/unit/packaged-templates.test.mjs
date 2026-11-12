@@ -429,3 +429,30 @@ test('the scratch foil and the video opening are platform behaviour: the widget 
   assert.match(widgets, /video\.play/);
   assert.doesNotMatch(readFileSync(join(root, 'templates/velvet-reveal/template.html'), 'utf8'), /<canvas|<script/);
 });
+
+for (const { manifest } of loadTemplates()) {
+  test(`${manifest.id}: has background music that exists, and the sound button is drawn only where guests (or the template page) hear it`, () => {
+    const { renderPackagedTemplate } = renderer();
+    assert.ok(manifest.music && /^\/assets\/music\/[\w-]+\.mp3$/.test(manifest.music.src), 'the manifest names its track');
+    assert.ok(existsSync(join(root, manifest.music.src)), `${manifest.music.src} exists`);
+    assert.ok(manifest.music.volume > 0 && manifest.music.volume <= 0.6, 'a gentle volume');
+    const t = { id: manifest.id, packaged: manifest.id };
+    const project = { ...sampleOf(manifest.id) };
+    const guests = renderPackagedTemplate(project, t, { sound: true });
+    assert.match(guests, /<button type="button" data-sound-toggle data-sound="off" aria-pressed="false" aria-label="Turn the music on"/);
+    assert.ok(guests.includes(`data-sound-src="${manifest.music.src}"`));
+    assert.equal((guests.match(/data-sound-toggle/g) || []).length, 1);
+    assert.doesNotMatch(renderPackagedTemplate(project, t), /data-sound/, 'thumbnails and plain renders have no button');
+    assert.doesNotMatch(renderPackagedTemplate(project, t, { sound: true, editable: true }), /data-sound/, 'the editor preview is silent');
+    assert.doesNotMatch(guests, /<audio|autoplay/, 'the page never plays sound by itself; the widget waits for a touch');
+  });
+}
+
+test('the music players are platform behaviour: the sound button is styled for every template, and the widget starts the track only after a touch', () => {
+  const widgets = readFileSync(join(root, 'template-widgets.js'), 'utf8');
+  assert.match(widgets, /"pointerdown", "keydown", "touchend"/);
+  assert.match(widgets, /invitestudio-sound/);
+  const css = readFileSync(join(root, 'templates/_shared/sound.css'), 'utf8');
+  for (const { manifest, css: scoped } of loadTemplates()) assert.ok(scoped.includes(`.${manifest.root} [data-sound-toggle]`), `${manifest.id} carries the button styles`);
+  assert.doesNotMatch(css.replace(/\/\*[\s\S]*?\*\//g, ''), /position:\s*fixed|\d(vw|vh)\b/);
+});
