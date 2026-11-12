@@ -1,0 +1,152 @@
+<!--part:intro-->
+<div class="intro" data-intro data-intro-ms="{{intro_ms}}"<!--if intro_wait--> data-wait<!--/if--> role="dialog" aria-label="Opening">
+  <img class="intro-poster" src="/templates/cherry-blossom/assets/poster.webp" alt="">
+  <video class="intro-video" muted playsinline preload="none" data-src-wide="/templates/cherry-blossom/assets/opening.mp4" tabindex="-1"></video>
+  <!--if intro_wait--><button class="intro-start" type="button" data-intro-start><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>Click to start</button><!--/if-->
+  <button class="intro-skip" type="button" data-intro-skip>{{copy:intro_skip}} <span aria-hidden="true">↗</span></button>
+</div>
+
+<!--part:header-->
+<header class="site-header">
+  <button class="wordmark" type="button" data-scroll-to="home" aria-label="{{names}} home">{{ia}}<!--if ib--> <span>&amp;</span> {{ib}}<!--/if--></button>
+  <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
+    <svg class="icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
+    <svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+  <nav class="nav" data-nav aria-label="Main navigation">
+    <!--if story--><button type="button" data-scroll-to="story">{{copy:nav_story}}</button><!--/if-->
+    <!--if events--><button type="button" data-scroll-to="details">{{copy:nav_day}}</button><!--/if-->
+    <!--if show_gallery--><button type="button" data-scroll-to="gallery">{{copy:nav_gallery}}</button><!--/if-->
+    <button class="nav-rsvp" type="button" data-scroll-to="rsvp">{{copy:nav_rsvp}} <span aria-hidden="true">↗</span></button>
+  </nav>
+</header>
+
+<!--part:hero-->
+<section class="hero" data-tpl-section="home" data-section="hero"<!--if editable--> data-still<!--/if-->>
+  <img class="hero-branch hb-l" src="/templates/cherry-blossom/assets/branch.webp" alt="" aria-hidden="true">
+  <img class="hero-branch hb-r" src="/templates/cherry-blossom/assets/branch.webp" alt="" aria-hidden="true">
+  <div class="petal-layer" aria-hidden="true"><img class="petal" src="/templates/cherry-blossom/assets/petal-02.webp" alt="" style="left:7%;animation-duration:25s;animation-delay:-8s;--drift:34px;--spin:160deg;width:17px"><img class="petal" src="/templates/cherry-blossom/assets/petal-05.webp" alt="" style="left:18%;animation-duration:31s;animation-delay:-21s;--drift:-28px;--spin:-120deg;width:14px"><img class="petal" src="/templates/cherry-blossom/assets/petal-08.webp" alt="" style="left:29%;animation-duration:28s;animation-delay:-13s;--drift:24px;--spin:210deg;width:19px"><img class="petal" src="/templates/cherry-blossom/assets/petal-11.webp" alt="" style="left:42%;animation-duration:34s;animation-delay:-3s;--drift:-36px;--spin:-170deg;width:13px"><img class="petal" src="/templates/cherry-blossom/assets/petal-14.webp" alt="" style="left:54%;animation-duration:26s;animation-delay:-18s;--drift:30px;--spin:135deg;width:16px"><img class="petal" src="/templates/cherry-blossom/assets/petal-17.webp" alt="" style="left:67%;animation-duration:32s;animation-delay:-6s;--drift:-24px;--spin:-145deg;width:20px"><img class="petal" src="/templates/cherry-blossom/assets/petal-20.webp" alt="" style="left:78%;animation-duration:29s;animation-delay:-24s;--drift:35px;--spin:190deg;width:14px"><img class="petal" src="/templates/cherry-blossom/assets/petal-23.webp" alt="" style="left:91%;animation-duration:35s;animation-delay:-11s;--drift:-30px;--spin:-115deg;width:18px"><img class="petal" src="/templates/cherry-blossom/assets/petal-02.webp" alt="" style="left:12%;animation-duration:38s;animation-delay:-29s;--drift:22px;--spin:150deg;width:12px"><img class="petal" src="/templates/cherry-blossom/assets/petal-08.webp" alt="" style="left:36%;animation-duration:37s;animation-delay:-16s;--drift:-26px;--spin:-200deg;width:15px"></div>
+  <div class="hero-content">
+    <p class="eyebrow">{{upper:edit:copy:hero_eyebrow}}</p>
+    <h1<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}"><span class="name">{{edit:a}}</span><!--if b--><span class="amp">&amp;</span><span class="name">{{edit:b}}</span><!--/if--></h1>
+    <div class="rule" aria-hidden="true"><span></span><img src="/templates/cherry-blossom/assets/blossom.webp" alt=""><span></span></div>
+    <!--if date-->
+    <div class="date-reveal" data-tap="3"<!--if editable--> data-tap-done<!--/if--> data-tap-label-more="{{copy:tap_more}}" data-tap-label-one="{{copy:tap_one}}" data-tap-label-done="{{copy:tap_done}}">
+      <p class="date-hint" data-tap-hint>{{copy:tap_hint}}</p>
+      <button class="date-petals" type="button" data-tap-button aria-label="{{copy:tap_hint}}"><span aria-hidden="true">✿</span><span aria-hidden="true">✿</span><span aria-hidden="true">✿</span></button>
+      <p class="hero-date"<!--if editable--> data-edit="date" data-raw="{{date_iso}}"<!--/if-->>{{date_num}}</p>
+    </div>
+    <!--else-->
+    <p class="hero-date plain">{{edit:date_long}}</p>
+    <!--/if-->
+    <p class="hero-copy">{{edit:closing_note}}</p>
+    <!--if events--><button class="text-link" type="button" data-scroll-to="details">{{upper:copy:hero_link}} <span aria-hidden="true">↓</span></button><!--/if-->
+  </div>
+</section>
+
+<!--part:story-->
+<section class="story" data-tpl-section="story" data-section="story">
+  <div class="story-petals" aria-hidden="true"><img class="petal" src="/templates/cherry-blossom/assets/petal-05.webp" alt="" style="left:6%;animation-duration:15s;animation-delay:-2s;--drift:30px;--spin:180deg;width:16px"><img class="petal" src="/templates/cherry-blossom/assets/petal-11.webp" alt="" style="left:20%;animation-duration:19s;animation-delay:-9s;--drift:-24px;--spin:-200deg;width:13px"><img class="petal" src="/templates/cherry-blossom/assets/petal-17.webp" alt="" style="left:34%;animation-duration:17s;animation-delay:-5s;--drift:26px;--spin:160deg;width:17px"><img class="petal" src="/templates/cherry-blossom/assets/petal-23.webp" alt="" style="left:48%;animation-duration:21s;animation-delay:-13s;--drift:-30px;--spin:-170deg;width:14px"><img class="petal" src="/templates/cherry-blossom/assets/petal-02.webp" alt="" style="left:62%;animation-duration:16s;animation-delay:-7s;--drift:28px;--spin:190deg;width:15px"><img class="petal" src="/templates/cherry-blossom/assets/petal-08.webp" alt="" style="left:76%;animation-duration:20s;animation-delay:-3s;--drift:-22px;--spin:-150deg;width:16px"><img class="petal" src="/templates/cherry-blossom/assets/petal-14.webp" alt="" style="left:88%;animation-duration:18s;animation-delay:-11s;--drift:32px;--spin:210deg;width:13px"></div>
+  <div class="heading" data-reveal>
+    <h2 class="title">{{em:edit:copy:story_heading}}</h2>
+    <div class="story-ornament" aria-hidden="true"><span></span>✿<span></span></div>
+    <p class="subtitle">{{edit:copy:story_subtitle}}</p>
+  </div>
+  <div class="story-layout">
+    <div class="story-art" data-reveal="fade" aria-hidden="true"><div class="glow"></div><img src="/templates/cherry-blossom/assets/story.webp" alt="" loading="lazy"></div>
+    <div class="story-copy" data-reveal>
+      <p class="small">{{upper:edit:copy:story_number}}</p>
+      <h3>{{em:edit:copy:story_title}}</h3>
+      <div class="paras"><!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p>{{.}}</p><!--/each--><!--if editable--></span><!--/if--></div>
+      <p class="signature">{{edit:names}}</p>
+    </div>
+  </div>
+  <div class="story-foot" data-reveal><span>{{upper:edit:copy:story_foot_a}}</span><span class="fine-line"></span><span>{{upper:edit:copy:story_foot_b}}</span></div>
+</section>
+
+<!--part:functions-->
+<section class="celebration" data-tpl-section="details" data-section="functions">
+  <div class="heading" data-reveal>
+    <h2 class="title">{{em:edit:copy:details_title}}</h2>
+    <p class="subtitle">{{edit:copy:details_subtitle}}</p>
+    <!--if venue--><p class="where">{{edit:venue}}<!--if place-->, {{edit:place}}<!--/if--></p><!--/if-->
+  </div>
+  <div class="day-flow">
+    <!--each events--><article class="flow-event" data-reveal>
+      <div class="flow-step">{{n}} <span>{{upper:copy:event_tag}}</span></div>
+      <div class="flow-copy">
+        <h3>{{edit:event_title}}</h3>
+        <!--if date_text--><p class="flow-date">{{date_text}}</p><!--/if-->
+        <!--if venue--><p class="venue-name">{{edit:event_venue}}</p><!--/if-->
+        <p class="event-time"><!--if time_text-->{{time_text}}<!--else-->{{copy:time_unknown}}<!--/if--></p>
+        <!--if map--><a class="outline" href="{{map}}" target="_blank" rel="noopener noreferrer">{{copy:directions}} ↗</a><!--/if-->
+      </div>
+    </article><!--/each-->
+  </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
+</section>
+<!--if date-->
+<section class="countdown" data-tpl-section="countdown">
+  <img class="corner" src="/templates/cherry-blossom/assets/corner.webp" alt="" aria-hidden="true">
+  <div class="story-petals" aria-hidden="true"><img class="petal" src="/templates/cherry-blossom/assets/petal-08.webp" alt="" style="left:8%;animation-duration:22s;animation-delay:-4s;--drift:-26px;--spin:170deg;width:14px"><img class="petal" src="/templates/cherry-blossom/assets/petal-14.webp" alt="" style="left:24%;animation-duration:18s;animation-delay:-10s;--drift:30px;--spin:-190deg;width:16px"><img class="petal" src="/templates/cherry-blossom/assets/petal-20.webp" alt="" style="left:40%;animation-duration:24s;animation-delay:-6s;--drift:-28px;--spin:150deg;width:13px"><img class="petal" src="/templates/cherry-blossom/assets/petal-05.webp" alt="" style="left:58%;animation-duration:20s;animation-delay:-12s;--drift:26px;--spin:-160deg;width:17px"><img class="petal" src="/templates/cherry-blossom/assets/petal-11.webp" alt="" style="left:72%;animation-duration:23s;animation-delay:-2s;--drift:-30px;--spin:200deg;width:15px"><img class="petal" src="/templates/cherry-blossom/assets/petal-17.webp" alt="" style="left:90%;animation-duration:19s;animation-delay:-8s;--drift:24px;--spin:-210deg;width:14px"></div>
+  <div class="wrap" data-reveal>
+    <p class="eyebrow">{{upper:edit:copy:countdown_eyebrow}}</p>
+    <h2 class="title">{{em:edit:copy:countdown_title}}</h2>
+    <div class="timer" role="timer" aria-live="off" data-countdown="{{date_iso}}">
+      <div><strong data-cd="days">—</strong><span>days</span></div><i></i>
+      <div><strong data-cd="hours">—</strong><span>hours</span></div><i></i>
+      <div><strong data-cd="minutes">—</strong><span>minutes</span></div><i></i>
+      <div><strong data-cd="seconds">—</strong><span>seconds</span></div>
+    </div>
+    <p class="countdown-date">{{footer_line}}</p>
+  </div>
+</section>
+<!--/if-->
+
+<!--part:gallery-->
+<section class="gallery" data-tpl-section="gallery" data-section="gallery">
+  <div class="heading" data-reveal>
+    <h2 class="title">{{em:edit:copy:gallery_title}}</h2>
+    <p class="subtitle">{{edit:copy:gallery_subtitle}}</p>
+  </div>
+  <div class="photo-grid">
+    <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each-->
+  </div>
+</section>
+
+<!--part:rsvp-->
+<section class="faq" data-tpl-section="faq">
+  <div class="wrap narrow">
+    <div class="heading" data-reveal>
+      <p class="eyebrow">{{upper:edit:copy:faq_eyebrow}}</p>
+      <h2 class="title">{{em:edit:copy:faq_title}}</h2>
+    </div>
+    <div class="accordion" data-reveal>
+      <details open><summary>{{edit:copy:faq_q1}} <span aria-hidden="true">+</span></summary><p>{{edit:copy:faq_a1}}</p></details>
+      <details><summary>{{edit:copy:faq_q2}} <span aria-hidden="true">+</span></summary><p>{{edit:copy:faq_a2}}</p></details>
+      <details><summary>{{edit:copy:faq_q3}} <span aria-hidden="true">+</span></summary><p>{{edit:copy:faq_a3}}</p></details>
+    </div>
+  </div>
+</section>
+<section class="rsvp" data-tpl-section="rsvp" data-section="rsvp">
+  <div class="rsvp-card" data-reveal>
+    <p class="eyebrow">{{upper:edit:copy:rsvp_eyebrow}}</p>
+    <h2 class="title">{{em:edit:copy:rsvp_title}}</h2>
+    <p class="rsvp-intro">{{edit:copy:rsvp_intro}}</p>
+    <div class="reply" data-reveal style="--rd:.3s"><!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if--></div>
+  </div>
+</section>
+
+<!--part:footer-->
+<footer class="site-footer">
+  <img class="fb fb-l" src="/templates/cherry-blossom/assets/corner.webp" alt="" aria-hidden="true"><img class="fb fb-r" src="/templates/cherry-blossom/assets/corner.webp" alt="" aria-hidden="true">
+  <div class="footer-content" data-reveal>
+    <p class="eyebrow">{{upper:edit:copy:footer_eyebrow}}</p>
+    <h2>{{edit:copy:footer_love}}</h2>
+    <p class="footer-names" style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <i>&amp;</i> {{edit:b}}<!--/if--></p>
+    <p class="footer-date">{{footer_line}}</p>
+    <div class="footer-ornament" aria-hidden="true">✿</div>
+    <button class="back-top" type="button" data-scroll-to="home">{{copy:footer_top}} ↑</button>
+    <!--if intro--><button class="replay" type="button" data-intro-replay>{{upper:copy:closing_replay}}</button><!--/if-->
+  </div>
+  <div class="footer-bottom"><span>{{upper:edit:copy:footer_made}}</span></div>
+</footer>

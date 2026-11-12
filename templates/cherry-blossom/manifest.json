@@ -1,0 +1,354 @@
+{
+  "id": "cherry-blossom",
+  "name": "Cherry Blossom",
+  "version": 1,
+  "root": "tpl-cb",
+  "prefix": "cb-",
+  "sections": [
+    "hero",
+    "story",
+    "functions",
+    "gallery",
+    "rsvp"
+  ],
+  "photoSlots": [],
+  "galleryMin": 2,
+  "fonts": [
+    "Cormorant Garamond",
+    "DM Sans",
+    "Italianno"
+  ],
+  "contrast": [
+    [
+      "#493b36",
+      "#fff9f2",
+      "ink on ivory"
+    ],
+    [
+      "#57433c",
+      "#fff9f2",
+      "brown on ivory"
+    ],
+    [
+      "#6f5f57",
+      "#fff9f2",
+      "muted on ivory"
+    ],
+    [
+      "#9a4f5b",
+      "#fff9f2",
+      "rose on ivory"
+    ],
+    [
+      "#493b36",
+      "#f6eee7",
+      "ink on band"
+    ],
+    [
+      "#6f5f57",
+      "#f6eee7",
+      "muted on band"
+    ],
+    [
+      "#9a4f5b",
+      "#f6eee7",
+      "rose on band"
+    ],
+    [
+      "#57433c",
+      "#fbf4eb",
+      "brown on paper"
+    ],
+    [
+      "#fff9f2",
+      "#57433c",
+      "button"
+    ],
+    [
+      "#493b36",
+      "#f8eee7",
+      "intro button"
+    ]
+  ],
+  "thumbnail": {
+    "phone": ".cb-site-header,.cb-intro,.cb-petal-layer,.cb-date-petals,.cb-date-hint{display:none!important}.cb-hero-content,.cb-hero-date{animation:none!important;opacity:1!important}.cb-hero-date{opacity:1!important;visibility:visible!important}",
+    "wide": ".cb-site-header,.cb-intro,.cb-petal-layer,.cb-date-petals,.cb-date-hint{display:none!important}.tpl-cb>*:not(.cb-hero){display:none!important}.cb-hero{min-height:275px!important;height:275px!important}.cb-hero-content{animation:none!important;opacity:1!important}.cb-hero-date{opacity:1!important;visibility:visible!important}"
+  },
+  "example": {
+    "story": "From a chance meeting to a thousand small moments, our story has become our favourite place to be. Now, with the people we love close by, we are ready for the next chapter.\n\nWe would be so happy to have you with us as we celebrate our families and dance into everything that comes next.",
+    "events": [
+      {
+        "title": "The first gathering",
+        "venue": "Your venue"
+      },
+      {
+        "title": "The second gathering",
+        "venue": "Your venue"
+      }
+    ],
+    "photos": 3
+  },
+  "copy": {
+    "nav_story": {
+      "label": "Menu: story",
+      "default": "Our story",
+      "max": 16,
+      "section": "story"
+    },
+    "nav_day": {
+      "label": "Menu: the day",
+      "default": "The day",
+      "max": 16,
+      "section": "functions"
+    },
+    "nav_gallery": {
+      "label": "Menu: gallery",
+      "default": "Gallery",
+      "max": 16,
+      "section": "gallery"
+    },
+    "nav_rsvp": {
+      "label": "Menu: RSVP",
+      "default": "RSVP",
+      "max": 16,
+      "section": "home"
+    },
+    "hero_eyebrow": {
+      "label": "Line above the names",
+      "default": "Please join us in celebration",
+      "max": 40,
+      "section": "home"
+    },
+    "hero_link": {
+      "label": "Link under the message",
+      "default": "The celebration",
+      "max": 24,
+      "section": "home"
+    },
+    "tap_hint": {
+      "label": "Date: tap prompt",
+      "default": "Tap the blossoms 3 times to uncover our date",
+      "max": 60,
+      "section": "home"
+    },
+    "tap_more": {
+      "label": "Date: more taps (use {n})",
+      "default": "Just {n} more taps…",
+      "max": 40,
+      "section": "home"
+    },
+    "tap_one": {
+      "label": "Date: one more tap",
+      "default": "Just 1 more tap…",
+      "max": 40,
+      "section": "home"
+    },
+    "tap_done": {
+      "label": "Date: when revealed",
+      "default": "A date to remember",
+      "max": 40,
+      "section": "home"
+    },
+    "story_heading": {
+      "label": "Story: heading",
+      "default": "Our *story*",
+      "max": 30,
+      "section": "story"
+    },
+    "story_subtitle": {
+      "label": "Story: line",
+      "default": "A little space for the moments that brought us here.",
+      "max": 70,
+      "section": "story"
+    },
+    "story_number": {
+      "label": "Story: small label",
+      "default": "01 / The beginning",
+      "max": 30,
+      "section": "story"
+    },
+    "story_title": {
+      "label": "Story: title",
+      "default": "Every love story has its own *season.*",
+      "max": 60,
+      "section": "story"
+    },
+    "story_foot_a": {
+      "label": "Story: foot, left",
+      "default": "The little things",
+      "max": 30,
+      "section": "story"
+    },
+    "story_foot_b": {
+      "label": "Story: foot, right",
+      "default": "That become everything",
+      "max": 30,
+      "section": "story"
+    },
+    "details_title": {
+      "label": "Day: heading",
+      "default": "The *celebration*",
+      "max": 30,
+      "section": "functions"
+    },
+    "details_subtitle": {
+      "label": "Day: line",
+      "default": "One beautiful day, shared with the people we love.",
+      "max": 70,
+      "section": "functions"
+    },
+    "event_tag": {
+      "label": "Day: tag on each event",
+      "default": "The gathering",
+      "max": 24,
+      "section": "functions"
+    },
+    "time_unknown": {
+      "label": "Day: when no time is set",
+      "default": "Time to be confirmed",
+      "max": 30,
+      "section": "functions"
+    },
+    "directions": {
+      "label": "Directions link",
+      "default": "Get directions",
+      "max": 24,
+      "section": "functions"
+    },
+    "countdown_eyebrow": {
+      "label": "Countdown: small heading",
+      "default": "The days are drawing near",
+      "max": 40,
+      "section": "home"
+    },
+    "countdown_title": {
+      "label": "Countdown: heading",
+      "default": "Until *forever*",
+      "max": 30,
+      "section": "home"
+    },
+    "gallery_title": {
+      "label": "Gallery: heading",
+      "default": "Moments that *bloom*",
+      "max": 30,
+      "section": "gallery"
+    },
+    "gallery_subtitle": {
+      "label": "Gallery: line",
+      "default": "A gallery waiting to be filled with your favourite memories.",
+      "max": 70,
+      "section": "gallery"
+    },
+    "faq_eyebrow": {
+      "label": "Details: small heading",
+      "default": "A few thoughtful details",
+      "max": 34,
+      "section": "rsvp"
+    },
+    "faq_title": {
+      "label": "Details: heading",
+      "default": "Everything you need to *know.*",
+      "max": 40,
+      "section": "rsvp"
+    },
+    "faq_q1": {
+      "label": "Details: first question",
+      "default": "When should I arrive?",
+      "max": 40,
+      "section": "rsvp"
+    },
+    "faq_a1": {
+      "label": "Details: first answer",
+      "default": "We recommend arriving a little early so you can settle in and share the excitement with our families.",
+      "max": 200,
+      "section": "rsvp"
+    },
+    "faq_q2": {
+      "label": "Details: second question",
+      "default": "Can I save the date?",
+      "max": 40,
+      "section": "rsvp"
+    },
+    "faq_a2": {
+      "label": "Details: second answer",
+      "default": "Absolutely. Add the date to your calendar now, and look out for any updates here as the day draws near.",
+      "max": 200,
+      "section": "rsvp"
+    },
+    "faq_q3": {
+      "label": "Details: third question",
+      "default": "Who can I contact?",
+      "max": 40,
+      "section": "rsvp"
+    },
+    "faq_a3": {
+      "label": "Details: third answer",
+      "default": "Please reach out to the couple or their families directly with any questions about travel, directions or the celebrations.",
+      "max": 200,
+      "section": "rsvp"
+    },
+    "rsvp_eyebrow": {
+      "label": "Reply: small heading",
+      "default": "An invitation from our hearts",
+      "max": 40,
+      "section": "rsvp"
+    },
+    "rsvp_title": {
+      "label": "Reply: heading",
+      "default": "Will you join our *celebration?*",
+      "max": 50,
+      "section": "rsvp"
+    },
+    "rsvp_intro": {
+      "label": "Reply: line",
+      "default": "Your presence would make our day even more special. Kindly let us know if you can celebrate with us.",
+      "max": 160,
+      "section": "rsvp"
+    },
+    "footer_eyebrow": {
+      "label": "Closing: small heading",
+      "default": "Until we celebrate together",
+      "max": 40,
+      "section": "home"
+    },
+    "footer_love": {
+      "label": "Closing: line",
+      "default": "With love,",
+      "max": 24,
+      "section": "home"
+    },
+    "footer_top": {
+      "label": "Footer: back to top",
+      "default": "Back to the beginning",
+      "max": 30,
+      "section": "home"
+    },
+    "footer_made": {
+      "label": "Footer: last line",
+      "default": "Made with love",
+      "max": 30,
+      "section": "home"
+    },
+    "closing_replay": {
+      "label": "Footer: replay the opening",
+      "default": "Replay the opening",
+      "max": 30,
+      "section": "home"
+    },
+    "intro_skip": {
+      "label": "Opening: skip button",
+      "default": "Skip intro",
+      "max": 20,
+      "section": "home"
+    },
+    "invitation_note": {
+      "label": "Welcome message (when empty)",
+      "default": "Together with our families, we invite you to celebrate the beginning of our forever.",
+      "max": 140,
+      "section": "home"
+    }
+  },
+  "intro": {
+    "duration": 6500
+  }
+}

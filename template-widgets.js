@@ -16,6 +16,11 @@
  *                           the video in it (data-src-wide / data-src-tall, only the one that fits the frame is
  *                           downloaded) plays muted, the button [data-intro-open] appears at data-intro-at seconds (or
  *                           after a short wait if the video cannot play), and clicking it lifts the opening.
+ *   data-tap="3"            tap a button [data-tap-button] that many times to reveal what follows (the date). Each tap plays a small
+ *                           chime made in the browser (only once the guest has tapped). data-tap-armed shows the tapping state
+ *                           (data-tapped counts), data-tap-done the revealed one; the hint [data-tap-hint] counts down with the
+ *                           template's data-tap-label-more ("{n}" is replaced), -one and -done wording. data-tap-done in the
+ *                           markup (the editor) skips the tapping, and without this script the date is simply shown.
  *   data-scratch            a gold foil to scratch away (a canvas the platform draws over [data-scratch-card]); at half
  *                           scratched, or on [data-scratch-reveal], it dissolves and data-scratched is set. Until then
  *                           data-scratch-armed is set, so a template can show a button and hide what follows. Without
@@ -164,6 +169,58 @@
     window.setTimeout(function () { finishIntro(el, true); }, reduce() ? 250 : 1200);
   }
 
+  /* ---------- tap to reveal ---------- */
+  // Original blossom chimes, made with the browser's own synthesiser. The audio context is created on the first tap,
+  // so it is always started by the guest (browsers refuse sound before that); the reveal works the same without it.
+  var chimeCtx = null;
+  function chime(step) {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!chimeCtx) chimeCtx = new Ctx();
+      if (chimeCtx.state === "suspended") chimeCtx.resume();
+      var ctx = chimeCtx, now = ctx.currentTime;
+      var notes = step === 1 ? [880, 1320] : step === 2 ? [784, 1175, 1568] : [659, 880, 1109, 1760];
+      notes.forEach(function (f, i) {
+        var start = now + i * 0.045, osc = ctx.createOscillator(), gain = ctx.createGain(), shimmer = ctx.createOscillator(), sg = ctx.createGain();
+        osc.type = "sine"; osc.frequency.setValueAtTime(f, start);
+        shimmer.type = "sine"; shimmer.frequency.setValueAtTime(f * 2.01, start);
+        sg.gain.setValueAtTime(0.0001, start);
+        sg.gain.exponentialRampToValueAtTime(step === 3 ? 0.012 : 0.007, start + 0.025);
+        sg.gain.exponentialRampToValueAtTime(0.0001, start + (step === 3 ? 0.85 : 0.58));
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(step === 3 ? 0.095 : 0.075, start + 0.018);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + (step === 3 ? 0.95 : 0.62));
+        osc.connect(gain); gain.connect(ctx.destination);
+        shimmer.connect(sg); sg.connect(ctx.destination);
+        osc.start(start); shimmer.start(start);
+        osc.stop(start + 1.02); shimmer.stop(start + 0.98);
+      });
+    } catch (e) { /* the sound is decoration; the reveal still works */ }
+  }
+  function setupTap(el) {
+    el.setAttribute("data-tap-ready", "");
+    if (el.hasAttribute("data-tap-done")) return;
+    el.setAttribute("data-tap-armed", "");
+    el.setAttribute("data-tapped", "0");
+  }
+  function tapOnce(el) {
+    if (!el.hasAttribute("data-tap-armed") || el.hasAttribute("data-tap-done")) return;
+    var need = parseInt(el.getAttribute("data-tap"), 10) || 3, n = (parseInt(el.getAttribute("data-tapped"), 10) || 0) + 1;
+    el.setAttribute("data-tapped", String(n));
+    chime(Math.min(n, 3));
+    var hint = el.querySelector("[data-tap-hint]"), button = el.querySelector("[data-tap-button]");
+    if (n >= need) {
+      el.setAttribute("data-tap-done", "");
+      if (hint && el.getAttribute("data-tap-label-done")) hint.textContent = el.getAttribute("data-tap-label-done");
+      if (button) { button.disabled = true; button.setAttribute("aria-label", el.getAttribute("data-tap-label-done") || ""); }
+      return;
+    }
+    var left = need - n, text = el.getAttribute(left === 1 ? "data-tap-label-one" : "data-tap-label-more");
+    if (hint && text) hint.textContent = text.replace("{n}", String(left));
+    if (button) button.setAttribute("aria-label", (text || "").replace("{n}", String(left)));
+  }
+
   /* ---------- scratch card ---------- */
   var scratchState = new WeakMap();
   function revealScratch(el, burst) {
@@ -288,6 +345,7 @@
     if (!scope || !scope.querySelectorAll) return;
     Array.prototype.forEach.call(scope.querySelectorAll("[data-intro]:not([data-intro-ready])"), setupIntro);
     Array.prototype.forEach.call(scope.querySelectorAll("[data-scratch]:not([data-scratch-ready])"), setupScratch);
+    Array.prototype.forEach.call(scope.querySelectorAll("[data-tap]:not([data-tap-ready])"), setupTap);
     arm(scope);
     Array.prototype.forEach.call(scope.querySelectorAll("[data-countdown]"), function (el) { roots.add(el); });
     if (roots.size) { tick(); if (!timer) timer = window.setInterval(function () { tick(); if (!roots.size) { window.clearInterval(timer); timer = null; } }, 1000); }
@@ -310,6 +368,11 @@
     if (closest(path, function (n) { return n.hasAttribute("data-intro-start"); })) { if (overlay) startIntro(overlay); return; }
     if (closest(path, function (n) { return n.hasAttribute("data-intro-skip"); })) { if (overlay) finishIntro(overlay); return; }
     if (closest(path, function (n) { return n.hasAttribute("data-intro-open"); })) { if (overlay) openIntro(overlay); return; }
+    if (closest(path, function (n) { return n.hasAttribute("data-tap-button"); })) {
+      var tapper = closest(path, function (n) { return n.hasAttribute("data-tap"); });
+      if (tapper) tapOnce(tapper);
+      return;
+    }
     var scratch = closest(path, function (n) { return n.hasAttribute("data-scratch-reveal"); });
     if (scratch) { var zone = closest(path, function (n) { return n.hasAttribute("data-scratch"); }); if (zone) revealScratch(zone, true); return; }
     if (closest(path, function (n) { return n.hasAttribute("data-intro-replay"); })) {

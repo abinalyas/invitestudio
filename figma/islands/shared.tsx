@@ -435,6 +435,21 @@ export const galleryTemplates: GalleryTemplate[] = [
     image: "/assets/templates/golden-butterfly-wide.jpg",
     phone: "/assets/templates/golden-butterfly-phone.jpg",
   },
+  {
+    id: 22,
+    backendId: "cherry-blossom",
+    title: "Cherry Blossom",
+    names: "Hannah & Theo",
+    tagline: "A short film of blossom, petals falling past your names, and a date to uncover with three taps and a soft chime.",
+    tags: ["Botanical", "Romantic"],
+    opening: {
+      name: "Blossom film",
+      text: "A short film of blossom plays first. Then petals fall past your names, guests tap three blossoms to uncover the date, and scroll through your story, the day, a countdown and a reply button.",
+    },
+    palette: ["#fff9f2", "#57433c", "#d68f96"],
+    image: "/assets/templates/cherry-blossom-wide.jpg",
+    phone: "/assets/templates/cherry-blossom-phone.jpg",
+  },
 ]
 
 // What a couple can change on any of these templates, and what guests see. Taken from the editor

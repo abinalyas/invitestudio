@@ -433,6 +433,17 @@ Converted from a single-file static prototype (black and gold, an opening film o
 - **Removed**: the gallery lightbox, the sound button, the demo RSVP form (the platform draws the Reply button), the hard-coded venues, times and names, and the Google Fonts request.
 - **Artwork**: five small SVGs (butterflies, dust, divider), five WebP backgrounds and ornaments, and the film re-encoded (about 0.9 MB, from 1.9 MB).
 
+### 15.10 Tenth template: Cherry Blossom (implemented)
+
+Converted from a multi-file static prototype (a watercolour cherry blossom invitation with an opening film, falling petals and a tap-to-reveal date with chimes). What the conversion did:
+
+- **Opening**: a timed film opening as in section 15.8 (one landscape file, 6.5 s, Skip, poster behind it). The film is shown whole (`object-fit: contain`) on the poster's own pale colour, as in the prototype; its "play" and "enter" fallbacks are gone, because a muted film may autoplay and the timer lifts the opening if it cannot play.
+- **Tap to reveal the date** is a platform widget (`data-tap="3"`): a button of three blossoms, a hint that counts down ("Just 2 more taps…", wording the template supplies as `data-tap-label-*` attributes), and the date revealed after the last tap. Each tap plays a small chime synthesised in the browser (created on the first tap, so browsers allow it; if sound is unavailable the reveal is unchanged). Without the script the date is simply shown, and in the editor preview (`data-tap-done`) it is shown and editable.
+- **Falling petals and branches**: petals are small WebP images (eight shapes) animated with keyframes (no script); the hero's animations are held while the opening is up, and are off in the editor.
+- **Sections**: cover, story (with the picnic-under-the-blossom painting), the day (a card for each of the couple's own events, no venue named by the template), a countdown, gallery, a short "details" accordion (native `<details>`, three questions with editable, generic answers) and the reply. 43 wording keys, all editable; click-to-edit and "+ Add an event" from the start.
+- **Removed**: "Add to calendar" (it built a file in script, and used the prototype's own times), the gallery lightbox, the RSVP form (the platform draws the Reply button), the hard-coded venues and times, the Google Fonts request (the self-hosted Cormorant Garamond, DM Sans and Italianno are used) and the venue watercolours (specific to the prototype's venues).
+- **Artwork**: about 1.1 MB in all (the story painting alone was 5.4 MB as a PNG, now 230 KB), plus the film (about 0.45 MB).
+
 ## Click-to-edit markers (editor preview only)
 
 In the editor preview the couple can click text to edit it in place. A template opts a piece of text in with an `edit:` marker; the published page renders the same text with no extra markup.
