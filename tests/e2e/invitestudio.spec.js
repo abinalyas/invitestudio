@@ -294,7 +294,8 @@ test.describe('guest replies', () => {
 
   test('in the editor the form is a preview only and sends nothing', async ({ page }) => {
     let calls = 0;
-    await page.route('**/api/**', route => { calls += 1; return route.abort(); });
+    // Pages may look up the prices (a read, nothing to do with replies); everything else counts.
+    await page.route('**/api/**', route => { if (!new URL(route.request().url()).pathname.startsWith('/api/pricing')) calls += 1; return route.abort(); });
     await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding', 'minimalist'));
     await page.locator('#projectTitle').fill('Mira & Arun');
     await page.locator('#projectDate').fill('2027-01-20');

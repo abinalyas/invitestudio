@@ -2,8 +2,10 @@
 import { useState } from "react";
 import { Icon, IconName, Logo, galleryTemplates, styleOptions } from "./shared";
 import { bridge } from "./bridge";
+import { formatMoney, tierOf, usePricing } from "./pricing";
 import { TalkToUs } from "./extras";
 export function TemplatesPage() {
+  const { data: pricing } = usePricing()
   const [query, setQuery] = useState("")
   const [sort, setSort] = useState("featured")
   const [styles, setStyles] = useState<string[]>([])
@@ -239,6 +241,14 @@ export function TemplatesPage() {
                           <span key={tag}>{tag}</span>
                         ))}
                       </div>
+                      {pricing && (() => {
+                        const tier = tierOf(pricing, template.backendId)
+                        return tier ? (
+                          <p className="gallery-price">
+                            {tier.name} <strong>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}</strong>
+                          </p>
+                        ) : null
+                      })()}
                     </div>
                   </article>
                 ))}

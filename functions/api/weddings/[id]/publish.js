@@ -14,6 +14,7 @@ import {
   success
 } from '../../../_shared/api.js';
 import { isLaunchTemplate } from '../../../_shared/templates.js';
+import { paymentsLive } from '../../../_shared/razorpay.js';
 
 export async function onRequest(context) {
   const { request, env, params } = context;
@@ -56,6 +57,12 @@ export async function onRequest(context) {
         title: 'Required before publishing.'
       });
     }
+    // Once payments are live, publishing a website for the first time needs the one-time payment (docs/PRICING_PLAN.md). A website that
+    // is live, or was unlocked before (paid, early access or complimentary), is never asked again.
+    const live = paymentsLive(env);
+    if (live && !current.publish_unlocked_at && current.status !== 'published') {
+      throw new ApiError('Publishing needs a one-time payment.', 402, 'PAYMENT_REQUIRED');
+    }
     // Changing the address of a live invitation breaks the old link. Make the couple confirm it.
     if (current.status === 'published' && current.slug && current.slug !== slug && body.confirmSlugChange !== true) {
       throw new ApiError('Changing a live web address stops the old link working. Confirm the change to continue.', 409, 'SLUG_CHANGE_CONFIRMATION_REQUIRED', {
@@ -92,6 +99,13 @@ export async function onRequest(context) {
     const wedding = Array.isArray(data) ? data[0] : data;
     if (!wedding?.id) {
       throw new ApiError('That slug may already be in use or the draft changed. Reload and try again.', 409, 'PUBLISH_CONFLICT');
+    }
+    // While payments are not live, publishing counts as early access: the website stays unlocked after payments open.
+    if (!live && !current.publish_unlocked_at) {
+      await db(env, `weddings?id=eq.${params.id}&publish_unlocked_at=is.null`, {
+        method: 'PATCH',
+        body: JSON.stringify({ publish_unlocked_at: new Date().toISOString(), publish_unlock_reason: 'early-access' })
+      }).catch(() => console.error('Could not record the early access unlock'));
     }
     return success(request, env, {
       wedding,

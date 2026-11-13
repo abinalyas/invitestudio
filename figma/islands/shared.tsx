@@ -160,43 +160,6 @@ export const templates = [
   },
 ]
 
-export const plans = [
-  {
-    name: "Free",
-    subtitle: "Get started and try the basics.",
-    monthly: 0,
-    yearly: 0,
-    features: [
-      "Access to free templates",
-      "Create 1 wedding website",
-      "Basic customisation",
-    ],
-  },
-  {
-    name: "Pro",
-    subtitle: "All the essentials for a beautiful wedding website.",
-    monthly: 199,
-    yearly: 1999,
-    featured: true,
-    features: [
-      "Premium templates",
-      "Custom domain (optional)",
-      "Event details & travel information",
-    ],
-  },
-  {
-    name: "Pro+",
-    subtitle: "For a truly personalised experience.",
-    monthly: 299,
-    yearly: 2999,
-    features: [
-      "Everything in Pro",
-      "Advanced customisation",
-      "Priority support",
-    ],
-  },
-]
-
 export const faqs = [
   [
     "Do I need any technical skills to create a wedding website?",
@@ -211,8 +174,12 @@ export const faqs = [
     "Yes. You can update colours, fonts, photos, event details, and page sections.",
   ],
   [
+    "How much does it cost?",
+    "Building and previewing your invitation is free. You pay once, when you publish, and the price depends on the design you choose and where you are. See Pricing above; the price is shown before you pay, and there is no subscription.",
+  ],
+  [
     "Can I use my own domain?",
-    "Yes. Custom domains are available on paid plans, or you can use your free InviteStudio link.",
+    "Not yet. Every invitation gets its own InviteStudio link that you can share with your guests.",
   ],
 ]
 

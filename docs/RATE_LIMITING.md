@@ -16,6 +16,8 @@ into the repository.
 | `GET /api/weddings/:id/slug-availability` | Edit-token holders only | Low | Not usable by strangers |
 | `POST /api/edit-links` | Anyone with a token | Low: tokens are 256-bit random | Still adds database load |
 | `POST /api/weddings/:id/publish` and other writes | Edit-token holders only | Low | Protected by the token |
+| `POST /api/weddings/:id/checkout` | Edit-token holders only | Low to medium: each call can create a payment row and a Razorpay link | An open link is reused for 30 minutes; add a Cloudflare rule with the other writes |
+| `POST /api/payments/razorpay-webhook` | Anyone can post; only a correct signature is accepted | Low: refused before any database work | Signature checked first |
 | RSVP submission (Phase 4B / 7) | Anyone | High: spam and abuse | Needs an in-application counter |
 
 ## Options

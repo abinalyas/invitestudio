@@ -476,6 +476,7 @@
     project.publishStatus = wedding.status || 'draft';
     project.publicSlug = wedding.slug || project.publicSlug || null;
     project.published = wedding.status === 'published';
+    project.publishUnlocked = Boolean(wedding.publish_unlocked_at);
     project.status = PUBLISH_LABELS[wedding.status] || 'Draft';
     project.updated = wedding.updated_at || 'Just now';
     project.name = wedding.name || project.name;
@@ -872,6 +873,9 @@
       queued: false,           // an availability check is scheduled but has not started
       busy: false,
       error: '',
+      info: '',
+      price: null,             // { text, tierName, mode } from /api/pricing, for the pay step
+      needsPayment: false,     // the server asked for the one-time payment (402)
       success: false
     };
   }
@@ -922,7 +926,15 @@
       : '';
     const error = session.error ? `<p class="tiny" role="alert" style="color:#9b5147;margin:10px 0 0">${escapeText(session.error)}</p>` : '';
     const success = session.success ? '<p class="tiny" role="status" style="color:#2f6b45;margin:10px 0 0">Your invitation is live. Share the link below.</p>' : '';
-    const primary = live ? (session.changing ? 'Change address and update' : 'Update live page') : 'Make it live';
+    const paying = needsPayment(project, session);
+    const priceText = session.price && session.price.text ? session.price.text : '';
+    const primary = live ? (session.changing ? 'Change address and update' : 'Update live page') : paying ? (priceText ? `Pay ${priceText} and continue` : 'Pay and continue') : 'Make it live';
+    const priceNote = live || project.publishUnlocked || !session.price ? ''
+      : session.price.mode === 'live'
+        ? `<p class="tiny" data-price-note style="margin:12px 0 0;color:#2f4a36"><strong>One-time price: ${escapeText(session.price.text)}</strong> (${escapeText(session.price.tierName)} design). You pay once, securely on Razorpay's page with UPI, a card or netbanking, then come straight back to make it live. Editing and previewing stay free.</p>`
+        : `<p class="tiny" data-price-note style="margin:12px 0 0;color:#2f4a36"><strong>Free during early access.</strong> The price that will apply later is ${escapeText(session.price.text)} (${escapeText(session.price.tierName)} design), paid once.</p>`;
+    const info = session.info ? `<p class="tiny" role="status" data-payment-info style="margin:10px 0 0;color:#2f4a36">${escapeText(session.info)}</p>` : '';
+    const checkAgain = session.checkAgain ? '<button class="btn small" type="button" data-check-payment style="margin-top:8px">Check again</button>' : '';
     const addressField = live && !session.changing
       ? ''
       : `<label class="tiny muted" for="publishSlug" style="display:block;margin-top:14px">Web address</label>
@@ -957,14 +969,15 @@
     renderModal(`<div class="eyebrow">Share your invitation</div>
       <h2 id="modal-title">${live ? 'Your invitation is live' : 'Get your invitation link'}</h2>
       <p class="muted">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>${live ? '' : ', not public yet'}.</p>
-      ${explainer}${keptBlock}${addressField}${changeWarning}${notSaved}${error}${success}${liveBlock}
+      ${explainer}${priceNote}${keptBlock}${addressField}${changeWarning}${notSaved}${info}${checkAgain}${error}${success}${liveBlock}
       <div class="modal-actions" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
         <button class="btn" type="button" data-publish-close>Close</button>
         ${live ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}
-        ${justWentLive ? '' : `<button class="btn dark" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${session.busy ? 'Going live…' : primary}</button>`}
+        ${justWentLive ? '' : `<button class="btn dark" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${session.busy ? (paying || session.info ? 'Please wait…' : 'Going live…') : primary}</button>`}
       </div>`);
     wirePublishDialog(project);
     ensureAddressChecked(project);
+    loadPublishPrice(project);
   }
 
   // The suggested address (or the live one) is checked as soon as the dialog shows, so the person can
@@ -980,7 +993,8 @@
   function wirePublishDialog(project) {
     const root = document.querySelector('#modal-root');
     root.querySelector('[data-publish-close]')?.addEventListener('click', () => { publishSession = null; closeModal(); });
-    root.querySelector('[data-publish-submit]')?.addEventListener('click', () => publishFromDialog(project));
+    root.querySelector('[data-publish-submit]')?.addEventListener('click', () => (needsPayment(project, publishSession) ? startPayment(project) : publishFromDialog(project)));
+    root.querySelector('[data-check-payment]')?.addEventListener('click', () => { if (publishSession) publishSession.checkAgain = false; handlePaymentReturnAgain(project); });
     root.querySelector('[data-preview-first]')?.addEventListener('click', () => {
       publishSession = null;
       closeModal();
@@ -1073,6 +1087,157 @@
     }
   }
 
+  // ---- Paying to publish (docs/PRICING_PLAN.md). The page only SHOWS the price; the server decides it again at checkout. ----
+  const REGION_KEY = 'invitestudio-region';
+  const PENDING_PAYMENT_KEY = 'invitestudio-pending-payment';
+  // Where the payment page may be: Razorpay's own addresses, and nothing the server could be tricked into returning.
+  const PAYMENT_HOST = /^https:\/\/([a-z0-9-]+\.)*(razorpay\.com|rzp\.io)\//i;
+
+  function savedRegion() {
+    try { return window.localStorage.getItem(REGION_KEY) || ''; } catch { return ''; }
+  }
+
+  function formatMoney(amountMinor, currency, locale) {
+    try {
+      const whole = amountMinor % 100 === 0;
+      return new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: whole ? 0 : 2 }).format(amountMinor / 100);
+    } catch {
+      return '';
+    }
+  }
+
+  // Looks up the price of this design for this visitor, once per dialog. If it cannot be loaded the dialog simply says nothing about price.
+  async function loadPublishPrice(project) {
+    const session = publishSession;
+    if (!session || session.price !== null || session.priceLoading) return;
+    session.priceLoading = true;
+    try {
+      const region = savedRegion();
+      const response = await fetch(region ? `/api/pricing?region=${encodeURIComponent(region)}` : '/api/pricing', { headers: { Accept: 'application/json' } });
+      const data = response.ok ? await response.json() : null;
+      const tierId = data?.templates?.[project.templateId] || 'classic';
+      const tier = data?.tiers?.find(item => item.id === tierId);
+      const text = tier ? formatMoney(tier.amountMinor, data.currency, data.locale) : '';
+      session.price = text ? { text, tierName: tier.name, mode: data.mode } : false;
+    } catch {
+      session.price = false;
+    }
+    session.priceLoading = false;
+    if (publishSession === session) paintPublishDialog(project, {});
+  }
+
+  // Whether this dialog's main button takes a payment: the server has said so, or payments are live and this website is not unlocked.
+  function needsPayment(project, session) {
+    if (isLive(project) || project.publishUnlocked) return false;
+    return Boolean(session.needsPayment || (session.price && session.price.mode === 'live'));
+  }
+
+  async function startPayment(project) {
+    const session = publishSession;
+    if (!session || !canPublish(project, session)) return;
+    session.busy = true;
+    session.error = '';
+    session.info = '';
+    paintPublishDialog(project, {});
+    try {
+      const result = await window.inviteStudioApi.startCheckout(project.cloudId, tokenFor(project.cloudId), { region: savedRegion() });
+      if (result.alreadyUnlocked) {
+        project.publishUnlocked = true;
+        session.busy = false;
+        session.needsPayment = false;
+        paintPublishDialog(project, {});
+        return;
+      }
+      if (!PAYMENT_HOST.test(String(result.url || ''))) throw new Error('unexpected payment address');
+      // Remember what is being paid for, so coming back from the payment page can pick up exactly here.
+      try {
+        window.localStorage.setItem(PENDING_PAYMENT_KEY, JSON.stringify({ paymentId: result.paymentId, projectId: project.id, slug: session.typed, at: Date.now() }));
+      } catch { /* the page can still be paid; coming back just asks to open the dialog again */ }
+      window.location.assign(result.url);
+    } catch (error) {
+      session.busy = false;
+      if (error.code === 'PAYMENTS_NOT_LIVE') {
+        session.needsPayment = false;
+        if (session.price) session.price.mode = 'early-access';
+        session.error = 'Payments are not open yet, so there is nothing to pay. Choose Make it live.';
+      } else if (error.code === 'PAYMENTS_NOT_CONFIGURED') {
+        session.error = 'Payments are not set up yet. Please try again later or contact us.';
+      } else {
+        session.error = 'We could not start the payment. Your draft is safe; try again in a moment.';
+      }
+      paintPublishDialog(project, {});
+    }
+  }
+
+  // Back from the payment page (?payment=<id>): ask the server whether it was paid, and carry on in the publish dialog.
+  async function handlePaymentReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get('payment');
+    if (!paymentId) return;
+    params.delete('payment');
+    const rest = params.toString();
+    try { window.history.replaceState({}, '', window.location.pathname + (rest ? `?${rest}` : '') + window.location.hash); } catch { /* the address bar keeps the id; harmless */ }
+    let pending = null;
+    try { pending = JSON.parse(window.localStorage.getItem(PENDING_PAYMENT_KEY) || 'null'); } catch { pending = null; }
+    const project = pending && pending.paymentId === paymentId ? state.projects.find(item => item.id === pending.projectId) : null;
+    if (!project || !project.cloudId || !tokenFor(project.cloudId) || !window.inviteStudioApi?.enabled) {
+      toast('We could not match that payment to a draft in this browser. If you paid, contact us with your payment details and we will sort it out.');
+      return;
+    }
+    state.currentId = project.id;
+    state.page = 'editor';
+    render();
+    window.openCloudPublish(project);
+    if (!publishSession) return;
+    publishSession.typed = pending.slug || publishSession.typed;
+    await confirmPayment(project, paymentId);
+  }
+
+  // Asks the server (which asks the payment service) whether the payment is done, a few times, since the bank can take a moment.
+  async function confirmPayment(project, paymentId) {
+    const session = publishSession;
+    if (!session) return;
+    session.info = 'Confirming your payment…';
+    session.busy = true;
+    session.checkAgain = false;
+    paintPublishDialog(project, {});
+    for (let attempt = 0; attempt < 6 && publishSession === session; attempt++) {
+      try {
+        const result = await window.inviteStudioApi.verifyPayment(project.cloudId, tokenFor(project.cloudId), paymentId);
+        if (result.unlocked) {
+          project.publishUnlocked = true;
+          try { window.localStorage.removeItem(PENDING_PAYMENT_KEY); } catch { /* nothing to clear */ }
+          session.busy = false;
+          session.needsPayment = false;
+          session.info = 'Payment received. Thank you! Choose Make it live to publish.';
+          localSave();
+          paintPublishDialog(project, {});
+          return;
+        }
+      } catch (error) {
+        if (error.code === 'PAYMENT_MISMATCH') {
+          session.busy = false;
+          session.info = '';
+          session.error = 'We could not confirm this payment. Please contact us with your payment details and we will sort it out.';
+          paintPublishDialog(project, {});
+          return;
+        }
+      }
+      if (attempt < 5) await new Promise(resolve => window.setTimeout(resolve, 2500));
+    }
+    if (publishSession !== session) return;
+    session.busy = false;
+    session.info = 'We have not heard back from the payment service yet. If you have paid, it unlocks within a few minutes: choose Check again.';
+    session.checkAgain = true;
+    paintPublishDialog(project, {});
+  }
+
+  function handlePaymentReturnAgain(project) {
+    let pending = null;
+    try { pending = JSON.parse(window.localStorage.getItem(PENDING_PAYMENT_KEY) || 'null'); } catch { pending = null; }
+    if (pending && pending.projectId === project.id && pending.paymentId) confirmPayment(project, pending.paymentId);
+  }
+
   function publishErrorMessage(error) {
     if (error.code === 'SLUG_CHANGE_CONFIRMATION_REQUIRED') return 'Confirm that the old address will stop working.';
     if (error.code === 'SLUG_CONFLICT') return 'That web address is already in use. Choose another.';
@@ -1110,6 +1275,13 @@
       toast('Your invitation is live.');
     } catch (error) {
       session.busy = false;
+      if (error.code === 'PAYMENT_REQUIRED') {
+        // The server says this website must be paid for first: the main button now takes the payment.
+        session.needsPayment = true;
+        session.error = '';
+        paintPublishDialog(project, {});
+        return;
+      }
       session.error = publishErrorMessage(error);
       if (error.code === 'SLUG_CONFLICT') {
         session.availability = { available: false, message: 'That web address is already in use.', suggestions: [] };
@@ -1304,7 +1476,7 @@
     if (privateLink) {
       recoverFromPrivateLink(privateLink);
     } else {
-      hydrateCloudProjects();
+      Promise.resolve(hydrateCloudProjects()).catch(() => null).then(handlePaymentReturn).catch(() => null);
     }
   };
 })();

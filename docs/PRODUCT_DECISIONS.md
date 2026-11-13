@@ -5,11 +5,12 @@ completion plan (`docs/DESIGN_COVERAGE_AUDIT.md`) and the implementation that fo
 
 ## 1. Commercial model
 
-- Launch as a **free beta / early access** product.
-- No pricing plans, no paid tiers, and no commercial claims (no plan names, prices,
-  "free forever" or similar) until product usage, hosting costs and demand are validated.
-- The website may say that invitations are **free during early access**.
-- The pricing page and the pricing modal are reworked to say this, and nothing else.
+- **Updated:** priced by design (three tiers), paid once to publish, with prices set by region. See `docs/PRICING_PLAN.md`; where it
+  differs from the bullets below, that plan applies. (Phase 1, showing the prices, is built; taking payment is not.)
+- Originally: launch as a free beta / early access product with no pricing plans, no paid tiers and no commercial claims until usage,
+  hosting costs and demand were validated.
+- While payments are not connected, the website says that **publishing is free during early access** and shows the prices that will apply.
+- Previously the pricing page and modal said only that; they now show the real tiers.
 
 ## 2. RSVP scope (initial launch)
 
