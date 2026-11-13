@@ -1,11 +1,12 @@
 // Home screen from the Figma Make export (App.tsx lines 1054-1476).
 import { useState } from "react";
-import { Icon, IconName, Logo, faqs, plans, templates, galleryTemplates } from "./shared";
+import { Icon, IconName, Logo, faqs, templates, galleryTemplates } from "./shared";
+import { formatMoney, usePricing } from "./pricing";
 import { bridge } from "./bridge";
 import { RecoveryBanner, TalkToUs } from "./extras";
 import { TemplateStrip } from "./TemplateStrip";
 export function HomePage() {
-  const [yearly, setYearly] = useState(true)
+  const { data: pricing, setRegion } = usePricing()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -96,7 +97,7 @@ export function HomePage() {
           {[
             [
               "sparkle",
-              "Premium templates",
+              "Beautiful templates",
               "Thoughtfully designed for every wedding style",
             ],
             [
@@ -241,55 +242,65 @@ export function HomePage() {
       <section className="section shell pricing" id="pricing">
         <div className="section-heading row">
           <div>
-            <span className="section-kicker">Plans for every celebration</span>
+            <span className="section-kicker">One price for each design</span>
             <h2>Simple, transparent pricing</h2>
-            <p>Choose a plan that fits your celebration.</p>
+            <p>
+              Build and preview your invitation for free. You pay once, when you publish, and the price depends on the design you choose.
+            </p>
           </div>
-          <div className="toggle" role="group" aria-label="Billing period">
-            <button
-              className={!yearly ? "active" : ""}
-              onClick={() => setYearly(false)}
-            >
-              Monthly
-            </button>
-            <button
-              className={yearly ? "active" : ""}
-              onClick={() => setYearly(true)}
-            >
-              Yearly <span>Save 20%</span>
-            </button>
-          </div>
+          {pricing && (
+            <label className="region-picker">
+              <span>Prices for</span>
+              <select value={pricing.region} onChange={(event) => setRegion(event.target.value)} aria-label="Show prices for">
+                {pricing.regions.map((region) => (
+                  <option key={region.id} value={region.id}>
+                    {region.name} ({region.currency})
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
         </div>
         <div className="plans">
-          {plans.map((plan) => (
-            <article
-              className={plan.featured ? "plan featured" : "plan"}
-              key={plan.name}
-            >
-              {plan.featured && <span className="popular">Most popular</span>}
-              <h3>{plan.name}</h3>
-              <p>{plan.subtitle}</p>
-              <div className="price">
-                ₹{(yearly ? plan.yearly : plan.monthly).toLocaleString("en-IN")}
-                <small> /{yearly ? "year" : "month"}</small>
-              </div>
-              <ul>
-                {plan.features.map((feature) => (
-                  <li key={feature}>
-                    <Icon name="check" size={16} />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <a
-                className={plan.featured ? "button" : "button outline"}
-                href="/templates"
-              >
-                Start creating
-              </a>
-            </article>
-          ))}
+          {(pricing ? pricing.tiers : []).map((tier) => {
+            const designs = galleryTemplates.filter((item) => (pricing!.templates[item.backendId] || "classic") === tier.id)
+            return (
+              <article className={tier.id === "premium" ? "plan featured" : "plan"} key={tier.id}>
+                {tier.id === "premium" && <span className="popular">Most popular</span>}
+                <h3>{tier.name}</h3>
+                <p>{tier.tagline}</p>
+                <div className="price">
+                  {formatMoney(tier.amountMinor, pricing!.currency, pricing!.locale)}
+                  <small> one-time</small>
+                </div>
+                <ul>
+                  {tier.features.map((feature) => (
+                    <li key={feature}>
+                      <Icon name="check" size={16} />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <p className="plan-designs">
+                  {designs.length} {designs.length === 1 ? "design" : "designs"}: {designs.slice(0, 3).map((item) => item.title).join(", ")}
+                  {designs.length > 3 ? " and more" : ""}
+                </p>
+                <a className={tier.id === "premium" ? "button" : "button outline"} href="/templates">
+                  See {tier.name} designs
+                </a>
+              </article>
+            )
+          })}
         </div>
+        {pricing ? (
+          <p className="pricing-note">
+            {pricing.mode === "live"
+              ? "Pay once to publish. Your invitation stays online until 2 months after your event."
+              : "Publishing is free during early access while we finish setting up payments. These are the prices that will apply afterwards."}
+          </p>
+        ) : (
+          <p className="pricing-note">Prices are shown when you choose a design.</p>
+        )}
       </section>
 
 

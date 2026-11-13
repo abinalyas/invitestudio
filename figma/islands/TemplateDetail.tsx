@@ -2,7 +2,8 @@
 // only claims what the template and the editor really do.
 import { useEffect, useRef, useState } from "react";
 import { Icon, Logo, backendTemplateIds, editableItems, galleryTemplates, guestSections } from "./shared";
-import { bridge } from "./bridge";
+import { bridge } from "./bridge"
+import { formatMoney, tierOf, usePricing } from "./pricing";
 export function TemplateDetailPage({ templateId }: { templateId: number }) {
   const template =
     galleryTemplates.find((item) => item.id === templateId) ??
@@ -10,6 +11,8 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const screenRef = useRef<HTMLDivElement>(null)
   const [cue, setCue] = useState(false)
+  const { data: pricing } = usePricing()
+  const tier = tierOf(pricing, template.backendId)
 
   // Scroll cue: shown while the invitation can scroll and is still at the top.
   const updateCue = () => {
@@ -94,6 +97,15 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
                 <span key={tag}>{tag}</span>
               ))}
             </div>
+            {tier && pricing && (
+              <p className="detail-price" data-testid="detail-price">
+                <strong>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}</strong>
+                <span>
+                  {tier.name} design, one-time when you publish.{" "}
+                  {pricing.mode === "live" ? "" : "Free during early access."}
+                </span>
+              </p>
+            )}
             <div className="detail-actions">
               <button className="button" onClick={() => bridge.startSetup(template.backendId)}>
                 <Icon name="edit" size={19} />

@@ -522,3 +522,17 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
 /* The editor is a fixed-height column. Its header and notices must keep their own height: if they shrink, a header that
    wraps onto two rows (screens about 770 to 1180 px wide) spills over the notice below it. */
 .editor-page > .editor-header, .editor-page > .retention-notice, .editor-page > .share-guide { flex: none; }
+
+
+/* Pricing (prices come from /api/pricing; see figma/islands/pricing.ts) */
+.region-picker { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted-text); }
+.region-picker select { min-height: 40px; padding: 0 34px 0 14px; border: 1px solid var(--line-strong); border-radius: 10px; background: #fff; color: var(--ink); font: inherit; }
+.plan .price { font-size: 34px; }
+.plan .price small { font-size: 13px; color: var(--muted-text); }
+.plan-designs { margin: 4px 0 18px; font-size: 12px; line-height: 1.5; color: var(--muted-text); }
+.pricing-note { margin: 26px auto 0; max-width: 640px; text-align: center; font-size: 13px; line-height: 1.6; color: var(--muted-text); }
+.detail-price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; margin: 18px 0 4px; }
+.detail-price strong { font-family: "Playfair Display", serif; font-size: 30px; color: var(--ink); }
+.detail-price span { font-size: 13px; color: var(--muted-text); }
+.gallery-price { margin: 8px 0 0; font-size: 12px; color: var(--muted-text); }
+.gallery-price strong { margin-left: 4px; color: var(--ink); font-weight: 600; }
