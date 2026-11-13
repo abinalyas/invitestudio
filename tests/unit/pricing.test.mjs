@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { TIERS, TEMPLATE_TIERS, REGIONS, DEFAULT_REGION, regionForCountry, normalRegion, tierFor, quote, pricingFor, regionIds } from '../../functions/_shared/pricing.js';
+import { TIERS, TEMPLATE_TIERS, REGIONS, DEFAULT_REGION, regionForCountry, normalRegion, tierFor, quote, pricingFor } from '../../functions/_shared/pricing.js';
 import { onRequest, countryOf } from '../../functions/api/pricing.js';
 
 const offered = () => {
@@ -53,19 +53,19 @@ test('a design that is not listed is Classic, so a new design is never free by a
   assert.equal(quote('cinematic', 'mars').region, DEFAULT_REGION, 'an unknown region is priced as rest of world');
 });
 
-test('the page payload has the tiers in order with this region\'s price, and the list of regions for the switcher', () => {
+test('the page payload has the tiers in order with this region\'s price', () => {
   const data = pricingFor('gb');
   assert.equal(data.currency, 'GBP');
   assert.deepEqual(data.tiers.map(t => t.id), ['classic', 'premium', 'signature']);
   assert.equal(data.tiers[1].amountMinor, REGIONS.gb.prices.premium);
   assert.ok(data.tiers.every(t => t.name && t.tagline && t.features.length >= 3));
-  assert.deepEqual(data.regions.map(r => r.id), regionIds());
+  assert.equal(data.regions, undefined, 'there is no list of regions to choose from');
   assert.equal(data.templates['golden-butterfly'], 'signature');
 });
 
-test('GET /api/pricing: the price follows the country Cloudflare reports, and the visitor can pick another region', async () => {
+test('GET /api/pricing: the price follows the country Cloudflare reports, and the visitor cannot pick another', async () => {
   const india = await (await get('https://x.test/api/pricing', { country: 'IN' })).json();
-  assert.equal(india.region, 'in'); assert.equal(india.currency, 'INR'); assert.equal(india.country, 'IN'); assert.equal(india.detected, true);
+  assert.equal(india.region, 'in'); assert.equal(india.currency, 'INR'); assert.equal(india.country, 'IN');
   const us = await (await get('https://x.test/api/pricing', { country: 'US' })).json();
   assert.equal(us.currency, 'USD');
   assert.notEqual(us.tiers[0].amountMinor, india.tiers[0].amountMinor);
@@ -73,21 +73,24 @@ test('GET /api/pricing: the price follows the country Cloudflare reports, and th
   assert.equal(header.region, 'gb');
   const unknown = await (await get('https://x.test/api/pricing', { country: 'XX' })).json();
   assert.equal(unknown.region, DEFAULT_REGION); assert.equal(unknown.country, '');
-  const picked = await (await get('https://x.test/api/pricing?region=EU', { country: 'IN' })).json();
-  assert.equal(picked.region, 'eu'); assert.equal(picked.detected, false); assert.equal(picked.country, 'IN');
+  // A region in the address is ignored: the price follows the country, whatever the page asks for.
+  for (const asked of ['us', 'EU', 'mars', '__proto__']) {
+    const answer = await get(`https://x.test/api/pricing?region=${asked}`, { country: 'IN' });
+    assert.equal(answer.status, 200);
+    const body = await answer.json();
+    assert.equal(body.region, 'in', `?region=${asked} does not change the price`);
+    assert.equal(body.currency, 'INR');
+  }
   assert.equal(countryOf(new Request('https://x.test/', { headers: { 'CF-IPCountry': '<b>' } })), '', 'a malformed country is ignored');
 });
 
-test('GET /api/pricing: prices are never cached or shared between visitors, bad input is refused, and it says whether payments are live', async () => {
+test('GET /api/pricing: prices are never cached or shared between visitors, only a read is allowed, and it says whether payments are live', async () => {
   const response = await get('https://x.test/api/pricing', { country: 'IN' });
   assert.equal(response.status, 200);
   assert.match(response.headers.get('Cache-Control'), /no-store/);
   assert.equal((await response.json()).mode, 'early-access');
   const live = await onRequest({ request: new Request('https://x.test/api/pricing'), env: { PAYMENTS_MODE: 'live' }, params: {} });
   assert.equal((await live.json()).mode, 'live');
-  const bad = await get('https://x.test/api/pricing?region=mars');
-  assert.equal(bad.status, 400);
-  assert.equal((await bad.json()).error.code, 'VALIDATION_ERROR');
   const post = await onRequest({ request: new Request('https://x.test/api/pricing', { method: 'POST' }), env: {}, params: {} });
   assert.equal(post.status, 405);
 });

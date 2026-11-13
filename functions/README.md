@@ -9,17 +9,16 @@ secrets. The key is never imported by `index.html` or any browser script.
 ### Prices
 
 ```http
-GET /api/pricing            # the visitor's country comes from Cloudflare
-GET /api/pricing?region=us  # a region the visitor picked (in, us, gb, eu, gulf, row)
+GET /api/pricing            # the visitor's country comes from Cloudflare; there is no way to choose another
 ```
 
-Returns the tiers, the price of each in the region's currency (minor units), which tier each design is in, the list of regions, and
+Returns the tiers, the price of each in the visitor's currency (minor units), which tier each design is in, and
 `mode` (`early-access` until the environment variable `PAYMENTS_MODE` is `live`). Never cached. See `docs/PRICING_PLAN.md`.
 
 ### Paying to publish (Razorpay)
 
 ```http
-POST /api/weddings/<id>/checkout                          # Authorization: Bearer <editToken>; body {"region":"in"} optional
+POST /api/weddings/<id>/checkout                          # Authorization: Bearer <editToken>; no body needed
 POST /api/weddings/<id>/payments/<paymentId>/verify       # Authorization: Bearer <editToken>
 POST /api/payments/razorpay-webhook                       # Razorpay only; X-Razorpay-Signature
 ```

@@ -1260,8 +1260,6 @@
 .figma-app .gallery-talk{ margin: 8px 0 0; font-size: .9rem; }
 @media (max-width: 767px){.figma-app .retention-notice{ margin: 8px 12px 0; }}
 .figma-app .editor-page > .editor-header, .figma-app .editor-page > .retention-notice, .figma-app .editor-page > .share-guide{ flex: none; }
-.figma-app .region-picker{ display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted-text); }
-.figma-app .region-picker select{ min-height: 40px; padding: 0 34px 0 14px; border: 1px solid var(--line-strong); border-radius: 10px; background: #fff; color: var(--ink); font: inherit; }
 .figma-app .plan .price{ font-size: 34px; }
 .figma-app .plan .price small{ font-size: 13px; color: var(--muted-text); }
 .figma-app .plan-designs{ margin: 4px 0 18px; font-size: 12px; line-height: 1.5; color: var(--muted-text); }

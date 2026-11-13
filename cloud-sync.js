@@ -1088,14 +1088,9 @@
   }
 
   // ---- Paying to publish (docs/PRICING_PLAN.md). The page only SHOWS the price; the server decides it again at checkout. ----
-  const REGION_KEY = 'invitestudio-region';
   const PENDING_PAYMENT_KEY = 'invitestudio-pending-payment';
   // Where the payment page may be: Razorpay's own addresses, and nothing the server could be tricked into returning.
   const PAYMENT_HOST = /^https:\/\/([a-z0-9-]+\.)*(razorpay\.com|rzp\.io)\//i;
-
-  function savedRegion() {
-    try { return window.localStorage.getItem(REGION_KEY) || ''; } catch { return ''; }
-  }
 
   function formatMoney(amountMinor, currency, locale) {
     try {
@@ -1112,8 +1107,7 @@
     if (!session || session.price !== null || session.priceLoading) return;
     session.priceLoading = true;
     try {
-      const region = savedRegion();
-      const response = await fetch(region ? `/api/pricing?region=${encodeURIComponent(region)}` : '/api/pricing', { headers: { Accept: 'application/json' } });
+      const response = await fetch('/api/pricing', { headers: { Accept: 'application/json' } });
       const data = response.ok ? await response.json() : null;
       const tierId = data?.templates?.[project.templateId] || 'classic';
       const tier = data?.tiers?.find(item => item.id === tierId);
@@ -1140,7 +1134,7 @@
     session.info = '';
     paintPublishDialog(project, {});
     try {
-      const result = await window.inviteStudioApi.startCheckout(project.cloudId, tokenFor(project.cloudId), { region: savedRegion() });
+      const result = await window.inviteStudioApi.startCheckout(project.cloudId, tokenFor(project.cloudId));
       if (result.alreadyUnlocked) {
         project.publishUnlocked = true;
         session.busy = false;

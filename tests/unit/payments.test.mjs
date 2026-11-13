@@ -154,7 +154,7 @@ test('checkout: nothing happens without a valid token, before payments are live,
 
 test('checkout: the server works out the price, locks it in a payment row, and asks Razorpay for exactly that amount', async () => {
   const state = world();
-  // The browser tries to name its own price; it is ignored. It may only suggest a region.
+  // The browser tries to name its own price; it is ignored.
   const r = await checkoutRun(state, { body: { amount: 1, amountMinor: 1, currency: 'USD' } });
   assert.equal(r.status, 200, r.text);
   const expected = quote('velvet-reveal', 'in');
@@ -176,18 +176,17 @@ test('checkout: the server works out the price, locks it in a payment row, and a
   assert.ok(!r.text.includes(KEY_SECRET), 'the secret never appears in a response');
 });
 
-test('checkout: a visitor outside India pays that region\'s price, and a region they pick wins over their country', async () => {
+test('checkout: the price follows the visitor\'s country; a region or amount the browser sends is ignored', async () => {
   let state = world();
   const us = await checkoutRun(state, { cf: { country: 'US' } });
   assert.deepEqual([us.body.currency, us.body.amountMinor, us.body.region], ['USD', 5900, 'us']);
   state = world();
-  const picked = await checkoutRun(state, { cf: { country: 'IN' }, body: { region: 'gb' } });
-  assert.deepEqual([picked.body.currency, picked.body.amountMinor], ['GBP', 4500]);
-  state = world();
-  const bogus = await checkoutRun(state, { cf: { country: 'IN' }, body: { region: 'mars' } });
-  assert.equal(bogus.body.region, 'in', 'an unknown region is ignored, not trusted');
+  const sneaky = await checkoutRun(state, { cf: { country: 'IN' }, body: { region: 'gb', amount: 1, currency: 'GBP' } });
+  assert.deepEqual([sneaky.body.currency, sneaky.body.amountMinor, sneaky.body.region], ['INR', 299900, 'in'], 'a cheaper region cannot be chosen');
   state = world({ wedding: { ...world().wedding, template_id: 'minimalist' } });
   assert.equal((await checkoutRun(state)).body.amountMinor, 99900);
+  state = world();
+  assert.equal((await checkoutRun(state, { cf: { country: 'ZZ' } })).body.region, 'row', 'an unknown place pays the rest-of-world price');
 });
 
 test('checkout: pressing the button again reuses the open link, and an unlocked website is not charged', async () => {

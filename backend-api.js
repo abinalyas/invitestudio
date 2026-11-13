@@ -74,12 +74,12 @@
         body: JSON.stringify(body)
       });
     },
-    // Paying to publish (docs/PRICING_PLAN.md). The browser never sends an amount: the server works out the price.
-    startCheckout(id, editToken, options = {}) {
+    // Paying to publish (docs/PRICING_PLAN.md). The browser sends neither an amount nor a country: the server works out both.
+    startCheckout(id, editToken) {
       return request(`/weddings/${encodeURIComponent(id)}/checkout`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${editToken}` },
-        body: JSON.stringify(options.region ? { region: options.region } : {})
+        body: JSON.stringify({})
       });
     },
     // Asks the server whether a payment is done (the server asks the payment service; nothing here is believed).
