@@ -1,11 +1,11 @@
 // POST /api/weddings/<id>/checkout: start the one-time payment that unlocks publishing.
 //
 // Authorised by the private edit token, like publishing. The browser sends no amount: the server works out the price for this
-// wedding's design and the visitor's region (functions/_shared/pricing.js), writes a `payments` row with that amount LOCKED, and
+// wedding's design and the visitor's country (functions/_shared/pricing.js), writes a `payments` row with that amount LOCKED, and
 // creates a Razorpay Payment Link for exactly it. The browser is sent to the link's page to pay.
 import { ApiError, assertUuid, db, fail, getWedding, optionsResponse, requireEditAccess, success } from '../../../_shared/api.js';
 import { isLaunchTemplate } from '../../../_shared/templates.js';
-import { normalRegion, quote, regionForCountry, TIERS } from '../../../_shared/pricing.js';
+import { quote, regionForCountry, TIERS } from '../../../_shared/pricing.js';
 import { createPaymentLink, paymentsLive, razorpayConfig } from '../../../_shared/razorpay.js';
 import { countryOf } from '../../pricing.js';
 
@@ -22,17 +22,15 @@ export async function onRequest(context) {
     if (!paymentsLive(env)) throw new ApiError('Payments are not open yet.', 409, 'PAYMENTS_NOT_LIVE');
     razorpayConfig(env);
 
-    let body = {};
-    try { body = await request.json(); } catch { body = {}; }
     const wedding = await getWedding(env, params.id);
     if (!isLaunchTemplate(wedding.template_id)) {
       throw new ApiError('This design is no longer available. Choose another template before publishing.', 422, 'TEMPLATE_UNAVAILABLE');
     }
     if (wedding.publish_unlocked_at) return success(request, env, { alreadyUnlocked: true });
 
-    // The region the visitor picked on the page (a hint they may change), else the one their country belongs to.
+    // The price follows the visitor's country as Cloudflare reports it; the browser can name neither a price nor a region.
     const country = countryOf(request);
-    const region = normalRegion(body?.region) || regionForCountry(country);
+    const region = regionForCountry(country);
     const price = quote(wedding.template_id, region);
 
     // One link per wedding and price: pressing the button twice, or coming back, reuses the open link instead of making more.

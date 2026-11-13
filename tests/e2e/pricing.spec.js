@@ -1,18 +1,17 @@
-// Prices follow the visitor's country (decided on the server), can be switched, and are never shown wrong.
+// Prices follow the visitor's country (decided on the server, never chosen on the page), and are never shown wrong.
 const { test, expect } = require('@playwright/test');
 
 // The real pricing module answers, as the server would, for the country the test pretends to be in.
 async function pricesFor(page, country, { fail = false } = {}) {
-  const { pricingFor, regionForCountry, normalRegion } = await import('../../functions/_shared/pricing.js');
+  const { pricingFor, regionForCountry } = await import('../../functions/_shared/pricing.js');
   await page.route('**/api/pricing**', route => {
     if (fail) return route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":{"code":"DOWN"}}' });
-    const asked = normalRegion(new URL(route.request().url()).searchParams.get('region'));
-    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...pricingFor(asked || regionForCountry(country)), country, detected: !asked, mode: 'early-access' }) });
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...pricingFor(regionForCountry(country)), country, mode: 'early-access' }) });
   });
 }
 const plans = page => page.locator('.plans .plan');
 
-test('home: the three tiers show this country\'s price, and switching the region changes the currency', async ({ page }) => {
+test('home: the three tiers show this country\'s price, with no country or currency to choose', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await pricesFor(page, 'IN');
   await page.goto('/');
@@ -26,21 +25,19 @@ test('home: the three tiers show this country\'s price, and switching the region
   // Each tier says which designs belong to it.
   await expect(plans(page).nth(2)).toContainText('4 designs');
   await expect(plans(page).nth(2)).toContainText('Velvet Reveal');
-  // A traveller or someone on a VPN can pick another region; it is remembered.
-  await page.getByLabel('Show prices for').selectOption('us');
-  await expect(plans(page).nth(0)).toContainText('$19');
-  await expect(plans(page).nth(2)).toContainText('$59');
-  expect(await page.evaluate(() => localStorage.getItem('invitestudio-region'))).toBe('us');
-  await page.reload();
-  await expect(plans(page).nth(0)).toContainText('$19');
+  // The price follows where the visitor is: there is nothing to pick.
+  await expect(page.locator('.pricing select')).toHaveCount(0);
+  await expect(page.getByLabel('Show prices for')).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('invitestudio-region'))).toBeNull();
 });
 
-test('home: a visitor in the UK sees pounds, and the old placeholder plans are gone', async ({ page }) => {
+test('home: visitors in other countries see their own currency, and the old placeholder plans are gone', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await pricesFor(page, 'GB');
   await page.goto('/');
   await expect(plans(page).nth(1)).toContainText('£29');
   await expect(page.locator('.pricing')).not.toContainText('Pro+');
+  await expect(page.locator('.pricing select')).toHaveCount(0);
   await expect(page.locator('.pricing')).not.toContainText('Yearly');
   await expect(page.locator('.pricing')).not.toContainText('/month');
 });

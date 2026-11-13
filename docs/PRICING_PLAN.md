@@ -22,10 +22,10 @@ This replaces the "free beta, no prices" decision in `docs/PRODUCT_DECISIONS.md`
 - `GET /api/pricing` (`functions/api/pricing.js`) returns the tiers and prices for the visitor. The country is read **on the server** from
   Cloudflare (`request.cf.country`, or the `CF-IPCountry` header); the page never says where the visitor is. Unknown places (`XX`, Tor) and
   countries not listed get the rest-of-world price. The response is `no-store`, so one visitor's price is never served to another.
-  A visitor can pick another region with `?region=in|us|gb|eu|gulf|row` (people travel and use VPNs). The pages remember the choice on the device
-  (`invitestudio-region`).
+  There is **no country or currency picker**: the price simply follows where the visitor is, and a `region` in the address or a checkout is ignored,
+  so a cheaper region cannot be chosen. (A visitor who is travelling, or on a VPN, sees the price of where they appear to be.)
 - The pages (`figma/islands/pricing.ts`): the home page's Pricing section shows the three tiers, the price in the visitor's currency, which designs
-  each tier holds and a region picker; each template's page and each gallery card show the design's tier and price. If the prices cannot be loaded,
+  each tier holds; each template's page and each gallery card show the design's tier and price. If the prices cannot be loaded,
   **no numbers are shown** ("Prices are shown when you choose a design"); a wrong price is worse than none.
 - `PAYMENTS_MODE`: while it is not `live` (the default), the pages say "Publishing is free during early access while we finish setting up
   payments. These are the prices that will apply afterwards." Nothing is charged and nothing is gated in phase 1.
@@ -45,7 +45,7 @@ site entirely, and works well on phones (UPI apps). Switching to the pop-up late
    `402 PAYMENT_REQUIRED`. The dialog then makes its main button "Pay ₹X and continue" (it already does when the price note says payments are live).
 2. **Checkout** (`POST /api/weddings/<id>/checkout`, edit-token authorised): the server works out the price for the wedding's design and region
    (`quote()`), writes a `payments` row (`pending`, amount and currency **locked**), and creates a Razorpay Payment Link for exactly that amount,
-   with `reference_id` = our payment id and a 2-hour expiry. The browser sends **no amount**, only an optional region it picked. A second press within
+   with `reference_id` = our payment id and a 2-hour expiry. The browser sends **no amount and no region**. A second press within
    30 minutes reuses the open link. The page navigates to the link only if its address is on `razorpay.com` or `rzp.io`.
 3. **Return** (`/?payment=<our payment id>`): the page matches the id to the draft it started the payment from (kept in local storage), reopens
    the publish dialog, and calls **verify** (`POST /api/weddings/<id>/payments/<paymentId>/verify`). The server finds its own payment row (for this

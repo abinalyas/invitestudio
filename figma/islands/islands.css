@@ -525,8 +525,6 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
 
 
 /* Pricing (prices come from /api/pricing; see figma/islands/pricing.ts) */
-.region-picker { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted-text); }
-.region-picker select { min-height: 40px; padding: 0 34px 0 14px; border: 1px solid var(--line-strong); border-radius: 10px; background: #fff; color: var(--ink); font: inherit; }
 .plan .price { font-size: 34px; }
 .plan .price small { font-size: 13px; color: var(--muted-text); }
 .plan-designs { margin: 4px 0 18px; font-size: 12px; line-height: 1.5; color: var(--muted-text); }

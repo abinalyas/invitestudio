@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 async function draftWithServer(page, { mode = 'live', country = 'IN', unlocked = false, paidOnReturn = true } = {}) {
-  const { pricingFor, regionForCountry, normalRegion } = await import('../../functions/_shared/pricing.js');
+  const { pricingFor, regionForCountry } = await import('../../functions/_shared/pricing.js');
   const server = { version: 1, unlocked, paid: false, checkouts: [], verifies: 0, publishes: [] };
   const wedding = () => ({
     id: WID, version: server.version, status: 'draft', visibility: 'private', slug: null, name: 'Mira & Arun', category: 'Wedding', template_id: 'velvet-reveal',
@@ -47,8 +47,7 @@ async function draftWithServer(page, { mode = 'live', country = 'IN', unlocked =
     const request = route.request(), url = new URL(request.url()), method = request.method();
     const json = (body, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
     if (url.pathname === '/api/pricing') {
-      const asked = normalRegion(url.searchParams.get('region'));
-      return json({ ...pricingFor(asked || regionForCountry(country)), country, detected: !asked, mode });
+      return json({ ...pricingFor(regionForCountry(country)), country, mode });
     }
     if (url.pathname === `/api/weddings/${WID}` && method === 'GET') return json({ wedding: wedding(), photos: [] });
     if (url.pathname === `/api/weddings/${WID}/slug-availability`) return json({ available: true, slug: url.searchParams.get('slug'), suggestions: [] });

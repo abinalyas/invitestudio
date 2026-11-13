@@ -122,7 +122,6 @@ export function pricingFor(regionId) {
     currency: region.currency,
     locale: region.locale,
     tiers: TIERS.map(tier => ({ id: tier.id, name: tier.name, tagline: tier.tagline, features: [...tier.features], amountMinor: region.prices[tier.id] })),
-    templates: { ...TEMPLATE_TIERS },
-    regions: regionIds().map(id => ({ id, name: REGIONS[id].name, currency: REGIONS[id].currency }))
+    templates: { ...TEMPLATE_TIERS }
   };
 }

@@ -6,7 +6,7 @@ import { bridge } from "./bridge";
 import { RecoveryBanner, TalkToUs } from "./extras";
 import { TemplateStrip } from "./TemplateStrip";
 export function HomePage() {
-  const { data: pricing, setRegion } = usePricing()
+  const { data: pricing } = usePricing()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -248,18 +248,6 @@ export function HomePage() {
               Build and preview your invitation for free. You pay once, when you publish, and the price depends on the design you choose.
             </p>
           </div>
-          {pricing && (
-            <label className="region-picker">
-              <span>Prices for</span>
-              <select value={pricing.region} onChange={(event) => setRegion(event.target.value)} aria-label="Show prices for">
-                {pricing.regions.map((region) => (
-                  <option key={region.id} value={region.id}>
-                    {region.name} ({region.currency})
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
         </div>
         <div className="plans">
           {(pricing ? pricing.tiers : []).map((tier) => {
