@@ -74,6 +74,22 @@
         body: JSON.stringify(body)
       });
     },
+    // Paying to publish (docs/PRICING_PLAN.md). The browser never sends an amount: the server works out the price.
+    startCheckout(id, editToken, options = {}) {
+      return request(`/weddings/${encodeURIComponent(id)}/checkout`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${editToken}` },
+        body: JSON.stringify(options.region ? { region: options.region } : {})
+      });
+    },
+    // Asks the server whether a payment is done (the server asks the payment service; nothing here is believed).
+    verifyPayment(id, editToken, paymentId) {
+      return request(`/weddings/${encodeURIComponent(id)}/payments/${encodeURIComponent(paymentId)}/verify`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${editToken}` },
+        body: JSON.stringify({})
+      });
+    },
     checkSlugAvailability(id, editToken, slug) {
       return request(`/weddings/${encodeURIComponent(id)}/slug-availability?slug=${encodeURIComponent(slug)}`, {
         headers: { Authorization: `Bearer ${editToken}` }

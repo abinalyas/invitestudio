@@ -84,7 +84,8 @@ async function runPublish(state, body, opts = {}) {
 }
 
 const rpcCalls = state => state.calls.filter(c => c.path === '/rest/v1/rpc/publish_wedding_slug');
-const weddingPatches = state => state.calls.filter(c => c.method === 'PATCH' && c.path === '/rest/v1/weddings');
+// Direct writes of the slug. (Publishing also records the early access unlock, docs/PRICING_PLAN.md; that never touches the slug.)
+const weddingPatches = state => state.calls.filter(c => c.method === 'PATCH' && c.path === '/rest/v1/weddings' && c.body && 'slug' in c.body);
 
 // ---------------------------------------------------------------- authorization: the token is checked first
 test('missing edit token: 401 EDIT_TOKEN_REQUIRED, RPC never invoked, no direct write', async () => {
@@ -233,7 +234,7 @@ test('across every publish test above, the slug was never written directly', asy
   // Re-run one change and assert the complete recorded traffic has no PATCH of weddings.
   const state = world();
   await runPublish(state, { version: 3, slug: 'alpha-two', confirmSlugChange: true });
-  assert.equal(state.calls.filter(c => c.method === 'PATCH' && c.path === '/rest/v1/weddings').length, 0);
+  assert.equal(weddingPatches(state).length, 0);
 });
 
 // ---------------------------------------------------------------- availability: historical and change allowance

@@ -16,6 +16,19 @@ GET /api/pricing?region=us  # a region the visitor picked (in, us, gb, eu, gulf,
 Returns the tiers, the price of each in the region's currency (minor units), which tier each design is in, the list of regions, and
 `mode` (`early-access` until the environment variable `PAYMENTS_MODE` is `live`). Never cached. See `docs/PRICING_PLAN.md`.
 
+### Paying to publish (Razorpay)
+
+```http
+POST /api/weddings/<id>/checkout                          # Authorization: Bearer <editToken>; body {"region":"in"} optional
+POST /api/weddings/<id>/payments/<paymentId>/verify       # Authorization: Bearer <editToken>
+POST /api/payments/razorpay-webhook                       # Razorpay only; X-Razorpay-Signature
+```
+
+`checkout` returns `{ paymentId, url, amountMinor, currency, tier, region }` for a Razorpay Payment Link; the server decides the amount.
+`verify` returns `{ unlocked, status }` after asking Razorpay itself. `publish` answers `402 PAYMENT_REQUIRED` for a website that has not
+paid once `PAYMENTS_MODE=live`. Environment: `PAYMENTS_MODE`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, optional
+`PUBLIC_ORIGIN`. See `docs/PRICING_PLAN.md`.
+
 ### Create an anonymous draft
 
 ```http
