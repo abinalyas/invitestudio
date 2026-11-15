@@ -1,6 +1,7 @@
-import { headTags, isPrivateHost, originFor, pageFor, staticContent } from './_shared/seo.js';
+import { SECURITY_HEADERS } from './_shared/security.js';
+import { headTags, isPrivateHost, landingDocument, originFor, pageFor, staticContent } from './_shared/seo.js';
 
-// Gives each public marketing page (/, /templates, /templates/<id>) its own title, description, canonical address, social card,
+// Gives each public marketing page (/, /templates, /templates/<id>) and serves the search-intent landing pages (functions/_shared/landing.js) its own title, description, canonical address, social card,
 // structured data and plain-HTML content (functions/_shared/seo.js). Every other request passes straight through untouched.
 export async function onRequest(context) {
   const { request, env } = context;
@@ -8,6 +9,14 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const page = pageFor(url.pathname);
   if (!page) return context.next();
+
+  if (page.kind === 'landing') {
+    // A landing page is a complete server-rendered document, so it does not go through the application shell.
+    const headers = new Headers({ 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) headers.set(name, value);
+    if (isPrivateHost(url.hostname)) headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return new Response(request.method === 'HEAD' ? null : landingDocument(page, originFor(env)), { status: 200, headers });
+  }
 
   const response = await context.next();
   if (response.status !== 200 || !(response.headers.get('Content-Type') || '').includes('text/html')) return response;

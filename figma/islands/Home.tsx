@@ -346,6 +346,13 @@ export function HomePage() {
           <a href="#pricing">Pricing</a>
           <a href="#faq-list">FAQs</a>
         </nav>
+        <nav className="footer-guides" aria-label="Guides">
+          <a href="/wedding-invitation-website">Wedding invitation website</a>
+          <a href="/digital-wedding-invitation">Digital wedding invitation</a>
+          <a href="/online-wedding-invitation-with-rsvp">Invitation with RSVP</a>
+          <a href="/animated-wedding-invitation">Animated invitations</a>
+          <a href="/whatsapp-wedding-invitation">Share on WhatsApp</a>
+        </nav>
         <p className="footer-talk">
           <TalkToUs topic="custom" lead="Want something unique? Talk to us:" />
         </p>

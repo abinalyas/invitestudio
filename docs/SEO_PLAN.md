@@ -12,6 +12,10 @@ The site is a client-rendered single page, so the HTML a crawler downloads used 
 - All of it lives in `functions/_shared/seo.js`. Absolute URLs come from the `PUBLIC_ORIGIN` environment variable, else the request's own origin. `tests/unit/seo.test.mjs` fails if the template list drifts from the gallery, a description is too long, or a price slips into the markup.
 - Prices differ by country and are placeholders, so no amount appears in structured data.
 
+## Built (phase 2: search-intent pages)
+
+Five server-rendered pages, one per thing people search for, each with its own angle, three template picks, a FAQ (with FAQPage markup) and links to the others: `/wedding-invitation-website`, `/digital-wedding-invitation`, `/online-wedding-invitation-with-rsvp`, `/animated-wedding-invitation`, `/whatsapp-wedding-invitation`. Content lives in `functions/_shared/landing.js`; they are in the sitemap and `llms.txt`, and linked from the home page footer. They say only what the product does today and show no price. To add a page, add an entry to `LANDING`; `tests/unit/seo.test.mjs` checks the templates exist, links work and each page has one h1.
+
 ## Decided
 
 - The public address is **https://invitestudio.co** (`SITE_ORIGIN` in `functions/_shared/seo.js`; `PUBLIC_ORIGIN` overrides it). Canonical links, the sitemap and `llms.txt` always use it. The `*.pages.dev` addresses and previews send `X-Robots-Tag: noindex` and a `Disallow: /` robots.txt.
@@ -24,7 +28,7 @@ The site is a client-rendered single page, so the HTML a crawler downloads used 
 
 ## Next phases (not built)
 
-- **Real pages for real searches.** One page per intent, each with unique useful content: "wedding invitation website", "digital wedding invitation", "online wedding invitation with RSVP", "animated wedding invitation", "wedding invitation for WhatsApp", plus a regional page for each market the pricing covers. A single home page cannot rank for all of them.
+- **More pages for more searches**: a regional page for each market the pricing covers (only with claims that are true there), and pages for other intents as they appear in Search Console.
 - **Per-template detail**: a short description of what each design looks like and who it suits, and real images with descriptive alt text.
 - **Performance**: the 360 KB `index.html` and the client-side render slow the first paint; Core Web Vitals affect ranking.
 - **Off-site presence** is what makes assistants recommend a product: listings and mentions on wedding directories and "best wedding website builder" roundups, reviews, real couples' published invitations (with permission) and a blog of genuinely useful planning guides.

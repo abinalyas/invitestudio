@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE_ORIGIN, originFor, isPrivateHost, TEMPLATES, pageFor, describe, headTags, staticContent, robotsTxt, sitemapXml, llmsTxt } from '../../functions/_shared/seo.js';
+import { LANDING } from '../../functions/_shared/landing.js';
+import { landingDocument, SITE_ORIGIN, originFor, isPrivateHost, TEMPLATES, pageFor, describe, headTags, staticContent, robotsTxt, sitemapXml, llmsTxt } from '../../functions/_shared/seo.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const ORIGIN = 'https://example.test';
@@ -26,7 +27,7 @@ test('only the public marketing pages are described', () => {
 });
 
 test('every page has a distinct title and description, a canonical address, and valid structured data', () => {
-  const pages = ['/', '/templates', ...TEMPLATES.map(t => `/templates/${t.id}`)].map(pageFor);
+  const pages = ['/', '/templates', ...LANDING.map(l => `/${l.slug}`), ...TEMPLATES.map(t => `/templates/${t.id}`)].map(pageFor);
   const titles = new Set();
   for (const page of pages) {
     const info = describe(page, ORIGIN);
@@ -37,13 +38,13 @@ test('every page has a distinct title and description, a canonical address, and 
     assert.ok(html.includes(`<link rel="canonical" href="${info.canonical}"/>`));
     const json = /<script type="application\/ld\+json">(.*)<\/script>/s.exec(html)[1];
     assert.ok(JSON.parse(json)['@graph'].length >= 2);
-    assert.ok(staticContent(page, ORIGIN).includes('<h1>'));
+    assert.ok(page.kind === 'landing' ? landingDocument(page, ORIGIN).includes('<h1>') : staticContent(page, ORIGIN).includes('<h1>'));
   }
   assert.equal(titles.size, pages.length);
 });
 
 test('structured data never states a price (prices differ by country and are placeholders)', () => {
-  const all = ['/', '/templates', '/templates/9'].map(p => headTags(pageFor(p), ORIGIN).html + staticContent(pageFor(p), ORIGIN)).join('');
+  const all = ['/', '/templates', '/templates/9'].map(p => headTags(pageFor(p), ORIGIN).html + staticContent(pageFor(p), ORIGIN)).join('') + LANDING.map(l => landingDocument(pageFor(`/${l.slug}`), ORIGIN)).join('');
   assert.ok(!/["'>][^<"']*[₹$£€]\s?\d|"price"|priceCurrency/i.test(all));
 });
 
@@ -57,7 +58,7 @@ test('robots.txt blocks private paths, welcomes AI crawlers and names the sitema
 test('sitemap and llms.txt list every public page', () => {
   const sitemap = sitemapXml(ORIGIN);
   const llms = llmsTxt(ORIGIN);
-  for (const path of ['/', '/templates', ...TEMPLATES.map(t => `/templates/${t.id}`)]) {
+  for (const path of ['/', '/templates', ...LANDING.map(l => `/${l.slug}`), ...TEMPLATES.map(t => `/templates/${t.id}`)]) {
     assert.ok(sitemap.includes(`<loc>${ORIGIN}${path}</loc>`), path);
   }
   for (const t of TEMPLATES) assert.ok(llms.includes(`${ORIGIN}/templates/${t.id}`), t.title);
@@ -80,4 +81,25 @@ test('the default social card exists and is 1200x630', () => {
   const png = readFileSync(join(root, 'assets', 'og-image.png'));
   assert.equal(png.readUInt32BE(16), 1200);
   assert.equal(png.readUInt32BE(20), 630);
+});
+
+test('landing pages: unique content, real templates, working internal links, one h1', () => {
+  const slugs = new Set(LANDING.map(l => l.slug));
+  assert.equal(slugs.size, LANDING.length);
+  const ids = new Set(TEMPLATES.map(t => t.id));
+  const lead = new Set();
+  for (const l of LANDING) {
+    for (const id of l.picks) assert.ok(ids.has(id), `${l.slug}: template ${id}`);
+    assert.ok(l.faq.length >= 3 && l.sections.length >= 3, l.slug);
+    lead.add(l.lead);
+    const doc = landingDocument(pageFor(`/${l.slug}`), ORIGIN);
+    assert.equal((doc.match(/<h1>/g) || []).length, 1, l.slug);
+    assert.ok(doc.includes(`<link rel="canonical" href="${ORIGIN}/${l.slug}"/>`));
+    for (const [, path] of doc.matchAll(/href="(?:https:\/\/example\.test)?(\/[^"#]*)/g)) {
+      const p = pageFor(path);
+      assert.ok(p || path === '/' || path === '/templates', `${l.slug}: broken link ${path}`);
+    }
+    for (const [, src] of doc.matchAll(/src="(\/assets[^"]+)"/g)) assert.ok(existsSync(join(root, src.slice(1))), src);
+  }
+  assert.equal(lead.size, LANDING.length);
 });

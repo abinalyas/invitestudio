@@ -360,6 +360,8 @@
 .figma-app .cta-leaves.right{ right: -30px; transform: rotate(-20deg); }
 .figma-app .footer{ display: flex; min-height: 90px; align-items: center; justify-content: space-between; }
 .figma-app .footer nav{ display: flex; gap: 55px; font-size: 9px; }
+.figma-app .footer{ flex-wrap: wrap; }
+.figma-app .footer .footer-guides{ flex: 0 0 100%; order: 5; justify-content: center; flex-wrap: wrap; gap: 8px 28px; padding: 6px 0 18px; font-size: 12px; opacity: .85; }
 .figma-app .socials{ display: flex; align-items: center; gap: 22px; font-weight: 600; }
 @media (max-width: 1180px) and (min-width: 981px){.figma-app .shell{ width: calc(100% - 48px); }
 .figma-app .hero-copy{ padding-left: 0; }
