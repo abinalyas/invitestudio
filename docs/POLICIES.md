@@ -11,7 +11,7 @@ They are drafted from what the product does today. **They are not legal advice. 
 | Refund window when a customer changes their mind | `REFUND_DAYS` in `policies.js` | 7 days | A business decision, and it affects how much you can lose |
 | The three refund cases (our fault, changed mind, charged twice) and "we may take the invitation offline after a refund" | `refund-policy` in `policies.js` | as written | Same |
 | Refund speed ("usually 5 to 10 business days") | `refund-policy` | as written | Depends on Razorpay and the customer's bank; check Razorpay's current wording |
-| Legal name and address of the seller | `BUSINESS` in `policies.js` | empty (not shown) | Consumer-protection rules and payment providers usually expect them. Fill them in; the contact page then shows them |
+| Legal name and address of the seller | `BUSINESS` in `policies.js` | "InviteStudio", "Kochi, Kerala, India" (shown on the contact page) | Only a city, not a full street address. Consumer-protection rules (India's e-commerce rules, UK and EU trader rules) and payment providers usually expect the legal name and full registered address, so ask your accountant whether this is enough, and replace both with the registered details if not |
 | Governing law and where disputes are heard | not in the terms | left out | I must not guess your jurisdiction. Add it after legal advice |
 | GST / tax and invoices | not mentioned | n/a | Ask an accountant (docs/PRICING_PLAN.md). Razorpay Payment Links do not issue GST invoices |
 | The date shown as "Last updated" | `UPDATED` in `policies.js` | 15 November 2026 | Change it whenever you change a policy |

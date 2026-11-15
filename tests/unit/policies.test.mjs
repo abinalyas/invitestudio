@@ -39,9 +39,10 @@ test('the contact details match the ones in site-config.js, and the contact page
   assert.ok(doc.includes(`https://wa.me/${CONTACT.whatsapp}`));
 });
 
-test('the seller details appear on the contact page only when filled in', () => {
-  assert.equal(BUSINESS.legalName === '' && BUSINESS.address === '', true, 'fill these in (docs/POLICIES.md), then update this test');
+test('the seller details are shown on the contact page, and nothing prints as empty', () => {
+  assert.ok(BUSINESS.legalName && BUSINESS.address);
   const doc = policyDocument(pageFor('/contact'), ORIGIN);
+  assert.ok(doc.includes(BUSINESS.legalName) && doc.includes(BUSINESS.address));
   assert.ok(!/undefined|\[\]|null/.test(doc));
 });
 

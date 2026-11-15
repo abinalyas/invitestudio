@@ -12,8 +12,9 @@ export const UPDATED = '15 November 2026';
 // How many days after paying a customer can ask for their money back, when they change their mind.
 export const REFUND_DAYS = 7;
 
-// The seller's details. Left empty on purpose: fill them in (they are shown on the contact page only when set).
-export const BUSINESS = Object.freeze({ legalName: '', address: '' });
+// The seller's details, shown on the contact page (and only when set). The name is the trading name; replace it with the registered
+// legal name if that differs, and the address with the full registered address if the rules for your business require it (docs/POLICIES.md).
+export const BUSINESS = Object.freeze({ legalName: 'InviteStudio', address: 'Kochi, Kerala, India' });
 
 // Same details as site-config.js (the browser's copy); tests/unit/policies.test.mjs fails if they differ.
 export const CONTACT = Object.freeze({ email: 'abinalyas@gmail.com', whatsapp: '919567882568' });
