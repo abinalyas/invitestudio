@@ -211,6 +211,8 @@ h1 em { font-weight: 500; }
 .cta-leaves.right { right: -30px; transform: rotate(-20deg); }
 .footer { display: flex; min-height: 90px; align-items: center; justify-content: space-between; }
 .footer nav { display: flex; gap: 55px; font-size: 9px; }
+.footer { flex-wrap: wrap; }
+.footer .footer-guides { flex: 0 0 100%; order: 5; justify-content: center; flex-wrap: wrap; gap: 8px 28px; padding: 6px 0 18px; font-size: 12px; opacity: .85; }
 .socials { display: flex; align-items: center; gap: 22px; font-weight: 600; }
 
 @media (max-width: 1180px) and (min-width: 981px) {

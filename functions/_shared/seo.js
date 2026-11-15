@@ -9,6 +9,8 @@
 // are placeholders until confirmed, so no amount appears here. The template list mirrors figma/islands/shared.tsx
 // (galleryTemplates); tests/unit/seo.test.mjs fails if they drift apart.
 
+import { LANDING, renderLanding } from './landing.js';
+
 export const SITE_NAME = 'InviteStudio';
 
 // The one public address. Canonical links, the sitemap and llms.txt always use it, so preview deployments and the pages.dev address
@@ -87,6 +89,8 @@ export function pageFor(pathname) {
   const path = pathname.replace(/\/+$/, '') || '/';
   if (path === '/') return { kind: 'home', path: '/' };
   if (path === '/templates') return { kind: 'templates', path: '/templates' };
+  const landing = LANDING.find(item => `/${item.slug}` === path);
+  if (landing) return { kind: 'landing', path, landing };
   const detail = /^\/templates\/(\d+)$/.exec(path);
   if (detail) {
     const template = templateById(Number(detail[1]));
@@ -115,6 +119,10 @@ export function describe(page, origin) {
       image,
       type: 'website'
     };
+  }
+  if (page.kind === 'landing') {
+    const first = templateById(page.landing.picks[0]);
+    return { title: page.landing.title, description: page.landing.description, canonical: absolute(origin, page.path), image: first && first.image ? absolute(origin, first.image) : image, type: 'website' };
   }
   const { template } = page;
   return {
@@ -159,7 +167,14 @@ export function structuredData(page, origin, info) {
   } else {
     graph.push({ '@type': 'WebPage', '@id': `${info.canonical}#page`, url: info.canonical, name: info.title, description: info.description, isPartOf: { '@id': `${home}#website` } });
     const crumbs = [{ name: SITE_NAME, url: home }];
-    crumbs.push({ name: 'Templates', url: absolute(origin, '/templates') });
+    if (page.kind === 'landing') crumbs.push({ name: page.landing.h1, url: info.canonical });
+    else crumbs.push({ name: 'Templates', url: absolute(origin, '/templates') });
+    if (page.kind === 'landing') {
+      graph.push({
+        '@type': 'FAQPage',
+        mainEntity: page.landing.faq.map(([question, answer]) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } }))
+      });
+    }
     if (page.kind === 'detail') crumbs.push({ name: page.template.title, url: info.canonical });
     graph.push({
       '@type': 'BreadcrumbList',
@@ -214,6 +229,7 @@ export function staticContent(page, origin) {
 <ol><li>Choose a template.</li><li>Add your names, date, events and photos. Drafts save automatically.</li><li>Preview it privately, then publish and share the link on WhatsApp, text or email.</li></ol>
 <h2>What you get</h2>
 <ul><li>${TEMPLATES.length} animated, mobile-first wedding invitation templates</li><li>Guest RSVP with a spreadsheet download</li><li>Event schedule, venues and travel details</li><li>Photo gallery and a live countdown to your day</li><li>A private preview before you publish</li></ul>
+<h2>Guides</h2><ul>${LANDING.map(item => `<li>${link(`/${item.slug}`, item.h1)}</li>`).join('')}</ul>
 <h2>Templates</h2>${templateList}
 <h2>Pricing</h2>
 <p>Building and previewing your invitation is free. You pay once, when you publish, and the price depends on the design you choose and where you are. There is no subscription.</p>
@@ -252,7 +268,7 @@ export function robotsTxt(origin, { blockAll = false } = {}) {
 }
 
 export function sitemapXml(origin) {
-  const paths = ['/', '/templates', ...TEMPLATES.map(template => `/templates/${template.id}`)];
+  const paths = ['/', '/templates', ...LANDING.map(item => `/${item.slug}`), ...TEMPLATES.map(template => `/templates/${template.id}`)];
   const urls = paths.map(path => `<url><loc>${escapeHtml(absolute(origin, path))}</loc></url>`).join('');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}</urlset>\n`;
 }
@@ -276,6 +292,7 @@ export function llmsTxt(origin) {
 ## Pages
 - [Home](${absolute(origin, '/')}): what ${SITE_NAME} does, how it works, pricing and answers to common questions
 - [Templates](${absolute(origin, '/templates')}): all ${TEMPLATES.length} wedding invitation templates
+${LANDING.map(item => `- [${item.h1}](${absolute(origin, `/${item.slug}`)}): ${item.description}`).join('\n')}
 ${TEMPLATES.map(template => `- [${template.title}](${absolute(origin, `/templates/${template.id}`)}): ${template.tagline}`).join('\n')}
 
 ## Facts
@@ -283,4 +300,10 @@ ${TEMPLATES.map(template => `- [${template.title}](${absolute(origin, `/template
 - Every invitation gets its own ${SITE_NAME} link. Custom domains are not supported yet.
 - A published invitation stays online until 2 months after the event.
 `;
+}
+
+// The full HTML document for a landing page (served directly, not through the application shell).
+export function landingDocument(page, origin) {
+  const { title, html } = headTags(page, origin);
+  return renderLanding(page.landing, origin, { templates: TEMPLATES, head: html, title });
 }
