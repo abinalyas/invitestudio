@@ -26,7 +26,7 @@ Measured in a throttled browser (slow 4G, 4x slower CPU, phone width) before and
 
 | | Before | After |
 |---|---|---|
-| Largest Contentful Paint | 6.3 s | 3.9 s |
+| Largest Contentful Paint | 6.3 s | 3.3 s (3.9 s before the hero picture was recompressed) |
 | Picture data on first load | 954 KB | 620 KB |
 | Template pictures in the home strip | 126 + 97 + 62 KB | about 15 KB each |
 | `/favicon.ico` | the whole 363 KB app page | a real 2 KB icon |
@@ -38,6 +38,14 @@ If you regenerate the template pictures (`npm run thumbs:scenes`), make the smal
 These are lab numbers on a simulated slow phone, so treat them as direction, not a promise. Check the real figures in Search Console's Core Web Vitals report after a few weeks.
 
 Not done, and why: the 112 KB application script and 18 separate script files still decide when the home page appears (about 3.5 s in the lab), and cutting that means restructuring how the page loads, which is a bigger and riskier change. The hero picture is left at full size because real phones have 2x to 3x screens and need it. Layout shift on the home page is 0.096, just inside the "good" limit of 0.1.
+
+### Phase 4 follow-up: what the script work found
+
+- Measured with the same throttled phone: the main thread is busy for only about 1.3 s; the wait is bytes. The application starts only after all 18 scripts (about 255 KB compressed) and the large inline script have arrived, because they run in order.
+- The hero picture was recompressed (181 KB to 104 KB, indistinguishable side by side). Home-page LCP went from 3.9 s to about 3.3 s (6.3 s originally).
+- Tried and dropped: hiding the crawler copy of each page (layout shift 0.096 to 0.006, but a blank screen for 3 s on slow phones and a worse template-page LCP); giving it a fixed system font (shift rose to 0.19). Left as is: shift 0.096 on the home page, under the 0.1 "good" limit but with little room. The cause is the plain-text copy re-flowing when the web font arrives.
+- Not done, on purpose: minifying the scripts (saves about 28 KB compressed, about 0.15 s, but adds a build step that must stay in step with the sources); splitting the editor out of the application bundle (about 15 KB compressed); loading `templates/templates.generated.js` later (28 KB compressed, but the create flow and public invitations read it, so the order of loading would have to change).
+- The remaining larger gain (about 0.7 s) is loading the scripts the home page does not use (editor, RSVP, publishing) after the first render. That means auditing every script's use of the others, testing every route, and making the app wait for a script when the visitor goes to a page that needs it. Do it only with the full browser tests (`npm run test:e2e`) in place.
 
 ## Decided
 
