@@ -931,7 +931,7 @@
     const primary = live ? (session.changing ? 'Change address and update' : 'Update live page') : paying ? (priceText ? `Pay ${priceText} and continue` : 'Pay and continue') : 'Make it live';
     const priceNote = live || project.publishUnlocked || !session.price ? ''
       : session.price.mode === 'live'
-        ? `<p class="tiny" data-price-note style="margin:12px 0 0;color:#2f4a36"><strong>One-time price: ${escapeText(session.price.text)}</strong> (${escapeText(session.price.tierName)} design). You pay once, securely on Razorpay's page with UPI, a card or netbanking, then come straight back to make it live. Editing and previewing stay free.</p>`
+        ? `<p class="tiny" data-price-note style="margin:12px 0 0;color:#2f4a36"><strong>One-time price: ${escapeText(session.price.text)}</strong> (${escapeText(session.price.tierName)} design). You pay once, securely on Razorpay's page with UPI, a card or netbanking, then come straight back to make it live. Editing and previewing stay free. By paying you agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a>; see the <a href="/refund-policy" target="_blank" rel="noopener">Refund policy</a>.</p>`
         : `<p class="tiny" data-price-note style="margin:12px 0 0;color:#2f4a36"><strong>Free during early access.</strong> The price that will apply later is ${escapeText(session.price.text)} (${escapeText(session.price.tierName)} design), paid once.</p>`;
     const info = session.info ? `<p class="tiny" role="status" data-payment-info style="margin:10px 0 0;color:#2f4a36">${escapeText(session.info)}</p>` : '';
     const checkAgain = session.checkAgain ? '<button class="btn small" type="button" data-check-payment style="margin-top:8px">Check again</button>' : '';

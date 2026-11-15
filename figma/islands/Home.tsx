@@ -353,6 +353,12 @@ export function HomePage() {
           <a href="/animated-wedding-invitation">Animated invitations</a>
           <a href="/whatsapp-wedding-invitation">Share on WhatsApp</a>
         </nav>
+        <nav className="footer-guides footer-policies" aria-label="Policies">
+          <a href="/terms">Terms</a>
+          <a href="/refund-policy">Refund policy</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/contact">Contact</a>
+        </nav>
         <p className="footer-talk">
           <TalkToUs topic="custom" lead="Want something unique? Talk to us:" />
         </p>
