@@ -9,7 +9,8 @@
 // are placeholders until confirmed, so no amount appears here. The template list mirrors figma/islands/shared.tsx
 // (galleryTemplates); tests/unit/seo.test.mjs fails if they drift apart.
 
-import { LANDING, renderLanding, smallImage } from './landing.js';
+import { LANDING, renderLanding, renderPolicy, smallImage } from './landing.js';
+import { BUSINESS, CONTACT, POLICIES, UPDATED } from './policies.js';
 
 export const SITE_NAME = 'InviteStudio';
 
@@ -89,6 +90,8 @@ export function pageFor(pathname) {
   const path = pathname.replace(/\/+$/, '') || '/';
   if (path === '/') return { kind: 'home', path: '/' };
   if (path === '/templates') return { kind: 'templates', path: '/templates' };
+  const policy = POLICIES.find(item => `/${item.slug}` === path);
+  if (policy) return { kind: 'policy', path, policy };
   const landing = LANDING.find(item => `/${item.slug}` === path);
   if (landing) return { kind: 'landing', path, landing };
   const detail = /^\/templates\/(\d+)$/.exec(path);
@@ -120,6 +123,7 @@ export function describe(page, origin) {
       type: 'website'
     };
   }
+  if (page.kind === 'policy') return { title: page.policy.title, description: page.policy.description, canonical: absolute(origin, page.path), image, type: 'website' };
   if (page.kind === 'landing') {
     const first = templateById(page.landing.picks[0]);
     return { title: page.landing.title, description: page.landing.description, canonical: absolute(origin, page.path), image: first && first.image ? absolute(origin, first.image) : image, type: 'website' };
@@ -167,7 +171,8 @@ export function structuredData(page, origin, info) {
   } else {
     graph.push({ '@type': 'WebPage', '@id': `${info.canonical}#page`, url: info.canonical, name: info.title, description: info.description, isPartOf: { '@id': `${home}#website` } });
     const crumbs = [{ name: SITE_NAME, url: home }];
-    if (page.kind === 'landing') crumbs.push({ name: page.landing.h1, url: info.canonical });
+    if (page.kind === 'policy') crumbs.push({ name: page.policy.h1, url: info.canonical });
+    else if (page.kind === 'landing') crumbs.push({ name: page.landing.h1, url: info.canonical });
     else crumbs.push({ name: 'Templates', url: absolute(origin, '/templates') });
     if (page.kind === 'landing') {
       graph.push({
@@ -223,7 +228,7 @@ export function headTags(page, origin) {
 export function staticContent(page, origin) {
   const link = (path, text) => `<a href="${escapeHtml(absolute(origin, path))}">${escapeHtml(text)}</a>`;
   const templateList = `<ul>${TEMPLATES.map(template => `<li>${link(`/templates/${template.id}`, template.title)} — ${escapeHtml(template.tagline)}</li>`).join('')}</ul>`;
-  const nav = `<nav aria-label="Main">${link('/', 'Home')} ${link('/templates', 'Templates')}</nav>`;
+  const nav = `<nav aria-label="Main">${link('/', 'Home')} ${link('/templates', 'Templates')} ${POLICIES.map(item => link(`/${item.slug}`, item.h1)).join(' ')}</nav>`;
   let body;
   if (page.kind === 'home') {
     body = `<h1>Create a wedding invitation website your guests will love</h1>
@@ -281,7 +286,7 @@ export function robotsTxt(origin, { blockAll = false } = {}) {
 }
 
 export function sitemapXml(origin) {
-  const paths = ['/', '/templates', ...LANDING.map(item => `/${item.slug}`), ...TEMPLATES.map(template => `/templates/${template.id}`)];
+  const paths = ['/', '/templates', ...LANDING.map(item => `/${item.slug}`), ...TEMPLATES.map(template => `/templates/${template.id}`), ...POLICIES.map(item => `/${item.slug}`)];
   const urls = paths.map(path => `<url><loc>${escapeHtml(absolute(origin, path))}</loc></url>`).join('');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}</urlset>\n`;
 }
@@ -319,4 +324,10 @@ ${TEMPLATES.map(template => `- [${template.title}](${absolute(origin, `/template
 export function landingDocument(page, origin) {
   const { title, html } = headTags(page, origin);
   return renderLanding(page.landing, origin, { templates: TEMPLATES, head: html, title });
+}
+
+// The full HTML document for a policy page (terms, refund policy, privacy, contact).
+export function policyDocument(page, origin) {
+  const { title, html } = headTags(page, origin);
+  return renderPolicy(page.policy, origin, { head: html, title, updated: UPDATED, contact: CONTACT, business: BUSINESS });
 }

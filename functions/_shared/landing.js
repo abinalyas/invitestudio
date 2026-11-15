@@ -101,6 +101,9 @@ export const LANDING = Object.freeze([
   }
 ]);
 
+// The links in every footer. tests/unit/policies.test.mjs checks they are the policy pages.
+export const POLICY_LINKS = Object.freeze([['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Privacy', '/privacy'], ['Contact', '/contact']]);
+
 const CSS = `
 @font-face{font-family:"Cormorant Garamond";font-weight:500;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/cormorant-garamond-latin-500-normal.woff2") format("woff2")}
 @font-face{font-family:"Cormorant Garamond";font-weight:500;font-style:italic;font-display:swap;src:url("/assets/scene-fonts/cormorant-garamond-latin-500-italic.woff2") format("woff2")}
@@ -126,7 +129,7 @@ ul,ol{padding-left:22px}li{margin:6px 0}
 .faq h3{font-size:24px;margin:22px 0 4px}.faq p{margin:0}
 .cta{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px;margin:48px 0;text-align:center}.cta h2{margin:0 0 10px}
 .more ul{list-style:none;padding:0}.more li{margin:8px 0}
-footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 40px;color:var(--muted);font-size:15px}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 40px;color:var(--muted);font-size:15px}footer nav{margin:10px 0 0}footer nav a{margin-right:16px}.doc h2{margin-top:36px}.doc .updated{color:var(--muted);font-size:15px;margin:0 0 20px}.contact-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
 `;
 
 // The small (320 px wide) version of a template's phone picture; scripts/ keeps the pair in step (tests/unit/seo.test.mjs checks it exists).
@@ -153,5 +156,20 @@ ${sections}
 <section class="faq"><h2>Questions</h2>${page.faq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}</section>
 <div class="cta"><h2>Make your invitation</h2><p>Build and preview it free. Pay once, only when you publish.</p><a class="btn" href="/templates">Choose a template</a></div>
 <section class="more"><h2>More guides</h2><ul>${others.map(p => `<li><a href="${abs(`/${p.slug}`)}">${esc(p.h1)}</a></li>`).join('')}</ul></section></main>
-<footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.</footer></div></body></html>`;
+<footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.<nav aria-label="Policies">${POLICY_LINKS.map(([name, path]) => `<a href="${path}">${name}</a>`).join('')}</nav></footer></div></body></html>`;
+}
+
+const ICONS = '<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="icon" href="/favicon.ico" sizes="48x48"/><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"/>';
+
+// A policy page: the same look as the landing pages, plain text. `extra` is { updated, contact: {email, whatsapp}, business: {legalName, address} }.
+export function renderPolicy(page, origin, { head, title, updated, contact, business }) {
+  const sections = page.sections.map(s => `<section><h2>${esc(s.h2)}</h2>${(s.p || []).map(t => `<p>${esc(t)}</p>`).join('')}${s.list ? `<ul>${s.list.map(i => `<li>${esc(i)}</li>`).join('')}</ul>` : ''}</section>`).join('');
+  const digits = String(contact.whatsapp || '').replace(/\D/g, '');
+  const actions = page.contact
+    ? `<div class="contact-actions">${contact.email ? `<a class="btn" href="mailto:${esc(contact.email)}">Email ${esc(contact.email)}</a>` : ''}${digits ? `<a class="btn o" href="https://wa.me/${esc(digits)}">WhatsApp +${esc(digits)}</a>` : ''}</div>${business.legalName || business.address ? `<p>${[business.legalName, business.address].filter(Boolean).map(esc).join('<br/>')}</p>` : ''}`
+    : '';
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#f7f4ee"/>${ICONS}<title>${esc(title)}</title>${head}<style>${CSS}</style></head>
+<body><div class="w"><header class="top"><a class="logo" href="/">InviteStudio</a><nav aria-label="Main"><a href="/templates">Templates</a><a href="/#pricing">Pricing</a></nav></header>
+<main class="doc"><h1>${esc(page.h1)}</h1>${page.contact ? '' : `<p class="updated">Last updated: ${esc(updated)}</p>`}${actions}${sections}</main>
+<footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.<nav aria-label="Policies">${POLICY_LINKS.map(([name, path]) => `<a href="${path}">${name}</a>`).join('')}</nav></footer></div></body></html>`;
 }

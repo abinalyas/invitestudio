@@ -1,5 +1,5 @@
 import { SECURITY_HEADERS } from './_shared/security.js';
-import { headTags, isPrivateHost, landingDocument, originFor, pageFor, staticContent } from './_shared/seo.js';
+import { headTags, isPrivateHost, landingDocument, originFor, pageFor, policyDocument, staticContent } from './_shared/seo.js';
 
 // Gives each public marketing page (/, /templates, /templates/<id>) and serves the search-intent landing pages (functions/_shared/landing.js) its own title, description, canonical address, social card,
 // structured data and plain-HTML content (functions/_shared/seo.js). Every other request passes straight through untouched.
@@ -10,12 +10,12 @@ export async function onRequest(context) {
   const page = pageFor(url.pathname);
   if (!page) return context.next();
 
-  if (page.kind === 'landing') {
-    // A landing page is a complete server-rendered document, so it does not go through the application shell.
+  if (page.kind === 'landing' || page.kind === 'policy') {
+    // Landing and policy pages are complete server-rendered documents, so they do not go through the application shell.
     const headers = new Headers({ 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
     for (const [name, value] of Object.entries(SECURITY_HEADERS)) headers.set(name, value);
     if (isPrivateHost(url.hostname)) headers.set('X-Robots-Tag', 'noindex, nofollow');
-    return new Response(request.method === 'HEAD' ? null : landingDocument(page, originFor(env)), { status: 200, headers });
+    return new Response(request.method === 'HEAD' ? null : (page.kind === 'policy' ? policyDocument : landingDocument)(page, originFor(env)), { status: 200, headers });
   }
 
   const response = await context.next();
