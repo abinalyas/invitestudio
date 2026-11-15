@@ -5,7 +5,7 @@
 // (bridge.commitSetup), which creates the draft the first time and keeps it up to date.
 // The preview is the real invitation renderer, so it is what guests will see.
 import { useEffect, useRef, useState } from "react";
-import { Icon, Logo, galleryTemplates } from "./shared";
+import { Icon, Logo, galleryTemplates, phoneSmall } from "./shared";
 import { bridge, SetupFields } from "./bridge";
 import { EventsPanel } from "./Editor";
 import { useBridgeVersion } from "./extras";
@@ -204,7 +204,7 @@ export function SetupPage() {
                       onClick={() => set({ templateId: item.backendId })}
                     >
                       <span className="setup-template-image">
-                        <img src={item.phone} alt="" loading="lazy" />
+                        <img src={phoneSmall(item.phone)} alt="" loading="lazy" decoding="async" />
                         {item.backendId === fields.templateId ? (
                           <span className="setup-template-check" aria-hidden="true">
                             <Icon name="check" size={16} />

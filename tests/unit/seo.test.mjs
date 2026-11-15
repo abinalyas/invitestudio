@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LANDING } from '../../functions/_shared/landing.js';
+import { LANDING, smallImage } from '../../functions/_shared/landing.js';
 import { landingDocument, SITE_ORIGIN, originFor, isPrivateHost, TEMPLATES, pageFor, describe, headTags, staticContent, robotsTxt, sitemapXml, llmsTxt } from '../../functions/_shared/seo.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -15,8 +15,24 @@ test('the template list matches the gallery on the home page', () => {
   assert.deepEqual(TEMPLATES.map(t => [t.id, t.title]), gallery);
 });
 
-test('template images that the pages point at exist', () => {
-  for (const t of TEMPLATES) assert.ok(existsSync(join(root, t.image.slice(1))), t.image);
+test('template images that the pages point at exist, each with its small version', () => {
+  for (const t of TEMPLATES) {
+    assert.ok(existsSync(join(root, t.image.slice(1))), t.image);
+    assert.ok(existsSync(join(root, smallImage(t.image).slice(1))), smallImage(t.image));
+  }
+});
+
+test('the favicon files exist and every page head points at them', () => {
+  for (const file of ['favicon.ico', 'assets/favicon.svg', 'assets/apple-touch-icon.png']) assert.ok(existsSync(join(root, file)), file);
+  const shell = readFileSync(join(root, 'index.html'), 'utf8');
+  assert.ok(shell.includes('href="/assets/favicon.svg"') && shell.includes('href="/favicon.ico"'));
+  assert.ok(landingDocument(pageFor('/' + LANDING[0].slug), ORIGIN).includes('href="/assets/favicon.svg"'));
+});
+
+test('the home page preloads its hero picture, and no other page does', () => {
+  assert.ok(headTags(pageFor('/'), ORIGIN).html.includes('rel="preload" as="image" href="/assets/hero/hero-envelope-invitation.webp"'));
+  assert.ok(!headTags(pageFor('/templates'), ORIGIN).html.includes('rel="preload"'));
+  assert.ok(existsSync(join(root, 'assets/hero/hero-envelope-invitation.webp')));
 });
 
 test('only the public marketing pages are described', () => {
@@ -95,7 +111,7 @@ test('landing pages: unique content, real templates, working internal links, one
     const doc = landingDocument(pageFor(`/${l.slug}`), ORIGIN);
     assert.equal((doc.match(/<h1>/g) || []).length, 1, l.slug);
     assert.ok(doc.includes(`<link rel="canonical" href="${ORIGIN}/${l.slug}"/>`));
-    for (const [, path] of doc.matchAll(/href="(?:https:\/\/example\.test)?(\/[^"#]*)/g)) {
+    for (const [, path] of doc.matchAll(/<a [^>]*href="(?:https:\/\/example\.test)?(\/[^"#]*)/g)) {
       const p = pageFor(path);
       assert.ok(p || path === '/' || path === '/templates', `${l.slug}: broken link ${path}`);
     }
@@ -118,7 +134,7 @@ test('each template page uses the same opening name and style tags as the galler
 
 test('a template page links to similar templates and guides, and shows its image', () => {
   const html = staticContent(pageFor('/templates/19'), ORIGIN);
-  assert.ok(/<img src="\/assets\/templates\/velvet-reveal-phone\.jpg" alt="Velvet Reveal/.test(html));
+  assert.ok(/<img src="\/assets\/templates\/velvet-reveal-phone\.jpg" srcset="\/assets\/templates\/velvet-reveal-phone-sm\.webp 320w, [^"]+ 720w"[^>]* alt="Velvet Reveal/.test(html));
   assert.ok(/Similar templates/.test(html) && /Guides/.test(html));
   assert.ok(!html.includes('/templates/19">'), 'does not link to itself');
 });

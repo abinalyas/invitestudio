@@ -15,10 +15,10 @@ export function HomePage() {
       <RecoveryBanner />
       <section className="hero">
         <div className="hero-deco" aria-hidden="true">
-          <img className="deco deco-floral-left" src="/assets/hero/floral-cluster-left.webp" alt="" width={394} height={425} />
-          <img className="deco deco-floral-right" src="/assets/hero/floral-cluster-right.webp" alt="" width={374} height={323} />
-          <img className="deco deco-petals" src="/assets/hero/scattered-petals.webp" alt="" width={189} height={174} />
-          <img className="deco deco-fabric" src="/assets/hero/ivory-fabric-drape.webp" alt="" width={474} height={412} />
+          <img className="deco deco-floral-left" src="/assets/hero/floral-cluster-left.webp" alt="" width={394} height={425} fetchPriority="low" decoding="async" />
+          <img className="deco deco-floral-right" src="/assets/hero/floral-cluster-right.webp" alt="" width={374} height={323} fetchPriority="low" decoding="async" />
+          <img className="deco deco-petals" src="/assets/hero/scattered-petals.webp" alt="" width={189} height={174} fetchPriority="low" decoding="async" />
+          <img className="deco deco-fabric" src="/assets/hero/ivory-fabric-drape.webp" alt="" width={474} height={412} fetchPriority="low" decoding="async" />
         </div>
         <header className="site-header shell">
           <Logo />

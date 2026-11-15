@@ -4,3 +4,12 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+# Fonts never change in place, so browsers may keep them for a year. Pictures may change under the same name
+# (npm run thumbs:scenes), so they are kept for a day and refreshed in the background for a week after that.
+/assets/scene-fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/hero/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/assets/templates/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

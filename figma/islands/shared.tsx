@@ -215,6 +215,9 @@ export type GalleryTemplate = {
 const sceneStory =
   "A full-length invitation told in scenes. Each section fades in as your guests scroll. Guests who prefer reduced motion see it without the animation."
 
+// The small (320 px wide) version of a template's phone picture, for places that show it at about 160 px.
+export const phoneSmall = (path: string) => path.replace(/-phone\.jpg$/, "-phone-sm.webp")
+
 export const galleryTemplates: GalleryTemplate[] = [
   {
     id: 9,

@@ -129,6 +129,11 @@ ul,ol{padding-left:22px}li{margin:6px 0}
 footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 40px;color:var(--muted);font-size:15px}
 `;
 
+// The small (320 px wide) version of a template's phone picture; scripts/ keeps the pair in step (tests/unit/seo.test.mjs checks it exists).
+export function smallImage(path) {
+  return path.replace(/-phone\.jpg$/, '-phone-sm.webp');
+}
+
 function esc(value) {
   return String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
@@ -139,11 +144,11 @@ export function renderLanding(page, origin, { templates, head, title }) {
   const picks = page.picks.map(id => templates.find(t => t.id === id));
   const others = LANDING.filter(p => p.slug !== page.slug);
   const sections = page.sections.map(s => `<section><h2>${esc(s.h2)}</h2>${(s.p || []).map(t => `<p>${esc(t)}</p>`).join('')}${s.list ? `<ul>${s.list.map(i => `<li>${esc(i)}</li>`).join('')}</ul>` : ''}${s.ol ? `<ol>${s.ol.map(i => `<li>${esc(i)}</li>`).join('')}</ol>` : ''}</section>`).join('');
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#f7f4ee"/><title>${esc(title)}</title>${head}<style>${CSS}</style></head>
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#f7f4ee"/><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="icon" href="/favicon.ico" sizes="48x48"/><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"/><title>${esc(title)}</title>${head}<style>${CSS}</style></head>
 <body><div class="w"><header class="top"><a class="logo" href="/">InviteStudio</a><nav aria-label="Main"><a href="/templates">Templates</a><a href="/#pricing">Pricing</a></nav></header>
 <main><h1>${esc(page.h1)}</h1><p class="lead">${esc(page.lead)}</p>
 <p class="hero-actions"><a class="btn" href="/templates">Browse templates</a><a class="btn o" href="/templates/${picks[0].id}">Preview ${esc(picks[0].title)}</a></p>
-<h2>Templates to start from</h2><div class="picks">${picks.map(t => `<a class="pick" href="/templates/${t.id}"><img src="${esc(t.image)}" alt="${esc(`${t.title} wedding invitation, first screen`)}" width="720" height="1440" loading="lazy"/><strong>${esc(t.title)}</strong><small>${esc(t.tagline)}</small></a>`).join('')}</div>
+<h2>Templates to start from</h2><div class="picks">${picks.map(t => `<a class="pick" href="/templates/${t.id}"><img src="${esc(t.image)}" srcset="${esc(smallImage(t.image))} 320w, ${esc(t.image)} 720w" sizes="(max-width: 600px) 45vw, 200px" alt="${esc(`${t.title} wedding invitation, first screen`)}" width="720" height="1440" loading="lazy"/><strong>${esc(t.title)}</strong><small>${esc(t.tagline)}</small></a>`).join('')}</div>
 ${sections}
 <section class="faq"><h2>Questions</h2>${page.faq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}</section>
 <div class="cta"><h2>Make your invitation</h2><p>Build and preview it free. Pay once, only when you publish.</p><a class="btn" href="/templates">Choose a template</a></div>

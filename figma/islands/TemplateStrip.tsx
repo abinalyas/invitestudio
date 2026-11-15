@@ -4,7 +4,7 @@
 // and drag all work with no library. Motion stops for reduced-motion users, while the strip
 // is off screen, and while it is hovered, focused or being dragged.
 import { useEffect, useRef, useState } from "react";
-import { galleryTemplates } from "./shared";
+import { galleryTemplates, phoneSmall } from "./shared";
 
 // The list is repeated so the strip can loop. It must be wider than the screen plus two full copies,
 // so the number of copies grows with the screen and shrinks with the number of templates.
@@ -147,7 +147,7 @@ export function TemplateStrip() {
               aria-label={`View ${t.title} template`}
             >
               <span className="strip-card">
-                <img src={t.phone} alt="" loading="lazy" draggable={false} width={160} height={338} />
+                <img src={phoneSmall(t.phone)} alt="" loading="lazy" decoding="async" draggable={false} width={160} height={338} />
               </span>
               <span className="strip-name">{t.title}</span>
             </a>
