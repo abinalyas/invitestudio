@@ -1353,3 +1353,13 @@
 .figma-app .hero .trust-row{ display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; margin-top: 12px; font-size: 12px; }
 .figma-app .hero .trust-row span{ gap: 6px; }
 .figma-app .hero-art{ height: 330px; }}
+@media (pointer: coarse){.figma-app .site-header .logo, .figma-app .editor-brand .logo{ display: inline-flex; align-items: center; min-height: 44px; }
+.figma-app .menu-button{ min-width: 44px; min-height: 44px; }
+.figma-app .button.small{ min-height: 44px; }
+.figma-app .detail-breadcrumb{ height: auto; min-height: 48px; }
+.figma-app .detail-breadcrumb a{ display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+.figma-app .nav a, .figma-app .footer nav a, .figma-app .footer-guides a{ display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; justify-content: center; }
+.figma-app .socials a{ display: inline-grid; place-items: center; min-width: 44px; min-height: 44px; }
+.figma-app .link-button{ min-height: 44px; }
+.figma-app .section-heading a, .figma-app .section-heading.row a{ display: inline-flex; align-items: center; min-height: 44px; }
+.figma-app .template-card .fav, .figma-app button[aria-label$="to favorites"], .figma-app button[aria-label$="from favorites"]{ min-width: 44px; min-height: 44px; }}

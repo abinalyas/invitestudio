@@ -652,3 +652,17 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
   .hero .trust-row span { gap: 6px; }
   .hero-art { height: 330px; }
 }
+
+/* ---- Touch targets: on a touch screen, links and buttons are at least 44px tall (the audit found 20 smaller ones on nearly every screen) ---- */
+@media (pointer: coarse) {
+  .site-header .logo, .editor-brand .logo { display: inline-flex; align-items: center; min-height: 44px; }
+  .menu-button { min-width: 44px; min-height: 44px; }
+  .button.small { min-height: 44px; }
+  .detail-breadcrumb { height: auto; min-height: 48px; }
+  .detail-breadcrumb a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+  .nav a, .footer nav a, .footer-guides a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; justify-content: center; }
+  .socials a { display: inline-grid; place-items: center; min-width: 44px; min-height: 44px; }
+  .link-button { min-height: 44px; }
+  .section-heading a, .section-heading.row a { display: inline-flex; align-items: center; min-height: 44px; }
+  .template-card .fav, button[aria-label$="to favorites"], button[aria-label$="from favorites"] { min-width: 44px; min-height: 44px; }
+}

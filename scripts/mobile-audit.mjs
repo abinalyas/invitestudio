@@ -230,7 +230,13 @@ function scenarios() {
       for (const count of [1, 4]) {
         S(`public ${t.title} ${count} photo${count === 1 ? '' : 's'}`, async (page, context, state) => {
           const url = await publishWithPhotos(page, t.title, count, state);
-          await page.goto(`${BASE}${url}`, { waitUntil: 'networkidle' });
+          const response = await page.goto(`${BASE}${url}`, { waitUntil: 'networkidle' });
+          // A page that answers 404 right after "Your invitation is live" is rare and worth knowing about; look once more before judging the photos.
+          if (response && response.status() === 404) {
+            state.note = { rule: 'published-404', severity: 'medium', message: 'The page answered 404 right after it was published (it worked on a second try)', detail: url };
+            await page.waitForTimeout(2500);
+            await page.goto(`${BASE}${url}`, { waitUntil: 'networkidle' });
+          }
           await scrollThrough(page);
         }, undefined, { onePhone: true });
       }
@@ -367,6 +373,7 @@ async function main() {
         const measured = await page.evaluate(measureInPage, { primary: scenario.primary, primaryRequired: Boolean(scenario.primary) && !/^setup/.test(scenario.name) });
         entry.findings.push(...measured.findings);
         entry.pageHeight = measured.pageHeight;
+        if (state.note) entry.findings.push(state.note);
         if (state.expectPhotos) {
           const shown = await countUploadedPhotos(page);
           entry.photos = { uploaded: state.expectPhotos, shown, preview: state.previewShown };
