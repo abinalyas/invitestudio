@@ -26,7 +26,7 @@ test('a published invitation serves link-preview metadata for crawlers', async (
   expect(html).toContain('property="og:title" content="Mira &amp; Arun — InviteStudio"');
   expect(html).toContain('20 January 2027 · Kochi');
   expect(html).toContain(`href="${new URL(response.url()).origin}/s/${slug}"`);
-  expect(html).toContain('name="robots" content="index,follow"');
+  expect(html).toContain('name="robots" content="noindex,nofollow"');
   // The shell still ships: the browser reads the public API from here.
   expect(html).toContain('id="app"');
 });

@@ -12,12 +12,15 @@ The site is a client-rendered single page, so the HTML a crawler downloads used 
 - All of it lives in `functions/_shared/seo.js`. Absolute URLs come from the `PUBLIC_ORIGIN` environment variable, else the request's own origin. `tests/unit/seo.test.mjs` fails if the template list drifts from the gallery, a description is too long, or a price slips into the markup.
 - Prices differ by country and are placeholders, so no amount appears in structured data.
 
+## Decided
+
+- The public address is **https://invitestudio.co** (`SITE_ORIGIN` in `functions/_shared/seo.js`; `PUBLIC_ORIGIN` overrides it). Canonical links, the sitemap and `llms.txt` always use it. The `*.pages.dev` addresses and previews send `X-Robots-Tag: noindex` and a `Disallow: /` robots.txt.
+- Guests' invitations (`/s/<slug>`) are always `noindex,nofollow`; link previews (WhatsApp, iMessage) still work.
+
 ## Needs the product owner
 
-1. **Set `PUBLIC_ORIGIN`** to the real production address (and confirm it is the one address people use; redirect any other to it).
-2. **Add `/assets/og-image.jpg`** (1200x630). Until it exists, link previews on pages without a template image have no picture.
-3. **Verify the site** in Google Search Console and Bing Webmaster Tools, then submit `/sitemap.xml`.
-4. **Decide whether guests' invitations (`/s/<slug>`) should be indexed.** `functions/s/[slug].js` currently sends `index,follow` for every published public invitation, so couples' names, dates and venues can appear in search results. Consider `noindex` unless the couple opts in. It is also not in the sitemap.
+1. **Search Console**: add `https://invitestudio.co` as a Domain property, verify with the DNS TXT record Google gives (add it in Cloudflare DNS), then submit `/sitemap.xml`. Repeat in Bing Webmaster Tools (it can import from Search Console).
+2. **Redirect `www.invitestudio.co`** (if used) to `invitestudio.co` so there is one address.
 
 ## Next phases (not built)
 

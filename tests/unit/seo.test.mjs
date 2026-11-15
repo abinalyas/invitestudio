@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { TEMPLATES, pageFor, describe, headTags, staticContent, robotsTxt, sitemapXml, llmsTxt } from '../../functions/_shared/seo.js';
+import { SITE_ORIGIN, originFor, isPrivateHost, TEMPLATES, pageFor, describe, headTags, staticContent, robotsTxt, sitemapXml, llmsTxt } from '../../functions/_shared/seo.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const ORIGIN = 'https://example.test';
@@ -61,4 +61,23 @@ test('sitemap and llms.txt list every public page', () => {
     assert.ok(sitemap.includes(`<loc>${ORIGIN}${path}</loc>`), path);
   }
   for (const t of TEMPLATES) assert.ok(llms.includes(`${ORIGIN}/templates/${t.id}`), t.title);
+});
+
+test('the public address is invitestudio.co unless PUBLIC_ORIGIN says otherwise; pages.dev is kept out of search', () => {
+  assert.equal(originFor({}), 'https://invitestudio.co');
+  assert.equal(SITE_ORIGIN, 'https://invitestudio.co');
+  assert.equal(originFor({ PUBLIC_ORIGIN: 'https://example.test/' }), 'https://example.test');
+  assert.ok(isPrivateHost('invitestudio-a3r.pages.dev') && isPrivateHost('553e4bee.invitestudio-a3r.pages.dev'));
+  assert.ok(!isPrivateHost('invitestudio.co') && !isPrivateHost('www.invitestudio.co'));
+  assert.equal(robotsTxt(ORIGIN, { blockAll: true }), 'User-agent: *\nDisallow: /\n');
+});
+
+test('invitations are never indexed', () => {
+  assert.ok(!/index,follow/.test(readFileSync(join(root, 'functions', 's', '[slug].js'), 'utf8')));
+});
+
+test('the default social card exists and is 1200x630', () => {
+  const png = readFileSync(join(root, 'assets', 'og-image.png'));
+  assert.equal(png.readUInt32BE(16), 1200);
+  assert.equal(png.readUInt32BE(20), 630);
 });
