@@ -4,7 +4,8 @@ import { SECURITY_HEADERS } from '../_shared/security.js';
 // Public invitation entry point: /s/<slug>. Serves the application shell with
 // per-invitation metadata, so link previews (WhatsApp, Facebook, iMessage) work
 // without running JavaScript. Only published, public rows are described; anything
-// else gets a 404 with noindex and the shell, which shows a "not available" message.
+// else gets a 404 and the shell, which shows a "not available" message. Every response is noindex: guests' names, dates
+// and venues stay out of search results. Link previews still work, because they do not depend on indexing.
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function escapeHtml(value) {
@@ -86,7 +87,7 @@ export async function onRequest(context) {
     : 'This invitation is not available.';
   const canonical = `${url.origin}/s/${slug}`;
   const metaTags = [
-    `<meta name="robots" content="${summary ? 'index,follow' : 'noindex,nofollow'}"/>`,
+    '<meta name="robots" content="noindex,nofollow"/>',
     `<meta name="description" content="${escapeHtml(description)}"/>`,
     '<meta property="og:type" content="website"/>',
     '<meta property="og:site_name" content="InviteStudio"/>',

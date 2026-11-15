@@ -11,8 +11,21 @@
 
 export const SITE_NAME = 'InviteStudio';
 
-// Social card image. Add /assets/og-image.jpg (1200x630) and it is used automatically on every page that has no better image.
-const DEFAULT_IMAGE = '/assets/og-image.jpg';
+// The one public address. Canonical links, the sitemap and llms.txt always use it, so preview deployments and the pages.dev address
+// never compete with it in search results. Set PUBLIC_ORIGIN (also used for the payment return page) to override.
+export const SITE_ORIGIN = 'https://invitestudio.co';
+
+export function originFor(env) {
+  return String((env && env.PUBLIC_ORIGIN) || SITE_ORIGIN).replace(/\/+$/, '');
+}
+
+// Preview deployments and the pages.dev address are not the public site: keep them out of search.
+export function isPrivateHost(hostname) {
+  return /(^|\.)pages\.dev$/.test(hostname);
+}
+
+// Social card image. Used on every page that has no template image of its own (1200x630).
+const DEFAULT_IMAGE = '/assets/og-image.png';
 
 export const TEMPLATES = Object.freeze([
   { id: 9, title: 'Savanna Sunset', tagline: 'Golden dunes, acacia silhouettes and a script title at sunset.', image: '/assets/templates/savanna-sunset-phone.jpg' },
@@ -230,7 +243,8 @@ const AI_CRAWLERS = Object.freeze([
 // Paths that are private or not pages: the API, owner edit links, the designer, and the media proxy.
 const DISALLOWED = Object.freeze(['/api/', '/edit', '/edit/', '/editor/', '/media/']);
 
-export function robotsTxt(origin) {
+export function robotsTxt(origin, { blockAll = false } = {}) {
+  if (blockAll) return 'User-agent: *\nDisallow: /\n';
   const rules = DISALLOWED.map(path => `Disallow: ${path}`).join('\n');
   const groups = [`User-agent: *\nAllow: /\n${rules}`];
   for (const agent of AI_CRAWLERS) groups.push(`User-agent: ${agent}\nAllow: /\n${rules}`);
