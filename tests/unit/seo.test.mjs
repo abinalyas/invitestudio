@@ -103,3 +103,22 @@ test('landing pages: unique content, real templates, working internal links, one
   }
   assert.equal(lead.size, LANDING.length);
 });
+
+test('each template page uses the same opening name and style tags as the gallery', () => {
+  const blocks = shared.split(/\n  \{\n    id: /).slice(1);
+  assert.equal(blocks.length, TEMPLATES.length);
+  for (const block of blocks) {
+    const t = TEMPLATES.find(item => item.id === Number(/^(\d+)/.exec(block)[1]));
+    assert.ok(t, 'template listed');
+    assert.ok(block.includes(`tags: [${t.tags.map(tag => `"${tag}"`).join(', ')}]`), `${t.title} tags`);
+    assert.ok(block.includes(`name: "${t.opening}"`), `${t.title} opening`);
+    assert.ok(t.openingText.length > 40);
+  }
+});
+
+test('a template page links to similar templates and guides, and shows its image', () => {
+  const html = staticContent(pageFor('/templates/19'), ORIGIN);
+  assert.ok(/<img src="https:\/\/example\.test\/assets\/templates\/velvet-reveal-phone\.jpg" alt="Velvet Reveal/.test(html));
+  assert.ok(/Similar templates/.test(html) && /Guides/.test(html));
+  assert.ok(!html.includes('/templates/19">'), 'does not link to itself');
+});

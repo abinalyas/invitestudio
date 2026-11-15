@@ -30,20 +30,20 @@ export function isPrivateHost(hostname) {
 const DEFAULT_IMAGE = '/assets/og-image.png';
 
 export const TEMPLATES = Object.freeze([
-  { id: 9, title: 'Savanna Sunset', tagline: 'Golden dunes, acacia silhouettes and a script title at sunset.', image: '/assets/templates/savanna-sunset-phone.jpg' },
-  { id: 10, title: 'Palmera Beach', tagline: 'A sunlit beach inside an arch, framed by palms and hibiscus.', image: '/assets/templates/palmera-beach-phone.jpg' },
-  { id: 11, title: 'Curtain Call', tagline: 'Theatre curtains that open on tap to reveal the invitation.', image: '/assets/templates/curtain-call-phone.jpg' },
-  { id: 12, title: 'Lunaria', tagline: 'Dusty blue linen, a moon and an arch of leaves and water lilies.', image: '/assets/templates/lunaria-moon-phone.jpg' },
-  { id: 13, title: 'Modern Heritage', tagline: 'Ivory paper, deep green and gold botanical details, with a live countdown to the day.', image: '/assets/templates/modern-heritage-phone.jpg' },
-  { id: 14, title: 'Minimalist', tagline: 'Quiet editorial layout: large serif names, one olive accent and plenty of space.', image: '/assets/templates/minimalist-phone.jpg' },
-  { id: 15, title: 'Cinematic', tagline: 'A dark, film-like invitation: big names, a golden countdown and quiet scenes.', image: '/assets/templates/cinematic-phone.jpg' },
-  { id: 16, title: 'Fairy Tale', tagline: 'A pink sunset sky, a castle on the hill and script lettering: once upon a time, with a countdown to forever.', image: '/assets/templates/fairy-tale-phone.jpg' },
-  { id: 17, title: 'Blue Hydrangea', tagline: 'A pale blue sky framed by hydrangea and orchid garlands, with a countdown in a scalloped frame and a soft, garden-party feel.', image: '/assets/templates/blue-hydrangea-phone.jpg' },
-  { id: 18, title: 'Bloom Reveal', tagline: 'A watercolour border of peonies and roses that blooms in from the corners, with a live countdown and soft script lettering.', image: '/assets/templates/bloom-reveal-phone.jpg' },
-  { id: 19, title: 'Velvet Reveal', tagline: 'Emerald velvet curtains part on a full-screen opening, then a gold foil to scratch away to find the date.', image: '/assets/templates/velvet-reveal-phone.jpg' },
-  { id: 20, title: 'Under the Same Moon', tagline: 'A moonlit lake under a slowly turning moon, a gold foil to scratch for the date, and a lantern-lit story.', image: '/assets/templates/under-the-same-moon-phone.jpg' },
-  { id: 21, title: 'Golden Butterfly', tagline: 'A short film of golden butterflies opens a black-and-gold invitation, with floating butterflies and a countdown.', image: '/assets/templates/golden-butterfly-phone.jpg' },
-  { id: 22, title: 'Cherry Blossom', tagline: 'A short film of blossom, petals falling past your names, and a date to uncover with three taps and a soft chime.', image: '/assets/templates/cherry-blossom-phone.jpg' }
+  { id: 9, title: 'Savanna Sunset', tagline: 'Golden dunes, acacia silhouettes and a script title at sunset.', image: '/assets/templates/savanna-sunset-phone.jpg', tags: ["Nature", "Sunset"], opening: "Scene story", openingText: "A full-length invitation told in scenes. Each section fades in as your guests scroll. Guests who prefer reduced motion see it without the animation." },
+  { id: 10, title: 'Palmera Beach', tagline: 'A sunlit beach inside an arch, framed by palms and hibiscus.', image: '/assets/templates/palmera-beach-phone.jpg', tags: ["Nature", "Beach"], opening: "Scene story", openingText: "A full-length invitation told in scenes. Each section fades in as your guests scroll. Guests who prefer reduced motion see it without the animation." },
+  { id: 11, title: 'Curtain Call', tagline: 'Theatre curtains that open on tap to reveal the invitation.', image: '/assets/templates/curtain-call-phone.jpg', tags: ["Classic", "Theatre"], opening: "Curtain open", openingText: "The invitation starts behind closed curtains. Guests tap to open them and the invitation is revealed." },
+  { id: 12, title: 'Lunaria', tagline: 'Dusty blue linen, a moon and an arch of leaves and water lilies.', image: '/assets/templates/lunaria-moon-phone.jpg', tags: ["Botanical", "Moonlit"], opening: "Scene story", openingText: "A full-length invitation told in scenes. Each section fades in as your guests scroll. Guests who prefer reduced motion see it without the animation." },
+  { id: 13, title: 'Modern Heritage', tagline: 'Ivory paper, deep green and gold botanical details, with a live countdown to the day.', image: '/assets/templates/modern-heritage-phone.jpg', tags: ["Classic", "Heritage"], opening: "Countdown", openingText: "The cover shows your crest and a live countdown to your date. Guests scroll through your story, details and schedule." },
+  { id: 14, title: 'Minimalist', tagline: 'Quiet editorial layout: large serif names, one olive accent and plenty of space.', image: '/assets/templates/minimalist-phone.jpg', tags: ["Modern", "Editorial"], opening: "Countdown", openingText: "A calm cover with your names set large and a live countdown to your date. Guests scroll through your story, the day and the schedule." },
+  { id: 15, title: 'Cinematic', tagline: 'A dark, film-like invitation: big names, a golden countdown and quiet scenes.', image: '/assets/templates/cinematic-phone.jpg', tags: ["Modern", "Cinematic"], opening: "Countdown", openingText: "A dark cover with your names set large and a live countdown to your date. Guests scroll through your story, the day and the schedule." },
+  { id: 16, title: 'Fairy Tale', tagline: 'A pink sunset sky, a castle on the hill and script lettering: once upon a time, with a countdown to forever.', image: '/assets/templates/fairy-tale-phone.jpg', tags: ["Romantic", "Storybook"], opening: "Countdown", openingText: "A storybook cover with your names in script and a live countdown to your date. Guests scroll through your story and your events." },
+  { id: 17, title: 'Blue Hydrangea', tagline: 'A pale blue sky framed by hydrangea and orchid garlands, with a countdown in a scalloped frame and a soft, garden-party feel.', image: '/assets/templates/blue-hydrangea-phone.jpg', tags: ["Botanical", "Romantic"], opening: "Countdown", openingText: "Your names between two flower garlands, then a countdown to your date. Guests scroll through a welcome, your story and your events." },
+  { id: 18, title: 'Bloom Reveal', tagline: 'A watercolour border of peonies and roses that blooms in from the corners, with a live countdown and soft script lettering.', image: '/assets/templates/bloom-reveal-phone.jpg', tags: ["Botanical", "Romantic"], opening: "Bloom reveal", openingText: "Watercolour flowers bloom in from the corners around your names, then a countdown to your date. Guests scroll through your story, your events and a reply button." },
+  { id: 19, title: 'Velvet Reveal', tagline: 'Emerald velvet curtains part on a full-screen opening, then a gold foil to scratch away to find the date.', image: '/assets/templates/velvet-reveal-phone.jpg', tags: ["Cinematic", "Romantic"], opening: "Velvet curtains", openingText: "A full-screen video of velvet curtains parting, with an Open Invitation button. Then your names in an arch, a gold foil to scratch for the date, a countdown, your story and your events." },
+  { id: 20, title: 'Under the Same Moon', tagline: 'A moonlit lake under a slowly turning moon, a gold foil to scratch for the date, and a lantern-lit story.', image: '/assets/templates/under-the-same-moon-phone.jpg', tags: ["Celestial", "Romantic"], opening: "Moonlit sky", openingText: "A short film of the night sky opens the invitation. Then your names over a moonlit lake, a gold foil to scratch for the date, your story, your events and a countdown." },
+  { id: 21, title: 'Golden Butterfly', tagline: 'A short film of golden butterflies opens a black-and-gold invitation, with floating butterflies and a countdown.', image: '/assets/templates/golden-butterfly-phone.jpg', tags: ["Cinematic", "Romantic"], opening: "Butterfly film", openingText: "A short film of golden butterflies plays first, then your names over gold light with butterflies drifting past, a countdown, your note, your venues on ivory paper and a reply button." },
+  { id: 22, title: 'Cherry Blossom', tagline: 'A short film of blossom, petals falling past your names, and a date to uncover with three taps and a soft chime.', image: '/assets/templates/cherry-blossom-phone.jpg', tags: ["Botanical", "Romantic"], opening: "Blossom film", openingText: "A short film of blossom plays first. Then petals fall past your names, guests tap three blossoms to uncover the date, and scroll through your story, the day, a countdown and a reply button." }
 ]);
 
 // Same questions as the home page (figma/islands/shared.tsx `faqs`), reworded to stand alone, because a search engine or an
@@ -240,8 +240,18 @@ ${FAQ.map(([question, answer]) => `<h3>${escapeHtml(question)}</h3><p>${escapeHt
 <p>Beautiful, animated starting points for your wedding invitation website, with room to make them your own. Open any design to preview it for free.</p>${templateList}`;
   } else {
     const { template } = page;
+    const related = TEMPLATES.filter(other => other.id !== template.id && other.tags.some(tag => template.tags.includes(tag))).slice(0, 3);
+    const guides = LANDING.slice(0, 3);
     body = `<h1>${escapeHtml(template.title)} wedding invitation website template</h1>
-<p>${escapeHtml(template.tagline)} Add your names, date, events, photos and RSVP, preview it privately for free, then pay once to publish. ${SHARE}</p>
+<p>${escapeHtml(template.tagline)}</p>
+<img src="${escapeHtml(absolute(origin, template.image))}" alt="${escapeHtml(`${template.title} wedding invitation, first screen`)}" width="360" height="720"/>
+<h2>How it opens</h2><p><strong>${escapeHtml(template.opening)}.</strong> ${escapeHtml(template.openingText)}</p>
+<h2>Style</h2><p>${template.tags.map(escapeHtml).join(', ')}.</p>
+<h2>What you add</h2>
+<ul><li>Your names and wedding date</li><li>Your events, with times and venues</li><li>Your photos and story</li><li>Guest RSVP, with a spreadsheet download of replies</li></ul>
+<p>${escapeHtml(template.title)} keeps its own colours and fonts, so it always looks designed. Preview it privately for free, then pay once to publish. ${SHARE}</p>
+<h2>Similar templates</h2><ul>${related.map(other => `<li>${link(`/templates/${other.id}`, other.title)}: ${escapeHtml(other.tagline)}</li>`).join('')}</ul>
+<h2>Guides</h2><ul>${guides.map(item => `<li>${link(`/${item.slug}`, item.h1)}</li>`).join('')}</ul>
 <p>${link('/templates', 'See all wedding invitation templates')}</p>`;
   }
   return `<div id="seo-static" data-prerendered="true">${nav}<main>${body}</main></div>`;
