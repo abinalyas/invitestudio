@@ -118,7 +118,7 @@ test('each template page uses the same opening name and style tags as the galler
 
 test('a template page links to similar templates and guides, and shows its image', () => {
   const html = staticContent(pageFor('/templates/19'), ORIGIN);
-  assert.ok(/<img src="https:\/\/example\.test\/assets\/templates\/velvet-reveal-phone\.jpg" alt="Velvet Reveal/.test(html));
+  assert.ok(/<img src="\/assets\/templates\/velvet-reveal-phone\.jpg" alt="Velvet Reveal/.test(html));
   assert.ok(/Similar templates/.test(html) && /Guides/.test(html));
   assert.ok(!html.includes('/templates/19">'), 'does not link to itself');
 });

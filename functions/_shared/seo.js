@@ -244,7 +244,7 @@ ${FAQ.map(([question, answer]) => `<h3>${escapeHtml(question)}</h3><p>${escapeHt
     const guides = LANDING.slice(0, 3);
     body = `<h1>${escapeHtml(template.title)} wedding invitation website template</h1>
 <p>${escapeHtml(template.tagline)}</p>
-<img src="${escapeHtml(absolute(origin, template.image))}" alt="${escapeHtml(`${template.title} wedding invitation, first screen`)}" width="360" height="720"/>
+<img src="${escapeHtml(template.image)}" alt="${escapeHtml(`${template.title} wedding invitation, first screen`)}" width="360" height="720"/>
 <h2>How it opens</h2><p><strong>${escapeHtml(template.opening)}.</strong> ${escapeHtml(template.openingText)}</p>
 <h2>Style</h2><p>${template.tags.map(escapeHtml).join(', ')}.</p>
 <h2>What you add</h2>
