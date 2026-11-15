@@ -50,7 +50,8 @@ test('the refund page states the refund window, and the terms and privacy pages 
   assert.ok(refund.includes(`within ${REFUND_DAYS} days of paying`));
   for (const slug of ['terms', 'privacy']) {
     const doc = policyDocument(pageFor(`/${slug}`), ORIGIN);
-    assert.ok(doc.includes('2 months after your last event date') && doc.includes('8 months after it was first published'), slug);
+    assert.ok(doc.includes('at least until 2 months after your last event date') && doc.includes('8 months after they were first published'), slug);
+    assert.ok(doc.includes('not switched on yet'), `${slug} must say that closing and deleting are not on yet (remove this check when they are)`);
   }
   assert.ok(UPDATED.length > 8);
 });

@@ -18,6 +18,6 @@ They are drafted from what the product does today. **They are not legal advice. 
 
 ## Check before you launch
 
-- **Deleting data.** The privacy page says an invitation, its replies, photos and links are deleted 14 days after it closes. Today the cleanup job at `/api/internal/retention-sweep` only **reports** (a dry run; see `functions/README.md`). Switch it to really delete before you rely on that sentence, or change the sentence.
+- **Closing and deleting.** The terms and privacy pages now say the plan is to close invitations after the event and delete their data, but that it is **not switched on yet**, because the cleanup job only reports (a dry run; see `functions/README.md` and `docs/RETENTION_PLAN.md`, step 4). When you switch closing and deleting on, change both pages to say so, and drop the `not switched on yet` check in `tests/unit/policies.test.mjs`.
 - **Contact details.** They come from `site-config.js` (email and WhatsApp). `policies.js` repeats them for the server-built pages, and `tests/unit/policies.test.mjs` fails if the two differ. Change both together.
 - **Third parties named on the privacy page:** Cloudflare, Supabase, Razorpay, Google Fonts. Update the page if you add or remove one (for example analytics).
