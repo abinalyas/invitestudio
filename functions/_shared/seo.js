@@ -9,7 +9,7 @@
 // are placeholders until confirmed, so no amount appears here. The template list mirrors figma/islands/shared.tsx
 // (galleryTemplates); tests/unit/seo.test.mjs fails if they drift apart.
 
-import { LANDING, renderLanding } from './landing.js';
+import { LANDING, renderLanding, smallImage } from './landing.js';
 
 export const SITE_NAME = 'InviteStudio';
 
@@ -212,6 +212,9 @@ export function headTags(page, origin) {
     `<meta name="twitter:image" content="${escapeHtml(info.image)}"/>`,
     jsonLd(structuredData(page, origin, info))
   ];
+  // The home page's biggest picture is drawn by the application, so the browser would not ask for it until the scripts have run.
+  // Asking early lets it download alongside them.
+  if (page.kind === 'home') tags.push('<link rel="preload" as="image" href="/assets/hero/hero-envelope-invitation.webp" type="image/webp" fetchpriority="high"/>');
   return { title: info.title, html: tags.join('') };
 }
 
@@ -244,7 +247,7 @@ ${FAQ.map(([question, answer]) => `<h3>${escapeHtml(question)}</h3><p>${escapeHt
     const guides = LANDING.slice(0, 3);
     body = `<h1>${escapeHtml(template.title)} wedding invitation website template</h1>
 <p>${escapeHtml(template.tagline)}</p>
-<img src="${escapeHtml(template.image)}" alt="${escapeHtml(`${template.title} wedding invitation, first screen`)}" width="360" height="720"/>
+<img src="${escapeHtml(template.image)}" srcset="${escapeHtml(smallImage(template.image))} 320w, ${escapeHtml(template.image)} 720w" sizes="(max-width: 600px) 60vw, 320px" alt="${escapeHtml(`${template.title} wedding invitation, first screen`)}" width="360" height="720"/>
 <h2>How it opens</h2><p><strong>${escapeHtml(template.opening)}.</strong> ${escapeHtml(template.openingText)}</p>
 <h2>Style</h2><p>${template.tags.map(escapeHtml).join(', ')}.</p>
 <h2>What you add</h2>

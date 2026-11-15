@@ -20,6 +20,25 @@ Five server-rendered pages, one per thing people search for, each with its own a
 
 Each `/templates/<id>` page now carries its own image with alt text, how the invitation opens, its style tags, what the couple adds, and links to similar templates and to the guides. The text comes from the gallery data in `figma/islands/shared.tsx`; `tests/unit/seo.test.mjs` fails if the two disagree.
 
+## Built (phase 4: page speed)
+
+Measured in a throttled browser (slow 4G, 4x slower CPU, phone width) before and after, home page:
+
+| | Before | After |
+|---|---|---|
+| Largest Contentful Paint | 6.3 s | 3.9 s |
+| Picture data on first load | 954 KB | 620 KB |
+| Template pictures in the home strip | 126 + 97 + 62 KB | about 15 KB each |
+| `/favicon.ico` | the whole 363 KB app page | a real 2 KB icon |
+
+What changed: the hero picture is preloaded (the app only asked for it after its scripts had run, about 2.7 s in); the decorative pictures load at low priority; the home strip and setup page use 320 px wide `-phone-sm.webp` copies of the template pictures (the full ones are 720 px wide and shown at 160 px); a favicon (`favicon.ico`, `assets/favicon.svg`, `assets/apple-touch-icon.png`) that also shows in search results; and long cache lifetimes for fonts (1 year) and pictures (1 day, refreshed in the background for a week), set in `_headers`.
+
+If you regenerate the template pictures (`npm run thumbs:scenes`), make the small copies again: resize each `assets/templates/<name>-phone.jpg` to 320x640 and save it as `<name>-phone-sm.webp` (quality 80). `tests/unit/seo.test.mjs` fails if one is missing.
+
+These are lab numbers on a simulated slow phone, so treat them as direction, not a promise. Check the real figures in Search Console's Core Web Vitals report after a few weeks.
+
+Not done, and why: the 112 KB application script and 18 separate script files still decide when the home page appears (about 3.5 s in the lab), and cutting that means restructuring how the page loads, which is a bigger and riskier change. The hero picture is left at full size because real phones have 2x to 3x screens and need it. Layout shift on the home page is 0.096, just inside the "good" limit of 0.1.
+
 ## Decided
 
 - The public address is **https://invitestudio.co** (`SITE_ORIGIN` in `functions/_shared/seo.js`; `PUBLIC_ORIGIN` overrides it). Canonical links, the sitemap and `llms.txt` always use it. The `*.pages.dev` addresses and previews send `X-Robots-Tag: noindex` and a `Disallow: /` robots.txt.
