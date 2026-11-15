@@ -456,3 +456,44 @@ test('the music players are platform behaviour: the sound button is styled for e
   for (const { manifest, css: scoped } of loadTemplates()) assert.ok(scoped.includes(`.${manifest.root} [data-sound-toggle]`), `${manifest.id} carries the button styles`);
   assert.doesNotMatch(css.replace(/\/\*[\s\S]*?\*\//g, ''), /position:\s*fixed|\d(vw|vh)\b/);
 });
+
+// Photos: a couple who uploads one picture must see it, in the editor and on the published page, whatever the design.
+// (A design that needs two gallery pictures used to show nothing for one, and Velvet Reveal had no place for photos at all.)
+const WEDDING = 'aaaaaaaa-0000-4000-8000-000000000000';
+const photo = n => ({ id: `0000000${n}-0000-4000-8000-000000000000`, alt: '', data: `/media/w/${WEDDING}/0000000${n}-0000-4000-8000-000000000000-full.webp`, thumb: `/media/w/${WEDDING}/0000000${n}-0000-4000-8000-000000000000-thumb.webp` });
+for (const { manifest } of list) {
+  const id = manifest.id;
+  const base = () => ({ ...sampleOf(id), title: 'Ava & Ben', date: '2027-06-19', location: 'Hall, Kochi' });
+
+  test(`${id}: one uploaded photo shows in the editor preview and on the published page`, () => {
+    const ctx = renderer();
+    const t = { packaged: id };
+    const project = { ...base(), photos: [photo(1)] };
+    const editor = ctx.renderPackagedTemplate(project, t, { sample: true, editable: true });
+    const published = ctx.renderPackagedTemplate(project, t, {});
+    const needle = '00000001-0000-4000-8000-000000000000';
+    assert.ok(editor.includes(needle), `${id}: the editor preview does not show the photo`);
+    assert.ok(published.includes(needle), `${id}: the published page does not show the photo`);
+  });
+
+  test(`${id}: after the first photo, the editor still offers a place to add the next one`, () => {
+    const ctx = renderer();
+    const editor = ctx.renderPackagedTemplate({ ...base(), photos: [photo(1)] }, { packaged: id }, { sample: true, editable: true });
+    assert.ok(/data-photo-add/.test(editor), `${id}: no upload tile is left after the first photo`);
+  });
+
+  test(`${id}: a photo is never lost because the story or the events were left empty (the published page leaves those sections out)`, () => {
+    const ctx = renderer();
+    const bare = { title: 'Ava & Ben', story: '', functions: [], photos: [photo(1), photo(2)] };
+    const published = ctx.renderPackagedTemplate(bare, { packaged: id }, {});
+    for (const p of bare.photos) assert.ok(published.includes(p.id), `${id}: photo ${p.id.slice(0, 8)} is missing when no story or events are written`);
+  });
+
+  test(`${id}: the published page has no upload tiles, and every photo the couple added shows`, () => {
+    const ctx = renderer();
+    const photos = [photo(1), photo(2), photo(3), photo(4)];
+    const published = ctx.renderPackagedTemplate({ ...base(), photos }, { packaged: id }, {});
+    assert.equal(/data-photo-add/.test(published), false);
+    for (const p of photos) assert.ok(published.includes(p.id), `${id}: photo ${p.id.slice(0, 8)} is missing from the published page`);
+  });
+}

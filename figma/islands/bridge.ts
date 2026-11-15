@@ -199,6 +199,7 @@ export interface InviteStudioBridge {
   saveNow(): void;
   retrySave(): void;
   renderInvitation(host: HTMLElement, device: Device): void;
+  fitDevice(host: HTMLElement, device: Device): void;
   createDraft(backendTemplateId: string, templateNumber: number, sampleNames?: string): void;
   startCreate(category: string): void;
   startSetup(backendTemplateId: string): void;
@@ -260,6 +261,7 @@ export const bridge = {
   saveNow: () => host().saveNow(),
   retrySave: () => host().retrySave(),
   renderInvitation: (element: HTMLElement, device: Device) => host().renderInvitation(element, device),
+  fitDevice: (element: HTMLElement, device: Device) => host().fitDevice(element, device),
   createDraft: (backendTemplateId: string, templateNumber: number, sampleNames?: string) => host().createDraft(backendTemplateId, templateNumber, sampleNames),
   startCreate: (category: string) => host().startCreate(category),
   startSetup: (backendTemplateId: string) => host().startSetup(backendTemplateId),

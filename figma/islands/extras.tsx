@@ -67,3 +67,19 @@ export function TalkToUs({ topic, address, lead }: { topic: "extend" | "restore"
     </span>
   );
 }
+
+// "Need a start?" - tap a sample and it fills the field; the couple edits it from there.
+export function SampleChips({ samples, onPick, label = "Need a start? Tap one to use it, then make it yours." }: { samples: { label: string; text: string }[]; onPick: (text: string) => void; label?: string }) {
+  return (
+    <div className="sample-chips" role="group" aria-label={label}>
+      <span className="sample-chips-label">{label}</span>
+      <span className="sample-chips-row">
+        {samples.map((sample) => (
+          <button key={sample.label} type="button" className="sample-chip" onClick={() => onPick(sample.text)}>
+            {sample.label}
+          </button>
+        ))}
+      </span>
+    </div>
+  )
+}

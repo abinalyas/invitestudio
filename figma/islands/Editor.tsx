@@ -9,9 +9,9 @@
 // - Only supported content is editable here. Palette, typography and layout belong to
 //   the template. Photos stay disabled until persistent photo storage exists.
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { Icon, IconName, Logo } from "./shared";
+import { Icon, IconName, Logo, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
 import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, RetentionInfo, RsvpData } from "./bridge";
-import { useBridgeVersion, TalkToUs } from "./extras";
+import { useBridgeVersion, TalkToUs, SampleChips } from "./extras";
 
 type SectionKey = "home" | "story" | "functions" | "gallery" | "rsvp";
 type MobileTab = "sections" | "preview" | "edit";
@@ -243,6 +243,13 @@ export function EditorPage() {
     return () => window.clearTimeout(timer);
   }, [snap, device]);
 
+  // Turning the phone, or resizing the window, changes how much room the scaled tablet and desktop previews have.
+  useEffect(() => {
+    const refit = () => { if (canvasRef.current) bridge.fitDevice(canvasRef.current, device); };
+    window.addEventListener("resize", refit);
+    return () => window.removeEventListener("resize", refit);
+  }, [device]);
+
   // Outline the section being edited inside the preview.
   useEffect(() => {
     const root = canvasRef.current?.shadowRoot;
@@ -460,6 +467,19 @@ export function EditorPage() {
         </aside>
 
         <section className="editor-canvas-area" id="panel-preview">
+          {/* Phones only: the preview size (the header's icons are hidden there) and the full guest view, which plays the opening. */}
+          <div className="phone-preview-tools">
+            <div className="device-switcher phone-switcher" role="group" aria-label="Preview size">
+              {(["mobile", "tablet", "desktop"] as const).map(mode => (
+                <button key={mode} type="button" className={device === mode ? "active" : ""} onClick={() => setDevice(mode)} aria-pressed={device === mode}>
+                  {mode === "mobile" ? "Phone" : mode === "tablet" ? "Tablet" : "Desktop"}
+                </button>
+              ))}
+            </div>
+            <button type="button" className="button outline small" onClick={() => bridge.openPreview()}>
+              See it as guests will
+            </button>
+          </div>
           <div className={`device-frame ${device}`}>
             {device === "desktop" ? (
               <div className="browser-bar">
@@ -512,6 +532,7 @@ export function EditorPage() {
               <label>
                 Welcome message <span className="optional">(optional)</span>
                 <textarea rows={3} value={snap.message} placeholder={snap.shown.message} onChange={event => set({ message: event.target.value })} />
+                <SampleChips samples={sampleWelcomes()} onPick={(text) => set({ message: text })} />
               </label>
               <label>
                 Date <span className="optional">(optional)</span>
@@ -531,6 +552,7 @@ export function EditorPage() {
               <label>
                 Hosts <span className="optional">(optional)</span>
                 <input value={snap.hosts} placeholder={snap.shown.hosts} onChange={event => set({ hosts: event.target.value })} />
+                <SampleChips samples={sampleHosts(snap.title)} onPick={(text) => set({ hosts: text })} />
               </label>
               <p className="tiny muted">Your design's hero image is used for now. Your own hero photos unlock when photo storage is available.</p>
             </div>
@@ -545,6 +567,7 @@ export function EditorPage() {
               <label>
                 Your story
                 <textarea rows={6} value={snap.storyCopy} onChange={event => set({ storyCopy: event.target.value })} />
+                <SampleChips samples={sampleStories()} onPick={(text) => set({ storyCopy: text })} />
               </label>
             </div>
           ) : null}
@@ -952,6 +975,7 @@ const mediaOffNotes: Record<string, string> = {
 function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
   const [progress, setProgress] = useState("");
   const [problems, setProblems] = useState<string[]>([]);
+  const [added, setAdded] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const media = snap.media;
   const slots = snap.photoSlots;
@@ -971,8 +995,10 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
   const add = async (files: FileList | null) => {
     if (!files || !files.length) return;
     setProblems([]);
+    setAdded("");
     const result = await bridge.mediaUpload(Array.from(files), p => setProgress(`Adding photo ${p.index} of ${p.total}…`));
     setProgress("");
+    if (result.added) setAdded(`Added ${result.added} ${result.added === 1 ? "photo" : "photos"}. Add more any time.`);
     setProblems(result.errors.map(error => (error.name ? `${error.name}: ${error.message}` : error.message)));
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -980,26 +1006,30 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
 
   return (
     <div className="editor-form">
-      <p className="tiny muted" data-testid="photo-usage">
-        {media.usage.count} of {media.limits.photos} photos · {mb(media.usage.bytes)} of {mb(media.limits.totalBytes)} MB
+      <p className="photo-usage" data-testid="photo-usage">
+        <strong>{media.usage.count} of {media.limits.photos} photos</strong> · {mb(media.usage.bytes)} of {mb(media.limits.totalBytes)} MB
       </p>
       <p className="tiny muted">
+        You can add up to {media.limits.photos} photos, and choose several at once.{" "}
         {slots.length
           ? `The first ${slots.length} ${slots.length === 1 ? "photo fills" : "photos fill"} this design's large ${slots.length === 1 ? "picture" : "pictures"}; the rest go in the gallery. Use the arrows to change the order.`
-          : "Your photos appear in the gallery. Use the arrows to change the order."}
+          : "They appear in the gallery. Use the arrows to change the order."}
       </p>
-      <label className={full || progress ? "button outline small photo-add disabled" : "button outline small photo-add"}>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*,.heic,.heif"
-          multiple
-          disabled={full || Boolean(progress)}
-          onChange={event => void add(event.target.files)}
-          aria-label="Add photos"
-        />
-        {progress ? progress : full ? "Photo limit reached" : "Add photos"}
-      </label>
+      <div className="photo-add-bar">
+        <label className={full || progress ? "button small photo-add disabled" : "button small photo-add"}>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*,.heic,.heif"
+            multiple
+            disabled={full || Boolean(progress)}
+            onChange={event => void add(event.target.files)}
+            aria-label="Add photos"
+          />
+          {progress ? progress : full ? `Photo limit reached (${media.limits.photos})` : snap.photos.length ? "Add more photos" : "Add photos"}
+        </label>
+      </div>
+      {added ? <p className="tiny photo-added" role="status">{added}</p> : null}
       {problems.length ? (
         <ul className="photo-problems" role="alert">
           {problems.map((text, index) => <li key={index}>{text}</li>)}

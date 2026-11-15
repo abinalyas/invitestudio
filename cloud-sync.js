@@ -257,6 +257,28 @@
     await window.loadMedia();
     return result;
   };
+  // Replaces one photo with another in the same place (the preview's "Replace"). The new picture is uploaded first, so if that
+  // fails the old one is untouched; only then is the old one deleted and the new one moved into its position.
+  window.replaceMediaPhoto = async function replaceMediaPhoto(oldId, file, onProgress) {
+    const { project, token, api, ready } = mediaContext();
+    if (!ready) return { added: 0, errors: [{ name: '', message: 'Your invitation needs to be saved online before you can add photos.' }] };
+    const before = (project.photos || []).map(item => item.id);
+    const index = before.indexOf(oldId);
+    if (index < 0) return { added: 0, errors: [{ name: '', message: 'That photo is no longer in your invitation.' }] };
+    const result = await window.uploadMediaPhotos([file], onProgress);
+    if (!result.added) return result;
+    const now = (project.photos || []).map(item => item.id);
+    const fresh = now.filter(id => !before.includes(id));
+    if (fresh.length !== 1) return result; // cannot tell which one is new: keep both; the couple can remove one
+    try {
+      const order = now.filter(id => id !== oldId && id !== fresh[0]);
+      order.splice(index, 0, fresh[0]);
+      await api.deleteMedia(project.cloudId, token, oldId);
+      await api.reorderMedia(project.cloudId, token, order);
+    } catch { /* the reload below shows the truth */ }
+    await window.loadMedia();
+    return result;
+  };
   function friendlyMediaError(error) {
     if (error.code === 'MEDIA_LIMIT') return 'You have reached the limit of 12 photos or 8 MB. Remove a photo to add another.';
     if (error.code === 'RATE_LIMITED') return 'Too many uploads just now. Please try again in a little while.';

@@ -216,7 +216,8 @@ test.describe('photos', () => {
     // and the preview shows the pictures that came back from the list
     await expect(page.locator('.invitation-canvas img[src*="/media/w/"]').first()).toBeVisible();
     await expect.poll(async () => (await snapshot(page)).photos.length).toBe(2);
-    await expect(page.locator('[data-photo-add]')).toHaveCount(0);
+    // the places to add more photos stay (they used to vanish with the first upload, so the next photo had no obvious way in)
+    await expect(page.locator('[data-photo-add]').first()).toBeVisible();
   });
 
   test('a photo the server refuses is reported by name, and the others are still added', async ({ page }) => {

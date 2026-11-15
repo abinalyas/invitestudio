@@ -162,6 +162,17 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
           </aside>
         </div>
       </div>
+
+      {/* On a phone the main button stays at the bottom of the screen, so it is never a long scroll away. */}
+      <div className="detail-sticky">
+        <span>
+          <strong>{template.title}</strong>
+          {tier && pricing ? <small>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)} · pay once to publish</small> : <small>Free to try</small>}
+        </span>
+        <button className="button" type="button" onClick={() => bridge.startSetup(template.backendId)}>
+          Start with this design
+        </button>
+      </div>
     </main>
   )
 }

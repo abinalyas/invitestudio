@@ -143,10 +143,13 @@
     return out;
   }
 
+  // The most photos one invitation can hold. Matches the photo limit in functions/_shared/media.js; the editor's "add one more" tile stops here.
+  var PHOTO_LIMIT = 12;
+
   function template(id) { return root.PACKAGED_TEMPLATES && root.PACKAGED_TEMPLATES[id]; }
 
   /* ---------- the couple's content -> values the markers read ---------- */
-  function derive(p, pkg, visible, sample) {
+  function derive(p, pkg, visible, sample, editable) {
     p = p || {};
     var manifest = pkg.manifest, overrides = p.copy && typeof p.copy === "object" ? p.copy : {};
     var copy = function (key) {
@@ -181,13 +184,28 @@
     // Photo slots: the first photos fill the template's named slots (hero, story, ...), in order. The gallery gets the
     // rest, or all of them when the template reuses its slot photos (galleryReuse).
     var slots = manifest.photoSlots || (manifest.heroPhoto ? ["hero"] : []);
-    var gallery = manifest.galleryReuse ? photos : photos.slice(slots.length);
+    // A named picture spot only counts when its section is on the page: a published page leaves out the story section when no
+    // story is written (and the events section when there are no events), and a picture put there would vanish. Such photos move
+    // to the gallery instead, in the order they were added.
+    var slotShown = { hero: visible.hero !== false, story: Boolean(visible.story && story), venue: Boolean(visible.functions && events.length) };
+    var slotPhoto = {}, spilled = [];
+    photos.slice(0, slots.length).forEach(function (ph, i) { if (slotShown[slots[i]] === false) spilled.push(ph); else slotPhoto[slots[i]] = ph; });
+    var gallery = manifest.galleryReuse ? photos : spilled.concat(photos.slice(slots.length));
     if (example && !photos.length) { gallery = []; for (var k = 0; k < (example.photos || 0); k++) gallery.push({ src: "", alt: "" }); }
+    // In the editor, the empty "Your photo" tiles stay until the design's gallery is full of the couple's own pictures, and one
+    // more tile always follows the last photo (until the limit), so adding the next photo is one tap. Without this the tiles
+    // vanished with the first photo and a design that needs two gallery pictures showed nothing at all.
+    if (sample) {
+      var tiles = Math.max(example ? example.photos || 0 : 0, manifest.galleryMin || 1);
+      while (gallery.length < tiles) gallery.push({ src: "", alt: "" });
+      if (editable && gallery.length < PHOTO_LIMIT - (manifest.galleryReuse ? 0 : slots.length) && gallery.every(function (ph) { return ph.src; })) gallery.push({ src: "", alt: "" });
+    }
     var capKeys = manifest.captionKeys || [];
     // Gallery grids show the small version (a guest's phone loads about a sixth of the data); designs that reuse their
     // large pictures in the gallery keep the full version.
     gallery = gallery.map(function (ph, i) { return { src: (!manifest.galleryReuse && ph.thumb) || ph.src, alt: ph.alt, caption: capKeys[i] ? copy(capKeys[i]) : "" }; });
-    var galleryShown = visible.gallery && gallery.length >= (manifest.galleryMin || 1);
+    // A gallery shows as soon as there is one picture in it: hiding the couple's only photo helps nobody. (galleryMin only sizes the editor's empty tiles.)
+    var galleryShown = visible.gallery && gallery.length >= 1;
     var rsvp = root.InviteRsvp ? root.InviteRsvp.view(p, "") : { text: "", show: false };
     var long = (n[0] + n[1]).length > 18;
     var namesLen = title.length;
@@ -203,9 +221,9 @@
       time_text: timeText(fns, timed, copy),
       story: Boolean(story) && visible.story, story_raw: story, story_paras: story ? story.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean) : [],
       events: visible.functions ? events : [], events_count: Math.min(Math.max(events.length, 1), 3),
-      hero_photo: slots.indexOf("hero") >= 0 && photos[slots.indexOf("hero")] ? photos[slots.indexOf("hero")].src : "",
-      story_photo: slots.indexOf("story") >= 0 && photos[slots.indexOf("story")] ? photos[slots.indexOf("story")].src : "",
-      venue_photo: slots.indexOf("venue") >= 0 && photos[slots.indexOf("venue")] ? photos[slots.indexOf("venue")].src : "",
+      hero_photo: slotPhoto.hero ? slotPhoto.hero.src : "",
+      story_photo: slotPhoto.story ? slotPhoto.story.src : "",
+      venue_photo: slotPhoto.venue ? slotPhoto.venue.src : "",
       photos: galleryShown ? gallery : [], show_gallery: galleryShown,
       map_url: directions || (p.location ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.location) : ""),
       welcome: visible.welcome, show_venue: visible.welcome && Boolean(venue),
@@ -237,7 +255,7 @@
     var visible = {};
     DEFAULT_SECTIONS.forEach(function (s) { visible[s] = false; });
     registry.forEach(function (sec) { if (sec && DEFAULT_SECTIONS.indexOf(sec.id) >= 0 && sec.visible !== false) visible[sec.id] = true; });
-    var d = derive(p, pkg, visible, Boolean(opts && opts.sample)), chain = [d.values], ctx = { copy: d.copy, editable: Boolean(opts && opts.editable) };
+    var d = derive(p, pkg, visible, Boolean(opts && opts.sample), Boolean(opts && opts.editable)), chain = [d.values], ctx = { copy: d.copy, editable: Boolean(opts && opts.editable) };
     // The story is edited as one block in the editor, so the template only wraps it there.
     d.values.editable = ctx.editable;
     var show = function (name) { return evaluate(cachedParse(pkg.parts[name] || "").kids, chain, ctx); };

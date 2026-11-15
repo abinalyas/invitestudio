@@ -4,16 +4,20 @@
   "version": 1,
   "root": "tpl-vr",
   "prefix": "vr-",
-  "music": { "src": "/assets/music/romantic.mp3", "volume": 0.35 },
+  "music": {
+    "src": "/assets/music/romantic.mp3",
+    "volume": 0.35
+  },
   "sections": [
     "hero",
     "welcome",
     "story",
     "functions",
+    "gallery",
     "rsvp"
   ],
   "photoSlots": [],
-  "galleryMin": 99,
+  "galleryMin": 2,
   "fonts": [
     "Cormorant Garamond",
     "DM Sans"
@@ -86,7 +90,7 @@
         "venue": "Your venue"
       }
     ],
-    "photos": 0
+    "photos": 3
   },
   "copy": {
     "nav_date": {
@@ -226,6 +230,24 @@
       "default": "Open Invitation",
       "max": 24,
       "section": "home"
+    },
+    "nav_gallery": {
+      "label": "Menu: gallery",
+      "default": "Gallery",
+      "max": 16,
+      "section": "gallery"
+    },
+    "gallery_title": {
+      "label": "Gallery: heading",
+      "default": "Moments to *treasure*",
+      "max": 30,
+      "section": "gallery"
+    },
+    "gallery_subtitle": {
+      "label": "Gallery: line",
+      "default": "A place for the pictures you love most.",
+      "max": 70,
+      "section": "gallery"
     }
   },
   "intro": {
