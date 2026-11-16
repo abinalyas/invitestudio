@@ -134,7 +134,7 @@ figure{margin:0}
 .section-pad{padding:70px 24px}.invitation h2{font-size:52px}.invitation-note{margin-left:7%}.section-heading{margin-bottom:38px}.story-body h2{font-size:46px}
 .details-main{grid-template-columns:1fr;gap:38px}.details-date{border-right:0;border-bottom:1px solid #d9d6ce;padding:0 0 30px}.details-date strong{font-size:150px}.details-info h2{font-size:52px}
 .timeline-item{grid-template-columns:25px 1fr}.timeline-item small{grid-column:2;text-align:left;padding:0}
-.photo-grid{grid-template-columns:repeat(2,1fr)}.footer{min-height:130px}.footer>span{max-width:160px;line-height:1.7}}
+.photo-grid{grid-template-columns:repeat(2,1fr)}.photo-grid figure:last-child:nth-child(odd){grid-column:1/-1;aspect-ratio:16/10}.footer{min-height:130px}.footer>span{max-width:160px;line-height:1.7}}
 /* motion: a slow settle on the cover, a quiet sheen on the monogram backdrop, buttons that respond */
 .hero-image{overflow:hidden}
 .hero-image img,.hero-image .backdrop{animation:settle 18s cubic-bezier(.22,1,.36,1) both}
