@@ -3,7 +3,7 @@
 const { test, expect } = require('@playwright/test');
 
 const designFiles = path => /^\/(templates\/dist\/|packaged-templates\.js|template-widgets\.js|scene-templates\.(js|css))/.test(path);
-const watch = page => { const seen = []; page.on('request', req => { const path = new URL(req.url()).pathname; if (designFiles(path)) seen.push(path); }); return seen; };
+const watch = page => { const seen = []; page.urls = []; page.on('request', req => { const url = new URL(req.url()); if (designFiles(url.pathname)) { seen.push(url.pathname); page.urls.push(url); } }); return seen; };
 const openTemplatePage = (page, n) => page.evaluate(number => { history.pushState({}, '', `/templates/${number}`); state.page = 'home'; render(); }, n);
 
 test('the home page and the template gallery download no design at all', async ({ page }) => {
@@ -36,7 +36,7 @@ test('a template page fetches the shared template code and that one design, and 
 
 test('a design that cannot be loaded shows a message, and Try again draws it once the network is back', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.route('**/templates/dist/*.js', route => route.abort());
+  await page.route('**/templates/dist/*.js*', route => route.abort());
   await page.goto('/');
   await openTemplatePage(page, 18);
   const screen = page.locator('.figma-island-host .detail-screen');
@@ -44,7 +44,24 @@ test('a design that cannot be loaded shows a message, and Try again draws it onc
   const retry = screen.locator('[data-retry-design]');
   await expect(retry).toBeVisible({ timeout: 15000 });
   await expect(screen.getByText('We could not load this design.')).toBeVisible();
-  await page.unroute('**/templates/dist/*.js');
+  await page.unroute('**/templates/dist/*.js*');
   await retry.click();
   await expect.poll(() => screen.evaluate(el => Boolean(el.shadowRoot.querySelector('[data-packaged-template="bloom-reveal"]'))), { timeout: 15000 }).toBe(true);
+});
+
+test('every script and design file carries the build id, so a new page never loads an older cached script', async ({ page }) => {
+  const seen = watch(page);
+  const scripts = [];
+  page.on('request', req => { const url = new URL(req.url()); if (url.pathname.endsWith('.js') && url.origin === new URL(page.url() || 'http://localhost').origin) scripts.push(url); });
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  const build = await page.locator('meta[name="invitestudio-build"]').getAttribute('content');
+  expect(build).toMatch(/^[0-9a-f]{12}$/);
+  await openTemplatePage(page, 18);
+  await expect(page.locator('.figma-island-host .detail-screen')).toBeVisible();
+  await expect.poll(() => seen.includes('/templates/dist/bloom-reveal.js')).toBe(true);
+  for (const url of page.urls) expect(url.searchParams.get('v'), url.pathname).toBe(build);
+  const own = scripts.filter(url => !/^\/(?:supabase)/.test(url.pathname));
+  expect(own.length).toBeGreaterThan(10);
+  for (const url of own) expect(url.searchParams.get('v'), url.pathname).toBe(build);
 });

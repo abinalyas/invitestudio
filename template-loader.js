@@ -14,6 +14,9 @@
 (function (root) {
   'use strict';
   var BUNDLES = '/templates/dist/';
+  // The build id (scripts/stamp-build.mjs, in the page's meta tag) goes on every address, so a page only ever loads files of its own build, never an older cached copy.
+  var meta = typeof document !== 'undefined' && document.querySelector('meta[name="invitestudio-build"]');
+  var V = meta && meta.content ? '?v=' + meta.content : '';
   var SCENE_CSS = '/scene-templates.css';
   var scripts = {};   // url -> Promise, one request per file
   var cssText = {};   // key -> CSS text
@@ -23,7 +26,7 @@
     if (scripts[url]) return scripts[url];
     scripts[url] = new Promise(function (resolve, reject) {
       var el = document.createElement('script');
-      el.src = url;
+      el.src = url + V;
       el.async = true;
       el.onload = function () { resolve(); };
       el.onerror = function () { delete scripts[url]; el.remove(); reject(new Error('Could not load ' + url)); };
@@ -46,7 +49,7 @@
   function loadSceneCss() {
     var key = 'scene';
     if (scripts[SCENE_CSS]) return scripts[SCENE_CSS];
-    scripts[SCENE_CSS] = fetch(SCENE_CSS, { credentials: 'same-origin' }).then(function (response) {
+    scripts[SCENE_CSS] = fetch(SCENE_CSS + V, { credentials: 'same-origin' }).then(function (response) {
       if (!response.ok) throw new Error('Could not load ' + SCENE_CSS);
       return response.text();
     }).then(function (text) { addStyle(key, text); }, function (error) { delete scripts[SCENE_CSS]; throw error; });
