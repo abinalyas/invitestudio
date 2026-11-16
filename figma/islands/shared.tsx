@@ -453,3 +453,41 @@ export const styleOptions: [string, number][] = Object.entries(
 export const backendTemplateIds: Record<number, string> = Object.fromEntries(
   galleryTemplates.map((template) => [template.id, template.backendId]),
 )
+
+// Ready-written wording the couple can start from and then change. Nothing is saved until they pick one and it is theirs to edit.
+// Written in "we" so it reads naturally whoever the couple are; the hosts line uses the names they entered.
+export type Sample = { label: string; text: string }
+
+export function sampleWelcomes(): Sample[] {
+  return [
+    { label: "Warm", text: "Together with our families, we invite you to celebrate the beginning of our forever." },
+    { label: "Short and simple", text: "Join us for our wedding. We can't wait to celebrate with you!" },
+    { label: "Traditional", text: "With joy and the blessings of our families, we request the pleasure of your company at our wedding." },
+  ]
+}
+
+export function sampleStories(): Sample[] {
+  return [
+    {
+      label: "How we met",
+      text: "We met by chance and became friends before we knew it. Years of laughter, long walks and shared dreams later, we are getting married. We would love for you to be there as we begin this next chapter together.",
+    },
+    {
+      label: "Short",
+      text: "It started with a simple hello, and every day since has been our favourite. Now we are getting married, and there is no one we would rather celebrate with than you.",
+    },
+    {
+      label: "Families",
+      text: "Two families, one celebration. After years of friendship and adventure, we have decided to spend our lives together. Please join us as we say \"I do\", surrounded by the people we love most.",
+    },
+  ]
+}
+
+export function sampleHosts(names: string): Sample[] {
+  const parts = names.split(/\s*(?:&|\band\b|\+)\s*/i).map((part) => part.trim()).filter(Boolean)
+  const couple = parts.length > 1 ? `${parts[0]} and ${parts[1]}` : parts[0] || "the couple"
+  return [
+    { label: "Families", text: `Hosted by the families of ${couple}` },
+    { label: "Simple", text: `With love, ${parts.length > 1 ? `${parts[0]} & ${parts[1]}` : couple}` },
+  ]
+}

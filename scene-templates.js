@@ -276,14 +276,18 @@
     return scene(key, 'functions', '<p class="sx-caps sx-rv" style="--d:0">The celebrations</p><p class="sx-script sx-h sx-rv" style="--d:1">Schedule</p><ul class="sx-sched sx-rv" style="--d:2">' + rows + '</ul>' +
       (d.editable ? '<div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div>' : ''));
   }
-  // Before any photo is added, the editor shows two placeholders that open the file picker.
-  function placeholders(d) {
+  // In the editor, placeholders that open the file picker: two before any photo is added, and one more after the last photo
+  // (until the limit), so the next photo is always one tap away. Without the last one they vanished with the first photo.
+  var PHOTO_LIMIT = 12; // matches the photo limit in functions/_shared/media.js
+  function placeholders(d, count) {
     if (!d.editable) { return ''; }
     var box = '<span data-photo-add style="display:flex;align-items:center;justify-content:center;height:150px;border-radius:8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Your photo</span>';
-    return box + box;
+    var out = '';
+    for (var i = 0; i < (count || 2); i += 1) { out += box; }
+    return out;
   }
   function galleryScene(key, d) {
-    return scene(key, 'gallery', '<p class="sx-script sx-h sx-rv" style="--d:0">Gallery</p><div class="sx-gallery sx-rv" style="--d:1">' + (d.photos.length ? d.photos.map(function (ph) { return '<img src="' + esc(ph.data) + '" alt="' + esc(ph.alt || 'Event photo') + '" loading="lazy">'; }).join('') : placeholders(d)) + '</div>');
+    return scene(key, 'gallery', '<p class="sx-script sx-h sx-rv" style="--d:0">Gallery</p><div class="sx-gallery sx-rv" style="--d:1">' + (d.photos.length ? d.photos.map(function (ph) { return '<img src="' + esc(ph.data) + '" alt="' + esc(ph.alt || 'Event photo') + '" loading="lazy">'; }).join('') + (d.photos.length < PHOTO_LIMIT ? placeholders(d, 1) : '') : placeholders(d)) + '</div>');
   }
   // The response line comes from rsvp-view.js, so every design says the same thing.
   function rsvpLine(d) {

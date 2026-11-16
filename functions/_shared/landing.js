@@ -129,7 +129,7 @@ ul,ol{padding-left:22px}li{margin:6px 0}
 .faq h3{font-size:24px;margin:22px 0 4px}.faq p{margin:0}
 .cta{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px;margin:48px 0;text-align:center}.cta h2{margin:0 0 10px}
 .more ul{list-style:none;padding:0}.more li{margin:8px 0}
-footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 40px;color:var(--muted);font-size:15px}footer nav{margin:10px 0 0}footer nav a{margin-right:16px}.doc h2{margin-top:36px}.doc .updated{color:var(--muted);font-size:15px;margin:0 0 20px}.contact-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 40px;color:var(--muted);font-size:15px}footer nav{margin:10px 0 0}footer nav a{margin-right:16px}@media(pointer:coarse){nav a,footer a,.logo{display:inline-block;padding:11px 6px;margin-right:12px}footer nav a{margin-right:10px}}.doc h2{margin-top:36px}.doc .updated{color:var(--muted);font-size:15px;margin:0 0 20px}.contact-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
 `;
 
 // The small (320 px wide) version of a template's phone picture; scripts/ keeps the pair in step (tests/unit/seo.test.mjs checks it exists).

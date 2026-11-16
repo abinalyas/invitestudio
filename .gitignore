@@ -5,3 +5,6 @@
 .wrangler/
 node_modules/
 test-results/
+
+# Output of npm run audit:mobile
+mobile-audit/

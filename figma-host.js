@@ -235,12 +235,17 @@
     'font:600 15px/28px system-ui,sans-serif!important;color:#fff!important}' +
     '.edit-event-bar button:hover:not([disabled]),.edit-event-bar button:focus-visible{background:rgba(255,255,255,.22)!important}' +
     '.edit-event-bar button[disabled]{opacity:.35!important;cursor:default!important}' +
+    // The bar over a photo has words, not symbols: Replace and Remove.
+    '.edit-photo-bar button{width:auto!important;padding:0 14px!important;border-radius:999px!important;font:600 13px/28px system-ui,sans-serif!important;white-space:nowrap!important}' +
+    'img[src*="/media/w/"]{cursor:pointer}' +
     '.edit-hint-action{all:unset;cursor:pointer;font-weight:700;text-decoration:underline;padding:0 2px}' +
     // On a phone the page scrolls, not the preview, so the pill is pinned to the screen, above the tab bar.
     '@media(max-width:767px){.edit-hint{position:fixed;left:0;right:0;bottom:var(--hint-bottom,84px);z-index:30}.edit-hint-pill{bottom:0}}' +
     // Bigger touch targets on touch screens.
-    '@media(pointer:coarse){.edit-event-bar button{width:40px!important;height:40px!important;font-size:18px!important;line-height:40px!important}' +
-    '[data-add-event],.edit-chip{padding:12px 18px!important}.edit-hint-pill button{width:32px;height:32px;line-height:32px}}</style>';
+    '@media(pointer:coarse){.edit-event-bar button{width:40px!important;height:40px!important;font-size:18px!important;line-height:40px!important}.edit-photo-bar button{width:auto!important;font-size:14px!important}' +
+    '[data-add-event],.edit-chip{padding:12px 18px!important}.edit-hint-pill button{position:relative;width:32px;height:32px;line-height:32px}' +
+    // The visible button stays small; its tappable area grows to 44px.
+    '.edit-hint-pill button::after{content:"";position:absolute;inset:-6px}}</style>';
 
   // The tip is shown until it is dismissed or the person makes their first edit, and then not again on this device.
   const HINT_KEY = 'invitestudio-edit-hint-seen';
@@ -369,6 +374,72 @@
     }
     if (text) setNotice(container, text, errors.length ? 'error' : 'info', errors.length ? 12000 : 8000);
     else showPill(container);
+  }
+
+  // ---- Photos in the preview: tap a photo to replace or remove it, without opening the Photos panel.
+  const PHOTO_URL = /\/media\/w\/[^/]+\/([0-9a-f-]{36})-(?:thumb|full)\./i;
+  function photoIdOf(img) {
+    const match = PHOTO_URL.exec(img.currentSrc || img.getAttribute('src') || '');
+    return match ? match[1] : '';
+  }
+  function hidePhotoBar(container) {
+    container.querySelector('[data-photo-bar]')?.remove();
+  }
+  // Returns true when the picture is one of the couple's own photos (a bar was shown), false for the design's artwork.
+  function showPhotoBar(container, img) {
+    const id = photoIdOf(img);
+    if (!id || !bridge.snapshot().photos.some(photo => photo.id === id)) return false;
+    const existing = container.querySelector('[data-photo-bar]');
+    if (existing && existing.dataset.id === id) { existing.remove(); return true; } // a second tap closes it
+    hidePhotoBar(container);
+    const bar = document.createElement('div');
+    bar.className = 'edit-event-bar edit-photo-bar';
+    bar.setAttribute('data-photo-bar', '');
+    bar.dataset.id = id;
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', 'Photo actions');
+    bar.append(barButton('Replace this photo', 'Replace', { 'data-photo-replace': '' }, false), barButton('Remove this photo', 'Remove', { 'data-photo-remove': '' }, false));
+    container.append(bar);
+    // Over the photo's top edge, kept inside the preview.
+    const box = container.getBoundingClientRect();
+    const rect = img.getBoundingClientRect();
+    const left = Math.max(4, Math.min(rect.left - box.left + 8, box.width - bar.offsetWidth - 4));
+    bar.style.left = left + 'px';
+    bar.style.top = Math.max(4, rect.top - box.top + 8) + 'px';
+    return true;
+  }
+  function startPhotoReplace(container, id) {
+    hidePhotoBar(container);
+    const snap = bridge.snapshot();
+    if (!snap.media.enabled) {
+      setNotice(container, PHOTO_OFF_NOTES[snap.media.reason] || 'Photos are not available right now.', 'error', 10000);
+      return;
+    }
+    container.querySelector('input[data-photo-input]')?.remove();
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*,.heic,.heif';
+    input.hidden = true;
+    input.setAttribute('data-photo-input', '');
+    input.addEventListener('change', async () => {
+      const file = (input.files || [])[0];
+      input.remove();
+      if (!file) return;
+      setNotice(container, 'Replacing the photo\u2026', 'info', 180000);
+      let result;
+      try { result = await bridge.mediaReplace(id, file); } catch { result = null; }
+      const errors = (result && result.errors) || [];
+      if (result && result.added) setNotice(container, 'Photo replaced.', 'info', 5000);
+      else setNotice(container, errors[0] ? errors[0].message : 'The photo could not be replaced. The old one is still there.', 'error', 10000);
+    });
+    container.append(input);
+    input.click();
+  }
+  async function removePhotoFromPreview(container, id) {
+    hidePhotoBar(container);
+    if (!window.confirm('Remove this photo?')) return;
+    await bridge.mediaRemove(id);
+    setNotice(container, 'Photo removed.', 'info', 5000);
   }
 
   // ---- Events: a small bar over the event being pointed at or edited moves it up or down, or removes it.
@@ -545,6 +616,15 @@
         startPhotoAdd(container);
         return;
       }
+      const photoBar = target && target.closest('[data-photo-bar]');
+      if (photoBar) {
+        if (target.closest('[data-photo-replace]')) startPhotoReplace(container, photoBar.dataset.id);
+        else if (target.closest('[data-photo-remove]')) void removePhotoFromPreview(container, photoBar.dataset.id);
+        return;
+      }
+      const picture = target && target.closest('img');
+      if (picture && showPhotoBar(container, picture)) return;
+      hidePhotoBar(container);
       const el = fieldOf(event);
       if (el) startEditing(el);
     });
@@ -674,6 +754,19 @@
   }
 
   const widths = { desktop: '100%', tablet: '768px', mobile: '390px' };
+  const phoneWidths = { desktop: 1280, tablet: 768 };
+  function fitDeviceWidth(host, container, device) {
+    const real = phoneWidths[device];
+    const available = host.clientWidth;
+    if (real && available && window.matchMedia('(max-width: 767px)').matches) {
+      container.style.width = real + 'px';
+      container.style.maxWidth = 'none';
+      container.style.margin = '0';
+      container.style.zoom = String(Math.min(1, available / real));
+    } else {
+      container.style.zoom = '';
+    }
+  }
 
   const bridge = {
     snapshot,
@@ -823,6 +916,7 @@
     mediaAlt(id, alt) { return window.setMediaAlt(id, alt); },
     mediaMove(id, delta) { return window.moveMediaPhoto(id, delta); },
     mediaRemove(id) { return window.deleteMediaPhoto(id); },
+    mediaReplace(id, file, onProgress) { return window.replaceMediaPhoto(id, file, onProgress); },
 
     loadReplies() {
       return typeof window.loadRsvpReplies === 'function' ? window.loadRsvpReplies() : Promise.reject(new Error('Not available.'));
@@ -904,6 +998,12 @@
       notify();
     },
 
+    // On a phone the page is the device, so Tablet and Desktop are shown at their real width, scaled down to fit the screen.
+    fitDevice(host, device) {
+      const container = host.shadowRoot && host.shadowRoot.querySelector('.invitation-canvas');
+      if (container) fitDeviceWidth(host, container, device);
+    },
+
     renderInvitation(host, device) {
       const p = project();
       if (!p) return;
@@ -911,6 +1011,7 @@
       container.style.width = widths[device] || '100%';
       container.style.maxWidth = '100%';
       container.style.margin = '0 auto';
+      fitDeviceWidth(host, container, device);
       container.style.position = 'relative'; // the event bar is placed inside it
       // full=false: the editor canvas shows the invitation without its intro overlay.
       // Until the couple adds their names, the preview shows the template's example names.

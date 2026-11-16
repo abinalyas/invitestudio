@@ -21,6 +21,7 @@
     <!--if welcome--><button type="button" data-scroll-to="invitation">{{upper:copy:nav_date}}</button><!--/if-->
     <!--if story--><button type="button" data-scroll-to="story">{{upper:copy:nav_story}}</button><!--/if-->
     <!--if events--><button type="button" data-scroll-to="details">{{upper:copy:nav_events}}</button><!--/if-->
+    <!--if show_gallery--><button type="button" data-scroll-to="gallery">{{upper:copy:nav_gallery}}</button><!--/if-->
     <button type="button" data-scroll-to="rsvp">{{upper:copy:nav_rsvp}}</button>
   </nav>
 </header>
@@ -104,6 +105,20 @@
         <!--if map--><a class="link" href="{{map}}" target="_blank" rel="noopener noreferrer">{{upper:copy:directions}}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8.5 7H17v8.5"/></svg></a><!--/if-->
       </article><!--/each-->
     </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
+  </div>
+</section>
+
+<!--part:gallery-->
+<section class="gallery section" data-tpl-section="gallery" data-section="gallery">
+  <div class="wrap">
+    <div class="heading" data-reveal>
+      <svg class="divider" viewBox="0 0 120 12" aria-hidden="true"><path d="M2 6h46M72 6h46"/><path d="M60 1 65 6 60 11 55 6Z"/></svg>
+      <h2 class="title">{{em:edit:copy:gallery_title}}</h2>
+      <p class="lead">{{edit:copy:gallery_subtitle}}</p>
+    </div>
+    <div class="photo-grid">
+      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each-->
+    </div>
   </div>
 </section>
 

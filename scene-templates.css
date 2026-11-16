@@ -28,6 +28,7 @@
 .sx-body{font-size:13px;line-height:1.75;letter-spacing:.02em;color:var(--sx-muted);text-wrap:pretty;overflow-wrap:anywhere}
 .sx-date{display:grid;gap:4px;justify-items:center}.sx-day{font-family:var(--sx-script);font-size:96px;line-height:.9}
 .sx-link{display:inline-flex;align-items:center;padding:8px 14px;border:1px solid currentColor;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;transition:transform .5s var(--sx-ease),background-color .3s var(--sx-ease),color .3s var(--sx-ease)}
+@media(pointer:coarse){.sx-link{min-height:44px;padding-inline:18px}}
 .sx-link:hover{background:var(--sx-ink);color:var(--sx-paper)}.sx-link:active{transform:scale(.98)}.sx-link:focus-visible,.sx-hit:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 .sx-sched{display:grid;width:100%;text-align:left}
 .sx-sched li{display:grid;grid-template-columns:84px 1fr;gap:12px;padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--sx-ink) 22%,transparent)}

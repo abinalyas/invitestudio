@@ -11,7 +11,10 @@ import pg from 'pg';
 const here = dirname(fileURLToPath(import.meta.url));
 export const migrationsDir = join(here, '..', '..', 'supabase', 'migrations');
 
+// PG_BIN_DIR points the suite at another Postgres install (for example /usr/lib/postgresql/16/bin) when the embedded binaries
+// cannot run, as in a sandbox that lacks a system library they need.
 function embeddedBinDir() {
+  if (process.env.PG_BIN_DIR) return process.env.PG_BIN_DIR;
   const repoRoot = join(here, '..', '..');
   return join(repoRoot, 'node_modules', '@embedded-postgres', `${process.platform}-${process.arch}`, 'native', 'bin');
 }

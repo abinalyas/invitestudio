@@ -104,7 +104,7 @@ export function TemplatesPage() {
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search templates (e.g. floral, minimal, traditional...)"
+              placeholder="Search by style or colour"
             />
           </label>
           <button

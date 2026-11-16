@@ -5,10 +5,10 @@
 // (bridge.commitSetup), which creates the draft the first time and keeps it up to date.
 // The preview is the real invitation renderer, so it is what guests will see.
 import { useEffect, useRef, useState } from "react";
-import { Icon, Logo, galleryTemplates, phoneSmall } from "./shared";
+import { Icon, Logo, galleryTemplates, phoneSmall, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
 import { bridge, SetupFields } from "./bridge";
 import { EventsPanel } from "./Editor";
-import { useBridgeVersion } from "./extras";
+import { SampleChips, useBridgeVersion } from "./extras";
 
 const steps = ["Essentials", "Template", "Story and details", "Ready"] as const;
 const namesMissing = "Add the couple or celebration names to continue.";
@@ -20,6 +20,8 @@ export function SetupPage() {
   const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [cue, setCue] = useState(false);
+  // On a phone the live preview is hidden until asked for (it used to sit between the form and Continue).
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [fields, setFields] = useState<SetupFields>(() => {
     const defaults = bridge.setupDefaults();
     const known = galleryTemplates.some((template) => template.backendId === snap.templateId);
@@ -73,29 +75,34 @@ export function SetupPage() {
     window.scrollTo({ top: 0 });
   }
 
-  const actions = (
-    <div className="setup-actions">
+  // The same buttons sit at the top of the step and at the bottom (pinned to the screen on a phone), so Continue, Back and Skip are
+  // always in reach. The top copy is a convenience for touch: it is hidden from screen readers and the tab order, which use the
+  // bottom one.
+  const actionButtons = (extra?: boolean) => (
+    <>
       {step > 0 ? (
-        <button className="button outline back" type="button" onClick={() => go(step - 1)}>
+        <button className="button outline back" type="button" onClick={() => go(step - 1)} {...(extra ? { "aria-hidden": true, tabIndex: -1 } : {})}>
           <Icon name="arrow" size={17} /> Back
         </button>
       ) : null}
       {step === 2 ? (
-        <button className="button outline" type="button" onClick={() => go(3)}>
+        <button className="button outline" type="button" onClick={() => go(3)} {...(extra ? { "aria-hidden": true, tabIndex: -1 } : {})}>
           Skip for now
         </button>
       ) : null}
       {step < 3 ? (
-        <button className="button" type="button" onClick={() => go(step + 1)}>
+        <button className="button" type="button" onClick={() => go(step + 1)} {...(extra ? { "aria-hidden": true, tabIndex: -1 } : {})}>
           Continue <Icon name="arrow" size={17} />
         </button>
       ) : (
-        <button className="button" type="button" disabled={!status.canFinish} aria-disabled={!status.canFinish} onClick={() => bridge.finishSetup()}>
+        <button className="button" type="button" disabled={!status.canFinish} aria-disabled={!status.canFinish} onClick={() => bridge.finishSetup()} {...(extra ? { "aria-hidden": true, tabIndex: -1 } : {})}>
           Open editor <Icon name="arrow" size={17} />
         </button>
       )}
-    </div>
+    </>
   );
+  const actions = <div className="setup-actions">{actionButtons()}</div>;
+  const topActions = <div className="setup-actions setup-actions-top">{actionButtons(true)}</div>;
 
   return (
     <main className="setup-page">
@@ -145,8 +152,27 @@ export function SetupPage() {
           ))}
         </ol>
 
+        <div className="setup-selected">
+          <img src={phoneSmall(template.phone)} alt="" width={36} height={72} />
+          <span className="setup-selected-text">
+            <small>Your design</small>
+            <strong>{template.title}</strong>
+          </span>
+          {step !== 1 ? (
+            <button type="button" className="button outline small" onClick={() => go(1)}>
+              Change
+            </button>
+          ) : null}
+          {showPreview ? (
+            <button type="button" className="button outline small setup-preview-toggle" aria-expanded={previewOpen} onClick={() => setPreviewOpen(!previewOpen)}>
+              {previewOpen ? "Hide preview" : "Preview"}
+            </button>
+          ) : null}
+        </div>
+
         <div className={showPreview ? "setup-grid has-preview" : "setup-grid"}>
           <section className="setup-card" aria-labelledby="setup-title">
+            {topActions}
             {error ? (
               <p id="setupNameError" className="setup-error" role="alert">
                 {error}
@@ -228,14 +254,17 @@ export function SetupPage() {
                     Welcome message <span className="optional">(optional)</span>
                     <textarea id="projectMessage" rows={3} value={fields.message} placeholder="A few words for your guests…" onChange={(event) => set({ message: event.target.value })} />
                   </label>
+                  <SampleChips samples={sampleWelcomes()} onPick={(text) => set({ message: text })} />
                   <label>
                     Your story <span className="optional">(optional)</span>
                     <textarea id="projectStory" rows={5} value={fields.story} placeholder="Share a little about the people or occasion…" onChange={(event) => set({ story: event.target.value })} />
                   </label>
+                  <SampleChips samples={sampleStories()} onPick={(text) => set({ story: text })} />
                   <label>
                     Hosts <span className="optional">(optional)</span>
                     <input id="projectHosts" value={fields.hosts} placeholder="Names to display" onChange={(event) => set({ hosts: event.target.value })} />
                   </label>
+                  <SampleChips samples={sampleHosts(fields.title)} onPick={(text) => set({ hosts: text })} />
                 </div>
                 <h3 className="setup-subhead">
                   Events <span className="optional">(optional)</span>
@@ -290,10 +319,13 @@ export function SetupPage() {
           </section>
 
           {showPreview ? (
-            <aside className="setup-preview" aria-label="Live preview">
+            <aside className={previewOpen ? "setup-preview open" : "setup-preview"} aria-label="Live preview">
               <div className="setup-preview-top">
                 <span className="section-kicker">Live preview</span>
                 <span>{template.title}</span>
+                <button type="button" className="button outline small setup-preview-close" onClick={() => setPreviewOpen(false)}>
+                  Close preview
+                </button>
               </div>
               <div className="setup-device">
                 <div className="setup-screen figma-canvas" ref={screenRef} onScroll={updateCue} />

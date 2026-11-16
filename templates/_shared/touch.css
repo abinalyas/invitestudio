@@ -1,0 +1,6 @@
+/* Touch targets every packaged template gets from the platform: on a touch screen a guest's thumb needs at least 44px.
+ * Attribute selectors only, and only min sizes (never display), so no design's layout or collapsed menu changes. */
+@media (pointer:coarse){
+[data-menu-toggle]{min-width:44px;min-height:44px}
+[data-scroll-to],[data-intro-start],[data-intro-open]{min-height:44px}
+}
