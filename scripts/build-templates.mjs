@@ -78,9 +78,11 @@ export function loadTemplates() {
     const base = join(dir, d.name);
     const manifest = JSON.parse(readFileSync(join(base, 'manifest.json'), 'utf8'));
     const parts = splitParts(readFileSync(join(base, 'template.html'), 'utf8'));
-    // Every template also gets the platform's sound button styles (templates/_shared/sound.css) and its touch-target rules (templates/_shared/touch.css).
-    const shared = readFileSync(join(dir, '_shared/sound.css'), 'utf8') + '\n' + readFileSync(join(dir, '_shared/touch.css'), 'utf8');
-    const css = scopeCss(readFileSync(join(base, 'template.css'), 'utf8') + '\n' + shared, manifest.root, manifest.prefix);
+    // Every template gets the platform's motion language first (templates/_shared/motion.css, so a design can override it), then
+    // its own styles, then the sound button (sound.css), touch-target rules (touch.css), line icons (icons.css) and designed empty photo tiles (photo.css).
+    const sharedFile = name => readFileSync(join(dir, '_shared', name), 'utf8');
+    const shared = ['sound.css', 'touch.css', 'icons.css', 'photo.css'].map(sharedFile).join('\n');
+    const css = scopeCss(sharedFile('motion.css') + '\n' + readFileSync(join(base, 'template.css'), 'utf8') + '\n' + shared, manifest.root, manifest.prefix);
     for (const name of Object.keys(parts)) parts[name] = prefixClasses(parts[name], manifest.prefix);
     return { manifest, parts, css };
   });

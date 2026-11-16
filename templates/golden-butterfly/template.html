@@ -32,7 +32,7 @@
     <h1<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}"><span class="name">{{edit:a}}</span><!--if b--><span class="amp">&amp;</span><span class="name">{{edit:b}}</span><!--/if--></h1>
     <!--if date--><p class="hero-date"<!--if editable--> data-edit="date" data-raw="{{date_iso}}"<!--/if-->>{{weekday}} · {{day}} {{month_long}} {{year}}</p><!--else--><p class="hero-date">{{edit:date_long}}</p><!--/if-->
     <p class="hero-note">{{upper:edit:copy:hero_note}}</p>
-    <!--if welcome--><button class="btn" type="button" data-scroll-to="invitation">{{copy:hero_button}} <span aria-hidden="true">↓</span></button><!--/if-->
+    <!--if welcome--><button class="btn" type="button" data-scroll-to="invitation">{{copy:hero_button}} {{icon:arrow-down}}</button><!--/if-->
   </div>
   <p class="scroll-cue">{{upper:copy:cue}}</p>
 </section>
@@ -87,12 +87,13 @@
     </div>
     <div class="venue-grid">
       <!--each events--><article class="venue-card" data-reveal>
-        <p class="venue-number">{{n}} · {{edit:event_title}}</p>
+        <p class="venue-number">{{n}}</p>
         <img class="card-art" src="/templates/golden-butterfly/assets/butterfly-2.svg" alt="" aria-hidden="true">
-        <!--if venue--><h3>{{edit:event_venue}}</h3><!--/if-->
+        <h3>{{edit:event_title}}</h3>
+        <!--if venue--><p class="venue-name">{{edit:event_venue}}</p><!--/if-->
         <!--if date_text--><p class="when">{{date_text}}</p><!--/if-->
         <p class="time-note"><!--if time_text-->{{time_text}}<!--else-->{{copy:time_unknown}}<!--/if--></p>
-        <!--if map--><a class="btn dark" href="{{map}}" target="_blank" rel="noopener noreferrer">{{copy:directions}} ↗</a><!--/if-->
+        <!--if map--><a class="btn dark" href="{{map}}" target="_blank" rel="noopener noreferrer">{{copy:directions}} {{icon:arrow-up-right}}</a><!--/if-->
       </article><!--/each-->
     </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
   </div>
@@ -107,7 +108,7 @@
       <p class="lead">{{edit:copy:gallery_lead}}</p>
     </div>
     <div class="photo-grid">
-      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each-->
+      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->><!--if editable-->Your photo<!--else--><span data-ph-art aria-hidden="true"><b>{{ia}}</b><!--if ib--><i>&amp;</i><b>{{ib}}</b><!--/if--></span><!--/if--></span><!--/if--></figure><!--/each-->
     </div>
   </div>
 </section>
@@ -130,7 +131,7 @@
   <p class="footer-names" style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <i>&amp;</i> {{edit:b}}<!--/if--></p>
   <p class="footer-date">{{footer_line}}</p>
   <div class="footer-links">
-    <button type="button" data-scroll-to="home">{{upper:copy:footer_top}} ↑</button>
+    <button type="button" data-scroll-to="home">{{upper:copy:footer_top}} {{icon:arrow-up}}</button>
     <!--if intro--><button type="button" data-intro-replay>{{upper:copy:closing_replay}}</button><!--/if-->
     <button type="button" data-scroll-to="rsvp">{{upper:copy:nav_rsvp}}</button>
   </div>

@@ -93,8 +93,32 @@
     place_or_venue: "location"                           // a combined line: edits the whole "Venue, Place"; raw is location_raw
   };
 
+  // {{icon:name}}: the platform's line icons (styled by templates/_shared/icons.css). Unicode arrows and stars render
+  // differently on every phone, and some turn into colour emoji, so templates draw these instead.
+  var ICONS = {
+    "arrow-right": '<path d="M4.5 12h15M13.5 6l6 6-6 6"/>',
+    "arrow-up-right": '<path d="M7 17 17 7M8.5 7H17v8.5"/>',
+    "arrow-down-right": '<path d="M7 7l10 10M17 8.5V17H8.5"/>',
+    "arrow-down": '<path d="M12 4.5v15M6 13.5l6 6 6-6"/>',
+    "arrow-up": '<path d="M12 19.5v-15M6 10.5l6-6 6 6"/>',
+    "chevron-down": '<path d="M6 9.5l6 6 6-6"/>',
+    menu: '<path d="M3.5 8.5h17M3.5 15.5h17"/>',
+    pin: '<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21Z"/><circle cx="12" cy="9.8" r="2.3"/>',
+    clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    calendar: '<rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>',
+    sparkle: '<path fill="currentColor" stroke="none" d="M12 2.5c.7 5 2.6 7 7.5 9.5-4.9 2.5-6.8 4.5-7.5 9.5-.7-5-2.6-7-7.5-9.5 4.9-2.5 6.8-4.5 7.5-9.5Z"/>',
+    heart: '<path d="M12 20s-7.5-4.6-7.5-10.4A4.1 4.1 0 0 1 12 7.2a4.1 4.1 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20Z"/>',
+    blossom: '<g fill="currentColor" stroke="none"><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(288 12 12)"/></g><circle cx="12" cy="12" r="1.6" fill="#fff" fill-opacity=".75" stroke="none"/>',
+    moon: '<path d="M15.8 4.2A8.2 8.2 0 1 0 19.8 17 6.8 6.8 0 0 1 15.8 4.2Z"/>',
+    dot: '<circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>'
+  };
+  function icon(name) {
+    return ICONS[name] ? '<svg data-icon="' + name + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + ICONS[name] + "</svg>" : "";
+  }
+
   function value(expr, chain, ctx) {
     var ops = expr.split(":"), mods = [], out, field = null, base, extra = "";
+    if (ops[0] === "icon") return icon(ops[1]);
     while (ops.length && (ops[0] === "upper" || ops[0] === "em")) mods.push(ops.shift());
     // {{edit:key}} (or {{upper:edit:key}}): the same value as {{key}}, marked for in-place editing. The editor
     // gets the plain value in data-raw, so an uppercased line is edited as typed, not in capitals.
@@ -143,13 +167,16 @@
     return out;
   }
 
+  // Sample photographs for the template page (see derive). Site-relative paths only; empty until the set is added.
+  var SAMPLE_PHOTOS = [];
+
   // The most photos one invitation can hold. Matches the photo limit in functions/_shared/media.js; the editor's "add one more" tile stops here.
   var PHOTO_LIMIT = 12;
 
   function template(id) { return root.PACKAGED_TEMPLATES && root.PACKAGED_TEMPLATES[id]; }
 
   /* ---------- the couple's content -> values the markers read ---------- */
-  function derive(p, pkg, visible, sample, editable) {
+  function derive(p, pkg, visible, sample, editable, showcase) {
     p = p || {};
     var manifest = pkg.manifest, overrides = p.copy && typeof p.copy === "object" ? p.copy : {};
     var copy = function (key) {
@@ -181,6 +208,12 @@
     if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", event_id: "", event_title: e.title, event_venue: e.venue || "", when: "", date_text: "", time_text: "", map: "" }; });
     events = numbered(events);
     var photos = (Array.isArray(p.photos) ? p.photos : []).map(function (ph) { return ph && { src: safePhoto(ph.data), thumb: safePhoto(ph.thumb), alt: ph.alt || "" }; }).filter(function (ph) { return ph && ph.src; });
+    // The template page (opts.showcase) shows a design at its best: its sample photographs fill the photo spots (manifest
+    // example.photoSet, else the shared SAMPLE_PHOTOS). Nowhere else: not in the editor or the setup steps, where the
+    // couple's own invitation is shown, and never on a published page, so these pictures can never be published.
+    if (example && showcase && !editable && !photos.length) {
+      photos = (example.photoSet || SAMPLE_PHOTOS).map(function (src) { return { src: src, thumb: src, alt: "" }; });
+    }
     // Photo slots: the first photos fill the template's named slots (hero, story, ...), in order. The gallery gets the
     // rest, or all of them when the template reuses its slot photos (galleryReuse).
     var slots = manifest.photoSlots || (manifest.heroPhoto ? ["hero"] : []);
@@ -255,7 +288,7 @@
     var visible = {};
     DEFAULT_SECTIONS.forEach(function (s) { visible[s] = false; });
     registry.forEach(function (sec) { if (sec && DEFAULT_SECTIONS.indexOf(sec.id) >= 0 && sec.visible !== false) visible[sec.id] = true; });
-    var d = derive(p, pkg, visible, Boolean(opts && opts.sample), Boolean(opts && opts.editable)), chain = [d.values], ctx = { copy: d.copy, editable: Boolean(opts && opts.editable) };
+    var d = derive(p, pkg, visible, Boolean(opts && opts.sample), Boolean(opts && opts.editable), Boolean(opts && opts.showcase)), chain = [d.values], ctx = { copy: d.copy, editable: Boolean(opts && opts.editable) };
     // The story is edited as one block in the editor, so the template only wraps it there.
     d.values.editable = ctx.editable;
     var show = function (name) { return evaluate(cachedParse(pkg.parts[name] || "").kids, chain, ctx); };
@@ -286,7 +319,7 @@
         icon("on", '<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4Z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>') +
         "</button></div>";
     }
-    return '<div class="' + esc(pkg.manifest.root) + '" data-packaged-template="' + esc(id) + '"' + (opts && opts.sample ? " data-preview" : "") + ">" + body + "</div>";
+    return '<div class="' + esc(pkg.manifest.root) + '" data-packaged-template="' + esc(id) + '"' + (opts && opts.sample ? " data-preview" : "") + (opts && opts.showcase && !ctx.editable ? " data-showcase" : "") + ">" + body + "</div>";
   }
 
   root.renderPackagedTemplate = render;

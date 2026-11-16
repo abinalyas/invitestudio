@@ -94,6 +94,23 @@ figure{margin:0}
 .event{border-left:0;border-top:1px solid var(--line);padding:32px 20px 10px}.event:first-child{border-top:0}
 .gallery-grid{grid-template-columns:1fr 1fr;gap:9px}.gallery-item figcaption{font-size:1rem;left:8px;bottom:8px}
 .section-heading h2{font-size:2.8rem}}
+/* motion: petals drifting down over the castle, a slow mist, soft twinkles in the sky, a castle that breathes */
+.petals,.twinkles{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.petals i{position:absolute;top:-6%;left:var(--x);width:calc(15px*var(--s));height:calc(11px*var(--s));border-radius:80% 10% 80% 10%;background:linear-gradient(135deg,#f9d3df,#e7a9bd);opacity:0;animation:fall var(--t) linear var(--d) infinite;box-shadow:inset -2px -2px 4px rgba(170,92,120,.18)}
+@keyframes fall{0%{opacity:0;top:-6%;transform:translateX(0) rotate(0)}8%{opacity:.85}25%{transform:translateX(28px) rotate(80deg)}50%{transform:translateX(-18px) rotate(170deg)}75%{transform:translateX(24px) rotate(260deg)}92%{opacity:.7}100%{opacity:0;top:98%;transform:translateX(-8px) rotate(340deg)}}
+.mist{position:absolute;z-index:-1;left:-30%;right:-30%;bottom:8%;height:38%;background:url("/templates/fairy-tale/assets/mist.webp") center/50% 100% repeat-x;opacity:.55;animation:mist 48s linear infinite;pointer-events:none}
+@keyframes mist{from{transform:translateX(0)}to{transform:translateX(25%)}}
+.twinkles i{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 10px 3px rgba(255,236,214,.9);opacity:0;animation:twinkle 4.6s ease-in-out infinite}
+.twinkles i:nth-child(1){left:14%;top:16%}.twinkles i:nth-child(2){left:78%;top:12%;animation-delay:1.2s}.twinkles i:nth-child(3){left:66%;top:30%;animation-delay:2.4s}.twinkles i:nth-child(4){left:24%;top:38%;animation-delay:3.1s}.twinkles i:nth-child(5){left:88%;top:44%;animation-delay:.6s}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
+.hero-content .couple-names{--rd:.45s}
+.hero-castle{animation:float 9s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.gallery-item img{transition:transform 1.2s cubic-bezier(.22,1,.36,1)}
+.gallery-item:hover img{transform:scale(1.05)}
+.cta{transition:background .35s,transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(126,82,99,.24)}
+.event{transition:transform .5s cubic-bezier(.22,1,.36,1)}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
 .rsvp-link{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .rsvp-open{display:inline-block;margin:16px auto 0;padding:13px 34px;border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:opacity .2s}

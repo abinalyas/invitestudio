@@ -30,10 +30,6 @@ figure,ol{margin:0;padding:0}
 .text-link:hover,.text-link:focus-visible{color:var(--ink)}
 
 /* motion: scroll reveals are driven by the platform (data-reveal); content stays visible without it */
-[data-reveal]{transition:opacity .8s cubic-bezier(.4,0,.2,1) var(--rd,0s),transform .8s cubic-bezier(.4,0,.2,1) var(--rd,0s)}
-[data-reveal-armed]:not([data-revealed]){opacity:0;transform:translateY(20px)}
-[data-reveal="fade"][data-reveal-armed]:not([data-revealed]){transform:none}
-[data-reveal="scale"][data-reveal-armed]:not([data-revealed]){transform:scale(.95)}
 @keyframes sway{from{rotate:-1deg;translate:0 0}to{rotate:1deg;translate:0 -8px}}
 @keyframes drift{from{translate:-3% 0}to{translate:3% 1.5%}}
 @keyframes bob{0%,100%{translate:0 0;opacity:.6}50%{translate:0 8px;opacity:1}}

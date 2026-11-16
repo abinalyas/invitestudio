@@ -20,7 +20,7 @@ figure{margin:0}
 .nav button{opacity:.88}
 .nav button:hover{opacity:1;color:var(--gold)}
 .nav .nav-rsvp{border:1px solid rgba(245,240,232,.48);padding:12px 18px}
-.nav-rsvp span,.outline-link span{color:var(--gold);padding-left:18px}
+.nav-rsvp [data-icon],.outline-link [data-icon]{color:var(--gold);margin-left:14px}
 .menu-toggle{display:none}
 .hero{min-height:760px;position:relative;display:grid;place-items:center;overflow:hidden;text-align:center}
 .hero-image,.hero-backdrop,.hero-shade,.final-photo,.final-backdrop,.final-shade{position:absolute;inset:0}
@@ -121,7 +121,26 @@ h1 i,.opening-note h2 i,.story h2 i,.section-top h2 i,.celebration h2 i,.venue-c
 .date-scene{min-height:520px}.date-content h2{font-size:3rem;margin-bottom:45px}.countdown{gap:9px}.countdown>div{min-width:51px}.countdown strong{font-size:2.5rem}.countdown span{font-size:.44rem}.countdown>i{height:32px}
 .section-light{padding:85px 7cqw}.timeline-row{grid-template-columns:28px 1fr;gap:10px;padding:24px 0}.timeline-row h3{font-size:1.65rem}.timeline-row p,.timeline-row small{grid-column:2}
 .venue-copy{padding:75px 7cqw}.final-scene{min-height:600px}.final-copy h2{font-size:3.8rem}}
+/* motion: the cover opens like a film (letterbox bars part, the picture slowly pushes in), grain over the dark scenes,
+ * a breathing scroll cue, and pictures that drift as the guest reads */
+.letterbox{position:absolute;inset:0;z-index:4;pointer-events:none}
+.letterbox i{position:absolute;left:0;right:0;height:50%;background:#0d0c0b;animation:part 1.5s cubic-bezier(.76,0,.24,1) .25s both}
+.letterbox i:first-child{top:0;transform-origin:top}
+.letterbox i:last-child{bottom:0;transform-origin:bottom}
+@keyframes part{from{transform:scaleY(1)}to{transform:scaleY(.085)}}
+.hero-image,.hero-backdrop{animation:push 22s cubic-bezier(.22,1,.36,1) both}
+@keyframes push{from{transform:scale(1.12)}to{transform:scale(1.02)}}
+.hero:after,.date-scene:after,.final-scene:after,.wide-scene:after{content:"";position:absolute;inset:-20%;z-index:3;pointer-events:none;opacity:.09;background-image:url("/templates/cinematic/assets/grain.svg");animation:grain 1.2s steps(6) infinite}
+.date-scene,.final-scene{position:relative;overflow:hidden}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-4%,3%)}40%{transform:translate(3%,-5%)}60%{transform:translate(-6%,-2%)}80%{transform:translate(5%,4%)}100%{transform:translate(0,0)}}
+.scroll-cue i{transform-origin:top;animation:cue 2.4s cubic-bezier(.65,0,.35,1) infinite}
+@keyframes cue{0%{transform:scaleY(0);opacity:1}55%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:0}}
+.wide-scene img{animation:drift 26s ease-in-out infinite alternate}
+@keyframes drift{from{transform:scale(1.04) translateX(-1.5%)}to{transform:scale(1.1) translateX(1.5%)}}
+.gallery img{transition:transform 1.4s cubic-bezier(.22,1,.36,1),filter 1s,clip-path 1.3s cubic-bezier(.65,0,.35,1) var(--rd,0s)}
+.gallery figure:hover img{transform:scale(1.05)}
+.outline-link,.rsvp-open{transition:background .35s,color .35s,border-color .35s,transform .35s cubic-bezier(.22,1,.36,1)}
+.outline-link:hover,.rsvp-open:hover,.rsvp-open:focus-visible{background:var(--gold);border-color:var(--gold);color:#141210;transform:translateY(-2px)}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 .rsvp-link{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
-.rsvp-open{display:inline-block;margin:16px auto 0;padding:13px 34px;border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:opacity .2s}
-.rsvp-open:hover,.rsvp-open:focus-visible{opacity:.7}
+.rsvp-open{display:inline-block;margin:16px auto 0;padding:13px 34px;border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer}

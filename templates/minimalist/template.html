@@ -6,26 +6,26 @@
     <!--if welcome--><button type="button" data-scroll-to="details">{{upper:copy:nav_details}}</button><!--/if-->
     <!--if show_venue--><button type="button" data-scroll-to="location">{{upper:copy:nav_location}}</button><!--/if-->
   </nav>
-  <button class="nav-rsvp" type="button" data-scroll-to="rsvp">{{upper:copy:nav_rsvp}} <span aria-hidden="true">↗</span></button>
+  <button class="nav-rsvp" type="button" data-scroll-to="rsvp">{{upper:copy:nav_rsvp}} {{icon:arrow-up-right}}</button>
   <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false"><span></span><span></span></button>
 </header>
 
 <!--part:hero-->
 <section class="hero" data-tpl-section="home" data-section="hero">
   <div class="hero-copy">
-    <p class="eyebrow"><span class="eyebrow-line"></span> {{upper:edit:copy:eyebrow}} <span class="eyebrow-line"></span></p>
-    <h1<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <em>&amp;</em><br>{{edit:b}}<!--/if--><span class="period">.</span></h1>
-    <p class="hero-date">{{upper:edit:date_long}}<!--if place_or_venue--> <span>·</span> {{upper:place_or_venue}}<!--/if--></p>
-    <!--if welcome--><button class="text-link" type="button" data-scroll-to="invitation">{{upper:copy:cta}} <span aria-hidden="true">↓</span></button><!--/if-->
+    <p class="eyebrow" data-reveal="fade"><span class="eyebrow-line"></span> {{upper:edit:copy:eyebrow}} <span class="eyebrow-line"></span></p>
+    <h1 data-reveal="soft" style="--rd:.12s"<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <em>&amp;</em><br>{{edit:b}}<!--/if--><span class="period">.</span></h1>
+    <p class="hero-date" data-reveal style="--rd:.3s">{{upper:edit:date_long}}<!--if place_or_venue--> <span>·</span> {{upper:place_or_venue}}<!--/if--></p>
+    <!--if welcome--><button class="text-link" type="button" data-scroll-to="invitation" data-reveal style="--rd:.42s">{{upper:copy:cta}} {{icon:arrow-down}}</button><!--/if-->
   </div>
-  <figure class="hero-image">
+  <figure class="hero-image" data-reveal="curtain" data-ambient style="--rd:.2s">
     <!--if hero_photo--><img src="{{hero_photo}}" alt=""><!--else--><div class="backdrop" aria-hidden="true"><span class="backdrop-mark">{{ia}}<!--if ib--><i>/</i>{{ib}}<!--/if--></span><!--if date--><span class="backdrop-date">{{date_dots}}</span><!--/if--></div><!--/if-->
   </figure>
   <!--if date--><div class="hero-index" aria-hidden="true">{{upper:month_short}}<br><strong>{{day}}</strong><br>{{year}}</div><!--/if-->
 </section>
 <!--if date--><section class="countdown-section" aria-label="{{copy:countdown_eyebrow}}">
-  <div class="countdown-intro"><p class="eyebrow">{{upper:edit:copy:countdown_eyebrow}}</p><h2>{{em:edit:copy:countdown_title}}</h2></div>
-  <div class="countdown" role="timer" aria-live="off" data-countdown="{{date_iso}}">
+  <div class="countdown-intro" data-reveal><p class="eyebrow">{{upper:edit:copy:countdown_eyebrow}}</p><h2>{{em:edit:copy:countdown_title}}</h2></div>
+  <div class="countdown" data-reveal style="--rd:.15s" role="timer" aria-live="off" data-countdown="{{date_iso}}">
     <div><strong data-cd="days">—</strong><span>DAYS</span></div><i></i>
     <div><strong data-cd="hours">—</strong><span>HOURS</span></div><i></i>
     <div><strong data-cd="minutes">—</strong><span>MINUTES</span></div><i></i>
@@ -35,65 +35,65 @@
 
 <!--part:welcome-->
 <section class="invitation section-pad" data-tpl-section="invitation" data-section="welcome">
-  <p class="eyebrow"><!--if hosts_line-->{{upper:edit:hosts_line}}<!--else-->{{upper:edit:copy:invitation_eyebrow}}<!--/if--></p>
+  <p class="eyebrow" data-reveal="fade"><!--if hosts_line-->{{upper:edit:hosts_line}}<!--else-->{{upper:edit:copy:invitation_eyebrow}}<!--/if--></p>
   <div class="invitation-content">
-    <h2>{{em:edit:copy:invitation_title}}</h2>
+    <h2 data-reveal="soft">{{em:edit:copy:invitation_title}}</h2>
     <div class="invitation-note">
-      <span class="small-rule"></span>
-      <p>{{edit:closing_note}}</p>
-      <p class="signature">{{edit:names}}</p>
+      <span class="small-rule" data-reveal="draw" style="--rd:.2s"></span>
+      <p data-reveal style="--rd:.28s">{{edit:closing_note}}</p>
+      <p class="signature" data-reveal="soft" style="--rd:.4s">{{edit:names}}</p>
     </div>
   </div>
 </section>
 <section class="details section-pad" data-tpl-section="details" data-section="welcome">
-  <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:details_eyebrow}}</p></div>
+  <div class="section-heading" data-reveal="fade"><p class="eyebrow">{{upper:edit:copy:details_eyebrow}}</p></div>
   <div class="details-main">
-    <div class="details-date"><!--if date--><span class="month">{{upper:month_long}}</span><strong>{{day}}</strong><span class="year">{{upper:weekday}} · {{year}}</span><!--else--><strong class="tba">{{copy:date_pending}}</strong><!--/if--></div>
+    <div class="details-date" data-reveal="scale"><!--if date--><span class="month">{{upper:month_long}}</span><strong>{{day}}</strong><span class="year">{{upper:weekday}} · {{year}}</span><!--else--><strong class="tba">{{copy:date_pending}}</strong><!--/if--></div>
     <div class="details-info">
-      <p class="eyebrow">{{upper:edit:copy:details_kicker}}</p>
-      <h2>{{em:edit:copy:details_title}}</h2>
-      <!--if has_venue--><div class="detail-row"><span>{{upper:copy:label_venue}}</span><strong>{{edit:venue}}</strong></div><!--/if-->
-      <!--if place--><div class="detail-row"><span>{{upper:copy:label_location}}</span><strong>{{edit:place}}</strong></div><!--/if-->
-      <div class="detail-row"><span>{{upper:copy:label_time}}</span><strong>{{time_text}}</strong></div>
+      <p class="eyebrow" data-reveal="fade">{{upper:edit:copy:details_kicker}}</p>
+      <h2 data-reveal="soft">{{em:edit:copy:details_title}}</h2>
+      <!--if has_venue--><div class="detail-row" data-reveal style="--rd:.1s"><span>{{upper:copy:label_venue}}</span><strong>{{edit:venue}}</strong></div><!--/if-->
+      <!--if place--><div class="detail-row" data-reveal style="--rd:.18s"><span>{{upper:copy:label_location}}</span><strong>{{edit:place}}</strong></div><!--/if-->
+      <div class="detail-row" data-reveal style="--rd:.26s"><span>{{upper:copy:label_time}}</span><strong>{{time_text}}</strong></div>
     </div>
   </div>
 </section>
 <!--if show_venue--><section class="location section-pad" data-tpl-section="location" data-section="welcome">
-  <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:location_eyebrow}}</p></div>
+  <div class="section-heading" data-reveal="fade"><p class="eyebrow">{{upper:edit:copy:location_eyebrow}}</p></div>
   <div class="location-layout">
-    <div><h2>{{em:edit:copy:location_title}}</h2><p>{{edit:venue}}<!--if place--><br>{{edit:place}}<!--/if--></p><!--if map_url--><a class="dark-button" href="{{map_url}}" target="_blank" rel="noopener">{{upper:copy:directions}} <span aria-hidden="true">↗</span></a><!--/if--></div>
-    <div class="place-panel" aria-hidden="true"><span>{{venue}}</span><!--if place--><small>{{upper:place}}</small><!--/if--></div>
+    <div data-reveal><h2>{{em:edit:copy:location_title}}</h2><p>{{edit:venue}}<!--if place--><br>{{edit:place}}<!--/if--></p><!--if map_url--><a class="dark-button" href="{{map_url}}" target="_blank" rel="noopener">{{upper:copy:directions}} {{icon:arrow-up-right}}</a><!--/if--></div>
+    <div class="place-panel" aria-hidden="true" data-reveal="curtain" style="--rd:.15s"><span>{{venue}}</span><!--if place--><small>{{upper:place}}</small><!--/if--></div>
   </div>
 </section><!--/if-->
 
 <!--part:story-->
 <section class="story section-pad" data-tpl-section="story" data-section="story">
-  <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:story_eyebrow}}</p></div>
+  <div class="section-heading" data-reveal="fade"><p class="eyebrow">{{upper:edit:copy:story_eyebrow}}</p></div>
   <div class="story-body">
-    <h2>{{em:edit:copy:story_title}}</h2>
-    <div class="story-copy"><!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p>{{.}}</p><!--/each--><!--if editable--></span><!--/if--><span class="story-number">{{ia}}<!--if ib--> <span>+</span> {{ib}}<!--/if--></span></div>
+    <h2 data-reveal="soft">{{em:edit:copy:story_title}}</h2>
+    <div class="story-copy"><!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p data-reveal>{{.}}</p><!--/each--><!--if editable--></span><!--/if--><span class="story-number" data-reveal="fade" style="--rd:.3s">{{ia}}<!--if ib--> <span>+</span> {{ib}}<!--/if--></span></div>
   </div>
 </section>
 
 <!--part:functions-->
 <section class="timeline section-pad" data-tpl-section="schedule" data-section="functions">
-  <div class="section-heading"><p class="eyebrow">{{upper:edit:copy:schedule_eyebrow}}</p></div>
-  <div class="timeline-content"><h2>{{em:edit:copy:schedule_title}}</h2>
-    <div class="timeline-list"><!--each events--><div class="timeline-item"><span>•</span><div><strong>{{edit:event_title}}</strong><!--if venue--><p>{{edit:event_venue}}</p><!--/if--></div><!--if when--><small>{{upper:when}}</small><!--/if--></div><!--/each--></div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
+  <div class="section-heading" data-reveal="fade"><p class="eyebrow">{{upper:edit:copy:schedule_eyebrow}}</p></div>
+  <div class="timeline-content"><h2 data-reveal="soft">{{em:edit:copy:schedule_title}}</h2>
+    <div class="timeline-list"><!--each events--><div class="timeline-item" data-reveal><span>{{icon:dot}}</span><div><strong>{{edit:event_title}}</strong><!--if venue--><p>{{edit:event_venue}}</p><!--/if--></div><!--if when--><small>{{upper:when}}</small><!--/if--></div><!--/each--></div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
   </div>
 </section>
 
 <!--part:gallery-->
 <section class="gallery section-pad" data-tpl-section="gallery" data-section="gallery">
-  <div class="photo-grid"><!--each photos--><figure><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each--></div>
-  <p class="gallery-caption">{{upper:edit:copy:gallery_caption}}</p>
+  <div class="photo-grid"><!--each photos--><figure data-reveal="curtain"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->><!--if editable-->Your photo<!--else--><span data-ph-art aria-hidden="true"><b>{{ia}}</b><!--if ib--><i>&amp;</i><b>{{ib}}</b><!--/if--></span><!--/if--></span><!--/if--></figure><!--/each--></div>
+  <p class="gallery-caption" data-reveal="fade">{{upper:edit:copy:gallery_caption}}</p>
 </section>
 
 <!--part:rsvp-->
 <section class="rsvp section-pad" data-tpl-section="rsvp" data-section="rsvp">
-  <p class="eyebrow">{{upper:edit:copy:rsvp_eyebrow}}</p>
-  <h2>{{em:edit:copy:rsvp_title}}</h2>
-  <div class="rsvp-side"><p class="rsvp-lead">{{edit:copy:rsvp_lead}}</p><!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if--></div>
+  <p class="eyebrow" data-reveal="fade">{{upper:edit:copy:rsvp_eyebrow}}</p>
+  <h2 data-reveal="soft">{{em:edit:copy:rsvp_title}}</h2>
+  <div class="rsvp-side" data-reveal style="--rd:.15s"><p class="rsvp-lead">{{edit:copy:rsvp_lead}}</p><!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if--></div>
 </section>
 
 <!--part:footer-->

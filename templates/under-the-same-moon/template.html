@@ -5,7 +5,7 @@
     <video class="intro-video" muted playsinline preload="none" poster="/templates/under-the-same-moon/assets/landscape.webp" data-src-wide="/templates/under-the-same-moon/assets/intro.mp4" tabindex="-1"></video>
   </div>
   <!--if intro_wait--><button class="intro-start" type="button" data-intro-start><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>Click to start</button><!--/if-->
-  <button class="intro-skip" type="button" data-intro-skip>{{copy:intro_skip}} <span aria-hidden="true">↗</span></button>
+  <button class="intro-skip" type="button" data-intro-skip>{{copy:intro_skip}} {{icon:arrow-up-right}}</button>
 </div>
 
 <!--part:header-->
@@ -36,7 +36,7 @@
     <p class="eyebrow hero-kicker">{{upper:edit:copy:hero_kicker}}</p>
     <h1<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}"><span class="name">{{edit:a}}</span><!--if b--><span class="amp">&amp;</span><span class="name">{{edit:b}}</span><!--/if--></h1>
     <!--if date--><p class="hero-date"<!--if editable--> data-edit="date" data-raw="{{date_iso}}"<!--/if-->>{{day}} {{month_long}} {{year}}</p><!--else--><p class="hero-date">{{edit:date_long}}</p><!--/if-->
-    <!--if events--><button class="hero-save" type="button" data-scroll-to="details">{{copy:hero_save}} <span aria-hidden="true">↘</span></button><!--/if-->
+    <!--if events--><button class="hero-save" type="button" data-scroll-to="details">{{copy:hero_save}} {{icon:arrow-down-right}}</button><!--/if-->
   </div>
   <!--if welcome--><button class="cue" type="button" data-scroll-to="invitation"><span>{{upper:copy:cue}}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6.5 13.5 12 19l5.5-5.5"/></svg></button><!--/if-->
 </section>
@@ -46,7 +46,7 @@
   <div class="wrap narrow">
     <div data-reveal>
       <p class="eyebrow gold">{{upper:edit:copy:invite_eyebrow}}</p>
-      <span class="rule" aria-hidden="true">✳</span>
+      <span class="rule" aria-hidden="true">{{icon:sparkle}}</span>
       <p class="quote">{{edit:closing_note}}</p>
       <div class="signature">
         <span>{{edit:hosts_line}}</span>
@@ -132,7 +132,7 @@
       <h2 class="title">{{em:edit:copy:gallery_title}}</h2>
     </div>
     <div class="photo-grid">
-      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each-->
+      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->><!--if editable-->Your photo<!--else--><span data-ph-art aria-hidden="true"><b>{{ia}}</b><!--if ib--><i>&amp;</i><b>{{ib}}</b><!--/if--></span><!--/if--></span><!--/if--></figure><!--/each-->
     </div>
   </div>
 </section>
@@ -161,5 +161,5 @@
     <p class="closing-line">{{edit:copy:closing_line}}</p>
     <!--if intro--><button class="replay" type="button" data-intro-replay><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>{{copy:closing_replay}}</button><!--/if-->
   </div>
-  <div class="footer-row"><button type="button" data-scroll-to="home">{{upper:copy:footer_top}} ↑</button><span>{{upper:edit:copy:footer_made}}</span></div>
+  <div class="footer-row"><button type="button" data-scroll-to="home">{{upper:copy:footer_top}} {{icon:arrow-up}}</button><span>{{upper:edit:copy:footer_made}}</span></div>
 </footer>

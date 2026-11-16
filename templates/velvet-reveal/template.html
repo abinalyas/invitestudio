@@ -51,7 +51,7 @@
     <p class="note" data-reveal>{{edit:closing_note}}</p>
     <!--if date-->
     <div class="stage" data-scratch<!--if editable--> data-scratched<!--/if--> data-scratch-label="{{copy:scratch_label}}">
-      <div class="sparkles" aria-hidden="true"><i>✦</i><i>✦</i><i>✦</i></div>
+      <div class="sparkles" aria-hidden="true"><i>{{icon:sparkle}}</i><i>{{icon:sparkle}}</i><i>{{icon:sparkle}}</i></div>
       <div class="scratch-card" data-scratch-card>
         <div class="scratch-date">
           <span class="scratch-kicker">{{upper:copy:date_kicker}}</span>
@@ -97,7 +97,7 @@
     </div>
     <div class="event-grid">
       <!--each events--><article class="event-card" data-reveal>
-        <span class="icon" aria-hidden="true">✦</span>
+        <span class="icon" aria-hidden="true">{{icon:sparkle}}</span>
         <h3>{{edit:event_title}}</h3>
         <p class="time"><!--if time_text-->{{time_text}}<!--else-->{{copy:time_unknown}}<!--/if--></p>
         <!--if date_text--><p class="when">{{date_text}}</p><!--/if-->
@@ -117,7 +117,7 @@
       <p class="lead">{{edit:copy:gallery_subtitle}}</p>
     </div>
     <div class="photo-grid">
-      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each-->
+      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->><!--if editable-->Your photo<!--else--><span data-ph-art aria-hidden="true"><b>{{ia}}</b><!--if ib--><i>&amp;</i><b>{{ib}}</b><!--/if--></span><!--/if--></span><!--/if--></figure><!--/each-->
     </div>
   </div>
 </section>
@@ -137,8 +137,8 @@
 <!--part:footer-->
 <footer class="site-footer">
   <p class="footer-names" data-reveal style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <em>&amp;</em> {{edit:b}}<!--/if--></p>
-  <p class="footer-love" data-reveal>{{edit:copy:closing_love}} <span aria-hidden="true">♥</span></p>
+  <p class="footer-love" data-reveal>{{edit:copy:closing_love}} {{icon:heart}}</p>
   <!--if intro--><button class="replay" type="button" data-intro-replay><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>{{copy:closing_replay}}</button><!--/if-->
   <p class="footer-date" data-reveal>{{footer_line}}</p>
-  <div class="footer-row"><span>{{upper:edit:copy:footer_made}}</span><button type="button" data-scroll-to="home">{{upper:copy:footer_top}} ↑</button></div>
+  <div class="footer-row"><span>{{upper:edit:copy:footer_made}}</span><button type="button" data-scroll-to="home">{{upper:copy:footer_top}} {{icon:arrow-up}}</button></div>
 </footer>

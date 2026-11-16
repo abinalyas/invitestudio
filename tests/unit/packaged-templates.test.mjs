@@ -156,6 +156,29 @@ for (const { manifest, parts, css } of list) {
     assert.doesNotMatch(own, new RegExp(manifest.example.story.slice(0, 30)), "the couple's content replaces the example");
   });
 
+  test(`${id}: sample photographs only ever appear on the template page, and empty tiles there are designed`, () => {
+    const { renderPackagedTemplate } = renderer();
+    const t = { id, packaged: id };
+    const set = ['/assets/samples/test-1.webp', '/assets/samples/test-2.webp', '/assets/samples/test-3.webp', '/assets/samples/test-4.webp'];
+    const pkg = renderer().PACKAGED_TEMPLATES[id];
+    const withSet = ctx => { ctx.PACKAGED_TEMPLATES[id].manifest.example.photoSet = set; return ctx; };
+    const ctx = withSet(renderer());
+    const showcase = ctx.renderPackagedTemplate({ title: 'Sam' }, t, { sample: true, showcase: true });
+    assert.match(showcase, /\/assets\/samples\/test-\d\.webp/, 'the template page shows the sample set');
+    for (const opts of [undefined, { sample: true }, { sample: true, editable: true }, { sample: true, showcase: true, editable: true }]) {
+      assert.doesNotMatch(ctx.renderPackagedTemplate({ title: 'Sam' }, t, opts), /\/assets\/samples\//, `no sample photos with ${JSON.stringify(opts)}`);
+    }
+    const own = ctx.renderPackagedTemplate({ title: 'Sam', photos: [{ data: 'https://example.com/own.webp', alt: 'us' }] }, t, { sample: true, showcase: true });
+    assert.doesNotMatch(own, /\/assets\/samples\//, "the couple's own photos replace the sample set");
+    assert.ok(pkg, 'template is registered');
+    const plain = renderPackagedTemplate({ title: 'Sam & Lee' }, t, { sample: true });
+    if (/photo-ph/.test(plain)) {
+      assert.match(plain, /data-ph-art/, 'empty tiles outside the editor are designed, not "Your photo" boxes');
+      assert.doesNotMatch(stripped(plain), /Your photo/);
+      assert.match(renderPackagedTemplate({ title: 'Sam & Lee' }, t, { sample: true, editable: true }), /data-photo-add[^>]*>Your photo/, 'the editor keeps its add-photo hint');
+    }
+  });
+
   test(`${id}: long names, one name, no date and unicode names stay tidy`, () => {
     const { renderPackagedTemplate } = renderer();
     const t = { id, packaged: id };

@@ -19,10 +19,6 @@ svg{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-l
 button:focus-visible,a:focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
 
 /* motion: scroll reveals are driven by the platform (data-reveal); content stays visible without it */
-[data-reveal]{transition:opacity .9s ease var(--rd,0s),transform .9s ease var(--rd,0s)}
-[data-reveal-armed]:not([data-revealed]){opacity:0;transform:translateY(28px)}
-[data-reveal="fade"][data-reveal-armed]:not([data-revealed]){transform:none}
-[data-reveal="scale"][data-reveal-armed]:not([data-revealed]){transform:scale(.96)}
 @keyframes float{0%,100%{transform:translate3d(0,0,0) rotate(-8deg)}50%{transform:translate3d(18px,-28px,0) rotate(9deg)}}
 @keyframes drift{0%,100%{transform:translate3d(0,8px,0) rotate(-4deg)}25%{transform:translate3d(16px,-18px,0) rotate(3deg)}55%{transform:translate3d(-10px,-30px,0) rotate(-2deg)}78%{transform:translate3d(-18px,-5px,0) rotate(5deg)}}
 @keyframes flutter{0%,100%{transform:perspective(700px) rotateY(0) scale(1)}50%{transform:perspective(700px) rotateY(24deg) scale(.96,1.02)}}
@@ -136,9 +132,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold2);outline-offs
 .venue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:26px}
 .venue-card{position:relative;padding:34px 28px 32px;text-align:center;background:rgba(246,240,230,.67);border:1px solid rgba(158,131,91,.4);transition:transform .4s,box-shadow .4s}
 .venue-card:hover{transform:translateY(-6px);box-shadow:0 20px 45px rgba(90,69,32,.1)}
-.venue-number{margin:0;font:italic 400 1.05rem/1.4 var(--serif);color:var(--paper-gold);overflow-wrap:anywhere}
+.venue-number{margin:0;font:500 .62rem/1.4 var(--sans);letter-spacing:.32em;color:var(--paper-gold)}
 .card-art{width:96px;height:auto;margin:18px auto 14px}
 .venue-card h3{margin:10px 0;font:500 1.65rem/1.2 var(--serif);letter-spacing:.04em;color:var(--paper-ink);overflow-wrap:anywhere}
+.venue-name{margin:0 0 10px;font:italic 400 1.15rem/1.4 var(--serif);color:var(--paper-gold);overflow-wrap:anywhere}
 .venue-card .when{margin:0;font:400 .84rem/1.7 var(--sans);color:var(--paper-muted)}
 .time-note{margin:6px 0 18px;font:500 .66rem/1.6 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--paper-gold)}
 .btn.dark{color:var(--paper-gold);border-color:rgba(118,91,50,.6)}
