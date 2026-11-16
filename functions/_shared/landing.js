@@ -105,31 +105,34 @@ export const LANDING = Object.freeze([
 export const POLICY_LINKS = Object.freeze([['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Privacy', '/privacy'], ['Contact', '/contact']]);
 
 const CSS = `
-@font-face{font-family:"Cormorant Garamond";font-weight:500;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/cormorant-garamond-latin-500-normal.woff2") format("woff2")}
-@font-face{font-family:"Cormorant Garamond";font-weight:500;font-style:italic;font-display:swap;src:url("/assets/scene-fonts/cormorant-garamond-latin-500-italic.woff2") format("woff2")}
+@font-face{font-family:"Playfair Display";font-weight:400 900;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/playfair-display-latin-variable.woff2") format("woff2")}
 @font-face{font-family:"DM Sans";font-weight:400;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/dm-sans-latin-400-normal.woff2") format("woff2")}
 @font-face{font-family:"DM Sans";font-weight:500;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/dm-sans-latin-500-normal.woff2") format("woff2")}
-:root{--bg:#f7f4ee;--ink:#2b2118;--muted:#5d4a3a;--gold:#8a6d3b;--line:#e4dccd;--card:#fff}
+:root{--bg:#fbf7f2;--ink:#24231f;--muted:#5f5b54;--green:#145c37;--green-dark:#083a23;--deep:#10281d;--line:#e6e0d9;--card:#fffdf9}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.65 "DM Sans",system-ui,sans-serif}
-a{color:var(--gold)}a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
-.w{max-width:880px;margin:0 auto;padding:0 20px}
-header.top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 0;flex-wrap:wrap}
-.logo{font:500 24px "Cormorant Garamond",serif;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:var(--gold)}
-nav a{margin-right:18px;color:var(--ink);text-decoration:none;font-weight:500}nav a:hover{color:var(--gold)}
-h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:500;line-height:1.1;margin:0}
-h1{font-size:clamp(38px,7vw,58px);margin:28px 0 18px}h2{font-size:clamp(28px,4.5vw,36px);margin:44px 0 12px}
-.lead{font-size:20px;color:var(--muted);margin:0 0 26px}
-.btn{display:inline-block;background:var(--gold);color:#fff;padding:14px 26px;border-radius:999px;text-decoration:none;font-weight:500}
-.btn.o{background:transparent;color:var(--gold);border:1px solid var(--gold)}.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+a{color:var(--green)}a:focus-visible,.btn:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.w{max-width:920px;margin:0 auto;padding:0 20px}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0;min-height:72px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:0 -20px;padding-left:20px;padding-right:20px}
+.logo{display:inline-flex;align-items:center;gap:9px;font:600 21px/1 "Playfair Display",Georgia,serif;text-decoration:none;color:var(--deep)}
+.mark{position:relative;display:block;width:23px;height:23px;transform:rotate(45deg);flex:none}.mark i{position:absolute;width:10px;height:10px;border:1.5px solid currentColor;border-radius:8px 8px 2px 8px}
+.mark i:nth-child(1){left:1px;top:1px}.mark i:nth-child(2){right:1px;top:1px;transform:rotate(90deg)}.mark i:nth-child(3){right:1px;bottom:1px;transform:rotate(180deg)}.mark i:nth-child(4){left:1px;bottom:1px;transform:rotate(270deg)}
+nav a{margin-right:22px;color:#4f4b44;text-decoration:none;font-weight:500;font-size:15px}nav a:hover{color:var(--green)}
+h1,h2,h3{font-family:"Playfair Display",Georgia,serif;font-weight:500;line-height:1.15;margin:0;color:var(--deep)}
+h1{font-size:clamp(34px,6.4vw,54px);letter-spacing:-.6px;margin:30px 0 18px}h2{font-size:clamp(26px,4.4vw,34px);letter-spacing:-.3px;margin:46px 0 12px}
+.lead{font-size:19px;color:var(--muted);margin:0 0 26px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;padding:0 28px;border:1px solid var(--green);border-radius:999px;text-decoration:none;font-weight:500;transition:transform .18s,box-shadow .18s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(8,58,35,.23)}
+.btn.o{background:transparent;color:#13221a}.btn.o:hover{background:rgba(13,84,47,.06);box-shadow:none}.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
 .picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:18px;margin:26px 0 0}
-.pick{display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;text-decoration:none;color:var(--ink)}
-.pick img{width:100%;height:auto;border-radius:10px;display:block;aspect-ratio:1/2;object-fit:cover}
-.pick strong{display:block;margin-top:10px;font:500 22px "Cormorant Garamond",serif}.pick small{color:var(--muted);font-size:14px;line-height:1.4;display:block}
+.pick{display:block;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px;text-decoration:none;color:var(--ink);box-shadow:0 10px 28px -20px rgba(44,42,34,.3);transition:transform .2s,box-shadow .2s}.pick:hover{transform:translateY(-3px);box-shadow:0 18px 36px -22px rgba(44,42,34,.4)}
+.pick img{width:100%;height:auto;border-radius:12px;display:block;aspect-ratio:1/2;object-fit:cover}
+.pick strong{display:block;margin-top:10px;font:600 19px "Playfair Display",Georgia,serif;color:var(--deep)}.pick small{color:var(--muted);font-size:14px;line-height:1.4;display:block}
 ul,ol{padding-left:22px}li{margin:6px 0}
-.faq h3{font-size:24px;margin:22px 0 4px}.faq p{margin:0}
-.cta{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px;margin:48px 0;text-align:center}.cta h2{margin:0 0 10px}
+.faq h3{font-size:22px;margin:22px 0 4px}.faq p{margin:0}
+.cta{background:#f1ece3;border:1px solid var(--line);border-radius:24px;padding:32px 24px;margin:52px 0;text-align:center}.cta h2{margin:0 0 10px}
 .more ul{list-style:none;padding:0}.more li{margin:8px 0}
-footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 40px;color:var(--muted);font-size:15px}footer nav{margin:10px 0 0}footer nav a{margin-right:16px}@media(pointer:coarse){nav a,footer a,.logo{display:inline-block;padding:11px 6px;margin-right:12px}footer nav a{margin-right:10px}}.doc h2{margin-top:36px}.doc .updated{color:var(--muted);font-size:15px;margin:0 0 20px}.contact-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 40px;color:var(--muted);font-size:15px}footer nav{margin:10px 0 0}footer nav a{margin-right:16px}@media(pointer:coarse){nav a,footer a,.logo{display:inline-flex;align-items:center;min-height:44px;padding:0 6px;margin-right:12px}footer nav a{margin-right:10px}}.doc h2{margin-top:36px}.doc .updated{color:var(--muted);font-size:15px;margin:0 0 20px}.contact-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+@media(max-width:560px){body{font-size:16px}.lead{font-size:17px}header.top nav a{margin-right:14px}.btn{width:100%}.hero-actions .btn,.contact-actions .btn{width:100%}}
 `;
 
 // The small (320 px wide) version of a template's phone picture; scripts/ keeps the pair in step (tests/unit/seo.test.mjs checks it exists).
@@ -147,8 +150,8 @@ export function renderLanding(page, origin, { templates, head, title }) {
   const picks = page.picks.map(id => templates.find(t => t.id === id));
   const others = LANDING.filter(p => p.slug !== page.slug);
   const sections = page.sections.map(s => `<section><h2>${esc(s.h2)}</h2>${(s.p || []).map(t => `<p>${esc(t)}</p>`).join('')}${s.list ? `<ul>${s.list.map(i => `<li>${esc(i)}</li>`).join('')}</ul>` : ''}${s.ol ? `<ol>${s.ol.map(i => `<li>${esc(i)}</li>`).join('')}</ol>` : ''}</section>`).join('');
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#f7f4ee"/><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="icon" href="/favicon.ico" sizes="48x48"/><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"/><title>${esc(title)}</title>${head}<style>${CSS}</style></head>
-<body><div class="w"><header class="top"><a class="logo" href="/">InviteStudio</a><nav aria-label="Main"><a href="/templates">Templates</a><a href="/#pricing">Pricing</a></nav></header>
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#fbf7f2"/><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="icon" href="/favicon.ico" sizes="48x48"/><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"/><title>${esc(title)}</title>${head}<style>${CSS}</style></head>
+<body><div class="w"><header class="top"><a class="logo" href="/"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>InviteStudio</span></a><nav aria-label="Main"><a href="/templates">Templates</a><a href="/#pricing">Pricing</a></nav></header>
 <main><h1>${esc(page.h1)}</h1><p class="lead">${esc(page.lead)}</p>
 <p class="hero-actions"><a class="btn" href="/templates">Browse templates</a><a class="btn o" href="/templates/${picks[0].id}">Preview ${esc(picks[0].title)}</a></p>
 <h2>Templates to start from</h2><div class="picks">${picks.map(t => `<a class="pick" href="/templates/${t.id}"><img src="${esc(t.image)}" srcset="${esc(smallImage(t.image))} 320w, ${esc(t.image)} 720w" sizes="(max-width: 600px) 45vw, 200px" alt="${esc(`${t.title} wedding invitation, first screen`)}" width="720" height="1440" loading="lazy"/><strong>${esc(t.title)}</strong><small>${esc(t.tagline)}</small></a>`).join('')}</div>
@@ -168,8 +171,8 @@ export function renderPolicy(page, origin, { head, title, updated, contact, busi
   const actions = page.contact
     ? `<div class="contact-actions">${contact.email ? `<a class="btn" href="mailto:${esc(contact.email)}">Email ${esc(contact.email)}</a>` : ''}${digits ? `<a class="btn o" href="https://wa.me/${esc(digits)}">WhatsApp +${esc(digits)}</a>` : ''}</div>${business.legalName || business.address ? `<p>${[business.legalName, business.address].filter(Boolean).map(esc).join('<br/>')}</p>` : ''}`
     : '';
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#f7f4ee"/>${ICONS}<title>${esc(title)}</title>${head}<style>${CSS}</style></head>
-<body><div class="w"><header class="top"><a class="logo" href="/">InviteStudio</a><nav aria-label="Main"><a href="/templates">Templates</a><a href="/#pricing">Pricing</a></nav></header>
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#fbf7f2"/>${ICONS}<title>${esc(title)}</title>${head}<style>${CSS}</style></head>
+<body><div class="w"><header class="top"><a class="logo" href="/"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>InviteStudio</span></a><nav aria-label="Main"><a href="/templates">Templates</a><a href="/#pricing">Pricing</a></nav></header>
 <main class="doc"><h1>${esc(page.h1)}</h1>${page.contact ? '' : `<p class="updated">Last updated: ${esc(updated)}</p>`}${actions}${sections}</main>
 <footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.<nav aria-label="Policies">${POLICY_LINKS.map(([name, path]) => `<a href="${path}">${name}</a>`).join('')}</nav></footer></div></body></html>`;
 }
