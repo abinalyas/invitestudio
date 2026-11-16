@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1f4d38">
+<title>InviteStudio admin</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<style>
+  :root { --green:#1f4d38; --gold:#b8913f; --cream:#f7f4ee; --card:#fffdf8; --line:#e5dfd2; --ink:#241f18; --muted:#6b6760; --bad:#9b5147; --ok:#2f6b45; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--cream); color:var(--ink); font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  header { background:var(--green); color:#fff; padding:14px 16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  header h1 { margin:0; font-size:18px; font-weight:600; flex:1; }
+  header .who { font-size:13px; opacity:.85; }
+  main { max-width:1180px; margin:0 auto; padding:18px 16px 60px; }
+  button, .btn { font:inherit; border:1px solid var(--green); background:#fff; color:var(--green); border-radius:999px; padding:7px 16px; cursor:pointer; text-decoration:none; display:inline-block; }
+  button.dark, .btn.dark { background:var(--green); color:#fff; }
+  header button { border-color:#ffffff88; background:transparent; color:#fff; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+  .card .n { font-size:26px; font-weight:700; color:var(--green); line-height:1.15; }
+  .card .l { font-size:13px; color:var(--muted); }
+  .card .s { font-size:12px; color:var(--muted); margin-top:2px; }
+  h2 { font-size:16px; margin:26px 0 8px; }
+  .grid2 { display:grid; grid-template-columns:1fr; gap:14px; }
+  @media (min-width:820px) { .grid2 { grid-template-columns:1fr 1fr; } }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; font-size:14px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); background:#f2eee6; white-space:nowrap; }
+  tr:last-child td { border-bottom:0; }
+  .wrap { overflow-x:auto; border-radius:12px; }
+  .tools { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:0 0 10px; }
+  .tools input { flex:1 1 220px; font:inherit; padding:8px 12px; border:1px solid var(--line); border-radius:999px; background:#fff; }
+  .chip { padding:5px 12px; font-size:13px; }
+  .chip[aria-pressed="true"] { background:var(--green); color:#fff; }
+  .badge { display:inline-block; border-radius:999px; padding:1px 9px; font-size:12px; font-weight:600; }
+  .badge.live { background:#dcefe2; color:var(--ok); } .badge.private { background:#ece8de; color:var(--muted); } .badge.offline { background:#f3dfdb; color:var(--bad); }
+  .muted { color:var(--muted); } .small { font-size:12px; }
+  .bars { display:flex; align-items:flex-end; gap:2px; height:90px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px; }
+  .bars div { flex:1; background:var(--green); border-radius:2px 2px 0 0; min-height:2px; position:relative; }
+  .bars div.live { background:var(--gold); }
+  .legend { font-size:12px; color:var(--muted); margin:6px 0 0; }
+  .center { max-width:420px; margin:12vh auto; text-align:center; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:28px 22px; }
+  .center h2 { margin-top:0; }
+  .error { color:var(--bad); }
+</style>
+</head>
+<body>
+<header><h1>InviteStudio admin</h1><span class="who" id="who"></span><button type="button" id="logout" hidden>Sign out</button></header>
+<main id="main"><p class="muted">Loading…</p></main>
+<script src="/admin.js"></script>
+</body>
+</html>

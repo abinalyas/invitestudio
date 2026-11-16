@@ -29,3 +29,14 @@
 /assets/music/*
   Cross-Origin-Resource-Policy: same-site
   X-Robots-Tag: noindex
+
+# The owner's admin page: never indexed, never cached. Sign-in is checked on the server (docs/ADMIN.md).
+/admin
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+/admin.html
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+/admin.js
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-cache
