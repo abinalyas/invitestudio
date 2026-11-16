@@ -74,8 +74,8 @@
 
   window.publicPageHtml = function publicPageHtml() {
     const view = state.publicInvitation || { status: 'loading' };
-    const header = '<header class="topbar"><a class="brand" href="/" style="text-decoration:none">Invite<span>Studio</span></a></header>';
-    const centred = inner => `<main class="container" style="padding:80px 0;text-align:center;max-width:620px">${inner}</main>`;
+    const header = '<header class="pv-top topbar"><a class="brand pv-logo" href="/" aria-label="InviteStudio home"><span class="pv-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>InviteStudio</span></a></header>';
+    const centred = inner => `<main class="pv-centred">${inner}</main>`;
     let body;
     if (view.status === 'ready') {
       const project = projectFromPublic(view.data.wedding, view.data.photos);
@@ -83,15 +83,15 @@
     } else if (view.status === 'loading') {
       body = centred('<p class="muted">Loading invitation…</p>');
     } else if (view.status === 'error') {
-      body = centred('<h1 style="font-family:var(--serif);font-size:34px">We could not load this invitation.</h1><p class="muted">Check your connection and try again.</p><button class="btn dark" onclick="loadPublicInvitation(state.publicInvitation.slug)">Try again</button>');
+      body = centred('<h1 class="pv-h1">We could not load this invitation.</h1><p class="muted">Check your connection and try again.</p><button class="pv-btn primary" onclick="loadPublicInvitation(state.publicInvitation.slug)">Try again</button>');
     } else if (view.status === 'ended') {
       // The couple's own route back during the grace period (docs/RETENTION_PLAN.md): email or WhatsApp, with this
       // website's address already in the message.
       const links = window.InviteContact ? window.InviteContact.links('restore', `${window.location.origin}/s/${view.slug}`) : { whatsapp: '', email: '' };
-      const way = [links.whatsapp ? `<a class="btn small" href="${esc(links.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp us</a>` : '', links.email ? `<a class="btn small" href="${esc(links.email)}">Email us</a>` : ''].filter(Boolean).join(' ');
-      body = centred('<h1 style="font-family:var(--serif);font-size:34px">This invitation has ended.</h1><p class="muted">Invitations are online for a limited time after the celebration, and this one is no longer available.</p>' + (way ? `<p class="muted" style="margin-top:22px">Are you the couple? You may still be able to get it back.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap" data-ended-contact>${way}</div>` : '') + '<p style="margin-top:26px"><a class="btn dark" href="/">Create an InviteStudio website</a></p>');
+      const way = [links.whatsapp ? `<a class="pv-btn small" href="${esc(links.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp us</a>` : '', links.email ? `<a class="pv-btn small" href="${esc(links.email)}">Email us</a>` : ''].filter(Boolean).join(' ');
+      body = centred('<h1 class="pv-h1">This invitation has ended.</h1><p class="muted">Invitations are online for a limited time after the celebration, and this one is no longer available.</p>' + (way ? `<p class="muted" style="margin-top:22px">Are you the couple? You may still be able to get it back.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap" data-ended-contact>${way}</div>` : '') + '<p style="margin-top:26px"><a class="pv-btn primary" href="/">Create an InviteStudio website</a></p>');
     } else {
-      body = centred('<h1 style="font-family:var(--serif);font-size:34px">This invitation is not available.</h1><p class="muted">The link may be incorrect, or the invitation is not published right now.</p><a class="btn dark" href="/">Create an InviteStudio website</a>');
+      body = centred('<h1 class="pv-h1">This invitation is not available.</h1><p class="muted">The link may be incorrect, or the invitation is not published right now.</p><a class="pv-btn primary" href="/">Create an InviteStudio website</a>');
     }
     // The invitation itself carries no InviteStudio branding: guests see only the couple's page.
     return view.status === 'ready' ? body : header + body;

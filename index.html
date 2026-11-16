@@ -2582,6 +2582,14 @@ body:has(.dash){background:#fbf7f2}
 #confirm-root .confirm-backdrop{z-index:60}
 #confirm-root .confirm-modal{width:min(94vw,440px)}
 @media(max-width:640px){#confirm-root .confirm-modal{width:100%}}
+
+/* Public page messages (not available, ended, could not load): same header and buttons as the redesigned screens */
+body:has(.pv-centred){background:#fbf7f2}
+.pv-logo.brand span{color:inherit}
+.pv-centred{max-width:620px;margin:0 auto;padding:88px 20px;text-align:center}
+.pv-centred .pv-h1{margin:0 0 14px;letter-spacing:-.3px;font:500 clamp(30px,6vw,40px)/1.15 "Playfair Display",serif;color:#10281d}
+.pv-centred .muted{color:#5f5b54;font-size:16px;line-height:1.65}
+.pv-centred .pv-btn{display:inline-flex;align-items:center;justify-content:center;margin:6px 4px 0;text-decoration:none}
 </style></head>
 <body><div id="app" class="app"></div><div id="modal-root"></div><div id="toast-root" aria-live="polite" aria-atomic="true"></div>
 <script src="/supabase-config.js"></script>

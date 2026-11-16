@@ -1226,7 +1226,8 @@
     const detailMatch = path.match(/^\/templates\/(\d+)$/);
     if (detailMatch) return { kind: 'detail', props: { templateId: Number(detailMatch[1]) } };
     if (path === '/templates' && state.page !== 'templates') return { kind: 'templates' };
-    if (state.page === 'home' && path === '/') return { kind: 'home' };
+    // An address the site does not know (a mistyped link) shows the home page, not the older fallback screen.
+    if (state.page === 'home') return { kind: 'home' };
     if (state.page === 'editor' && project()) return { kind: 'editor' };
     return null;
   };
