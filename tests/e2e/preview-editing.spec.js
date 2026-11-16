@@ -316,7 +316,7 @@ test('Velvet Reveal: click to start, the video opening offers its button, openin
     return { armed: z.hasAttribute('data-scratch-armed'), scratched: z.hasAttribute('data-scratched'), canvas: Boolean(z.querySelector('canvas')) };
   });
   await expect.poll(zone).toEqual({ armed: true, scratched: false, canvas: true });
-  await screen.getByRole('button', { name: /reveal the date/i }).click();
+  await screen.getByRole('button', { name: /reveal (the|our) date/i }).click();
   await expect.poll(zone).toMatchObject({ scratched: true });
 });
 
@@ -365,7 +365,7 @@ test('Under the Same Moon: click to start plays the film, it lifts by itself, an
   await screen.evaluate(el => el.shadowRoot.querySelector('[data-tpl-section="invitation"]').scrollIntoView());
   const zone = () => screen.evaluate(el => { const z = el.shadowRoot.querySelector('[data-scratch]'); return { armed: z.hasAttribute('data-scratch-armed'), scratched: z.hasAttribute('data-scratched') }; });
   await expect.poll(zone).toEqual({ armed: true, scratched: false });
-  await screen.getByRole('button', { name: /reveal the date/i }).click();
+  await screen.getByRole('button', { name: /reveal (the|our) date/i }).click();
   await expect.poll(zone).toMatchObject({ scratched: true });
 });
 

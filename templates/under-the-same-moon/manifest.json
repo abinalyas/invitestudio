@@ -17,7 +17,9 @@
   "galleryMin": 2,
   "fonts": [
     "Cormorant Garamond",
-    "DM Sans"
+    "Italiana",
+    "DM Sans",
+    "Manrope"
   ],
   "contrast": [
     [
@@ -156,10 +158,22 @@
       "max": 50,
       "section": "home"
     },
+    "date_eyebrow": {
+      "label": "Date card: line above the card",
+      "default": "A little something to uncover",
+      "max": 40,
+      "section": "home"
+    },
     "date_kicker": {
       "label": "Date: line above the date",
-      "default": "Save the date",
+      "default": "Our wedding day",
       "max": 30,
+      "section": "home"
+    },
+    "date_note": {
+      "label": "Date card: line under the date",
+      "default": "We can’t wait to celebrate with you",
+      "max": 44,
       "section": "home"
     },
     "scratch_label": {
@@ -170,8 +184,14 @@
     },
     "reveal_button": {
       "label": "Date: reveal button",
-      "default": "Reveal the date",
+      "default": "Reveal our date",
       "max": 24,
+      "section": "home"
+    },
+    "scratch_hint": {
+      "label": "Date card: how to reveal it",
+      "default": "Drag across the gold, or tap it, to reveal",
+      "max": 50,
       "section": "home"
     },
     "story_eyebrow": {

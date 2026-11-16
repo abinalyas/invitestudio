@@ -107,6 +107,7 @@
     pin: '<path d="M12 21s-6.5-5.7-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.3 12 21 12 21Z"/><circle cx="12" cy="9.8" r="2.3"/>',
     clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
     calendar: '<rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>',
+    asterisk: '<path d="M12 3.5v17M3.5 12h17M6 6l12 12M18 6 6 18"/>',
     sparkle: '<path fill="currentColor" stroke="none" d="M12 2.5c.7 5 2.6 7 7.5 9.5-4.9 2.5-6.8 4.5-7.5 9.5-.7-5-2.6-7-7.5-9.5 4.9-2.5 6.8-4.5 7.5-9.5Z"/>',
     heart: '<path d="M12 20s-7.5-4.6-7.5-10.4A4.1 4.1 0 0 1 12 7.2a4.1 4.1 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20Z"/>',
     blossom: '<g fill="currentColor" stroke="none"><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(288 12 12)"/></g><circle cx="12" cy="12" r="1.6" fill="#fff" fill-opacity=".75" stroke="none"/>',
