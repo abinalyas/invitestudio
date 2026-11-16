@@ -569,15 +569,13 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
 .setup-selected-text small { color: #5c625e; font-size: 12px; }
 .setup-selected-text strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-size: 16px; }
 .setup-selected .button { flex: none; min-height: 44px; }
-.setup-actions-top { display: none; }
 .setup-preview-toggle, .setup-preview-close { display: none; }
 
 @media (max-width: 900px) {
   /* Continue, Back and Skip: one compact row at the top of the step, and one pinned to the bottom of the screen. */
-  .setup-actions-top, .setup-actions { display: flex; flex-wrap: nowrap; gap: 8px; justify-content: stretch; }
-  .setup-actions .button, .setup-actions-top .button { flex: 1 1 0; min-width: 0; min-height: 44px; padding-inline: 10px; font-size: 15px; white-space: nowrap; }
+  .setup-actions { display: flex; flex-wrap: nowrap; gap: 8px; justify-content: stretch; }
+  .setup-actions .button { flex: 1 1 0; min-width: 0; min-height: 44px; padding-inline: 10px; font-size: 15px; white-space: nowrap; }
   .setup-actions { position: sticky; z-index: 25; bottom: 0; margin: 0 -16px; padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid #e7e0d9; background: rgba(251, 247, 242, .97); }
-  .setup-actions.setup-actions-top { position: static; margin: 0 0 14px; padding: 0; border: 0; background: none; }
   .setup-actions .button svg { flex: none; }
   .setup-page { padding-bottom: 16px; }
   /* A shorter header, a slim row of steps, and the chosen design in one line: the form starts high on the screen. */
@@ -618,7 +616,7 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
 
 /* Very small phones (320 px): the three step buttons share one row, so drop the arrows and trim the padding. */
 @media (max-width: 400px) {
-  .setup-actions .button, .setup-actions-top .button { padding-inline: 6px; font-size: 14px; }
+  .setup-actions .button { padding-inline: 6px; font-size: 14px; }
   .setup-actions .button svg { display: none; }
   .setup-preview-close { white-space: nowrap; }
   .setup-selected .button { padding-inline: 10px; font-size: 13px; }
@@ -681,3 +679,16 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
 }
 /* A hint inside a field that is too long for it ends in an ellipsis instead of being cut off mid-word. */
 input::placeholder { text-overflow: ellipsis; }
+
+/* ---- Phone frames: the size is worked out from the width, so the screen always fits its frame (a percentage height inside an
+   aspect-ratio box made Safari draw the screen taller than the frame). The frame has its notch (::before). ---- */
+@media (max-width: 900px) {
+  .detail-device { --pw: min(300px, calc(100vw - 96px)); width: var(--pw); height: calc(var(--pw) * 2.1111); min-height: 0; aspect-ratio: auto; }
+  .detail-screen { height: 100%; }
+  .setup-preview.open .setup-device { --pw: min(300px, calc(100vw - 64px)); width: var(--pw); height: calc(var(--pw) * 2.1111); min-height: 0; aspect-ratio: auto; }
+}
+
+/* ---- Date fields: Safari draws a date input wider than its box unless told not to ---- */
+input[type="date"], input[type="time"] { min-width: 0; max-width: 100%; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
+.input-with-icon { min-width: 0; max-width: 100%; }
+.setup-form input[type="date"] { display: block; width: 100%; }

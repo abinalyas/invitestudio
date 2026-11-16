@@ -75,34 +75,31 @@ export function SetupPage() {
     window.scrollTo({ top: 0 });
   }
 
-  // The same buttons sit at the top of the step and at the bottom (pinned to the screen on a phone), so Continue, Back and Skip are
-  // always in reach. The top copy is a convenience for touch: it is hidden from screen readers and the tab order, which use the
-  // bottom one.
-  const actionButtons = (extra?: boolean) => (
+  // Back, Skip and Continue: pinned to the bottom of the screen on a phone, so they are always in reach.
+  const actionButtons = () => (
     <>
       {step > 0 ? (
-        <button className="button outline back" type="button" onClick={() => go(step - 1)} {...(extra ? { "aria-hidden": true, tabIndex: -1 } : {})}>
+        <button className="button outline back" type="button" onClick={() => go(step - 1)}>
           <Icon name="arrow" size={17} /> Back
         </button>
       ) : null}
       {step === 2 ? (
-        <button className="button outline" type="button" onClick={() => go(3)} {...(extra ? { "aria-hidden": true, tabIndex: -1 } : {})}>
+        <button className="button outline" type="button" onClick={() => go(3)}>
           Skip for now
         </button>
       ) : null}
       {step < 3 ? (
-        <button className="button" type="button" onClick={() => go(step + 1)} {...(extra ? { "aria-hidden": true, tabIndex: -1 } : {})}>
+        <button className="button" type="button" onClick={() => go(step + 1)}>
           Continue <Icon name="arrow" size={17} />
         </button>
       ) : (
-        <button className="button" type="button" disabled={!status.canFinish} aria-disabled={!status.canFinish} onClick={() => bridge.finishSetup()} {...(extra ? { "aria-hidden": true, tabIndex: -1 } : {})}>
+        <button className="button" type="button" disabled={!status.canFinish} aria-disabled={!status.canFinish} onClick={() => bridge.finishSetup()}>
           Open editor <Icon name="arrow" size={17} />
         </button>
       )}
     </>
   );
   const actions = <div className="setup-actions">{actionButtons()}</div>;
-  const topActions = <div className="setup-actions setup-actions-top">{actionButtons(true)}</div>;
 
   return (
     <main className="setup-page">
@@ -172,7 +169,6 @@ export function SetupPage() {
 
         <div className={showPreview ? "setup-grid has-preview" : "setup-grid"}>
           <section className="setup-card" aria-labelledby="setup-title">
-            {topActions}
             {error ? (
               <p id="setupNameError" className="setup-error" role="alert">
                 {error}

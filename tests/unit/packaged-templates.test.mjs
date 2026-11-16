@@ -497,3 +497,18 @@ for (const { manifest } of list) {
     for (const p of photos) assert.ok(published.includes(p.id), `${id}: photo ${p.id.slice(0, 8)} is missing from the published page`);
   });
 }
+
+test('the template page sample is marked, so its sound always starts on the first tap; a guest\'s own invitation is not', () => {
+  const ctx = renderer();
+  const t = { packaged: 'velvet-reveal' };
+  const project = { ...sampleOf('velvet-reveal'), title: 'Ava & Ben' };
+  const demo = ctx.renderPackagedTemplate(project, t, { sample: true, sound: true });
+  const guest = ctx.renderPackagedTemplate(project, t, { sound: true });
+  assert.match(demo, /data-sound-toggle data-sound-demo /);
+  assert.ok(guest.includes('data-sound-toggle') && !guest.includes('data-sound-demo'));
+});
+
+test('the sound choice of the template page sample is kept for the visit only (session storage), a guest\'s for good (local storage)', () => {
+  const widgets = readFileSync(join(root, 'template-widgets.js'), 'utf8');
+  assert.match(widgets, /demo \? window\.sessionStorage : window\.localStorage/);
+});

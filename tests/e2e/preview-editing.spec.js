@@ -443,11 +443,12 @@ test('music: the first tap starts the track, the button turns it off and on, the
   await screen.getByText('Click to start').click();
   await expect.poll(toggle).toMatchObject({ state: 'on', pressed: 'true', label: 'Turn the music off' });
   expect(await page.evaluate(() => window.__audio.plays)).toEqual(['/assets/music/romantic-piano.mp3']);
-  // The button turns it off, and the choice is remembered.
+  // The button turns it off, and the choice is remembered for this visit only (the template page's sample never stays silent for good).
   await screen.locator('[data-sound-toggle]').click();
   await expect.poll(toggle, { timeout: 5000 }).toMatchObject({ state: 'off', pressed: 'false' });
-  expect(await page.evaluate(() => localStorage.getItem('invitestudio-sound'))).toBe('off');
-  // A new visit stays silent after a tap, until the guest turns the music on again.
+  expect(await page.evaluate(() => sessionStorage.getItem('invitestudio-sound'))).toBe('off');
+  expect(await page.evaluate(() => localStorage.getItem('invitestudio-sound'))).toBeNull();
+  // Within the same visit it stays off after a tap, until the music is turned on again.
   await open();
   await screen.getByText('Click to start').click();
   await page.waitForTimeout(400);
@@ -455,7 +456,15 @@ test('music: the first tap starts the track, the button turns it off and on, the
   expect(await page.evaluate(() => window.__audio.plays.length)).toBe(0);
   await screen.locator('[data-sound-toggle]').click();
   await expect.poll(toggle).toMatchObject({ state: 'on' });
-  expect(await page.evaluate(() => localStorage.getItem('invitestudio-sound'))).toBe('on');
+  expect(await page.evaluate(() => sessionStorage.getItem('invitestudio-sound'))).toBe('on');
+  // A new visit (a new browser session) starts with the music on again after the first tap, even if it was turned off before.
+  await page.evaluate(() => { sessionStorage.setItem('invitestudio-sound', 'off'); localStorage.setItem('invitestudio-sound', 'off'); });
+  await page.evaluate(() => sessionStorage.clear());
+  await open();
+  const playsBefore = await page.evaluate(() => window.__audio.plays.length);
+  await screen.getByText('Click to start').click();
+  await expect.poll(toggle).toMatchObject({ state: 'on' });
+  expect(await page.evaluate(() => window.__audio.plays.length)).toBeGreaterThan(playsBefore);
   // Leaving the page stops it.
   const before = await page.evaluate(() => window.__audio.pauses);
   await page.evaluate(() => { history.pushState({}, '', '/'); state.page = 'home'; render(); });
