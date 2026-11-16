@@ -25,9 +25,22 @@ export function adminSettings(env) {
   return { secret, emails, clientId, clientSecret };
 }
 
+// The NAMES of the settings that are missing or too short (never their values), so the page can say what to add.
+export function adminMissing(env) {
+  const text = key => (typeof env[key] === 'string' ? env[key].trim() : '');
+  const missing = [];
+  if (!text('GOOGLE_CLIENT_ID')) missing.push('GOOGLE_CLIENT_ID');
+  if (!text('GOOGLE_CLIENT_SECRET')) missing.push('GOOGLE_CLIENT_SECRET');
+  if (!text('ADMIN_EMAILS').split(',').some(e => e.trim())) missing.push('ADMIN_EMAILS');
+  const secret = text('ADMIN_SESSION_SECRET');
+  if (!secret) missing.push('ADMIN_SESSION_SECRET');
+  else if (secret.length < 32) missing.push('ADMIN_SESSION_SECRET (needs 32 or more characters)');
+  return missing;
+}
+
 export function requireAdminSettings(env) {
   const settings = adminSettings(env);
-  if (!settings) throw new ApiError('The admin page is not set up.', 503, 'ADMIN_NOT_CONFIGURED');
+  if (!settings) throw new ApiError('The admin page is not set up.', 503, 'ADMIN_NOT_CONFIGURED', { missing: adminMissing(env) });
   return settings;
 }
 

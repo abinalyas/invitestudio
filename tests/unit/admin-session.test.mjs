@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { adminSettings, emailFromIdToken, readSession, signSession, loginAddress, cookieName } from '../../functions/_shared/admin.js';
+import { adminMissing, requireAdminSettings, adminSettings, emailFromIdToken, readSession, signSession, loginAddress, cookieName } from '../../functions/_shared/admin.js';
 
 const env = { ADMIN_SESSION_SECRET: 'x'.repeat(40), ADMIN_EMAILS: 'Owner@Example.com, second@example.com', GOOGLE_CLIENT_ID: 'cid', GOOGLE_CLIENT_SECRET: 'sec' };
 const settings = adminSettings(env);
@@ -48,4 +48,12 @@ test('the login address asks Google only for the email, and names the callback a
   assert.equal(url.searchParams.get('redirect_uri'), 'https://invitestudio.co/api/admin/callback');
   assert.equal(cookieName('https://invitestudio.co/', 'is_admin'), '__Host-is_admin');
   assert.equal(cookieName('http://127.0.0.1:8788/', 'is_admin'), 'is_admin');
+});
+
+test('when something is missing the page is told which settings (names only, never values)', () => {
+  assert.deepEqual(adminMissing(env), []);
+  assert.deepEqual(adminMissing({}), ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'ADMIN_EMAILS', 'ADMIN_SESSION_SECRET']);
+  assert.deepEqual(adminMissing({ ...env, ADMIN_SESSION_SECRET: 'too short secret' }), ['ADMIN_SESSION_SECRET (needs 32 or more characters)']);
+  assert.deepEqual(adminMissing({ ...env, ADMIN_EMAILS: ' , ' }), ['ADMIN_EMAILS']);
+  assert.throws(() => requireAdminSettings({ ...env, GOOGLE_CLIENT_SECRET: '' }), error => error.status === 503 && error.code === 'ADMIN_NOT_CONFIGURED' && JSON.stringify(error.fields) === '{"missing":["GOOGLE_CLIENT_SECRET"]}');
 });
