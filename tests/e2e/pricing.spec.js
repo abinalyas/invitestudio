@@ -23,7 +23,7 @@ test('home: the three tiers show this country\'s price, with no country or curre
   await expect(plans(page).nth(2)).toContainText('one-time');
   await expect(page.getByText('Publishing is free during early access')).toBeVisible();
   // Each tier says which designs belong to it.
-  await expect(plans(page).nth(2)).toContainText('4 designs');
+  await expect(plans(page).nth(2)).toContainText('5 designs');
   await expect(plans(page).nth(2)).toContainText('Velvet Reveal');
   // The price follows where the visitor is: there is nothing to pick.
   await expect(page.locator('.pricing select')).toHaveCount(0);

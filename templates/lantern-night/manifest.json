@@ -1,0 +1,302 @@
+{
+  "id": "lantern-night",
+  "name": "Lantern Night",
+  "version": 1,
+  "root": "tpl-ln",
+  "prefix": "ln-",
+  "music": {
+    "src": "/assets/music/romantic.mp3",
+    "volume": 0.35
+  },
+  "sections": [
+    "hero",
+    "welcome",
+    "story",
+    "functions",
+    "gallery",
+    "rsvp"
+  ],
+  "photoSlots": [
+    "story"
+  ],
+  "galleryMin": 2,
+  "fonts": [
+    "Cormorant Garamond",
+    "Lora",
+    "DM Sans"
+  ],
+  "contrast": [
+    [
+      "#fff2e4",
+      "#17172d",
+      "text on night"
+    ],
+    [
+      "#ffe1ad",
+      "#17172d",
+      "gold on night"
+    ],
+    [
+      "#f3d09a",
+      "#000000",
+      "kicker on glass"
+    ],
+    [
+      "#fff1e2",
+      "#000000",
+      "event text on card"
+    ],
+    [
+      "#ffe2b1",
+      "#000000",
+      "event title on card"
+    ],
+    [
+      "#d8c5ae",
+      "#0f0d14",
+      "reply text on card"
+    ],
+    [
+      "#241a19",
+      "#c69b62",
+      "reply button"
+    ],
+    [
+      "#ffe3b4",
+      "#000000",
+      "date on pill"
+    ],
+    [
+      "#f8e8cc",
+      "#080305",
+      "opening button"
+    ]
+  ],
+  "thumbnail": {
+    "phone": ".ln-intro,.ln-cue,.ln-lanterns{display:none!important}",
+    "wide": ".ln-intro,.ln-cue,.ln-site-header,.ln-lanterns{display:none!important}.tpl-ln>*:not(.ln-hero):not(.ln-backdrop){display:none!important}.ln-hero{min-height:275px!important;height:275px!important}.ln-backdrop-pin{height:275px!important}.ln-hero-content{display:none!important}"
+  },
+  "example": {
+    "story": "With grateful hearts and joyful anticipation, we invite you to be part of a day that means the world to us. Your presence will make our celebration even more special.\n\nWe cannot wait to share this beautiful new chapter with the people we love most.",
+    "events": [
+      {
+        "title": "The wedding",
+        "venue": "Your ceremony venue"
+      },
+      {
+        "title": "The reception",
+        "venue": "Your reception venue"
+      }
+    ],
+    "photos": 3
+  },
+  "intro": {
+    "duration": 7500
+  },
+  "copy": {
+    "nav_story": {
+      "label": "Menu: story",
+      "default": "Our story",
+      "max": 16,
+      "section": "home"
+    },
+    "nav_celebration": {
+      "label": "Menu: the celebration",
+      "default": "The celebration",
+      "max": 18,
+      "section": "home"
+    },
+    "nav_gallery": {
+      "label": "Menu: gallery",
+      "default": "Gallery",
+      "max": 16,
+      "section": "home"
+    },
+    "nav_rsvp": {
+      "label": "Menu: RSVP",
+      "default": "RSVP",
+      "max": 16,
+      "section": "home"
+    },
+    "hero_kicker": {
+      "label": "Cover: line above the names",
+      "default": "A night of a thousand lanterns",
+      "max": 40,
+      "section": "home"
+    },
+    "hero_line": {
+      "label": "Cover: invitation line",
+      "default": "invite you to celebrate the beginning of forever.",
+      "max": 80,
+      "section": "home"
+    },
+    "hosts_line": {
+      "label": "Cover: who invites (when not set)",
+      "default": "Together with their families",
+      "max": 50,
+      "section": "home"
+    },
+    "intro_note": {
+      "label": "Opening: line over the film",
+      "default": "A little light, a lifetime of love",
+      "max": 44,
+      "section": "home"
+    },
+    "intro_skip": {
+      "label": "Opening: enter button",
+      "default": "Enter invitation",
+      "max": 24,
+      "section": "home"
+    },
+    "scratch_label": {
+      "label": "Date: foil text",
+      "default": "Scratch to reveal",
+      "max": 24,
+      "section": "home"
+    },
+    "reveal_button": {
+      "label": "Date: reveal button",
+      "default": "Reveal the date",
+      "max": 24,
+      "section": "home"
+    },
+    "cue": {
+      "label": "Cover: scroll hint",
+      "default": "Scroll to explore",
+      "max": 24,
+      "section": "home"
+    },
+    "story_kicker": {
+      "label": "Story: small heading",
+      "default": "Two hearts · One beautiful story",
+      "max": 44,
+      "section": "story"
+    },
+    "story_title": {
+      "label": "Story: title",
+      "default": "A little more about us",
+      "max": 40,
+      "section": "story"
+    },
+    "story_intro": {
+      "label": "Story: line under the title",
+      "default": "Some moments are written in the stars. Some journeys are meant to become one.",
+      "max": 110,
+      "section": "story"
+    },
+    "story_photo_hint": {
+      "label": "Story: photo hint (editor only)",
+      "default": "Your favourite photograph",
+      "max": 30,
+      "section": "story"
+    },
+    "story_heading": {
+      "label": "Story: card heading",
+      "default": "And so, our forever begins…",
+      "max": 44,
+      "section": "story"
+    },
+    "welcome_kicker": {
+      "label": "Note: small heading",
+      "default": "With love and gratitude",
+      "max": 40,
+      "section": "home"
+    },
+    "events_kicker": {
+      "label": "Celebration: small heading",
+      "default": "Save the date",
+      "max": 40,
+      "section": "functions"
+    },
+    "events_title": {
+      "label": "Celebration: title",
+      "default": "The celebration",
+      "max": 36,
+      "section": "functions"
+    },
+    "events_intro": {
+      "label": "Celebration: line under the title",
+      "default": "A day filled with blessings, laughter and the warm glow of a thousand little lights.",
+      "max": 110,
+      "section": "functions"
+    },
+    "time_unknown": {
+      "label": "Event: when the time is not set",
+      "default": "Time to be confirmed",
+      "max": 30,
+      "section": "functions"
+    },
+    "directions": {
+      "label": "Event: directions link",
+      "default": "Get directions",
+      "max": 24,
+      "section": "functions"
+    },
+    "countdown_kicker": {
+      "label": "Countdown: small heading",
+      "default": "Counting down to forever",
+      "max": 40,
+      "section": "home"
+    },
+    "gallery_kicker": {
+      "label": "Gallery: small heading",
+      "default": "Little moments · Lasting memories",
+      "max": 44,
+      "section": "gallery"
+    },
+    "gallery_title": {
+      "label": "Gallery: title",
+      "default": "A glimpse of our world",
+      "max": 40,
+      "section": "gallery"
+    },
+    "gallery_intro": {
+      "label": "Gallery: line under the title",
+      "default": "A place for the photographs and memories we will treasure.",
+      "max": 100,
+      "section": "gallery"
+    },
+    "rsvp_kicker": {
+      "label": "Reply: small heading",
+      "default": "We saved you a place",
+      "max": 40,
+      "section": "rsvp"
+    },
+    "rsvp_title": {
+      "label": "Reply: title",
+      "default": "Will you join us?",
+      "max": 30,
+      "section": "rsvp"
+    },
+    "rsvp_lead": {
+      "label": "Reply: text",
+      "default": "Kindly let us know if you can celebrate with us.",
+      "max": 100,
+      "section": "rsvp"
+    },
+    "invitation_note": {
+      "label": "Note: text (when no welcome message)",
+      "default": "It would mean the world to us to celebrate this day with you, under a sky full of lanterns.",
+      "max": 160,
+      "section": "home"
+    },
+    "footer_wish": {
+      "label": "Footer: closing line (*stars* for gold)",
+      "default": "May your evening be filled with *light*.",
+      "max": 60,
+      "section": "home"
+    },
+    "footer_top": {
+      "label": "Footer: back to top",
+      "default": "Back to the beginning",
+      "max": 30,
+      "section": "home"
+    },
+    "footer_replay": {
+      "label": "Footer: replay the opening",
+      "default": "Replay the opening",
+      "max": 30,
+      "section": "home"
+    }
+  }
+}

@@ -60,7 +60,8 @@ export const TEMPLATE_TIERS = Object.freeze({
   'velvet-reveal': 'signature',
   'under-the-same-moon': 'signature',
   'golden-butterfly': 'signature',
-  'cherry-blossom': 'signature'
+  'cherry-blossom': 'signature',
+  'lantern-night': 'signature'
 });
 
 export const DEFAULT_TIER = 'classic';

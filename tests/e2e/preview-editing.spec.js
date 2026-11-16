@@ -3,7 +3,7 @@
 const zlib = require('node:zlib');
 const { test, expect, devices } = require('@playwright/test');
 
-const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'blue-hydrangea', 'bloom-reveal', 'velvet-reveal', 'under-the-same-moon', 'golden-butterfly', 'cherry-blossom'];
+const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'blue-hydrangea', 'bloom-reveal', 'velvet-reveal', 'under-the-same-moon', 'golden-butterfly', 'cherry-blossom', 'lantern-night'];
 const SCENES = ['savanna-sunset', 'palmera-beach', 'curtain-call', 'lunaria-moon'];
 const ALL = [...PACKAGED, ...SCENES];
 
@@ -418,6 +418,35 @@ test('Cherry Blossom: the film lifts by itself, and three taps on the blossoms u
   expect(await state()).toMatchObject({ tapped: '2', hint: 'Just 1 more tap…' });
   await button.click();
   expect(await state()).toMatchObject({ tapped: '3', done: true, dateShown: true, hint: 'A date to remember' });
+});
+
+// Lantern Night: the lantern film opens the invitation, then keeps playing behind every section; the date waits under dark foil.
+test('Lantern Night: the film opens it and lifts by itself, then loops behind the page, and the foil hides the date', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/23'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  const look = () => screen.evaluate(el => {
+    const node = el.shadowRoot.querySelector('[data-intro]');
+    const film = el.shadowRoot.querySelector('video[data-film]');
+    const root = el.shadowRoot.querySelector('[data-packaged-template]');
+    return {
+      waiting: node.hasAttribute('data-wait'), done: node.hasAttribute('data-done'), src: node.querySelector('video').getAttribute('src'),
+      film: film.getAttribute('src'), frame: Boolean(root.style.getPropertyValue('--frame-h'))
+    };
+  });
+  // Nothing downloads while the opening waits; the invitation already knows the height of the phone's screen.
+  await expect.poll(look).toMatchObject({ waiting: true, done: false, src: null, film: null, frame: true });
+  await screen.getByText('Click to start').click();
+  // The phone is portrait, so the tall film plays; the background film waits for the opening to lift.
+  await expect.poll(look).toMatchObject({ waiting: false, src: '/templates/lantern-night/assets/film-tall.mp4', film: null });
+  await expect.poll(look, { timeout: 15000 }).toMatchObject({ done: true, film: '/templates/lantern-night/assets/film-tall.mp4' });
+  await screen.evaluate(el => el.shadowRoot.querySelector('[data-tpl-section="home"]').scrollIntoView());
+  const zone = () => screen.evaluate(el => { const z = el.shadowRoot.querySelector('[data-scratch]'); return { armed: z.hasAttribute('data-scratch-armed'), scratched: z.hasAttribute('data-scratched'), night: z.getAttribute('data-scratch-foil') }; });
+  await expect.poll(zone).toEqual({ armed: true, scratched: false, night: 'night' });
+  await screen.getByRole('button', { name: /reveal the date/i }).click();
+  await expect.poll(zone).toMatchObject({ scratched: true });
 });
 
 // Background music: a round on/off button, started by the first touch, remembered when turned off, stopped when the page is left.

@@ -17,6 +17,13 @@
  *                           the video in it (data-src-wide / data-src-tall, only the one that fits the frame is
  *                           downloaded) plays muted, the button [data-intro-open] appears at data-intro-at seconds (or
  *                           after a short wait if the video cannot play), and clicking it lifts the opening.
+ *   data-film               a looping background film (a <video> with data-src-wide / data-src-tall and a poster). The platform
+ *                           downloads only the file that fits the frame, plays it muted and looping once the opening has
+ *                           lifted (the opening may be showing the same film), pauses it while the tab is hidden, and never
+ *                           plays it under reduced motion (the poster stays). The template leaves it out of the editor.
+ *   --frame-h               set on every invitation ([data-packaged-template]): the height of what the guest sees (the
+ *                           editor's scrolling frame, else the window), kept current on resize. A template can pin a backdrop
+ *                           (a film, a sky) to the visible frame with position:sticky and height:var(--frame-h).
  *   data-sound-toggle       the round music on/off button the platform adds to a template that has music (manifest "music"). The first
  *                           tap, key press or click on the page starts the track (browsers allow no sound before that), the button
  *                           shows whether it is playing, and turning it off is remembered. The track stops when the page is redrawn
@@ -30,6 +37,7 @@
  *                           scratched, or on [data-scratch-reveal], it dissolves and data-scratched is set. Until then
  *                           data-scratch-armed is set, so a template can show a button and hide what follows. Without
  *                           canvas support the date is simply shown. data-scratched in the markup skips the foil.
+ *                           data-scratch-foil="night" paints a dark bronze foil instead of the bright gold one.
  * Clicks are handled once on the document (composedPath reaches inside the editor's shadow root), so
  * scrolling stays inside the editor's device frame and never changes the page address.
  * hydratePackagedTemplates(node) is called after markup is drawn into a shadow root.
@@ -345,6 +353,7 @@
       canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.globalCompositeOperation = "source-over";
+      if (el.getAttribute("data-scratch-foil") === "night") { paintNight(w, h); return; }
       var g = ctx.createLinearGradient(0, 0, w, h);
       g.addColorStop(0, "#A98443"); g.addColorStop(0.22, "#E8D3A2"); g.addColorStop(0.5, "#C9A762"); g.addColorStop(0.78, "#F0E0B6"); g.addColorStop(1, "#A98443");
       ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
@@ -358,6 +367,29 @@
       ctx.fillText(label, w / 2, h / 2 - h * 0.04);
       ctx.font = Math.max(11, Math.round(h * 0.09)) + "px Georgia, serif";
       ctx.fillText("\u2726", w / 2, h / 2 + h * 0.22);
+    }
+    // data-scratch-foil="night": a dark bronze foil with a soft sheen, gold speckles, a gold edge that follows the card's
+    // rounded corners and small spaced capitals (a template on a night sky, where bright gold would glare).
+    function paintNight(w, h) {
+      var g = ctx.createLinearGradient(0, 0, w, h);
+      g.addColorStop(0, "#211a24"); g.addColorStop(0.45, "#5b4938"); g.addColorStop(1, "#211923");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      var sheen = ctx.createLinearGradient(0, 0, w, 0);
+      sheen.addColorStop(0, "rgba(255,255,255,0.04)"); sheen.addColorStop(0.5, "rgba(255,231,190,0.32)"); sheen.addColorStop(1, "rgba(255,255,255,0.04)");
+      ctx.fillStyle = sheen; ctx.fillRect(0, 0, w, h);
+      for (var i = 0; i < 70; i++) {
+        ctx.beginPath(); ctx.arc(Math.random() * w, Math.random() * h, Math.random() * 1.1 + 0.25, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,226,177," + (Math.random() * 0.35 + 0.08) + ")"; ctx.fill();
+      }
+      var radius = parseFloat(window.getComputedStyle(card).borderTopLeftRadius) || 0;
+      ctx.strokeStyle = "rgba(245,210,157,0.8)"; ctx.lineWidth = 1; ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(0.5, 0.5, w - 1, h - 1, Math.min(radius, h / 2)); else ctx.rect(0.5, 0.5, w - 1, h - 1);
+      ctx.stroke();
+      ctx.fillStyle = "#f7dfb8"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = "600 " + (w < 430 ? 8 : 10) + 'px "DM Sans", Arial, sans-serif';
+      if ("letterSpacing" in ctx) ctx.letterSpacing = w < 430 ? "2px" : "3px";
+      ctx.fillText("\u2727  " + label.toUpperCase() + "  \u2727", w / 2, h / 2);
+      if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
     }
     paint();
     if (typeof ResizeObserver !== "undefined") { st.observer = new ResizeObserver(paint); st.observer.observe(card); }
@@ -401,7 +433,45 @@
     el.outerHTML = html;
     hydrate(scope);
   }
+  /* ---------- looping background film (data-film) ---------- */
+  var films = new Set();
+  function playFilm(video) { var p = video.play(); if (p && p.catch) p.catch(function () {}); }
+  function setupFilm(video) {
+    video.setAttribute("data-film-ready", "");
+    if (reduce()) return;
+    var wide = video.getAttribute("data-src-wide"), tall = video.getAttribute("data-src-tall");
+    if (!wide && !tall) return;
+    video.muted = true; video.defaultMuted = true; video.loop = true; video.playsInline = true;
+    video.setAttribute("muted", ""); video.setAttribute("playsinline", "");
+    video.addEventListener("playing", function () { video.setAttribute("data-playing", ""); });
+    films.add(video);
+    var root = video.closest("[data-packaged-template]") || video.parentNode;
+    // The file is chosen when the film starts: while an opening is up the frame does not scroll, so it cannot be found
+    // (and measured) until the opening has lifted.
+    var start = function () {
+      if (!video.getAttribute("src")) {
+        var f = scroller(video), w = f ? f.clientWidth : window.innerWidth, h = f ? f.clientHeight : window.innerHeight;
+        video.setAttribute("src", h > w ? (tall || wide) : (wide || tall));
+      }
+      playFilm(video);
+    };
+    if (root && root.querySelector("[data-intro]:not([data-done])")) {
+      root.addEventListener("intro-done", function once() { root.removeEventListener("intro-done", once); start(); });
+    } else start();
+  }
+  document.addEventListener("visibilitychange", function () {
+    films.forEach(function (video) {
+      if (!video.isConnected) { films.delete(video); return; }
+      if (!video.getAttribute("src")) return;
+      if (document.hidden) video.pause(); else playFilm(video);
+    });
+  });
+
+  /* ---------- the visible frame (--frame-h) ---------- */
+  var framed = new Set();
+  function sizeFrame(root) { var f = scroller(root); root.style.setProperty("--frame-h", (f ? f.clientHeight : window.innerHeight) + "px"); }
   window.addEventListener("resize", function () {
+    framed.forEach(function (root) { if (root.isConnected) sizeFrame(root); else framed.delete(root); });
     Array.prototype.forEach.call(document.querySelectorAll("[data-intro]:not([data-done])"), function (el) {
       var st = introState.get(el);
       if (st && !st.frame) sizeIntro(el, null);
@@ -423,8 +493,17 @@
   var timer = null;
   function hydrate(scope) {
     if (!scope || !scope.querySelectorAll) return;
+    var invitations = Array.prototype.slice.call(scope.querySelectorAll("[data-packaged-template]"));
+    if (scope.hasAttribute && scope.hasAttribute("data-packaged-template")) invitations.push(scope);
+    invitations.forEach(function (root) {
+      sizeFrame(root);
+      // An opening locks the frame's scrolling, so it is measured again once the opening lifts.
+      if (!framed.has(root)) root.addEventListener("intro-done", function () { sizeFrame(root); });
+      framed.add(root);
+    });
     Array.prototype.forEach.call(scope.querySelectorAll("[data-intro]:not([data-intro-ready])"), setupIntro);
     Array.prototype.forEach.call(scope.querySelectorAll("[data-scratch]:not([data-scratch-ready])"), setupScratch);
+    Array.prototype.forEach.call(scope.querySelectorAll("video[data-film]:not([data-film-ready])"), setupFilm);
     Array.prototype.forEach.call(scope.querySelectorAll("[data-tap]:not([data-tap-ready])"), setupTap);
     Array.prototype.forEach.call(scope.querySelectorAll("[data-sound-toggle]"), function (b) { soundButtons.add(b); });
     soundSync();
