@@ -1372,3 +1372,4 @@
 .figma-app input[type="date"], .figma-app input[type="time"]{ min-width: 0; max-width: 100%; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
 .figma-app .input-with-icon{ min-width: 0; max-width: 100%; }
 .figma-app .setup-form input[type="date"]{ display: block; width: 100%; }
+.figma-app[data-keyboard] .setup-actions, .figma-app[data-keyboard] .mobile-tabs, .figma-app[data-keyboard] .mobile-edit-pill, .figma-app[data-keyboard] .detail-sticky{ display: none; }
