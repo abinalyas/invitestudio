@@ -692,3 +692,9 @@ input::placeholder { text-overflow: ellipsis; }
 input[type="date"], input[type="time"] { min-width: 0; max-width: 100%; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
 .input-with-icon { min-width: 0; max-width: 100%; }
 .setup-form input[type="date"] { display: block; width: 100%; }
+
+/* Keyboard open on a phone: the pinned bars give the typing field the room (figma-host.js sets data-keyboard on the host). */
+:host[data-keyboard] .setup-actions,
+:host[data-keyboard] .mobile-tabs,
+:host[data-keyboard] .mobile-edit-pill,
+:host[data-keyboard] .detail-sticky { display: none; }

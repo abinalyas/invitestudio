@@ -1228,6 +1228,43 @@
     activeIsland = window.InviteStudioFigma.mount(route.kind, host, route.props || {});
   };
 
+  // On a phone, the on-screen keyboard covers half the screen. While a field is being typed in, the pinned bars (Continue, the
+  // editor tabs) are hidden so they do not take the little room left, and the field is scrolled into the middle of what remains.
+  (function keyboardRoom() {
+    if (!window.matchMedia || !window.matchMedia('(pointer: coarse)').matches) return;
+    const typingTarget = event => {
+      const el = (event.composedPath && event.composedPath()[0]) || event.target;
+      if (!el || el.nodeType !== 1) return null;
+      if (el.isContentEditable) return el;
+      const tag = el.tagName;
+      if (tag === 'TEXTAREA' || tag === 'SELECT') return el;
+      if (tag === 'INPUT' && !/^(button|submit|checkbox|radio|file|range|color|reset|image)$/i.test(el.type)) return el;
+      return null;
+    };
+    const reveal = el => {
+      const run = () => { try { el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' }); } catch (e) { /* older browser */ } };
+      setTimeout(run, 120); setTimeout(run, 450); // once before and once after the keyboard has slid up
+    };
+    const setKeyboard = on => { // the island's root element sits inside the shadow root
+      const host = document.querySelector('.figma-island-host');
+      const root = host && host.shadowRoot && host.shadowRoot.querySelector('.figma-app');
+      if (root) root.toggleAttribute('data-keyboard', on);
+    };
+    let hideTimer = 0;
+    document.addEventListener('focusin', event => {
+      const el = typingTarget(event); if (!el) return;
+      clearTimeout(hideTimer);
+      setKeyboard(true);
+      reveal(el);
+    });
+    document.addEventListener('focusout', () => {
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => { // a short wait, so moving from one field to the next keeps the bars hidden
+        setKeyboard(false);
+      }, 200);
+    });
+  }());
+
   // Browser back and forward move between routes that the application state tracks.
   window.addEventListener('popstate', () => {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
