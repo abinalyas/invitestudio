@@ -612,6 +612,16 @@
     return JSON.stringify([t(source.title), t(source[dateKey]), t(source.location), t(source.message), t(source.story), t(source.hosts)]);
   }
 
+  // Says why a draft could not be created, in words for the couple (the server's own messages are written to be shown).
+  function createFailureReason(error) {
+    if (!error) return '';
+    if (error.fields && error.fields.templateId) return 'this design is not set up on the server yet';
+    if (!error.code && !error.status) return 'we could not reach the server';
+    if (error.status === 429) return 'too many requests, please wait a moment';
+    if (error.status >= 500) return 'the server had a problem';
+    return error.message ? String(error.message).replace(/\.$/, '').slice(0, 120) : '';
+  }
+
   function shouldRetry(error) {
     return !error?.code || error.status >= 500 || error.status === 408 || error.status === 429;
   }
@@ -750,7 +760,8 @@
       } else {
         paintStatus(project);
         decorateRecoveryUi(project);
-        if (window.toast) toast('Cloud draft could not be created. Your local draft is still available.');
+        const why = createFailureReason(error);
+        if (window.toast) toast(`Cloud draft could not be created${why ? `: ${why}` : ''}. Your local draft is still available.`);
       }
     } finally {
       meta.inFlight = false;
