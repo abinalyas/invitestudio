@@ -60,7 +60,6 @@ test('after the first photo the editor still offers a place to add the next, and
 });
 
 test('a photo is replaced in place, and removed, by tapping it in the preview', async ({ page }) => {
-  page.on('dialog', dialog => dialog.accept());
   await openEditor(page, 'Minimalist');
   await openPhotos(page);
   await page.getByLabel('Add photos').setInputFiles([await makeJpeg(page, 'one'), await makeJpeg(page, 'twotwo')]);
@@ -85,6 +84,7 @@ test('a photo is replaced in place, and removed, by tapping it in the preview', 
   await again.scrollIntoViewIfNeeded();
   await again.click();
   await page.getByRole('button', { name: 'Remove this photo' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Remove photo' }).click();
   await openPhotos(page);
   await expect.poll(async () => (await photoIds(page)).length, { timeout: 15000 }).toBe(1);
 });

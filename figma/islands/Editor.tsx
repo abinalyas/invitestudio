@@ -1053,7 +1053,7 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
               <div className="photo-actions">
                 <button type="button" aria-label={`Move photo ${index + 1} up`} disabled={index === 0} onClick={() => void bridge.mediaMove(photo.id, -1)}>↑</button>
                 <button type="button" aria-label={`Move photo ${index + 1} down`} disabled={index === snap.photos.length - 1} onClick={() => void bridge.mediaMove(photo.id, 1)}>↓</button>
-                <button type="button" className="link-button" onClick={() => { if (window.confirm("Remove this photo?")) void bridge.mediaRemove(photo.id); }}>Remove</button>
+                <button type="button" className="link-button" onClick={() => { void bridge.confirm({ title: "Remove this photo?", message: "It will disappear from your invitation.", confirmLabel: "Remove photo", cancelLabel: "Keep it", danger: true }).then(ok => { if (ok) void bridge.mediaRemove(photo.id); }); }}>Remove</button>
               </div>
             </div>
           </li>
@@ -1174,8 +1174,9 @@ function RepliesList({ snap }: { snap: EditorSnapshot }) {
   };
   useEffect(load, [snap.published]);
   const remove = (id: string, name: string) => {
-    if (!window.confirm(`Delete ${name}'s reply? This cannot be undone.`)) return;
-    bridge.deleteReply(id).then(load, () => setState("error"));
+    void bridge.confirm({ title: `Delete ${name}'s reply?`, message: "This cannot be undone.", confirmLabel: "Delete reply", cancelLabel: "Keep it", danger: true }).then(ok => {
+      if (ok) bridge.deleteReply(id).then(load, () => setState("error"));
+    });
   };
 
   const today = new Date().toISOString().slice(0, 10);

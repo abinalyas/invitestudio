@@ -176,6 +176,8 @@
     }
   }
 
+  const askConfirm = options => (window.inviteConfirm ? window.inviteConfirm(options) : Promise.resolve(window.confirm(options.message || options.title)));
+
   function recoveryCard() {
     const project = projectForReference();
     if (!project) return '';
@@ -334,7 +336,7 @@
       toast('An active private edit link is required to regenerate access.');
       return;
     }
-    if (!window.confirm('Regenerate this private edit link? The previous link will stop working.')) return;
+    if (!await askConfirm({ title: 'Regenerate your private edit link?', message: 'The previous link will stop working.', confirmLabel: 'Regenerate link' })) return;
     try {
       const result = await window.inviteStudioApi.regenerateEditToken(project.cloudId, token);
       rememberToken(project.cloudId, result.editToken);
@@ -355,7 +357,7 @@
       toast('No active private edit link is available.');
       return;
     }
-    if (!window.confirm('Revoke every private edit link for this draft? This cannot be undone.')) return;
+    if (!await askConfirm({ title: 'Revoke every private edit link?', message: 'Nobody will be able to open this draft with an old link. This cannot be undone.', confirmLabel: 'Revoke all links', danger: true })) return;
     try {
       await window.inviteStudioApi.revokeEditTokens(project.cloudId, token);
       forgetToken(project.cloudId);
@@ -1308,7 +1310,7 @@
   }
 
   async function unpublishFromDialog(project) {
-    if (!window.confirm('Take this invitation offline? Guests will no longer see it. You can publish it again later.')) return;
+    if (!await askConfirm({ title: 'Take this invitation offline?', message: 'Guests will no longer see it. You can publish it again later.', confirmLabel: 'Take offline', cancelLabel: 'Keep it live', danger: true })) return;
     try {
       const result = await window.inviteStudioApi.unpublishWedding(project.cloudId, tokenFor(project.cloudId), project.cloudVersion);
       project.publishStatus = 'unpublished';

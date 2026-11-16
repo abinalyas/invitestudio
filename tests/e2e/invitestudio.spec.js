@@ -363,8 +363,8 @@ test.describe('guest replies', () => {
     expect(csv).toContain('"Meera Nair","Yes","3","Ceremony; Reception","Vegetarian"');
     expect(csv).toContain(`"'=cmd|calc"`);
 
-    page.once('dialog', dialog => dialog.accept());
     await page.getByRole('button', { name: 'Delete' }).first().click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete reply' }).click();
     await expect(page.locator('.rsvp-list li')).toHaveCount(2);
   });
 
@@ -453,8 +453,8 @@ test.describe('guest replies', () => {
     await expect(page.locator('.rsvp-cards')).toContainText('3people');
     expect(seen.auth[0]).toBe(`Bearer ${token}`);
     await expect(page.getByRole('button', { name: /^Replies/ }).first()).toContainText('2');
-    page.once('dialog', dialog => dialog.accept());
     await page.getByRole('button', { name: 'Delete' }).first().click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete reply' }).click();
     await expect(page.locator('.rsvp-list li')).toHaveCount(1);
     expect(seen.deleted).toEqual(['33333333-3333-4333-8333-333333333333']);
   });
@@ -572,8 +572,8 @@ test.describe('guest replies', () => {
     await page.getByLabel('Move photo 1 down').click();
     await expect.poll(() => calls.orders.length).toBe(1);
     await expect(page.getByLabel('Description of photo 2')).toHaveValue('On the beach');
-    page.once('dialog', dialog => dialog.accept());
     await page.getByRole('button', { name: 'Remove' }).first().click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Remove photo' }).click();
     await expect(page.locator('.photo-list li')).toHaveCount(1);
     expect(calls.deleted).toHaveLength(1);
   });

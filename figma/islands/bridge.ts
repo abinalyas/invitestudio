@@ -6,6 +6,8 @@
 // renderer as the single implementations.
 
 // The setup wizard keeps its fields in the screen and hands them over when a step is finished.
+export type ConfirmOptions = { title: string; message?: string; confirmLabel?: string; cancelLabel?: string; danger?: boolean }
+
 export type SetupFields = {
   title: string;
   date: string;
@@ -215,6 +217,7 @@ export interface InviteStudioBridge {
   openLegacyTemplates(): void;
   recovery(): RecoveryCard | null;
   continueDraft(): void;
+  confirm(options: ConfirmOptions): Promise<boolean>;
   hasProjects(): boolean;
   openProjects(): void;
   categories(): Array<[string, string]>;
@@ -279,6 +282,7 @@ export const bridge = {
   openLegacyTemplates: () => host().openLegacyTemplates(),
   recovery: () => host().recovery(),
   continueDraft: () => host().continueDraft(),
+  confirm: (options: ConfirmOptions) => host().confirm(options),
   hasProjects: () => host().hasProjects(),
   openProjects: () => host().openProjects(),
   categories: () => host().categories()
