@@ -20,7 +20,7 @@ const META = /<meta name="invitestudio-build" content="[0-9a-f]*"\/>\n?/;
 export function loaderFiles() {
   const dist = join(root, 'templates/dist');
   return [
-    '/packaged-templates.js', '/template-widgets.js', '/scene-templates.js', '/scene-templates.css',
+    '/packaged-templates.js', '/template-widgets.js',
     ...(existsSync(dist) ? readdirSync(dist).filter(name => name.endsWith('.js')).sort().map(name => `/templates/dist/${name}`) : [])
   ];
 }

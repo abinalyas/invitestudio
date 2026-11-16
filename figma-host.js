@@ -58,6 +58,8 @@
 
   // The names shown on every template's cover until the couple adds their own. They are only ever a hint
   // (a grey placeholder and the preview), never a saved value.
+  // The wording an invitation shows while a field is empty (the same words every design falls back to).
+  const EMPTY_HINTS = Object.freeze({ message: 'Together with our favourite people, for a day to remember.', hosts: 'Together with their families', date: 'Date to be announced' });
   const SAMPLE_NAMES = 'Daniel & Amelia';
 
   const RSVP_OPTIONS = ['count', 'rsvp', 'contact', 'none'];
@@ -156,9 +158,9 @@
       // What the invitation shows while a field is empty, so the editor can show it as a hint.
       shown: {
         title: SAMPLE_NAMES,
-        message: (window.sceneDefaults && window.sceneDefaults.message) || '',
-        hosts: (window.sceneDefaults && window.sceneDefaults.hosts) || '',
-        date: (window.sceneDefaults && window.sceneDefaults.date) || ''
+        message: EMPTY_HINTS.message,
+        hosts: EMPTY_HINTS.hosts,
+        date: EMPTY_HINTS.date
       }
     };
   }

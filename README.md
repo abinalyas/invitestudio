@@ -78,20 +78,13 @@ browser bundle.
 - `QA-TEST-MATRIX.md` records what is verified vs. pending.
 - `BACKEND-INTEGRATION-CONTRACT.md` proposes the data model, endpoints, error shape and security requirements for backend implementation.
 
-## Scene templates
+## Designs
 
-Savanna Sunset, Palmera Beach, Curtain Call and Lunaria are full length, phone shaped designs drawn by
-`scene-templates.js` instead of the shared layout. A catalogue entry opts in with a `scene` key, and
-`sitePreview()` hands those projects to `window.renderSceneTemplate()`. The couple's names, date,
-location, message, story, events and section switches all feed the design; guest responses stay
-"not open yet", as for every other design.
+Every offered design is a packaged template (`templates/<id>/`, see `docs/TEMPLATE_CONTRACT.md`); a page fetches only the design it shows (`template-loader.js`).
 
-- Styles live in `scene-templates.css`. Designs are fetched only when a page shows one (`template-loader.js`):
-  the loader fetches `scene-templates.js` and this stylesheet, adds the CSS to the page and hands the text to
-  the editor's shadow roots, so there is nothing to rebuild after editing the file.
 - Catalogue thumbnails are rendered from the real renderer: `npm run thumbs:scenes`.
-- After adding a design, run `npm run gen:templates` and apply a migration that inserts its id into
-  `public.templates` (see `supabase/migrations/202611070001_scene_templates.sql`).
+- After adding a design, run `npm run gen:templates` and run a migration that inserts its id into `public.templates` in Supabase (for example `supabase/migrations/202611160001_lantern_night_template.sql`). Until that row exists, creating a draft on the design fails with "this design is not set up on the server yet".
+- Retired designs: Savanna Sunset, Palmera Beach, Curtain Call and Lunaria (the scene renderer) and Blue Hydrangea were trial designs and were removed. `supabase/migrations/202611160002_retire_trial_templates.sql` switches them off in the database. An invitation that still uses one shows "This design is no longer available" and keeps its details.
 
 ## Important limitations
 

@@ -10,7 +10,7 @@ export const LANDING = Object.freeze([
     description: 'Build a wedding invitation website with your story, events, photos and RSVP. Pick an animated template, preview it free and share one link with guests.',
     h1: 'A wedding invitation website, made in minutes',
     lead: 'Put everything your guests need on one beautiful page: who is getting married, when and where, the schedule, photos and a way to reply. InviteStudio gives you a designed, animated wedding invitation website to fill in, not a blank page to design.',
-    picks: [13, 14, 9],
+    picks: [13, 14, 15],
     sections: [
       { h2: 'What goes on your wedding invitation website', p: ['Your names and date, a short story, the events of the day with times and venues, travel details, a photo gallery and a way for guests to reply. Each template arranges these in its own style, so you choose a look and add your details.'], list: ['Names, date and a live countdown (on templates that have one)', 'A schedule of events, with venues and times', 'Photos of the two of you', 'Guest replies (RSVP) collected for you'] },
       { h2: 'Why a website instead of only a printed card', p: ['A website can change after you send it. If a time moves or a venue is added, you update the page and every guest sees the latest. It also holds the details a card has no room for, such as travel and a full schedule, and guests can answer from their phone without posting anything back.'] },
@@ -29,7 +29,7 @@ export const LANDING = Object.freeze([
     description: 'Send a digital wedding invitation guests open on their phones: animated, with events, photos and RSVP. Share one link by message or email.',
     h1: 'A digital wedding invitation guests open on their phones',
     lead: 'A digital wedding invitation is an invitation your guests open as a link instead of a card in the post. InviteStudio makes it a full, scrolling, animated page that looks right on any phone, and lets guests reply from it.',
-    picks: [12, 17, 10],
+    picks: [16, 18, 20],
     sections: [
       { h2: 'Made for the phone in your guest’s hand', p: ['Most guests will open your invitation on a phone, so the templates are built mobile first. Sections appear as guests scroll. Guests who have reduced motion turned on in their device settings see the invitation without the animation.'] },
       { h2: 'Everything in one link', p: ['Instead of sending a photo of a card, a map, a schedule and a form separately, you send one link. The invitation holds the details, and guests reply there.'], list: ['Event schedule, venues and travel details', 'Your photos', 'RSVP: name, whether they are coming and how many', 'A preview of your title, date and place when the link is shared in a chat'] },
@@ -48,7 +48,7 @@ export const LANDING = Object.freeze([
     description: 'Collect wedding RSVPs on your invitation itself: guests give their name, whether they are coming and how many. See every reply and download a spreadsheet.',
     h1: 'An online wedding invitation with RSVP built in',
     lead: 'Guests reply on the invitation itself, so you do not chase answers across chats and emails. Every reply appears in one list in your editor.',
-    picks: [11, 13, 14],
+    picks: [18, 13, 14],
     sections: [
       { h2: 'What guests are asked', p: ['The reply form is short on purpose, so people actually fill it in.'], list: ['Their name', 'Whether they are coming or not', 'How many people are coming (you set the maximum)', 'Any meal or access needs', 'An optional message for you'] },
       { h2: 'What you get', p: ['All replies are listed in your editor as they arrive. Download them as a spreadsheet to plan catering and seating. If you would rather not take replies on the page, you can switch RSVP off and ask guests to contact you instead.'] },
@@ -69,7 +69,7 @@ export const LANDING = Object.freeze([
     lead: 'The first few seconds set the tone. These templates open with something guests remember: curtains that part, a short film, or a date to uncover.',
     picks: [19, 21, 22],
     sections: [
-      { h2: 'Ways an invitation can open', p: ['Each template has its own opening, so you can match it to your wedding.'], list: ['Velvet Reveal: emerald curtains part, then a gold foil to scratch away to find the date', 'Golden Butterfly: a short film of golden butterflies opens a black-and-gold invitation', 'Cherry Blossom: falling petals, and a date to uncover with three taps and a soft chime', 'Curtain Call: theatre curtains that open on a tap', 'Under the Same Moon: a moonlit lake and a gold foil to scratch for the date'] },
+      { h2: 'Ways an invitation can open', p: ['Each template has its own opening, so you can match it to your wedding.'], list: ['Velvet Reveal: emerald curtains part, then a gold foil to scratch away to find the date', 'Golden Butterfly: a short film of golden butterflies opens a black-and-gold invitation', 'Cherry Blossom: falling petals, and a date to uncover with three taps and a soft chime', 'Under the Same Moon: a moonlit lake and a gold foil to scratch for the date'] },
       { h2: 'Animation that stays out of the way', p: ['Sections fade in as guests scroll, and the invitation is built for phones. Guests who prefer reduced motion see it without the animation, and the details are always readable.'] },
       { h2: 'Your details, their style', p: ['You change the names, date, events and photos. Each template keeps its own colours, fonts and motion, so it always looks designed.'] },
       { h2: 'Preview before you commit', p: ['Open any animated template and see it as your guests will. Building and previewing is free; you pay once when you publish.'] }
@@ -86,7 +86,7 @@ export const LANDING = Object.freeze([
     description: 'Make a wedding invitation you can send as one link on WhatsApp, text or email. Animated, mobile first, with events, photos and RSVP. Preview free.',
     h1: 'A wedding invitation you can send as one link on WhatsApp',
     lead: 'Most wedding invitations travel through group chats. A link to a designed invitation page works better than forwarding a photo, because it carries the schedule, photos and a reply form.',
-    picks: [10, 9, 16],
+    picks: [23, 20, 16],
     sections: [
       { h2: 'Why a link beats a forwarded image', p: ['An image cannot update, cannot hold a full schedule and cannot collect replies. A link opens a page that can do all three, and guests can open it again whenever they need the details.'] },
       { h2: 'What guests see in the chat', p: ['When you share your link, chat apps can show a preview with your title, the date and the place, so guests know what it is before they open it.'] },

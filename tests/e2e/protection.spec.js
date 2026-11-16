@@ -37,7 +37,7 @@ test('the artwork headers and the licence notices are in place', async () => {
     expect(block, `${path} has a rule`).toBeGreaterThan(-1);
     expect(headers.split('\n').slice(block + 1, block + 4).join('\n')).toContain('Cross-Origin-Resource-Policy: same-site');
   }
-  for (const file of ['scene-templates.js', 'packaged-templates.js', 'template-widgets.js', 'scene-templates.css', 'templates/dist/bloom-reveal.js', 'template-loader.js', 'index.html']) {
+  for (const file of ['packaged-templates.js', 'template-widgets.js', 'templates/dist/bloom-reveal.js', 'template-loader.js', 'index.html']) {
     expect(fs.readFileSync(file, 'utf8').slice(0, 600), `${file} starts with the notice`).toContain('© 2026 InviteStudio');
   }
 });

@@ -9,7 +9,6 @@
  *   InviteTemplates.register()  called by each templates/dist/<id>.js
  *
  * A packaged design needs: packaged-templates.js (the renderer), template-widgets.js (reveals, sound, countdown) and its bundle.
- * A scene design (Savanna, Palmera, Curtain Call, Lunaria) needs: scene-templates.js and scene-templates.css.
  */
 (function (root) {
   'use strict';
@@ -17,7 +16,6 @@
   // The build id (scripts/stamp-build.mjs, in the page's meta tag) goes on every address, so a page only ever loads files of its own build, never an older cached copy.
   var meta = typeof document !== 'undefined' && document.querySelector('meta[name="invitestudio-build"]');
   var V = meta && meta.content ? '?v=' + meta.content : '';
-  var SCENE_CSS = '/scene-templates.css';
   var scripts = {};   // url -> Promise, one request per file
   var cssText = {};   // key -> CSS text
   var needs = {};     // design key -> Promise
@@ -46,28 +44,15 @@
     }
   }
 
-  function loadSceneCss() {
-    var key = 'scene';
-    if (scripts[SCENE_CSS]) return scripts[SCENE_CSS];
-    scripts[SCENE_CSS] = fetch(SCENE_CSS + V, { credentials: 'same-origin' }).then(function (response) {
-      if (!response.ok) throw new Error('Could not load ' + SCENE_CSS);
-      return response.text();
-    }).then(function (text) { addStyle(key, text); }, function (error) { delete scripts[SCENE_CSS]; throw error; });
-    return scripts[SCENE_CSS];
-  }
-
-  // Which group of files a catalogue entry needs, or null when it needs none.
+  // Which design a catalogue entry needs, or null when it needs none (older designs the page draws itself).
   function groupOf(t) {
-    if (!t || t.unavailable) return null;
-    if (t.scene) return { key: 'scene:' + t.scene, kind: 'scene' };
-    if (t.packaged) return { key: 'packaged:' + t.packaged, kind: 'packaged', id: t.packaged };
-    return null;
+    if (!t || t.unavailable || !t.packaged) return null;
+    return { key: 'packaged:' + t.packaged, id: t.packaged };
   }
 
   function ready(t) {
     var g = groupOf(t);
     if (!g) return true;
-    if (g.kind === 'scene') return typeof root.renderSceneTemplate === 'function' && cssText.scene !== undefined;
     return typeof root.renderPackagedTemplate === 'function' && typeof root.hydratePackagedTemplates === 'function' &&
       Boolean(root.PACKAGED_TEMPLATES && root.PACKAGED_TEMPLATES[g.id]);
   }
@@ -76,9 +61,7 @@
     var g = groupOf(t);
     if (!g || ready(t)) return Promise.resolve();
     if (needs[g.key]) return needs[g.key];
-    var jobs = g.kind === 'scene'
-      ? [loadScript('/scene-templates.js'), loadSceneCss()]
-      : [loadScript('/packaged-templates.js'), loadScript('/template-widgets.js'), loadScript(BUNDLES + g.id + '.js')];
+    var jobs = [loadScript('/packaged-templates.js'), loadScript('/template-widgets.js'), loadScript(BUNDLES + g.id + '.js')];
     needs[g.key] = Promise.all(jobs).then(function () {
       if (!ready(t)) throw new Error('The design did not load: ' + g.key);
       try { document.dispatchEvent(new CustomEvent('invitestudio:template-ready', { detail: { id: t.id } })); } catch (e) { /* older browser */ }
@@ -88,8 +71,7 @@
 
   function cssFor(t) {
     var g = groupOf(t);
-    if (!g) return '';
-    return (g.kind === 'scene' ? cssText.scene : cssText['packaged:' + g.id]) || '';
+    return (g && cssText[g.key]) || '';
   }
 
   // Called by templates/dist/<id>.js: the design's data and its scoped CSS.
