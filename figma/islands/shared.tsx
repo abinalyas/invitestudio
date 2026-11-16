@@ -212,7 +212,10 @@ export type GalleryTemplate = {
 }
 
 // The small (320 px wide) version of a template's phone picture, for places that show it at about 160 px.
-export const phoneSmall = (path: string) => path.replace(/-phone\.jpg$/, "-phone-sm.webp")
+// The build id (see scripts/stamp-build.mjs) goes on each picture address, so a new deploy never shows a cached older picture.
+const buildId = typeof document !== "undefined" ? document.querySelector('meta[name="invitestudio-build"]')?.getAttribute("content") : ""
+export const art = (path: string) => (buildId ? `${path}?v=${buildId}` : path)
+export const phoneSmall = (path: string) => path.replace(/-phone\.jpg(\?.*)?$/, (_m, q) => "-phone-sm.webp" + (q || ""))
 
 export const galleryTemplates: GalleryTemplate[] = [
   {
@@ -227,8 +230,8 @@ export const galleryTemplates: GalleryTemplate[] = [
       text: "The cover shows your crest and a live countdown to your date. Guests scroll through your story, details and schedule.",
     },
     palette: ["#f4eedf", "#a58b62", "#34493a"],
-    image: "/assets/templates/modern-heritage-wide.jpg",
-    phone: "/assets/templates/modern-heritage-phone.jpg",
+    image: art("/assets/templates/modern-heritage-wide.jpg"),
+    phone: art("/assets/templates/modern-heritage-phone.jpg"),
   },
   {
     id: 14,
@@ -242,8 +245,8 @@ export const galleryTemplates: GalleryTemplate[] = [
       text: "A calm cover with your names set large and a live countdown to your date. Guests scroll through your story, the day and the schedule.",
     },
     palette: ["#faf9f6", "#5c6350", "#292929"],
-    image: "/assets/templates/minimalist-wide.jpg",
-    phone: "/assets/templates/minimalist-phone.jpg",
+    image: art("/assets/templates/minimalist-wide.jpg"),
+    phone: art("/assets/templates/minimalist-phone.jpg"),
   },
   {
     id: 15,
@@ -257,8 +260,8 @@ export const galleryTemplates: GalleryTemplate[] = [
       text: "A dark cover with your names set large and a live countdown to your date. Guests scroll through your story, the day and the schedule.",
     },
     palette: ["#171615", "#b59a72", "#f5f0e8"],
-    image: "/assets/templates/cinematic-wide.jpg",
-    phone: "/assets/templates/cinematic-phone.jpg",
+    image: art("/assets/templates/cinematic-wide.jpg"),
+    phone: art("/assets/templates/cinematic-phone.jpg"),
   },
   {
     id: 16,
@@ -272,8 +275,8 @@ export const galleryTemplates: GalleryTemplate[] = [
       text: "A storybook cover with your names in script and a live countdown to your date. Guests scroll through your story and your events.",
     },
     palette: ["#fff9f4", "#855b6c", "#59494a"],
-    image: "/assets/templates/fairy-tale-wide.jpg",
-    phone: "/assets/templates/fairy-tale-phone.jpg",
+    image: art("/assets/templates/fairy-tale-wide.jpg"),
+    phone: art("/assets/templates/fairy-tale-phone.jpg"),
   },
   {
     id: 18,
@@ -287,8 +290,8 @@ export const galleryTemplates: GalleryTemplate[] = [
       text: "Watercolour flowers bloom in from the corners around your names, then a countdown to your date. Guests scroll through your story, your events and a reply button.",
     },
     palette: ["#fbf1e3", "#485c48", "#4a403a"],
-    image: "/assets/templates/bloom-reveal-wide.jpg",
-    phone: "/assets/templates/bloom-reveal-phone.jpg",
+    image: art("/assets/templates/bloom-reveal-wide.jpg"),
+    phone: art("/assets/templates/bloom-reveal-phone.jpg"),
   },
   {
     id: 19,
@@ -302,8 +305,8 @@ export const galleryTemplates: GalleryTemplate[] = [
       text: "A full-screen video of velvet curtains parting, with an Open Invitation button. Then your names in an arch, a gold foil to scratch for the date, a countdown, your story and your events.",
     },
     palette: ["#0b2119", "#d6b77a", "#f6f0e5"],
-    image: "/assets/templates/velvet-reveal-wide.jpg",
-    phone: "/assets/templates/velvet-reveal-phone.jpg",
+    image: art("/assets/templates/velvet-reveal-wide.jpg"),
+    phone: art("/assets/templates/velvet-reveal-phone.jpg"),
   },
   {
     id: 20,
@@ -317,8 +320,8 @@ export const galleryTemplates: GalleryTemplate[] = [
       text: "A short film of the night sky opens the invitation. Then your names over a moonlit lake, a gold foil to scratch for the date, your story, your events and a countdown.",
     },
     palette: ["#090f25", "#c9ae83", "#f7f3ea"],
-    image: "/assets/templates/under-the-same-moon-wide.jpg",
-    phone: "/assets/templates/under-the-same-moon-phone.jpg",
+    image: art("/assets/templates/under-the-same-moon-wide.jpg"),
+    phone: art("/assets/templates/under-the-same-moon-phone.jpg"),
   },
   {
     id: 21,
@@ -332,8 +335,8 @@ export const galleryTemplates: GalleryTemplate[] = [
       text: "A short film of golden butterflies plays first, then your names over gold light with butterflies drifting past, a countdown, your note, your venues on ivory paper and a reply button.",
     },
     palette: ["#090806", "#c7a56a", "#f2eadb"],
-    image: "/assets/templates/golden-butterfly-wide.jpg",
-    phone: "/assets/templates/golden-butterfly-phone.jpg",
+    image: art("/assets/templates/golden-butterfly-wide.jpg"),
+    phone: art("/assets/templates/golden-butterfly-phone.jpg"),
   },
   {
     id: 22,
@@ -347,8 +350,8 @@ export const galleryTemplates: GalleryTemplate[] = [
       text: "A short film of blossom plays first. Then petals fall past your names, guests tap three blossoms to uncover the date, and scroll through your story, the day, a countdown and a reply button.",
     },
     palette: ["#fff9f2", "#57433c", "#d68f96"],
-    image: "/assets/templates/cherry-blossom-wide.jpg",
-    phone: "/assets/templates/cherry-blossom-phone.jpg",
+    image: art("/assets/templates/cherry-blossom-wide.jpg"),
+    phone: art("/assets/templates/cherry-blossom-phone.jpg"),
   },
   {
     id: 23,
@@ -362,8 +365,8 @@ export const galleryTemplates: GalleryTemplate[] = [
       text: "A short film of floating lanterns opens the invitation and keeps playing softly behind every section. Lanterns rise past your names, guests scratch a dark gold foil to find the date, then scroll through your story, the celebration, a countdown and a reply button.",
     },
     palette: ["#17172d", "#ffe1ad", "#c69b62"],
-    image: "/assets/templates/lantern-night-wide.jpg",
-    phone: "/assets/templates/lantern-night-phone.jpg",
+    image: art("/assets/templates/lantern-night-wide.jpg"),
+    phone: art("/assets/templates/lantern-night-phone.jpg"),
   },
 ]
 
