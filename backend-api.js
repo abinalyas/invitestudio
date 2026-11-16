@@ -75,11 +75,13 @@
       });
     },
     // Paying to publish (docs/PRICING_PLAN.md). The browser sends neither an amount nor a country: the server works out both.
-    startCheckout(id, editToken) {
+    startCheckout(id, editToken, contact) {
+      // Only the buyer's name, email and optional phone (and the reminders tick) go with it, never a price.
+      const body = contact ? { name: contact.name, email: contact.email, phone: contact.phone || '', marketing: contact.marketing === true } : {};
       return request(`/weddings/${encodeURIComponent(id)}/checkout`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${editToken}` },
-        body: JSON.stringify({})
+        body: JSON.stringify(body)
       });
     },
     // Asks the server whether a payment is done (the server asks the payment service; nothing here is believed).

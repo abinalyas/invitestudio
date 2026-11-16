@@ -911,6 +911,7 @@
       info: '',
       price: null,             // { text, tierName, mode } from /api/pricing, for the pay step
       needsPayment: false,     // the server asked for the one-time payment (402)
+      contact: contactOf(project), // the buyer's name, email, optional phone and reminders tick, asked for before paying
       success: false
     };
   }
@@ -919,9 +920,31 @@
     return project.publishStatus === 'published';
   }
 
+  // The buyer's details asked for before paying (name, email, optional phone, and an optional tick for tips and reminders).
+  // They are remembered on this device, so coming back from the payment page does not ask again. The server checks them again.
+  function contactOf(project) {
+    const saved = project && project.buyerContact && typeof project.buyerContact === 'object' ? project.buyerContact : {};
+    return { name: String(saved.name || ''), email: String(saved.email || ''), phone: String(saved.phone || ''), marketing: saved.marketing === true };
+  }
+
+  function contactProblem(contact) {
+    if (!contact.name.trim()) return 'Enter your name.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contact.email.trim())) return 'Enter a valid email address.';
+    const phone = contact.phone.trim().replace(/[\s().-]/g, '').replace(/^00/, '+');
+    if (phone && !/^\+?[0-9]{7,15}$/.test(phone)) return 'Enter a phone number with 7 to 15 digits, or leave it empty.';
+    return '';
+  }
+
+  function rememberContact(project) {
+    if (!publishSession) return;
+    project.buyerContact = { ...publishSession.contact };
+    try { localStorage.setItem('invitestudio-projects', JSON.stringify(state.projects)); } catch { /* it is asked for again next time */ }
+  }
+
   // Whether the Publish button may be used right now.
   function canPublish(project, session) {
     if (session.busy || session.checking) return false;
+    if (needsPayment(project, session) && contactProblem(session.contact)) return false;
     if (project.cloudStatus !== 'saved') return false;
     if (slugProblem(session.typed, project.publicSlug)) return false;
     if (isLive(project) && !session.changing && session.typed === project.publicSlug) return true;
@@ -968,6 +991,18 @@
       : session.price.mode === 'live'
         ? `<p class="tiny" data-price-note style="margin:12px 0 0;color:#2f4a36"><strong>One-time price: ${escapeText(session.price.text)}</strong> (${escapeText(session.price.tierName)} design). You pay once, securely on Razorpay's page with UPI, a card or netbanking, then come straight back to make it live. Editing and previewing stay free. By paying you agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a>; see the <a href="/refund-policy" target="_blank" rel="noopener">Refund policy</a>.</p>`
         : `<p class="tiny" data-price-note style="margin:12px 0 0;color:#2f4a36"><strong>Free during early access.</strong> The price that will apply later is ${escapeText(session.price.text)} (${escapeText(session.price.tierName)} design), paid once.</p>`;
+    const contactBlock = paying ? `<fieldset data-buyer-contact style="margin:14px 0 0;border:1px solid #e5dfd2;border-radius:10px;padding:12px 14px">
+        <legend class="tiny" style="padding:0 6px"><strong>Your details</strong></legend>
+        <p class="tiny muted" style="margin:0 0 8px">For your receipt and to help you if you lose your private link. Razorpay's page is filled in with them, so you do not type them twice.</p>
+        <label class="tiny muted" for="buyerName" style="display:block">Your name</label>
+        <input id="buyerName" type="text" autocomplete="name" maxlength="120" value="${escapeText(session.contact.name)}" style="width:100%">
+        <label class="tiny muted" for="buyerEmail" style="display:block;margin-top:8px">Email</label>
+        <input id="buyerEmail" type="email" autocomplete="email" inputmode="email" maxlength="254" value="${escapeText(session.contact.email)}" style="width:100%">
+        <label class="tiny muted" for="buyerPhone" style="display:block;margin-top:8px">Phone or WhatsApp number <span>(optional)</span></label>
+        <input id="buyerPhone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" value="${escapeText(session.contact.phone)}" style="width:100%">
+        <label class="tiny" style="display:flex;gap:8px;align-items:flex-start;margin:10px 0 0"><input id="buyerMarketing" type="checkbox" ${session.contact.marketing ? 'checked' : ''} style="margin-top:3px"><span>Send me tips and reminders about my invitation <span class="muted">(optional)</span></span></label>
+        <p id="contact-status" class="tiny" aria-live="polite" style="margin:8px 0 0;color:#6b6760">${escapeText(contactProblem(session.contact))}</p>
+      </fieldset>` : '';
     const info = session.info ? `<p class="tiny" role="status" data-payment-info style="margin:10px 0 0;color:#2f4a36">${escapeText(session.info)}</p>` : '';
     const checkAgain = session.checkAgain ? '<button class="btn small" type="button" data-check-payment style="margin-top:8px">Check again</button>' : '';
     const addressField = live && !session.changing
@@ -1004,7 +1039,7 @@
     renderModal(`<div class="eyebrow">Share your invitation</div>
       <h2 id="modal-title">${live ? 'Your invitation is live' : 'Get your invitation link'}</h2>
       <p class="muted">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>${live ? '' : ', not public yet'}.</p>
-      ${explainer}${priceNote}${keptBlock}${addressField}${changeWarning}${notSaved}${info}${checkAgain}${error}${success}${liveBlock}
+      ${explainer}${priceNote}${contactBlock}${keptBlock}${addressField}${changeWarning}${notSaved}${info}${checkAgain}${error}${success}${liveBlock}
       <div class="modal-actions" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
         <button class="btn" type="button" data-publish-close>Close</button>
         ${live && !session.changing ? '<button class="btn" type="button" data-share-card>Share card for WhatsApp</button>' : ''}
@@ -1057,6 +1092,16 @@
       paintPublishDialog(project, {});
       checkAddressSoon(project);
     }));
+    [['#buyerName', 'name'], ['#buyerEmail', 'email'], ['#buyerPhone', 'phone']].forEach(([selector, key]) => {
+      const field = root.querySelector(selector);
+      field?.addEventListener('input', () => {
+        publishSession.contact[key] = field.value;
+        rememberContact(project);
+        updateDialogWithoutRepaint(project);
+      });
+    });
+    const marketing = root.querySelector('#buyerMarketing');
+    marketing?.addEventListener('change', () => { publishSession.contact.marketing = marketing.checked; rememberContact(project); });
     const input = root.querySelector('#publishSlug');
     input?.addEventListener('input', () => {
       publishSession.typed = input.value.trim().toLowerCase();
@@ -1077,6 +1122,8 @@
     }
     const linkLine = root?.querySelector('#link-preview');
     if (linkLine) linkLine.textContent = `${window.location.origin}/s/${publishSession.typed || '…'}`;
+    const contactLine = root?.querySelector('#contact-status');
+    if (contactLine) contactLine.textContent = contactProblem(publishSession.contact);
     const button = root?.querySelector('[data-publish-submit]');
     if (button) button.disabled = !canPublish(project, publishSession);
     root?.querySelectorAll('[data-use-suggestion]').forEach(element => element.remove());
@@ -1171,7 +1218,8 @@
     session.info = '';
     paintPublishDialog(project, {});
     try {
-      const result = await window.inviteStudioApi.startCheckout(project.cloudId, tokenFor(project.cloudId));
+      rememberContact(project);
+      const result = await window.inviteStudioApi.startCheckout(project.cloudId, tokenFor(project.cloudId), session.contact);
       if (result.alreadyUnlocked) {
         project.publishUnlocked = true;
         session.busy = false;
@@ -1191,6 +1239,8 @@
         session.needsPayment = false;
         if (session.price) session.price.mode = 'early-access';
         session.error = 'Payments are not open yet, so there is nothing to pay. Choose Make it live.';
+      } else if (error.code === 'CONTACT_INVALID' || error.code === 'CONTACT_REQUIRED') {
+        session.error = 'Please check your name and email, then try again.';
       } else if (error.code === 'PAYMENTS_NOT_CONFIGURED') {
         session.error = 'Payments are not set up yet. Please try again later or contact us.';
       } else {

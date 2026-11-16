@@ -66,6 +66,32 @@ test.describe('row level security', () => {
     }
   });
 
+  test('buyer contact details and the admin access log are closed to the public and signed-in roles (service key only)', async () => {
+    // A row really exists, so "sees nothing" means the roles are shut out, not that the table is empty.
+    await admin.query(`select save_customer_contact($1, 'Closed Door', 'closed@example.com', '', false)`, [weddingA]);
+    await admin.query(`insert into admin_access_log (admin_email, action, wedding_id) values ('owner@example.test', 'view_contact', $1)`, [weddingA]);
+    const client = new Client({ connectionString: DB_URL });
+    await client.connect();
+    try {
+      for (const role of ['anon', 'authenticated']) {
+        for (const table of ['customer_contacts', 'admin_access_log']) {
+          const result = await asRole(client, role, null, `select count(*)::int as n from ${table}`);
+          expect(result.rows[0].n, `${role} sees rows in ${table}`).toBe(0);
+        }
+        for (const sql of [
+          `insert into customer_contacts (wedding_id, name, email) values ('${weddingA}', 'X', 'x@example.com')`,
+          `insert into admin_access_log (admin_email, action) values ('x@example.com', 'view_contact')`,
+          `select save_customer_contact('${weddingA}', 'X', 'x@example.com', '', false)`,
+          'select admin_overview(10)'
+        ]) {
+          await expect(asRole(client, role, null, sql), `${role}: ${sql}`).rejects.toThrow();
+        }
+      }
+    } finally {
+      await client.end();
+    }
+  });
+
   test('anonymous visitors cannot write to any table they should not', async () => {
     const client = new Client({ connectionString: DB_URL });
     await client.connect();

@@ -3,7 +3,8 @@
 // Authorised by the private edit token, like publishing. The browser sends no amount: the server works out the price for this
 // wedding's design and the visitor's country (functions/_shared/pricing.js), writes a `payments` row with that amount LOCKED, and
 // creates a Razorpay Payment Link for exactly it. The browser is sent to the link's page to pay.
-import { ApiError, assertUuid, db, fail, getWedding, optionsResponse, requireEditAccess, success } from '../../../_shared/api.js';
+import { ApiError, assertUuid, db, fail, getWedding, optionsResponse, requireEditAccess, rpc, success } from '../../../_shared/api.js';
+import { cleanBuyerContact, hasContactFields, razorpayCustomer } from '../../../_shared/contact.js';
 import { isLaunchTemplate } from '../../../_shared/templates.js';
 import { quote, regionForCountry, TIERS } from '../../../_shared/pricing.js';
 import { createPaymentLink, paymentsLive, razorpayConfig } from '../../../_shared/razorpay.js';
@@ -27,6 +28,19 @@ export async function onRequest(context) {
       throw new ApiError('This design is no longer available. Choose another template before publishing.', 422, 'TEMPLATE_UNAVAILABLE');
     }
     if (wedding.publish_unlocked_at) return success(request, env, { alreadyUnlocked: true });
+
+    // The buyer's name, email and optional phone are asked for before paying (and kept apart from the website). The browser sends
+    // no price, only these. A website that already has contact details saved may leave them out.
+    const supplied = await request.json().catch(() => ({}));
+    let contact;
+    if (hasContactFields(supplied)) {
+      contact = cleanBuyerContact(supplied);
+      await rpc(env, 'save_customer_contact', { p_wedding_id: params.id, p_name: contact.name, p_email: contact.email, p_phone: contact.phone, p_marketing: contact.marketing });
+    } else {
+      const saved = await db(env, `customer_contacts?${new URLSearchParams({ select: 'name,email,phone', wedding_id: `eq.${params.id}`, limit: '1' })}`);
+      contact = saved?.[0];
+      if (!contact) throw new ApiError('Please enter your name and email before paying.', 422, 'CONTACT_REQUIRED', { name: 'Required.', email: 'Required.' });
+    }
 
     // The price follows the visitor's country as Cloudflare reports it; the browser can name neither a price nor a region.
     const country = countryOf(request);
@@ -76,7 +90,8 @@ export async function onRequest(context) {
         referenceId: payment.id,
         description,
         callbackUrl: `${origin}/?payment=${payment.id}`,
-        notes: { payment_id: payment.id, wedding_id: params.id, template: price.templateId, tier: price.tier, region: price.region }
+        notes: { payment_id: payment.id, wedding_id: params.id, template: price.templateId, tier: price.tier, region: price.region },
+        customer: razorpayCustomer(contact, country)
       });
     } catch (error) {
       await db(env, `payments?id=eq.${payment.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'failed' }) }).catch(() => null);

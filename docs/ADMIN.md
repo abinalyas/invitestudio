@@ -37,6 +37,20 @@ a 30 day chart, and a searchable list of websites with the number of guest repli
 
 Until the four settings exist, `/admin` says it is not set up and no data is shown.
 
+## Buyers' contact details
+
+Before the Razorpay page, the payment dialog asks for **name, email, optional phone or WhatsApp, and an optional tick for tips and
+reminders** (off by default). They are:
+- checked on the server and kept in their own table, `customer_contacts` (not in the website row, so they can never travel with the
+  invitation or its public page), readable only with the server key, and deleted with the website;
+- passed to Razorpay when the payment link is made, so its page is already filled in (a bare Indian mobile number gets +91; a phone
+  without a country code outside India is left for the person to type there);
+- shown here only after you click **Show contact** on a website. Each look is written to `admin_access_log` (who, what, when).
+  The list itself never carries them. Websites whose owner never reached payment have none.
+
+**Run `supabase/migrations/202611160005_customer_contacts.sql` BEFORE this is deployed** (it only adds things). Until it exists, the
+payment step cannot save the details and will fail.
+
 ## Finding people who need help
 
 - **Progress** column: whether the story is written, how many events and photos, how long the website has been idle, and how
