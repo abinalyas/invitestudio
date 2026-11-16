@@ -82,6 +82,16 @@ function install(state) {
       if (row) Object.assign(row, body);
       return json(200, row ? [row] : []);
     }
+    if (url.pathname === '/rest/v1/rpc/save_customer_contact' && method === 'POST') {
+      state.contacts = state.contacts || {};
+      state.contacts[body.p_wedding_id] = { name: body.p_name, email: body.p_email, phone: body.p_phone, marketing_opt_in: body.p_marketing };
+      return json(200, null);
+    }
+    if (url.pathname === '/rest/v1/customer_contacts' && method === 'GET') {
+      const wanted = (url.searchParams.get('wedding_id') || '').replace('eq.', '');
+      const row = state.contacts?.[wanted];
+      return json(200, row ? [row] : []);
+    }
     if (url.pathname === '/rest/v1/rpc/mark_payment_paid' && method === 'POST') {
       if (state.rpcError) return json(400, { code: 'P0001', message: state.rpcError });
       const row = state.payments.find(item => item.id === body.p_payment_id);
@@ -117,7 +127,13 @@ async function run(handler, state, { env = LIVE, method = 'POST', path, body, to
     console.error = realError;
   }
 }
-const checkoutRun = (state, options = {}) => run(checkout, state, { path: `/api/weddings/${WID}/checkout`, params: { id: WID }, cf: { country: 'IN' }, body: {}, ...options });
+// The buyer's details are asked for before paying; unless a test says otherwise, it sends them.
+const CONTACT = { name: 'Mira Nair', email: 'mira@example.com', phone: '', marketing: false };
+const checkoutRun = (state, options = {}) => {
+  const noBody = options.method === 'GET';
+  const body = noBody ? undefined : options.body !== null && typeof options.body === 'object' ? { ...CONTACT, ...options.body } : options.body === undefined ? { ...CONTACT } : options.body;
+  return run(checkout, state, { path: `/api/weddings/${WID}/checkout`, params: { id: WID }, cf: { country: 'IN' }, ...options, body });
+};
 const verifyRun = (state, paymentId, options = {}) => run(verify, state, { path: `/api/weddings/${WID}/payments/${paymentId}/verify`, params: { id: WID, paymentId }, ...options });
 const razorpayCalls = state => state.calls.filter(c => c.host === 'api.razorpay.com');
 
@@ -375,4 +391,63 @@ test('publishing: while payments are not live nothing is charged, and the websit
   // Later, with payments live, that website publishes again without paying.
   state.wedding.status = 'unpublished';
   assert.equal((await publishRun(state, LIVE)).status, 200);
+});
+
+// ---------------------------------------------------------------- the buyer's details
+test('checkout: the buyer\'s details are checked, kept apart from the website, and passed to Razorpay to pre-fill its page', async () => {
+  const state = world();
+  const r = await checkoutRun(state, { body: { name: '  Mira   Nair ', email: 'Mira@Example.COM', phone: '95678 82568', marketing: true } });
+  assert.equal(r.status, 200, r.text);
+  assert.deepEqual(state.contacts[WID], { name: 'Mira Nair', email: 'mira@example.com', phone: '9567882568', marketing_opt_in: true });
+  const [call] = razorpayCalls(state);
+  assert.deepEqual(call.body.customer, { name: 'Mira Nair', email: 'mira@example.com', contact: '+919567882568' }, 'a bare Indian mobile number gets +91');
+  assert.equal(call.body.notify.email, false, 'Razorpay is still not asked to message the buyer');
+  assert.ok(!r.text.includes('mira@example.com'), 'the details are not echoed back');
+});
+
+test('checkout: a phone number is optional, a number Razorpay could refuse is left out of the link, and +country codes are kept', async () => {
+  let state = world();
+  await checkoutRun(state, { body: { phone: '' } });
+  assert.deepEqual(razorpayCalls(state)[0].body.customer, { name: 'Mira Nair', email: 'mira@example.com' });
+  assert.equal(state.contacts[WID].phone, '');
+  state = world();
+  await checkoutRun(state, { cf: { country: 'US' }, body: { phone: '(415) 555-0100' } });
+  assert.deepEqual(razorpayCalls(state)[0].body.customer, { name: 'Mira Nair', email: 'mira@example.com' }, 'no country code and not India: left for the person to type on Razorpay\'s page');
+  assert.equal(state.contacts[WID].phone, '4155550100', 'but it is still kept');
+  state = world();
+  await checkoutRun(state, { body: { phone: '+44 7700 900123' } });
+  assert.equal(razorpayCalls(state)[0].body.customer.contact, '+447700900123');
+});
+
+test('checkout: missing or invalid details stop the payment before anything is created or charged', async () => {
+  for (const body of [{ name: '' }, { name: '   ' }, { email: 'nope' }, { email: 'a@b' }, { phone: '12' }, { phone: 'call me' }, { name: 'x'.repeat(121) }]) {
+    const state = world();
+    const r = await checkoutRun(state, { body });
+    assert.equal(r.status, 422, JSON.stringify(body));
+    assert.equal(r.body.error.code, 'CONTACT_INVALID');
+    assert.equal(state.payments.length, 0); assert.equal(razorpayCalls(state).length, 0);
+    assert.equal(state.contacts, undefined, 'nothing is saved either');
+  }
+  const none = world();
+  const r = await run(checkout, none, { path: `/api/weddings/${WID}/checkout`, params: { id: WID }, cf: { country: 'IN' }, body: {} });
+  assert.equal(r.status, 422);
+  assert.equal(r.body.error.code, 'CONTACT_REQUIRED');
+  assert.equal(none.payments.length, 0);
+});
+
+test('checkout: a website whose details are already saved may leave them out (coming back later), and they are reused for the link', async () => {
+  const state = world();
+  await checkoutRun(state);
+  state.payments.length = 0;
+  const again = await run(checkout, state, { path: `/api/weddings/${WID}/checkout`, params: { id: WID }, cf: { country: 'IN' }, body: {} });
+  assert.equal(again.status, 200, again.text);
+  assert.equal(razorpayCalls(state).at(-1).body.customer.email, 'mira@example.com');
+});
+
+test('checkout: only the reminders tick (exactly true) opts in', async () => {
+  for (const [marketing, expected] of [[true, true], ['true', false], [1, false], [false, false], [undefined, false]]) {
+    const state = world();
+    await checkoutRun(state, { body: { marketing } });
+    assert.equal(state.contacts[WID].marketing_opt_in, expected, String(marketing));
+  }
 });

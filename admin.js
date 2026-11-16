@@ -71,6 +71,30 @@
     ]));
   }
 
+  // The buyer's name, email and phone (asked for before paying), shown on request; each look is logged on the server.
+  function contactCell(site) {
+    var box = el('div', {});
+    var button = el('button', { type: 'button', class: 'chip', text: 'Show contact' });
+    button.addEventListener('click', function () {
+      button.disabled = true;
+      fetch('/api/admin/contact', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: site.id }) })
+        .then(function (response) { return response.json().then(function (body) { return { ok: response.ok, body: body }; }); })
+        .then(function (result) {
+          clear(box);
+          if (!result.ok) { box.appendChild(el('span', { class: 'error small', text: 'Could not load.' })); return; }
+          var c = result.body.contact;
+          if (!c) { box.appendChild(el('span', { class: 'small muted', text: 'None yet (they have not reached payment).' })); return; }
+          var digits = c.phone.replace(/\D/g, '');
+          box.appendChild(el('div', {}, el('strong', { text: c.name })));
+          box.appendChild(el('div', { class: 'small' }, el('a', { href: 'mailto:' + encodeURIComponent(c.email), text: c.email })));
+          if (c.phone) box.appendChild(el('div', { class: 'small' }, el('a', { href: 'https://wa.me/' + digits, target: '_blank', rel: 'noopener noreferrer', text: c.phone })));
+          box.appendChild(el('div', { class: 'small muted', text: c.marketing ? 'OK to send tips and reminders' : 'No reminders: they did not tick the box' }));
+        }, function () { clear(box); box.appendChild(el('span', { class: 'error small', text: 'Could not load.' })); });
+    });
+    box.appendChild(button);
+    return box;
+  }
+
   // A private editing link is made fresh on request (existing links are stored only as hashes and cannot be shown).
   function privateLinkCell(site) {
     var box = el('div', {});
@@ -121,6 +145,7 @@
       el('td', { text: site.unlocked ? (site.paid_minor ? money(site.paid_minor, site.paid_currency) : 'Yes') : '—' }),
       el('td', { text: replies }),
       el('td', {}, [day(site.created_at), el('div', { class: 'small muted', text: 'edited ' + ago(site.updated_at) })]),
+      el('td', {}, contactCell(site)),
       el('td', {}, privateLinkCell(site))
     ]);
   }
@@ -136,7 +161,7 @@
       });
       rows.sort(SORTS[sortBy]);
       clear(list);
-      list.appendChild(table(['Couple', 'Design', 'Status', 'Progress', 'Link', 'Paid', 'Replies', 'Created', 'Private link'], rows.map(siteRow)));
+      list.appendChild(table(['Couple', 'Design', 'Status', 'Progress', 'Link', 'Paid', 'Replies', 'Created', 'Contact', 'Private link'], rows.map(siteRow)));
       if (!rows.length) list.appendChild(el('p', { class: 'muted', text: 'No websites match.' }));
       if (data.sites.length >= 500) list.appendChild(el('p', { class: 'small muted', text: 'Showing the 500 most recently edited websites.' }));
       count.textContent = rows.length + ' of ' + data.sites.length;

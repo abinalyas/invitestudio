@@ -1,6 +1,14 @@
 // The owner's overview (/admin): closed to everyone but the signed-in owner, counts replies without exposing guests.
 const { test, expect } = require('@playwright/test');
 const { randomUUID } = require('node:crypto');
+const { Client } = require('pg');
+
+const DB_URL = 'postgres://postgres@127.0.0.1:54329/invitestudio';
+async function dbQuery(sql, params) {
+  const db = new Client({ connectionString: DB_URL });
+  await db.connect();
+  try { return (await db.query(sql, params)).rows; } finally { await db.end(); }
+}
 
 const SECRET = 'test-only-admin-session-secret-0123456789';
 async function sessionCookie(email) {
@@ -128,4 +136,59 @@ test('the admin page has the idle and event-soon filters and a sort', async ({ p
   await expect(page.getByText('Idle private drafts')).toBeVisible();
   await page.getByRole('button', { name: 'Idle 7+ days' }).click();
   await expect(page.getByRole('button', { name: 'Idle 7+ days' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('the owner can see a buyer\'s contact details on request: closed to others, none shown when there are none, and every look is logged', async ({ request }) => {
+  const { id } = await liveSiteWithReplies(request, 'Contact Couple');
+  const owner = { Cookie: await sessionCookie('owner@example.test'), 'Content-Type': 'application/json' };
+  const ask = (headers, data) => request.post('/api/admin/contact', { headers, data });
+
+  expect((await ask({ 'Content-Type': 'application/json' }, { id })).status()).toBe(401);
+  expect((await ask({ Cookie: await sessionCookie('stranger@example.test'), 'Content-Type': 'application/json' }, { id })).status()).toBe(401);
+  expect((await ask({ ...owner, Origin: 'https://evil.example' }, { id })).status()).toBe(403);
+  expect((await ask(owner, { id: 'nope' })).status()).toBe(400);
+
+  // A website whose owner never reached payment has no details.
+  const none = await ask(owner, { id });
+  expect(none.status()).toBe(200);
+  expect((await none.json()).contact).toBeNull();
+
+  await dbQuery(`select save_customer_contact($1, 'Mira Nair', 'mira@example.com', '+919567882568', true)`, [id]);
+  const shown = await ask(owner, { id });
+  expect(shown.headers()['cache-control']).toBe('no-store');
+  expect((await shown.json()).contact).toMatchObject({ name: 'Mira Nair', email: 'mira@example.com', phone: '+919567882568', marketing: true });
+
+  // The overview (the list) never carries them.
+  const overview = await (await request.get('/api/admin/overview', { headers: owner })).text();
+  expect(overview).not.toMatch(/mira@example\.com|Mira Nair|9567882568/);
+
+  const log = await dbQuery(`select admin_email, action from admin_access_log where wedding_id = $1 order by at`, [id]);
+  expect(log).toEqual([{ admin_email: 'owner@example.test', action: 'view_contact' }, { admin_email: 'owner@example.test', action: 'view_contact' }]);
+});
+
+test('the contact details are deleted with the website, and the database refuses malformed ones', async ({ request }) => {
+  const { id } = await liveSiteWithReplies(request, 'Delete Couple');
+  await dbQuery(`select save_customer_contact($1, 'A B', 'a@example.com', '', false)`, [id]);
+  await expect(dbQuery(`select save_customer_contact($1, 'A B', 'not-an-email', '', false)`, [id])).rejects.toThrow();
+  await expect(dbQuery(`select save_customer_contact($1, 'A B', 'a@example.com', 'call me', false)`, [id])).rejects.toThrow();
+  await dbQuery('delete from weddings where id = $1', [id]);
+  expect(await dbQuery('select 1 from customer_contacts where wedding_id = $1', [id])).toEqual([]);
+});
+
+test('on the admin page, Show contact shows a buyer\'s details, and says so when there are none', async ({ page, context, request }) => {
+  const paid = await liveSiteWithReplies(request, 'Buyer Couple');
+  const unpaid = await liveSiteWithReplies(request, 'Lurker Couple');
+  await dbQuery(`select save_customer_contact($1, 'Mira Nair', 'mira@example.com', '+919567882568', false)`, [paid.id]);
+  await context.addCookies([{ name: 'is_admin', value: (await sessionCookie('owner@example.test')).split('=')[1], url: 'http://127.0.0.1:8788' }]);
+  await page.goto('/admin');
+  const paidRow = page.locator('tr', { hasText: 'Buyer Couple' });
+  await expect(paidRow).not.toContainText('mira@example.com');
+  await paidRow.getByRole('button', { name: 'Show contact' }).click();
+  await expect(paidRow).toContainText('Mira Nair');
+  await expect(paidRow.getByRole('link', { name: 'mira@example.com' })).toBeVisible();
+  await expect(paidRow.getByRole('link', { name: '+919567882568' })).toHaveAttribute('href', 'https://wa.me/919567882568');
+  await expect(paidRow).toContainText('No reminders');
+  const unpaidRow = page.locator('tr', { hasText: 'Lurker Couple' });
+  await unpaidRow.getByRole('button', { name: 'Show contact' }).click();
+  await expect(unpaidRow).toContainText('None yet');
 });

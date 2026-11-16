@@ -75,7 +75,7 @@ async function razorpay(env, method, path, body) {
 
 // A payment link for exactly `amount` (minor units) in `currency`. reference_id is our own payment id, so the link can only ever be
 // matched back to the payment row we created for it. expire_by must be at least 15 minutes away; two hours is used.
-export function createPaymentLink(env, { amount, currency, referenceId, description, callbackUrl, notes }) {
+export function createPaymentLink(env, { amount, currency, referenceId, description, callbackUrl, notes, customer }) {
   return razorpay(env, 'POST', '/payment_links', {
     amount,
     currency,
@@ -87,7 +87,8 @@ export function createPaymentLink(env, { amount, currency, referenceId, descript
     callback_url: callbackUrl,
     callback_method: 'get',
     expire_by: Math.floor(Date.now() / 1000) + 2 * 60 * 60,
-    notes
+    notes,
+    ...(customer ? { customer } : {})
   });
 }
 

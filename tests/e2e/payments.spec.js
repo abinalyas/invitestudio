@@ -74,6 +74,18 @@ async function draftWithServer(page, { mode = 'live', country = 'IN', unlocked =
   return server;
 }
 
+// The details asked for before paying: name and email are needed, the phone is optional, the reminders tick starts off.
+async function fillDetails(dialog, { name = 'Mira Nair', email = 'mira@example.com', phone = '' } = {}) {
+  await dialog.getByLabel('Your name').fill(name);
+  await dialog.getByLabel('Email').fill(email);
+  if (phone) await dialog.getByLabel(/^Phone or WhatsApp number/).fill(phone);
+}
+
+async function openShareAgain(page) {
+  await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
+  return page.locator('#modal-root');
+}
+
 async function openShare(page) {
   await page.getByRole('button', { name: 'Continue editing' }).click();
   await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
@@ -85,23 +97,30 @@ test('payments live: the dialog shows this design\'s price, and the main button 
   const dialog = await openShare(page);
   await expect(dialog.locator('[data-price-note]')).toContainText('One-time price: ₹2,999');
   await expect(dialog.locator('[data-price-note]')).toContainText('Signature design');
-  await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeEnabled({ timeout: 15000 });
+  // Name and email come first: the button stays off until they are given.
+  await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeDisabled({ timeout: 15000 });
+  await fillDetails(dialog);
+  await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeEnabled();
   await expect(dialog.getByRole('button', { name: 'Make it live' })).toHaveCount(0);
 });
 
 test('payments live: a visitor elsewhere sees their own currency', async ({ page }) => {
   await draftWithServer(page, { country: 'US' });
   const dialog = await openShare(page);
-  await expect(dialog.getByRole('button', { name: 'Pay $59 and continue' })).toBeEnabled({ timeout: 15000 });
+  await expect(dialog.getByRole('button', { name: 'Pay $59 and continue' })).toBeDisabled({ timeout: 15000 });
+  await fillDetails(dialog);
+  await expect(dialog.getByRole('button', { name: 'Pay $59 and continue' })).toBeEnabled();
 });
 
 test('pay, come back, get confirmed by the server, and go live', async ({ page }) => {
   const server = await draftWithServer(page);
   const dialog = await openShare(page);
+  await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeDisabled({ timeout: 15000 });
+  await fillDetails(dialog, { phone: '95678 82568' });
   await dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' }).click();
   // Sent to the payment page and back; the dialog reopens by itself and confirms the payment with the server.
   await expect(dialog.locator('[data-payment-info]')).toContainText('Payment received', { timeout: 20000 });
-  expect(server.checkouts).toEqual([{}], 'no amount is ever sent by the browser');
+  expect(server.checkouts).toEqual([{ name: 'Mira Nair', email: 'mira@example.com', phone: '95678 82568', marketing: false }], 'only the buyer\'s details are sent, never an amount');
   expect(server.verifies).toBeGreaterThan(0);
   expect(page.url()).not.toContain('payment=');
   await expect(dialog.getByRole('button', { name: 'Make it live' })).toBeEnabled({ timeout: 15000 });
@@ -115,6 +134,8 @@ test('pay, come back, get confirmed by the server, and go live', async ({ page }
 test('back from the payment page but not confirmed yet: the person is told, and can check again', async ({ page }) => {
   const server = await draftWithServer(page, { paidOnReturn: false });
   const dialog = await openShare(page);
+  await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeDisabled({ timeout: 15000 });
+  await fillDetails(dialog);
   await dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' }).click();
   await expect(dialog.locator('[data-payment-info]')).toContainText('have not heard back', { timeout: 40000 });
   await expect(dialog.getByRole('button', { name: 'Make it live' })).toHaveCount(0);
@@ -147,4 +168,42 @@ test('a payment id in the address that matches nothing on this device is not tru
   await page.goto(`/?payment=${PAYMENT}`);
   await expect(page.locator('#toast, .toast').first()).toContainText('could not match that payment', { timeout: 15000 });
   expect(page.url()).not.toContain('payment=');
+});
+
+test('the details form: the email must look right, the phone is optional, the reminders tick starts off, and what was typed is kept', async ({ page }) => {
+  const server = await draftWithServer(page, { paidOnReturn: false });
+  const dialog = await openShare(page);
+  const pay = dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' });
+  await expect(pay).toBeDisabled({ timeout: 15000 });
+  await expect(dialog.getByLabel(/Send me tips and reminders/)).not.toBeChecked();
+  await expect(dialog.locator('#contact-status')).toHaveText('Enter your name.');
+  await dialog.getByLabel('Your name').fill('Mira Nair');
+  await expect(dialog.locator('#contact-status')).toHaveText('Enter a valid email address.');
+  await dialog.getByLabel('Email').fill('mira@example');
+  await expect(pay).toBeDisabled();
+  await dialog.getByLabel('Email').fill('mira@example.com');
+  await expect(pay).toBeEnabled();
+  await expect(dialog.locator('#contact-status')).toHaveText('');
+  await dialog.getByLabel(/^Phone or WhatsApp number/).fill('call me');
+  await expect(pay).toBeDisabled();
+  await expect(dialog.locator('#contact-status')).toContainText('7 to 15 digits');
+  await dialog.getByLabel(/^Phone or WhatsApp number/).fill('');
+  await expect(pay).toBeEnabled();
+  await dialog.getByLabel(/Send me tips and reminders/).check();
+  // Closing and opening the dialog again keeps what was typed (it is remembered on this device).
+  await dialog.getByRole('button', { name: 'Close' }).click();
+  const again = await openShareAgain(page);
+  await expect(again.getByLabel('Your name')).toHaveValue('Mira Nair');
+  await expect(again.getByLabel('Email')).toHaveValue('mira@example.com');
+  await expect(again.getByLabel(/Send me tips and reminders/)).toBeChecked();
+  await again.getByRole('button', { name: 'Pay ₹2,999 and continue' }).click();
+  await expect.poll(() => server.checkouts.length).toBe(1);
+  expect(server.checkouts[0]).toEqual({ name: 'Mira Nair', email: 'mira@example.com', phone: '', marketing: true });
+});
+
+test('early access and unlocked websites are never asked for these details', async ({ page }) => {
+  await draftWithServer(page, { mode: 'early-access' });
+  const dialog = await openShare(page);
+  await expect(dialog.getByRole('button', { name: 'Make it live' })).toBeEnabled({ timeout: 15000 });
+  await expect(dialog.getByLabel('Your name')).toHaveCount(0);
 });
