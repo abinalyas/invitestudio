@@ -790,16 +790,35 @@
 
   const widths = { desktop: '100%', tablet: '768px', mobile: '390px' };
   const phoneWidths = { desktop: 1280, tablet: 768 };
+  // The phone's Desktop and Tablet views lay the design out at its real width and scale it down with a transform. Not the CSS
+  // zoom property: the designs use container query units, and iPhone Safari measures a zoomed container at its shrunken width,
+  // which showed the phone layout with oversized text.
+  const fitObservers = new WeakMap();
   function fitDeviceWidth(host, container, device) {
+    const old = fitObservers.get(container);
+    if (old) { old.disconnect(); fitObservers.delete(container); }
+    container.style.zoom = '';
     const real = phoneWidths[device];
-    const available = host.clientWidth;
-    if (real && available && window.matchMedia('(max-width: 767px)').matches) {
+    if (real && host.clientWidth && window.matchMedia('(max-width: 767px)').matches) {
       container.style.width = real + 'px';
       container.style.maxWidth = 'none';
       container.style.margin = '0';
-      container.style.zoom = String(Math.min(1, available / real));
+      container.style.transformOrigin = '0 0';
+      const apply = () => {
+        const k = Math.min(1, host.clientWidth / real);
+        container.style.transform = k < 1 ? 'scale(' + k + ')' : '';
+        container.style.marginBottom = k < 1 ? (-(container.offsetHeight * (1 - k))) + 'px' : '';
+      };
+      apply();
+      if (window.ResizeObserver) {
+        const observer = new ResizeObserver(apply);
+        observer.observe(container);
+        fitObservers.set(container, observer);
+      }
     } else {
-      container.style.zoom = '';
+      container.style.transform = '';
+      container.style.transformOrigin = '';
+      container.style.marginBottom = '';
     }
   }
 
