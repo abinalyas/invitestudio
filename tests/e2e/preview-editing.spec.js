@@ -3,9 +3,8 @@
 const zlib = require('node:zlib');
 const { test, expect, devices } = require('@playwright/test');
 
-const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'blue-hydrangea', 'bloom-reveal', 'velvet-reveal', 'under-the-same-moon', 'golden-butterfly', 'cherry-blossom', 'lantern-night'];
-const SCENES = ['savanna-sunset', 'palmera-beach', 'curtain-call', 'lunaria-moon'];
-const ALL = [...PACKAGED, ...SCENES];
+const PACKAGED = ['minimalist', 'modern-heritage', 'cinematic', 'fairy-tale', 'bloom-reveal', 'velvet-reveal', 'under-the-same-moon', 'golden-butterfly', 'cherry-blossom', 'lantern-night'];
+const ALL = PACKAGED;
 
 const snapshot = page => page.evaluate(() => window.InviteStudioBridge.snapshot());
 
@@ -74,7 +73,7 @@ for (const id of ALL) {
   });
 }
 
-for (const id of ['minimalist', 'savanna-sunset']) {
+for (const id of ['minimalist', 'fairy-tale']) {
   test(`${id}: an event can be moved, removed, and put back with Undo`, async ({ page }) => {
     await openEditor(page, id, { withEvents: true });
     const titles = async () => (await snapshot(page)).events.map(event => event.title);

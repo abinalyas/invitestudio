@@ -122,8 +122,6 @@ test('the preview and the saved-draft banner say plainly who can see and edit', 
 
 test('long names are sized by their longest word in every template, so they fit instead of breaking mid-word', () => {
   for (const id of ['modern-heritage', 'minimalist', 'cinematic']) assert.match(read(`templates/${id}/template.css`), /--fit:calc\(/, id);
-  assert.match(read('scene-templates.js'), /function longestWord\(a, b\)/);
-  assert.match(read('scene-templates.css'), /\.sx-nm\{font-size:min\(58px,calc\(300px\/\(var\(--nl,10\)\*\.5\)\)\)\}/);
 });
 
 test('the template page shows the real design in a phone beside the details, with no Live preview button or popup', () => {

@@ -382,7 +382,7 @@ The last reference, and the one with the most platform-owned parts removed. What
 - **Events are cards, from the couple's own events** (name, date, time, venue, directions link): any number, none invented. The reference's two cards named a ceremony and a reception; the template names neither.
 - **Engine**: events now carry `date_text`, `time_text` and `map` for templates that show them.
 
-### 15.5 Fifth template: Blue Hydrangea (implemented)
+### 15.5 Fifth template: Blue Hydrangea (implemented, later removed as a trial design)
 
 Modelled on a pale-blue, botanical wedding site that opens with a video wax-seal screen. What the build did:
 
@@ -508,7 +508,9 @@ Rules: never put a marker inside an attribute, an SVG `<text>`, a `<button>` or 
 - On the gallery's "Your photo" placeholder, add `<!--if editable--> data-photo-add<!--/if-->` inside the tag. In the editor it becomes "+ Add photos" and opens the file picker; the notice names where the photos went (the design's large pictures fill first, then the gallery).
 - The design's example events (shown before the couple adds their own) have no id, so they are not editable; `{{edit:event_title}}` and `{{edit:event_venue}}` still show their wording.
 
-### Scene templates (Savanna Sunset, Palmera Beach, Curtain Call, Lunaria)
+### Scene templates (Savanna Sunset, Palmera Beach, Curtain Call, Lunaria) — removed
+
+_These four trial designs and their renderer (`scene-templates.js`) were removed; this section is kept as history._
 
 They build their markup in `scene-templates.js` rather than from `template.html`, and have no wording keys, so only the couple's own details are editable (names, pre-title, hosts, welcome message, date, venue and place or the whole location, story and its title, event titles). In the editor preview `renderSceneTemplate(project, template, { editable: true })` adds the same `data-edit` / `data-raw` attributes through the `ea()` helper, shows the schedule and gallery sections even when empty (with "+ Add an event" and photo placeholders), and opens Curtain Call's curtains so the cover can be edited. With no options the output is unchanged. `tests/unit/scene-templates.test.mjs` checks that every scene template marks the same fields and that the published page has none.
 

@@ -24,8 +24,8 @@ test('every script in the page, and the build id the loader uses, carry the same
 
 test('the build id changes when a script changes, and covers what the loader fetches', () => {
   const files = stampedFiles(html);
-  for (const file of ['/figma-host.js', '/figma/dist/figma-islands.js', '/template-loader.js', '/packaged-templates.js', '/template-widgets.js', '/scene-templates.js', '/scene-templates.css', '/templates/dist/velvet-reveal.js']) assert.ok(files.includes(file), `${file} is covered`);
+  for (const file of ['/figma-host.js', '/figma/dist/figma-islands.js', '/template-loader.js', '/packaged-templates.js', '/template-widgets.js', '/templates/dist/velvet-reveal.js']) assert.ok(files.includes(file), `${file} is covered`);
   const loader = readFileSync(join(root, 'template-loader.js'), 'utf8');
   assert.match(loader, /invitestudio-build/);
-  assert.ok(loader.includes('el.src = url + V') && loader.includes('SCENE_CSS + V'), 'every address the loader fetches carries the id');
+  assert.ok(loader.includes('el.src = url + V'), 'every address the loader fetches carries the id');
 });

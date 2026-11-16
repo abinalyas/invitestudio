@@ -76,10 +76,6 @@ test('invitations show times as 4:00 PM, and keep showing older free text as typ
     const old = ctx.renderPackagedTemplate(project([event('Reception', 'around six')]), { packaged: id });
     if (id !== 'cinematic') assert.match(old, /around six/, id);
   }
-  const scene = {}; scene.window = scene;
-  vm.runInNewContext(readFileSync(join(root, 'scene-templates.js'), 'utf8'), { window: scene, Math, Date, String, Array, Object, encodeURIComponent });
-  const html = scene.renderSceneTemplate(project([event('Reception', '18:00')]), { id: 'savanna-sunset', scene: 'savanna' });
-  assert.match(html, /6:00 PM/);
 });
 
 test('the editor offers real time fields and limits lengths', () => {

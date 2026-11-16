@@ -197,8 +197,7 @@ export function Logo() {
   )
 }
 
-// The templates offered for now: the four scene templates. The facts below come from the template
-// catalogue in index.html and the scene renderer (scene-templates.js); change them together.
+// The templates offered now. The facts below come from the template catalogue in index.html; change them together.
 export type GalleryTemplate = {
   id: number // the number in /templates/<id>
   backendId: string // the template id saved with a wedding (public.templates.id)
@@ -212,64 +211,10 @@ export type GalleryTemplate = {
   phone: string // the real cover, phone shaped (npm run thumbs:scenes)
 }
 
-const sceneStory =
-  "A full-length invitation told in scenes. Each section fades in as your guests scroll. Guests who prefer reduced motion see it without the animation."
-
 // The small (320 px wide) version of a template's phone picture, for places that show it at about 160 px.
 export const phoneSmall = (path: string) => path.replace(/-phone\.jpg$/, "-phone-sm.webp")
 
 export const galleryTemplates: GalleryTemplate[] = [
-  {
-    id: 9,
-    backendId: "savanna-sunset",
-    title: "Savanna Sunset",
-    names: "Daniel & Amelia",
-    tagline: "Golden dunes, acacia silhouettes and a script title at sunset.",
-    tags: ["Nature", "Sunset"],
-    opening: { name: "Scene story", text: sceneStory },
-    palette: ["#f4a95a", "#8f5b57", "#3a1c12"],
-    image: "/assets/templates/savanna-sunset-wide.jpg",
-    phone: "/assets/templates/savanna-sunset-phone.jpg",
-  },
-  {
-    id: 10,
-    backendId: "palmera-beach",
-    title: "Palmera Beach",
-    names: "Daniel & Amelia",
-    tagline: "A sunlit beach inside an arch, framed by palms and hibiscus.",
-    tags: ["Nature", "Beach"],
-    opening: { name: "Scene story", text: sceneStory },
-    palette: ["#fbf1dd", "#3f9aa5", "#1c4f57"],
-    image: "/assets/templates/palmera-beach-wide.jpg",
-    phone: "/assets/templates/palmera-beach-phone.jpg",
-  },
-  {
-    id: 11,
-    backendId: "curtain-call",
-    title: "Curtain Call",
-    names: "Daniel & Amelia",
-    tagline: "Theatre curtains that open on tap to reveal the invitation.",
-    tags: ["Classic", "Theatre"],
-    opening: {
-      name: "Curtain open",
-      text: "The invitation starts behind closed curtains. Guests tap to open them and the invitation is revealed.",
-    },
-    palette: ["#efe3c5", "#a89972", "#3a3226"],
-    image: "/assets/templates/curtain-call-wide.jpg",
-    phone: "/assets/templates/curtain-call-phone.jpg",
-  },
-  {
-    id: 12,
-    backendId: "lunaria-moon",
-    title: "Lunaria",
-    names: "Daniel & Amelia",
-    tagline: "Dusty blue linen, a moon and an arch of leaves and water lilies.",
-    tags: ["Botanical", "Moonlit"],
-    opening: { name: "Scene story", text: sceneStory },
-    palette: ["#a6b6c9", "#6f8b78", "#1f2b3d"],
-    image: "/assets/templates/lunaria-moon-wide.jpg",
-    phone: "/assets/templates/lunaria-moon-phone.jpg",
-  },
   {
     id: 13,
     backendId: "modern-heritage",
@@ -329,21 +274,6 @@ export const galleryTemplates: GalleryTemplate[] = [
     palette: ["#fff9f4", "#855b6c", "#59494a"],
     image: "/assets/templates/fairy-tale-wide.jpg",
     phone: "/assets/templates/fairy-tale-phone.jpg",
-  },
-  {
-    id: 17,
-    backendId: "blue-hydrangea",
-    title: "Blue Hydrangea",
-    names: "Martina & Javier",
-    tagline: "A pale blue sky framed by hydrangea and orchid garlands, with a countdown in a scalloped frame and a soft, garden-party feel.",
-    tags: ["Botanical", "Romantic"],
-    opening: {
-      name: "Countdown",
-      text: "Your names between two flower garlands, then a countdown to your date. Guests scroll through a welcome, your story and your events.",
-    },
-    palette: ["#f2f7fa", "#4d6a22", "#2f4219"],
-    image: "/assets/templates/blue-hydrangea-wide.jpg",
-    phone: "/assets/templates/blue-hydrangea-phone.jpg",
   },
   {
     id: 18,

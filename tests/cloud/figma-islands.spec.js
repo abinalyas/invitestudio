@@ -15,11 +15,7 @@ const EXPECTED_TEMPLATES = {
   5: { backend: 'destination-wedding', name: 'Coastal Romance' },
   6: { backend: 'modern-minimal-wedding', name: 'Modern Minimal' },
   7: { backend: 'contemporary-floral-wedding', name: 'Lotus Reverie' },
-  8: { backend: 'contemporary-editorial-wedding', name: 'Destination Hills' },
-  9: { backend: 'savanna-sunset', name: 'Savanna Sunset' },
-  10: { backend: 'palmera-beach', name: 'Palmera Beach' },
-  11: { backend: 'curtain-call', name: 'Curtain Call' },
-  12: { backend: 'lunaria-moon', name: 'Lunaria' }
+  8: { backend: 'contemporary-editorial-wedding', name: 'Destination Hills' }
 };
 
 test.beforeEach(async ({ page }) => {

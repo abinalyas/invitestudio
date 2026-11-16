@@ -1,7 +1,7 @@
 // IS-01: content typed into guided setup, or into the editor, must survive refresh and reopening,
 // in the browser's own copy AND on the server, for several template structures.
 //   minimalist     : packaged template (HTML partials)
-//   savanna-sunset : scene template (the other rendering path)
+//   bloom-reveal   : packaged template with an animated opening
 //   fairy-tale     : packaged template with a different content structure (hosts line above the title)
 const { test, expect } = require('@playwright/test');
 const { randomUUID } = require('node:crypto');
@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
 });
 
-const TEMPLATES = ['minimalist', 'savanna-sunset', 'fairy-tale'];
+const TEMPLATES = ['minimalist', 'bloom-reveal', 'fairy-tale'];
 const CONTENT = {
   message: 'Welcome, we are so glad you are here.',
   story: 'We met on a rainy Tuesday.\nIt was love at first umbrella.',

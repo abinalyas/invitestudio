@@ -35,11 +35,11 @@ test('the built files are current (npm run build:templates)', () => {
 
 test('designs are fetched one at a time: no combined file, no inline copy of every design in the page', () => {
   assert.ok(!existsSync(join(root, 'templates/templates.generated.js')), 'the combined file is gone');
-  assert.ok(!html.includes('packaged-templates-css') && !html.includes('scene-templates-css'), 'the page does not inline every design\'s CSS');
+  assert.ok(!html.includes('packaged-templates-css'), 'the page does not inline every design\'s CSS');
   assert.ok(html.includes('/template-loader.js'));
-  assert.ok(!html.includes('src="/packaged-templates.js"') && !html.includes('src="/scene-templates.js"') && !html.includes('src="/template-widgets.js"'), 'the shared template code is loaded on demand');
+  assert.ok(!html.includes('src="/packaged-templates.js"') && !html.includes('src="/template-widgets.js"'), 'the shared template code is loaded on demand');
   const loader = readFileSync(join(root, 'template-loader.js'), 'utf8');
-  for (const file of ['/packaged-templates.js', '/template-widgets.js', '/scene-templates.js', '/scene-templates.css', '/templates/dist/']) assert.ok(loader.includes(file), `the loader fetches ${file}`);
+  for (const file of ['/packaged-templates.js', '/template-widgets.js', '/templates/dist/']) assert.ok(loader.includes(file), `the loader fetches ${file}`);
 });
 
 for (const { manifest, parts, css } of list) {

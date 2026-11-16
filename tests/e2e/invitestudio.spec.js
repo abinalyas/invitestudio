@@ -711,7 +711,7 @@ test.describe('guest replies', () => {
     const wid = '77777777-7777-4777-8777-777777777777', token = 'r'.repeat(43);
     const server = { version: 1, message: '', patches: [], dropPatches: false, loseReply: false, getDelay: 0 };
     const wedding = () => ({
-      id: wid, version: server.version, status: 'draft', visibility: 'private', slug: null, name: 'Mira & Arun', category: 'Wedding', template_id: 'savanna-sunset',
+      id: wid, version: server.version, status: 'draft', visibility: 'private', slug: null, name: 'Mira & Arun', category: 'Wedding', template_id: 'minimalist',
       title: 'Mira & Arun', event_date: '2027-01-20', location: '', message: server.message, story: '', hosts: '', locale: 'English', theme: {}, preferences: {},
       cultural_preferences: {}, sections: [], intro_settings: {}, animation_settings: {}, content: { functions: [], copy: {}, gallery: {} }, updated_at: '2026-11-09T10:00:00Z'
     });
