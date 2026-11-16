@@ -1,3 +1,4 @@
+/* © 2026 InviteStudio. All rights reserved. Licensed only for use in an invitation built and hosted on InviteStudio (see /terms). */
 /* Scene templates: full length, phone shaped invitation designs (Savanna, Palmera, Curtain Call, Lunaria).
  * Every rule is scoped under .sx so nothing leaks into the editor. Fonts are self hosted (CSP font-src 'self'). */
 @font-face{font-family:"Pinyon Script";font-weight:400;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/pinyon-script-latin-400-normal.woff2") format("woff2")}

@@ -1,3 +1,4 @@
+/* © 2026 InviteStudio. All rights reserved. These templates, artwork and code are licensed only for use in an invitation built and hosted on InviteStudio (see /terms). Copying, extracting or re-hosting them is not permitted. */
 /* Packaged templates: designed website templates whose markup comes from templates/<id>/ (built by
  * scripts/build-templates.mjs into templates/templates.generated.js).
  *

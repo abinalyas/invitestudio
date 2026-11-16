@@ -376,6 +376,7 @@ export function HomePage() {
             </a>
           </div>
         ) : null}
+        <p className="footer-copy">© {new Date().getFullYear()} InviteStudio. The templates and designs on this site are protected by copyright.</p>
       </footer>
     </main>
   )

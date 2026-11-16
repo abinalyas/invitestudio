@@ -12,6 +12,7 @@ npm run test:unit    # backend and security unit tests
 npm run test:qa      # source-level checks
 npm run test:e2e     # local browser checks
 npm run test:cloud   # cloud stack: Pages Functions + Postgres + test shim
+npm run stamp        # after changing any script or style: puts a new build id on every script address in index.html
 ```
 
 `test:cloud` starts a local Postgres from the embedded binaries, applies the repository migrations to a fresh database, and runs `wrangler pages dev`. It never uses a real Supabase project. Set `CHROMIUM_PATH` to use a pre-installed Chromium.
@@ -85,8 +86,9 @@ Savanna Sunset, Palmera Beach, Curtain Call and Lunaria are full length, phone s
 location, message, story, events and section switches all feed the design; guest responses stay
 "not open yet", as for every other design.
 
-- Styles live in `scene-templates.css` and are copied inline into `index.html` (the editor preview is a
-  shadow root that only copies inline styles). Run `npm run build:scene-css` after editing the file.
+- Styles live in `scene-templates.css`. Designs are fetched only when a page shows one (`template-loader.js`):
+  the loader fetches `scene-templates.js` and this stylesheet, adds the CSS to the page and hands the text to
+  the editor's shadow roots, so there is nothing to rebuild after editing the file.
 - Catalogue thumbnails are rendered from the real renderer: `npm run thumbs:scenes`.
 - After adding a design, run `npm run gen:templates` and apply a migration that inserts its id into
   `public.templates` (see `supabase/migrations/202611070001_scene_templates.sql`).

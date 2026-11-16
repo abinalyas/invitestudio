@@ -6,7 +6,6 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import { readCatalogue } from '../../scripts/template-catalogue.mjs';
-import { currentBlock, inlineBlock } from '../../scripts/inline-scene-css.mjs';
 import { LAUNCH_TEMPLATE_IDS } from '../../functions/_shared/templates.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -45,9 +44,11 @@ test('the database migration registers every scene template id', () => {
   for (const template of sceneTemplates) assert.match(sql, new RegExp(`'${template.id}', '${template.id}'`));
 });
 
-test('the inline styles in index.html match scene-templates.css (npm run build:scene-css)', () => {
+test('the scene styles are fetched with the scene designs, not inlined in the page', () => {
   const html = readFileSync(join(root, 'index.html'), 'utf8');
-  assert.equal(currentBlock(html), inlineBlock());
+  assert.ok(!html.includes('scene-templates-css'));
+  assert.ok(existsSync(join(root, 'scene-templates.css')));
+  assert.ok(readFileSync(join(root, 'template-loader.js'), 'utf8').includes("'/scene-templates.css'"));
 });
 
 test('every scene template renders the couple, the date, the venue and visible events', () => {

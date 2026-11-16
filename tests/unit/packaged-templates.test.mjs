@@ -7,7 +7,8 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
-import { generatedJs, inlineBlock, currentBlock, loadTemplates, scopeCss } from '../../scripts/build-templates.mjs';
+import { bundleJs, DIST, loadTemplates, scopeCss } from '../../scripts/build-templates.mjs';
+import { loadBundles } from '../support/templates-vm.mjs';
 import { readCatalogue } from '../../scripts/template-catalogue.mjs';
 import { LAUNCH_TEMPLATE_IDS } from '../../functions/_shared/templates.js';
 
@@ -19,7 +20,7 @@ function renderer() {
   const ctx = { Math, Date, String, Array, Object, JSON, Number, encodeURIComponent, Intl };
   ctx.globalThis = ctx;
   vm.createContext(ctx);
-  vm.runInContext(readFileSync(join(root, 'templates/templates.generated.js'), 'utf8'), ctx);
+  loadBundles(ctx);
   vm.runInContext(readFileSync(join(root, 'rsvp-view.js'), 'utf8'), ctx);
   vm.runInContext(readFileSync(join(root, 'packaged-templates.js'), 'utf8'), ctx);
   return ctx;
@@ -28,8 +29,17 @@ const sampleOf = id => JSON.parse(readFileSync(join(root, 'templates', id, 'samp
 const stripped = markup => markup.replace(/<!--[\s\S]*?-->/g, '');
 
 test('the built files are current (npm run build:templates)', () => {
-  assert.equal(readFileSync(join(root, 'templates/templates.generated.js'), 'utf8'), generatedJs(list));
-  assert.equal(currentBlock(html), inlineBlock(list));
+  for (const t of list) assert.equal(readFileSync(join(DIST, `${t.manifest.id}.js`), 'utf8'), bundleJs(t), `${t.manifest.id} bundle is current`);
+  assert.deepEqual(readdirSync(DIST).sort(), list.map(t => `${t.manifest.id}.js`).sort(), 'no stale bundle is left behind');
+});
+
+test('designs are fetched one at a time: no combined file, no inline copy of every design in the page', () => {
+  assert.ok(!existsSync(join(root, 'templates/templates.generated.js')), 'the combined file is gone');
+  assert.ok(!html.includes('packaged-templates-css') && !html.includes('scene-templates-css'), 'the page does not inline every design\'s CSS');
+  assert.ok(html.includes('/template-loader.js'));
+  assert.ok(!html.includes('src="/packaged-templates.js"') && !html.includes('src="/scene-templates.js"') && !html.includes('src="/template-widgets.js"'), 'the shared template code is loaded on demand');
+  const loader = readFileSync(join(root, 'template-loader.js'), 'utf8');
+  for (const file of ['/packaged-templates.js', '/template-widgets.js', '/scene-templates.js', '/scene-templates.css', '/templates/dist/']) assert.ok(loader.includes(file), `the loader fetches ${file}`);
 });
 
 for (const { manifest, parts, css } of list) {
@@ -255,7 +265,7 @@ test('countdown, menu and scroll-reveal behaviour is provided by the platform, n
   const widgets = readFileSync(join(root, 'template-widgets.js'), 'utf8');
   for (const marker of ['data-scroll-to', 'data-menu-toggle', 'data-countdown', 'data-reveal', 'data-reveal-armed', 'data-revealed']) assert.ok(widgets.includes(marker), marker);
   assert.match(widgets, /prefers-reduced-motion/, 'reveals are off for reduced motion');
-  assert.ok(html.includes('/template-widgets.js') && html.includes('/packaged-templates.js') && html.includes('/templates/templates.generated.js'));
+  assert.ok(readFileSync(join(root, 'template-loader.js'), 'utf8').includes('/template-widgets.js'));
 });
 
 test('wording is validated and stored by the server, and returned on the public page', async () => {
