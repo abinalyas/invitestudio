@@ -74,7 +74,7 @@
   ],
   "thumbnail": {
     "phone": ".ln-intro,.ln-cue,.ln-lanterns{display:none!important}",
-    "wide": ".ln-intro,.ln-cue,.ln-site-header,.ln-lanterns{display:none!important}.tpl-ln>*:not(.ln-hero):not(.ln-backdrop){display:none!important}.ln-hero{min-height:275px!important;height:275px!important}.ln-backdrop-pin{height:275px!important}.ln-hero-content{display:none!important}"
+    "wide": ".ln-intro,.ln-cue,.ln-site-header,.ln-lanterns{display:none!important}.tpl-ln>*:not(.ln-hero):not(.ln-backdrop){display:none!important}.ln-hero{min-height:275px!important;height:275px!important}.ln-backdrop-pin{height:275px!important}.ln-hero-content{display:none!important}.ln-backdrop-poster{content:url(/templates/lantern-night/assets/poster-tall.webp)!important;object-fit:cover!important;object-position:50% 35%!important}"
   },
   "example": {
     "story": "With grateful hearts and joyful anticipation, we invite you to be part of a day that means the world to us. Your presence will make our celebration even more special.\n\nWe cannot wait to share this beautiful new chapter with the people we love most.",
