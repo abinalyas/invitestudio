@@ -84,10 +84,13 @@ test.describe('live address', () => {
   test('editing invitation content keeps the published address', async ({ request }) => {
     const slug = unique();
     const draft = await createDraft(request);
-    expect((await publish(request, draft, slug)).status()).toBe(200);
+    const published = await publish(request, draft, slug);
+    expect(published.status()).toBe(200);
+    // The answer carries the version after publishing (which includes recording the early access unlock): editing continues from it.
+    const { wedding: live } = await published.json();
     const patched = await request.patch(`/api/weddings/${draft.wedding.id}`, {
       headers: { Authorization: `Bearer ${draft.editToken}`, 'Content-Type': 'application/json' },
-      data: { version: 2, title: 'Edited title' }
+      data: { version: live.version, title: 'Edited title' }
     });
     expect(patched.status()).toBe(200);
     expect((await patched.json()).wedding.slug).toBe(slug);

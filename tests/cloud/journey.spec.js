@@ -60,6 +60,17 @@ test('create, edit, save, publish, share, edit after publishing, and take offlin
   await expect(page.locator('#modal-root h2')).toHaveText(/your invitation is live/i, { timeout: 20000 });
   await expect(page.locator('#modal-root')).toContainText(`/s/${slug}`);
 
+  // The page must hold the version the server now has. Recording the early access unlock raises it once more after publishing;
+  // when the page kept the older number, the next edit was refused as a conflict.
+  {
+    const { Client: VersionClient } = require('pg');
+    const versionDb = new VersionClient({ connectionString: 'postgres://postgres@127.0.0.1:54329/invitestudio' });
+    await versionDb.connect();
+    const serverVersion = Number((await versionDb.query('select version from public.weddings where title = $1', [title])).rows[0].version);
+    await versionDb.end();
+    expect((await savedStatus(page, title)).cloudVersion).toBe(serverVersion);
+  }
+
   // 6. A guest opens the link in a fresh browser context, with no sign-in or local data.
   const guest = await browser.newContext();
   const guestPage = await guest.newPage();

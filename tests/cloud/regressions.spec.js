@@ -162,7 +162,7 @@ test.describe('D0 defect 3: projects can be deleted', () => {
     const cloudId = await projectField(page, title, 'cloudId');
     await page.evaluate(() => { state.page = 'dashboard'; render(); });
 
-    const card = page.locator('article.project-card', { hasText: title });
+    const card = page.locator('article.dash-card', { hasText: title });
     await card.getByRole('button', { name: /^delete$/i }).click();
     const dialog = page.locator('#modal-root');
     await expect(dialog).toContainText(/permanently removes/i);
@@ -173,7 +173,7 @@ test.describe('D0 defect 3: projects can be deleted', () => {
 
     await card.getByRole('button', { name: /^delete$/i }).click();
     await page.locator('#modal-root').getByRole('button', { name: /delete permanently/i }).click();
-    await expect(page.locator('article.project-card', { hasText: title })).toHaveCount(0, { timeout: 15000 });
+    await expect(page.locator('article.dash-card', { hasText: title })).toHaveCount(0, { timeout: 15000 });
     expect((await dbQuery('select count(*)::int as n from weddings where id = $1', [cloudId]))[0].n).toBe(0);
     expect(await page.evaluate(t => JSON.parse(localStorage.getItem('invitestudio-projects') || '[]').some(p => p.title === t), title)).toBe(false);
   });

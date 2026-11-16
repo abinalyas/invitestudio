@@ -1224,6 +1224,8 @@
         const result = await window.inviteStudioApi.verifyPayment(project.cloudId, tokenFor(project.cloudId), paymentId);
         if (result.unlocked) {
           project.publishUnlocked = true;
+          // Confirming the payment changed the website's record on the server: keep its version, so "Make it live" is not refused.
+          if (Number.isInteger(result.version) && result.version >= Number(project.cloudVersion || 0)) project.cloudVersion = result.version;
           try { window.localStorage.removeItem(PENDING_PAYMENT_KEY); } catch { /* nothing to clear */ }
           session.busy = false;
           session.needsPayment = false;
