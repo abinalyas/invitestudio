@@ -56,6 +56,8 @@ for (const t of readCatalogue().templates.filter(t => t.packaged)) {
   await phone.close();
   const wide = await open(400, 275, 3);
   await wide.addStyleTag({ content: thumb.wide });
+  // The gallery card writes the couple's names over this picture, so the picture carries no words of its own.
+  await wide.addStyleTag({ content: 'h1,h2,h3,h4,p,time,address,blockquote,[class*="eyebrow"],[class*="kicker"],[class*="-sub"],[class*="date"],[class*="name"],[class*="amp"],[class*="tagline"]{visibility:hidden!important}' });
   writeFileSync(join(root, t.image.replace(/\.png$/, '-wide.jpg').replace(/^\//, '')), await wide.screenshot({ type: 'jpeg', quality: 86 }));
   await wide.close();
   const card = await browser.newPage({ viewport: { width: 1000, height: 750 } });
