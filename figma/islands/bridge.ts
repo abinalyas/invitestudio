@@ -215,6 +215,8 @@ export interface InviteStudioBridge {
   openLegacyTemplates(): void;
   recovery(): RecoveryCard | null;
   continueDraft(): void;
+  hasProjects(): boolean;
+  openProjects(): void;
   categories(): Array<[string, string]>;
 }
 
@@ -277,5 +279,7 @@ export const bridge = {
   openLegacyTemplates: () => host().openLegacyTemplates(),
   recovery: () => host().recovery(),
   continueDraft: () => host().continueDraft(),
+  hasProjects: () => host().hasProjects(),
+  openProjects: () => host().openProjects(),
   categories: () => host().categories()
 };

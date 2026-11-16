@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Icon, Logo, backendTemplateIds, editableItems, galleryTemplates, guestSections } from "./shared";
 import { bridge } from "./bridge"
+import { MyProjectsLink } from "./extras"
 import { formatMoney, tierOf, usePricing } from "./pricing";
 export function TemplateDetailPage({ templateId }: { templateId: number }) {
   const template =
@@ -55,7 +56,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
           <a href="/#how">How it works</a>
           <a href="/#pricing">Pricing</a>
         </nav>
-        <div className="header-actions" />
+        <div className="header-actions"><MyProjectsLink /></div>
       </header>
 
       <div className="gallery-shell detail-content">

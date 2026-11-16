@@ -1171,6 +1171,18 @@
       if (typeof continueLastDraft === 'function') continueLastDraft();
     },
 
+    // People who have a saved draft on this device get a "My projects" link in the header.
+    hasProjects() {
+      return Array.isArray(state.projects) && state.projects.length > 0;
+    },
+
+    openProjects() {
+      state.page = 'dashboard';
+      history.pushState({}, '', '/');
+      render();
+      window.scrollTo(0, 0);
+    },
+
     // Launch scope is weddings only. Other occasions are held back until their designs exist.
     categories() {
       return categories.filter(([name]) => name === 'Wedding').map(([name, emoji]) => [name, emoji]);

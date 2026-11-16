@@ -34,6 +34,17 @@ export function RecoveryBanner() {
   );
 }
 
+// "My projects" in the header, only for people who already have a draft.
+export function MyProjectsLink() {
+  useBridgeVersion();
+  if (!bridge.hasProjects()) return null;
+  return (
+    <button className="button outline small my-projects-link" type="button" onClick={() => bridge.openProjects()}>
+      My projects
+    </button>
+  );
+}
+
 // Occasion choices from the existing catalogue. Choosing one starts the existing
 // setup flow for that celebration type.
 export function OccasionStrip() {

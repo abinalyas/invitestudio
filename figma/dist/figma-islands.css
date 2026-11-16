@@ -1383,3 +1383,7 @@
 .figma-app .gallery-tags{ gap: 5px; margin-top: 4px; }
 .figma-app .gallery-tags span{ padding: 4px 9px; font-size: 10px; }
 .figma-app .gallery-price{ margin-top: 6px; font-size: 12px; }}
+.figma-app .my-projects-link{ white-space: nowrap; }
+@media (max-width: 480px){.figma-app .header-actions{ gap: 8px; }
+.figma-app .my-projects-link{ min-height: 44px; padding-inline: 12px; font-size: 12px; }}
+@media (max-width: 400px){.figma-app .header-actions:has(.my-projects-link) > a.button{ display: none; }}
