@@ -110,3 +110,22 @@ test('on the admin page, Create link shows a private editing link for that websi
   const token = decodeURIComponent((await box.inputValue()).split('#')[1]);
   expect((await request.get(`/api/weddings/${id}`, { headers: { Authorization: `Bearer ${token}` } })).status()).toBe(200);
 });
+
+test('the overview says how far along each website is, and counts idle drafts and events that are close but not live', async ({ request }) => {
+  const { slug } = await liveSiteWithReplies(request, 'Progress Couple');
+  const data = await (await request.get('/api/admin/overview', { headers: { Cookie: await sessionCookie('owner@example.test') } })).json();
+  expect(data.totals).toMatchObject({ idleDrafts7d: expect.any(Number), eventSoonNotLive: expect.any(Number) });
+  const site = data.sites.find(s => s.slug === slug);
+  expect(site).toMatchObject({ events: 1, photos: 0, has_story: false });
+});
+
+test('the admin page has the idle and event-soon filters and a sort', async ({ page, context }) => {
+  await context.addCookies([{ name: 'is_admin', value: (await sessionCookie('owner@example.test')).split('=')[1], url: 'http://127.0.0.1:8788' }]);
+  await page.goto('/admin');
+  await expect(page.getByRole('button', { name: 'Idle 7+ days' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Event within 30 days' })).toBeVisible();
+  await expect(page.getByLabel('Sort websites')).toBeVisible();
+  await expect(page.getByText('Idle private drafts')).toBeVisible();
+  await page.getByRole('button', { name: 'Idle 7+ days' }).click();
+  await expect(page.getByRole('button', { name: 'Idle 7+ days' })).toHaveAttribute('aria-pressed', 'true');
+});

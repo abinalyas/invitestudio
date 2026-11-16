@@ -5,7 +5,7 @@
   var main = document.getElementById('main');
   var who = document.getElementById('who');
   var logout = document.getElementById('logout');
-  var data = null, filter = 'all', query = '';
+  var data = null, filter = 'all', query = '', sortBy = 'edited';
 
   function el(tag, attrs, children) {
     var node = document.createElement(tag);
@@ -46,6 +46,23 @@
     return 'offline';
   }
   var STATUS_TEXT = { live: 'Live', private: 'Private', offline: 'Offline' };
+  function daysSince(value) { return value ? Math.floor((Date.now() - new Date(value).getTime()) / 86400000) : 0; }
+  function daysUntil(date) { return date ? Math.ceil((new Date(date + 'T00:00:00').getTime() - Date.now()) / 86400000) : null; }
+  // Filters beyond the status: private drafts nobody has touched for a week, and events that are close but not live.
+  var FILTERS = {
+    all: function () { return true; },
+    live: function (s) { return statusOf(s) === 'live'; },
+    private: function (s) { return statusOf(s) === 'private'; },
+    offline: function (s) { return statusOf(s) === 'offline'; },
+    idle: function (s) { return s.status === 'draft' && daysSince(s.updated_at) >= 7; },
+    soon: function (s) { var d = daysUntil(s.event_date); return d !== null && d >= 0 && d <= 30 && statusOf(s) !== 'live'; }
+  };
+  var FILTER_LABELS = { all: 'All', live: 'Live', private: 'Private', offline: 'Offline', idle: 'Idle 7+ days', soon: 'Event within 30 days' };
+  var SORTS = {
+    edited: function (a, b) { return new Date(b.updated_at) - new Date(a.updated_at); },
+    idle: function (a, b) { return new Date(a.updated_at) - new Date(b.updated_at); },
+    event: function (a, b) { return (a.event_date ? new Date(a.event_date) : 8e15) - (b.event_date ? new Date(b.event_date) : 8e15); }
+  };
 
   function table(headers, rows) {
     return el('div', { class: 'wrap' }, el('table', {}, [
@@ -71,12 +88,22 @@
             (navigator.clipboard ? navigator.clipboard.writeText(result.body.link) : Promise.reject()).then(
               function () { copy.textContent = 'Copied'; }, function () { input.select(); copy.textContent = 'Select and copy'; });
           });
-          box.appendChild(input); box.appendChild(copy);
-          box.appendChild(el('div', { class: 'small muted', text: 'Anyone with this link can edit the website and see its guest replies. Works for 90 days.' }));
+          var open = el('a', { class: 'chip btn-link', href: result.body.link, target: '_blank', rel: 'noopener noreferrer', text: 'Open editor' });
+          box.appendChild(input); box.appendChild(copy); box.appendChild(open);
+          box.appendChild(el('div', { class: 'small muted', text: 'Anyone with this link can edit the website and see its guest replies. Works for 90 days. Open it in a private window so it does not mix with your own drafts.' }));
         }, function () { clear(box); box.appendChild(el('span', { class: 'error small', text: 'Could not create the link.' })); });
     });
     box.appendChild(button);
     return box;
+  }
+
+  // How far along a website is, and how long it has been quiet, to tell who needs a nudge.
+  function progressCell(site) {
+    if (site.events === undefined) return '';   // the database has not had the progress migration yet (docs/ADMIN.md)
+    var parts = [site.has_story ? 'story' : 'no story', (site.events || 0) + ' event' + (site.events === 1 ? '' : 's'), (site.photos || 0) + ' photo' + (site.photos === 1 ? '' : 's')];
+    var idle = daysSince(site.updated_at), until = daysUntil(site.event_date);
+    var note = statusOf(site) === 'live' ? '' : (idle >= 1 ? 'idle ' + idle + ' d' : 'edited today') + (until !== null && until >= 0 ? ' · event in ' + until + ' d' : '');
+    return [el('div', { class: 'small', text: parts.join(' · ') }), note ? el('div', { class: 'small muted', text: note }) : null];
   }
 
   function siteRow(site) {
@@ -89,6 +116,7 @@
       el('td', {}, [el('strong', { text: site.title || site.name || 'Untitled' }), el('div', { class: 'small muted', text: [site.event_date ? day(site.event_date + 'T00:00:00') : '', site.location || ''].filter(Boolean).join(' · ') })]),
       el('td', { text: site.template_name || site.template_id }),
       el('td', {}, el('span', { class: 'badge ' + status, text: STATUS_TEXT[status] })),
+      el('td', {}, progressCell(site)),
       el('td', {}, link),
       el('td', { text: site.unlocked ? (site.paid_minor ? money(site.paid_minor, site.paid_currency) : 'Yes') : '—' }),
       el('td', { text: replies }),
@@ -103,11 +131,12 @@
     function paint() {
       var q = query.trim().toLowerCase();
       var rows = data.sites.filter(function (s) {
-        if (filter !== 'all' && statusOf(s) !== filter) return false;
+        if (!FILTERS[filter](s)) return false;
         return !q || [s.title, s.name, s.slug, s.location, s.template_name].join(' ').toLowerCase().indexOf(q) !== -1;
       });
+      rows.sort(SORTS[sortBy]);
       clear(list);
-      list.appendChild(table(['Couple', 'Design', 'Status', 'Link', 'Paid', 'Replies', 'Created', 'Private link'], rows.map(siteRow)));
+      list.appendChild(table(['Couple', 'Design', 'Status', 'Progress', 'Link', 'Paid', 'Replies', 'Created', 'Private link'], rows.map(siteRow)));
       if (!rows.length) list.appendChild(el('p', { class: 'muted', text: 'No websites match.' }));
       if (data.sites.length >= 500) list.appendChild(el('p', { class: 'small muted', text: 'Showing the 500 most recently edited websites.' }));
       count.textContent = rows.length + ' of ' + data.sites.length;
@@ -115,12 +144,17 @@
     var count = el('span', { class: 'small muted' });
     var search = el('input', { type: 'search', placeholder: 'Search by names, place, address or design', 'aria-label': 'Search websites' });
     search.addEventListener('input', function () { query = search.value; paint(); });
-    var chips = ['all', 'live', 'private', 'offline'].map(function (key) {
-      var chip = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(key === filter), text: key === 'all' ? 'All' : STATUS_TEXT[key] });
-      chip.addEventListener('click', function () { filter = key; chips.forEach(function (c, i) { c.setAttribute('aria-pressed', String(['all', 'live', 'private', 'offline'][i] === key)); }); paint(); });
+    var keys = Object.keys(FILTER_LABELS);
+    var chips = keys.map(function (key) {
+      var chip = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(key === filter), text: FILTER_LABELS[key] });
+      chip.addEventListener('click', function () { filter = key; chips.forEach(function (c, i) { c.setAttribute('aria-pressed', String(keys[i] === key)); }); paint(); });
       return chip;
     });
-    wrap.appendChild(el('div', { class: 'tools' }, [search].concat(chips, [count])));
+    var sorter = el('select', { 'aria-label': 'Sort websites' }, [
+      el('option', { value: 'edited', text: 'Recently edited' }), el('option', { value: 'idle', text: 'Longest idle' }), el('option', { value: 'event', text: 'Event date, soonest' })
+    ]);
+    sorter.addEventListener('change', function () { sortBy = sorter.value; paint(); });
+    wrap.appendChild(el('div', { class: 'tools' }, [search].concat(chips, [sorter, count])));
     wrap.appendChild(list);
     paint();
     return wrap;
@@ -150,6 +184,8 @@
       card(number(t.live), 'Live websites', number(t.liveSince7d) + ' went live this week'),
       card(number(t.private), 'Private drafts', 'not shared yet'),
       card(number(t.offline), 'Taken offline'),
+      t.idleDrafts7d === undefined ? null : card(number(t.idleDrafts7d), 'Idle private drafts', 'not edited for 7+ days'),
+      t.eventSoonNotLive === undefined ? null : card(number(t.eventSoonNotLive), 'Event soon, not live', 'within 30 days'),
       card(number(t.sites), 'All websites', number(t.createdToday) + ' today · ' + number(t.created7d) + ' this week · ' + number(t.created30d) + ' this month'),
       card(number(t.unlocked), 'Paid', number(payments) + ' payment' + (payments === 1 ? '' : 's')),
       card(revenue, 'Revenue'),
