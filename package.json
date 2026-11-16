@@ -7,10 +7,11 @@
     "test:unit": "node --test tests/unit/*.test.mjs",
     "test:qa": "node qa-regression.js",
     "test:cloud": "playwright test -c playwright.cloud.config.js",
-    "build:figma": "node figma/build.mjs",
+    "build:figma": "node figma/build.mjs && node scripts/stamp-build.mjs",
     "check:figma": "tsc -p figma/tsconfig.json",
     "gen:templates": "node scripts/generate-template-registry.mjs",
-    "build:templates": "node scripts/build-templates.mjs",
+    "build:templates": "node scripts/build-templates.mjs && node scripts/stamp-build.mjs",
+    "stamp": "node scripts/stamp-build.mjs",
     "thumbs:scenes": "node scripts/generate-scene-thumbnails.mjs",
     "test:db": "node --test --test-concurrency=1 tests/db/*.test.mjs",
     "audit:mobile": "node scripts/mobile-audit.mjs"

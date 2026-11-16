@@ -89,5 +89,5 @@ test('the editor offers real time fields and limits lengths', () => {
   assert.doesNotMatch(editor, /placeholder="4:00 PM"|placeholder="7:00 PM"/);
   assert.match(editor, /maxLength=\{500\}/);
   assert.match(readFileSync(join(root, 'cloud-sync.js'), 'utf8'), /functions: window\.InviteEventFields\.cloudEvents\(project\.functions\)/);
-  assert.match(readFileSync(join(root, 'index.html'), 'utf8'), /<script src="\/event-fields\.js"><\/script>\s*<script src="\/cloud-sync\.js">/);
+  assert.match(readFileSync(join(root, 'index.html'), 'utf8'), /<script src="\/event-fields\.js(\?v=[0-9a-f]+)?"><\/script>\s*<script src="\/cloud-sync\.js/);
 });

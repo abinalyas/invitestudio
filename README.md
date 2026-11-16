@@ -12,6 +12,7 @@ npm run test:unit    # backend and security unit tests
 npm run test:qa      # source-level checks
 npm run test:e2e     # local browser checks
 npm run test:cloud   # cloud stack: Pages Functions + Postgres + test shim
+npm run stamp        # after changing any script or style: puts a new build id on every script address in index.html
 ```
 
 `test:cloud` starts a local Postgres from the embedded binaries, applies the repository migrations to a fresh database, and runs `wrangler pages dev`. It never uses a real Supabase project. Set `CHROMIUM_PATH` to use a pre-installed Chromium.
