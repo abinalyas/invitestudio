@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Icon, IconName, Logo, galleryTemplates, styleOptions } from "./shared";
 import { bridge } from "./bridge";
 import { formatMoney, tierOf, usePricing } from "./pricing";
-import { TalkToUs } from "./extras";
+import { MyProjectsLink, TalkToUs } from "./extras";
 export function TemplatesPage() {
   const { data: pricing } = usePricing()
   const [query, setQuery] = useState("")
@@ -72,7 +72,7 @@ export function TemplatesPage() {
           <a href="/#how">How it works</a>
           <a href="/#pricing">Pricing</a>
         </nav>
-        <div className="header-actions" />
+        <div className="header-actions"><MyProjectsLink /></div>
       </header>
 
       <section className="gallery-hero">

@@ -712,3 +712,8 @@ input[type="date"], input[type="time"] { min-width: 0; max-width: 100%; box-sizi
   .gallery-tags span { padding: 4px 9px; font-size: 10px; }
   .gallery-price { margin-top: 6px; font-size: 12px; }
 }
+
+/* "My projects" in the header (only shown when a draft exists) */
+.my-projects-link { white-space: nowrap; }
+@media (max-width: 480px) { .header-actions { gap: 8px; } .my-projects-link { min-height: 44px; padding-inline: 12px; font-size: 12px; } }
+@media (max-width: 400px) { .header-actions:has(.my-projects-link) > a.button { display: none; } }

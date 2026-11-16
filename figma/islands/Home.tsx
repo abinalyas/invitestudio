@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Icon, IconName, Logo, faqs, templates, galleryTemplates } from "./shared";
 import { formatMoney, usePricing } from "./pricing";
 import { bridge } from "./bridge";
-import { RecoveryBanner, TalkToUs } from "./extras";
+import { MyProjectsLink, RecoveryBanner, TalkToUs } from "./extras";
 import { TemplateStrip } from "./TemplateStrip";
 export function HomePage() {
   const { data: pricing } = usePricing()
@@ -38,6 +38,7 @@ export function HomePage() {
             <a href="#pricing">Pricing</a>
           </nav>
           <div className="header-actions">
+            <MyProjectsLink />
             <a className="button small" href="/templates">
               Start creating
             </a>
