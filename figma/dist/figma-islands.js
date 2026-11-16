@@ -1383,4 +1383,14 @@ Error generating stack: `+i.message+`
 .figma-app .input-with-icon{ min-width: 0; max-width: 100%; }
 .figma-app .setup-form input[type="date"]{ display: block; width: 100%; }
 .figma-app[data-keyboard] .setup-actions, .figma-app[data-keyboard] .mobile-tabs, .figma-app[data-keyboard] .mobile-edit-pill, .figma-app[data-keyboard] .detail-sticky{ display: none; }
+@media (max-width: 480px){.figma-app .gallery-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.figma-app .gallery-preview{ aspect-ratio: 9 / 14; }
+.figma-app .gallery-preview strong{ font-size: 19px; }
+.figma-app .gallery-play{ right: 8px; top: 8px; width: 28px; height: 28px; }
+.figma-app .gallery-card-info{ padding: 8px 10px 12px; }
+.figma-app .gallery-card-title h2{ font-size: 15px; }
+.figma-app .gallery-card-title button{ width: 40px; height: 40px; margin: -4px -8px -4px 0; }
+.figma-app .gallery-tags{ gap: 5px; margin-top: 4px; }
+.figma-app .gallery-tags span{ padding: 4px 9px; font-size: 10px; }
+.figma-app .gallery-price{ margin-top: 6px; font-size: 12px; }}
 `;var Si=P(we());function Ob(e,t){switch(e){case"home":return(0,Si.jsx)(ch,{});case"templates":return(0,Si.jsx)(fh,{});case"detail":return(0,Si.jsx)(dh,{templateId:t.templateId??1});case"editor":return(0,Si.jsx)(bh,{});case"setup":return(0,Si.jsx)(xh,{})}}function wh(e,t){let a=t?e.getElementById(t):null;if(!a)return!1;let i=window.matchMedia("(prefers-reduced-motion: reduce)").matches;return a.scrollIntoView({behavior:i?"auto":"smooth",block:"start"}),!0}function Cb(e){if(!e)return"";let t=/^(?:\/)?#([\w-]+)$/.exec(e);return t?t[1]:""}function Ab(e,t,a={}){let i=t.shadowRoot??t.attachShadow({mode:"open"});i.replaceChildren();let l=document.createElement("style");l.textContent=yh;let n=document.createElement("div");n.className="figma-app",i.append(l,n);let o=(0,Nh.createRoot)(n);if(o.render((0,Si.jsx)(Sh.default.StrictMode,{children:Ob(e,a)})),i.addEventListener("click",p=>{let s=p.composedPath().find(m=>m instanceof HTMLAnchorElement),c=Cb(s?.getAttribute("href")??null);c&&wh(i,c)&&p.preventDefault()}),e==="home"&&window.location.hash){let p=window.location.hash.slice(1),s=0,c=()=>{wh(i,p)||++s>20||window.setTimeout(c,100)};window.setTimeout(c,100)}return{unmount(){o.unmount(),i.replaceChildren()}}}window.InviteStudioFigma={mount:Ab};})();

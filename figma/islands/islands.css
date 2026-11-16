@@ -698,3 +698,17 @@ input[type="date"], input[type="time"] { min-width: 0; max-width: 100%; box-sizi
 :host[data-keyboard] .mobile-tabs,
 :host[data-keyboard] .mobile-edit-pill,
 :host[data-keyboard] .detail-sticky { display: none; }
+
+/* Templates page on a phone: two designs to a row, tall like the setup step's tiles, instead of one big card. */
+@media (max-width: 480px) {
+  .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .gallery-preview { aspect-ratio: 9 / 14; }
+  .gallery-preview strong { font-size: 19px; }
+  .gallery-play { right: 8px; top: 8px; width: 28px; height: 28px; }
+  .gallery-card-info { padding: 8px 10px 12px; }
+  .gallery-card-title h2 { font-size: 15px; }
+  .gallery-card-title button { width: 40px; height: 40px; margin: -4px -8px -4px 0; }
+  .gallery-tags { gap: 5px; margin-top: 4px; }
+  .gallery-tags span { padding: 4px 9px; font-size: 10px; }
+  .gallery-price { margin-top: 6px; font-size: 12px; }
+}
