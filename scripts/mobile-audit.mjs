@@ -148,6 +148,39 @@ function measureInPage(options) {
     } else if (options.primaryRequired) add('primary-missing', 'high', 'The main button was not found', options.primary);
   }
 
+  // 7b. Form fields under 16px: iPhones zoom the whole page in when one is tapped, and do not zoom back out.
+  const smallFields = controls.filter(el => el.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=submit]):not([type=button]), select, textarea') && parseFloat(getComputedStyle(el).fontSize) < 16);
+  if (smallFields.length) add('input-zoom', 'medium', `${smallFields.length} form fields have text under 16px (iPhones zoom in when they are tapped)`, smallFields.slice(0, 3).map(el => `${describe(el)} ${getComputedStyle(el).fontSize}`).join(' | '));
+
+  // 7c. A placeholder wider than its box is cut off.
+  const cutOff = controls.filter(el => {
+    if (!el.matches('input') || el.value || !el.placeholder) return false; // a textarea wraps its placeholder
+    const style = getComputedStyle(el);
+    const probe = document.createElement('canvas').getContext('2d');
+    probe.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    const room = el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    return probe.measureText(el.placeholder).width > room + 2;
+  });
+  if (cutOff.length) add('placeholder-cut', 'low', `${cutOff.length} fields show a placeholder that is cut off`, cutOff.slice(0, 3).map(el => `${describe(el)} "${el.placeholder.slice(0, 40)}"`).join(' | '));
+
+  // 7d. Decorative artwork lying on top of text (leaves, flowers): it hurts legibility.
+  const decor = all.filter(el => visible(el) && !el.matches('img, video, canvas, svg') && /(^|[\s-])(deco|decor|flower|botanical|leaf|leaves|petal)/i.test(typeof el.className === 'string' ? el.className : '') && Number(getComputedStyle(el).opacity) > 0.5);
+  const overlaps = [];
+  for (const art of decor) {
+    const a = art.getBoundingClientRect();
+    for (const text of all.filter(t => visible(t) && t.matches('h1, h2, h3, p, label, button, a') && t.childNodes.length && [...t.childNodes].some(n => n.nodeType === 3 && n.textContent.trim().length > 3))) {
+      if (art.contains(text) || text.contains(art)) continue;
+      const b = text.getBoundingClientRect();
+      const w = Math.min(a.right, b.right) - Math.max(a.left, b.left), h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+      if (w > 8 && h > 8 && w * h > 0.15 * b.width * b.height && Number(getComputedStyle(art).zIndex || 0) >= Number(getComputedStyle(text).zIndex || 0)) { overlaps.push(`${describe(art)} over ${describe(text)}`); break; }
+    }
+  }
+  if (overlaps.length) add('art-over-text', 'medium', `${overlaps.length} decorations lie on top of text`, overlaps.slice(0, 3).join(' | '));
+
+  // 7e. A viewport setting that stops people pinching to zoom.
+  const viewport = document.querySelector('meta[name=viewport]');
+  if (viewport && /user-scalable\s*=\s*(no|0)|maximum-scale\s*=\s*1(\.0)?\b/i.test(viewport.content)) add('zoom-blocked', 'medium', 'The page stops people from zooming (bad for low vision)', viewport.content);
+
   // 8. Pictures that did not load.
   const broken = all.filter(el => el.tagName === 'IMG' && el.complete && el.naturalWidth === 0 && el.currentSrc && visible(el));
   if (broken.length) add('broken-image', 'high', `${broken.length} pictures did not load`, broken.slice(0, 3).map(el => el.currentSrc.slice(-60)).join(' | '));
@@ -283,7 +316,10 @@ async function publishWithPhotos(page, templateTitle, count, state) {
   await page.getByRole('button', { name: /Make it live/ }).click();
   await page.locator('#modal-root').getByText(/is live/i).first().waitFor({ timeout: 15000 });
   state.expectPhotos = count;
-  return `/s/${slug}`;
+  // Use the address the dialog really reports: if it is not the one that was typed, that is worth knowing too.
+  const live = /\/s\/([a-z0-9-]+)/.exec(await page.locator('#modal-root').innerText());
+  if (live && live[1] !== slug) state.note = { rule: 'slug-differs', severity: 'medium', message: 'The invitation was published at a different address from the one typed in', detail: `typed ${slug}, published ${live[1]}` };
+  return `/s/${live ? live[1] : slug}`;
 }
 
 // The editor preview scrolls inside its own frame (and the page scrolls on a phone): move through both so lazy pictures load.
@@ -388,7 +424,7 @@ async function main() {
           entry.screenshot = `screens/${file}`;
         }
       } catch (error) {
-        entry.findings.push({ rule: 'could-not-run', severity: 'high', message: 'The screen could not be opened or driven', detail: String(error.message).split('\n')[0].slice(0, 160) });
+        entry.findings.push({ rule: 'could-not-run', severity: 'high', message: 'The screen could not be opened or driven', detail: String(error.message).split('\n').filter(l => l.trim()).slice(0, 3).join(' | ').slice(0, 260) });
       }
       results.push(entry);
       const worst = entry.findings.reduce((m, f) => Math.max(m, SEVERITY[f.severity] || 0), 0);

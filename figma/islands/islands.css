@@ -627,11 +627,11 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
 /* Phones: choose how wide the preview is, and open the guest view (the header's icons are hidden on a phone). */
 .phone-preview-tools { display: none; }
 @media (max-width: 767px) {
-  .phone-preview-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 10px; }
-  .phone-switcher { display: flex !important; gap: 4px; padding: 3px; border-radius: 999px; background: #efeae2; }
-  .phone-switcher button { width: auto; min-width: 64px; height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: #3b433e; font: 600 14px/1 inherit; cursor: pointer; }
+  .phone-preview-tools { display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 10px; }
+  .phone-switcher { display: flex !important; order: 0; width: auto; flex: 0 1 auto; gap: 2px; padding: 3px; border-radius: 999px; background: #efeae2; }
+  .phone-switcher button { width: auto; min-width: 0; height: 44px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: #3b433e; font: 600 14px/1 inherit; cursor: pointer; }
   .phone-switcher button.active { background: #145c37; color: #fff; box-shadow: none; }
-  .phone-preview-tools .button { min-height: 44px; }
+  .phone-preview-tools .button { flex: 0 0 auto; min-height: 44px; padding-inline: 14px; white-space: nowrap; }
   /* A tablet or desktop preview is wider than the screen: it is scaled down, so it must not be clipped or scroll sideways. */
   .device-frame .editor-site { overflow-x: hidden; }
 }
@@ -655,7 +655,7 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
 
 /* ---- Touch targets: on a touch screen, links and buttons are at least 44px tall (the audit found 20 smaller ones on nearly every screen) ---- */
 @media (pointer: coarse) {
-  .site-header .logo, .editor-brand .logo { display: inline-flex; align-items: center; min-height: 44px; }
+  .logo { display: inline-flex; align-items: center; min-height: 44px; }
   .menu-button { min-width: 44px; min-height: 44px; }
   .button.small { min-height: 44px; }
   .detail-breadcrumb { height: auto; min-height: 48px; }
@@ -666,3 +666,18 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
   .section-heading a, .section-heading.row a { display: inline-flex; align-items: center; min-height: 44px; }
   .template-card .fav, button[aria-label$="to favorites"], button[aria-label$="from favorites"] { min-width: 44px; min-height: 44px; }
 }
+
+/* ---- Template gallery on a phone: the leaf artwork is left out, so it never lies across the heading ---- */
+@media (max-width: 640px) {
+  .gallery-flower { display: none; }
+  .gallery-hero-copy { padding-inline: 12px; }
+}
+
+/* ---- Fields and small controls on a touch screen ---- */
+@media (pointer: coarse) {
+  /* iPhones zoom the whole page in when a field under 16px is tapped, and do not zoom back out. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea { font-size: 16px !important; }
+  .editor-wording summary { display: flex; align-items: center; min-height: 44px; }
+}
+/* A hint inside a field that is too long for it ends in an ellipsis instead of being cut off mid-word. */
+input::placeholder { text-overflow: ellipsis; }

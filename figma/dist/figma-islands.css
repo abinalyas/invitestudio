@@ -1334,11 +1334,11 @@
 .figma-app .setup-preview-close{ white-space: nowrap; }
 .figma-app .setup-selected .button{ padding-inline: 10px; font-size: 13px; }}
 .figma-app .phone-preview-tools{ display: none; }
-@media (max-width: 767px){.figma-app .phone-preview-tools{ display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 10px; }
-.figma-app .phone-switcher{ display: flex !important; gap: 4px; padding: 3px; border-radius: 999px; background: #efeae2; }
-.figma-app .phone-switcher button{ width: auto; min-width: 64px; height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: #3b433e; font: 600 14px/1 inherit; cursor: pointer; }
+@media (max-width: 767px){.figma-app .phone-preview-tools{ display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 10px; }
+.figma-app .phone-switcher{ display: flex !important; order: 0; width: auto; flex: 0 1 auto; gap: 2px; padding: 3px; border-radius: 999px; background: #efeae2; }
+.figma-app .phone-switcher button{ width: auto; min-width: 0; height: 44px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: #3b433e; font: 600 14px/1 inherit; cursor: pointer; }
 .figma-app .phone-switcher button.active{ background: #145c37; color: #fff; box-shadow: none; }
-.figma-app .phone-preview-tools .button{ min-height: 44px; }
+.figma-app .phone-preview-tools .button{ flex: 0 0 auto; min-height: 44px; padding-inline: 14px; white-space: nowrap; }
 .figma-app .device-frame .editor-site{ overflow-x: hidden; }}
 @media (max-width: 640px){.figma-app .site-header{ position: relative; z-index: 10; }
 .figma-app .hero-deco{ pointer-events: none; }
@@ -1353,7 +1353,7 @@
 .figma-app .hero .trust-row{ display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; margin-top: 12px; font-size: 12px; }
 .figma-app .hero .trust-row span{ gap: 6px; }
 .figma-app .hero-art{ height: 330px; }}
-@media (pointer: coarse){.figma-app .site-header .logo, .figma-app .editor-brand .logo{ display: inline-flex; align-items: center; min-height: 44px; }
+@media (pointer: coarse){.figma-app .logo{ display: inline-flex; align-items: center; min-height: 44px; }
 .figma-app .menu-button{ min-width: 44px; min-height: 44px; }
 .figma-app .button.small{ min-height: 44px; }
 .figma-app .detail-breadcrumb{ height: auto; min-height: 48px; }
@@ -1363,3 +1363,8 @@
 .figma-app .link-button{ min-height: 44px; }
 .figma-app .section-heading a, .figma-app .section-heading.row a{ display: inline-flex; align-items: center; min-height: 44px; }
 .figma-app .template-card .fav, .figma-app button[aria-label$="to favorites"], .figma-app button[aria-label$="from favorites"]{ min-width: 44px; min-height: 44px; }}
+@media (max-width: 640px){.figma-app .gallery-flower{ display: none; }
+.figma-app .gallery-hero-copy{ padding-inline: 12px; }}
+@media (pointer: coarse){.figma-app input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), .figma-app select, .figma-app textarea{ font-size: 16px !important; }
+.figma-app .editor-wording summary{ display: flex; align-items: center; min-height: 44px; }}
+.figma-app input::placeholder{ text-overflow: ellipsis; }

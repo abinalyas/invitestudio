@@ -477,7 +477,7 @@ export function EditorPage() {
               ))}
             </div>
             <button type="button" className="button outline small" onClick={() => bridge.openPreview()}>
-              See it as guests will
+              Guest view
             </button>
           </div>
           <div className={`device-frame ${device}`}>

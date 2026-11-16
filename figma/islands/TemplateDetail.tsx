@@ -167,7 +167,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
       <div className="detail-sticky">
         <span>
           <strong>{template.title}</strong>
-          {tier && pricing ? <small>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)} · pay once to publish</small> : <small>Free to try</small>}
+          {tier && pricing ? <small>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)} · one-time</small> : <small>Free to try</small>}
         </span>
         <button className="button" type="button" onClick={() => bridge.startSetup(template.backendId)}>
           Start with this design

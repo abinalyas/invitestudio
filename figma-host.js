@@ -243,7 +243,9 @@
     '@media(max-width:767px){.edit-hint{position:fixed;left:0;right:0;bottom:var(--hint-bottom,84px);z-index:30}.edit-hint-pill{bottom:0}}' +
     // Bigger touch targets on touch screens.
     '@media(pointer:coarse){.edit-event-bar button{width:40px!important;height:40px!important;font-size:18px!important;line-height:40px!important}.edit-photo-bar button{width:auto!important;font-size:14px!important}' +
-    '[data-add-event],.edit-chip{padding:12px 18px!important}.edit-hint-pill button{width:32px;height:32px;line-height:32px}}</style>';
+    '[data-add-event],.edit-chip{padding:12px 18px!important}.edit-hint-pill button{position:relative;width:32px;height:32px;line-height:32px}' +
+    // The visible button stays small; its tappable area grows to 44px.
+    '.edit-hint-pill button::after{content:"";position:absolute;inset:-6px}}</style>';
 
   // The tip is shown until it is dismissed or the person makes their first edit, and then not again on this device.
   const HINT_KEY = 'invitestudio-edit-hint-seen';

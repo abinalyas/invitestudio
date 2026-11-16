@@ -43,13 +43,23 @@ It starts a throwaway Postgres, applies the migrations, and serves the site and 
 | `primary-far` | The main button (Continue, Start, Open editor) is more than a screen down and not pinned |
 | `broken-image` | A picture did not load |
 | `clipped-text` | A heading or button cuts its text off |
+| `input-zoom` | A form field with text under 16px: iPhones zoom the page in when it is tapped, and do not zoom back out |
+| `placeholder-cut` | A single-line field's hint is wider than the field and is cut off |
+| `art-over-text` | A decoration (leaves, flowers) lies on top of text and hurts legibility |
+| `zoom-blocked` | The page stops people from pinch-zooming (bad for low vision) |
+| `published-404`, `slug-differs` (`--cloud`) | A page answered 404 right after "Your invitation is live", or the invitation was published at a different address from the one typed |
 | `photos-missing` (`--cloud`) | The published page shows fewer photos than were uploaded |
 | `console`, `failed-request` | The page logged an error, or a request failed |
 
-It does not judge how a screen **looks** (spacing, balance, taste). Open the screenshots for that: the report links each screen. It also uses simulated phones, so check the real thing on a real phone before a release (iOS Safari and Chrome on Android differ in small ways).
+It does not judge how a screen **looks** (spacing, balance, taste). Open the screenshots for that: the report links each screen. A full audit is worth reading by eye as well: the first full pass found leaf artwork running through a heading and a two-row tools bar that pushed the preview down, neither of which a rule can see. It also uses simulated phones, so check the real thing on a real phone before a release (iOS Safari and Chrome on Android differ in small ways).
 
 ## When to run it
 
 - Before merging a change to a screen, a template or the setup steps.
 - After adding a design: it is picked up automatically from `figma/islands/shared.tsx`.
 - Against a preview deployment (`--url`) after a deploy.
+
+## Tips
+
+- Do not rebuild or edit the site's files while an audit is running: the audit reads them live, and a rebuild in the middle makes a few screens fail to open (`could-not-run`). Re-run those on their own.
+- A full pass over both small phones (`--devices "Galaxy S9+,iPhone 13"`) takes about 20 minutes; the `--cloud` photo check about 20 more.
