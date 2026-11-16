@@ -65,17 +65,30 @@ test('Kerala stays out of the offered catalogue until it is approved', async ({ 
   expect(offered).not.toContain('kerala-kasavu');
 });
 
-test('unsupported launch controls are gone from setup', async ({ page }) => {
+const UNSUPPORTED = '#prefPalette, #prefTypography, #prefLayout, #accentColor';
+
+test('unsupported launch controls are gone from every setup step', async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(() => startCreate('Wedding'));
-  await page.evaluate(() => { state.setupStep = 2; render(); });
-  await expect(page.locator('#prefRsvp')).toHaveCount(1, { timeout: 15000 });
-  await expect(page.locator('#prefPalette, #prefTypography, #prefLayout, #accentColor')).toHaveCount(0);
+  await page.evaluate(() => { localStorage.clear(); startCreate('Wedding'); });
+  await expect(page.locator('#projectTitle')).toBeVisible({ timeout: 15000 });
+  await page.locator('#projectTitle').fill('Controls Check');
+  const steps = page.locator('.setup-steps li button');
+  await expect(steps).toHaveCount(4);
+  for (let index = 0; index < 4; index += 1) {
+    await steps.nth(index).click();
+    await expect(steps.nth(index)).toHaveAttribute('aria-current', 'step');
+    await expect(page.locator(UNSUPPORTED)).toHaveCount(0);
+  }
 });
 
-test('the RSVP preference remains in setup', async ({ page }) => {
+test('the RSVP choice is made in the editor, and setup no longer asks for it', async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(() => startCreate('Wedding'));
-  await page.evaluate(() => { state.setupStep = 2; render(); });
-  await expect(page.locator('#prefRsvp')).toHaveCount(1, { timeout: 15000 });
+  await page.evaluate(() => { localStorage.clear(); startCreate('Wedding'); });
+  await expect(page.locator('#projectTitle')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#prefRsvp')).toHaveCount(0);
+  await page.goto('/templates/13');
+  await page.getByRole('button', { name: /quick start/i }).click();
+  await expect(page).toHaveURL(/\/editor\/13$/, { timeout: 15000 });
+  await page.locator('.editor-pages').getByRole('button', { name: /^RSVP/ }).click();
+  await expect(page.getByLabel('How guests reply')).toBeVisible({ timeout: 15000 });
 });

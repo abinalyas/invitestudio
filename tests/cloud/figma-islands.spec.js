@@ -6,17 +6,20 @@ const { randomUUID } = require('node:crypto');
 
 const DB_URL = 'postgres://postgres@127.0.0.1:54329/invitestudio';
 
-// Figma design id -> expected backend template id (figma/islands/shared.tsx).
+// Design number (the address /templates/<number>) -> expected backend template id (figma/islands/shared.tsx).
 const EXPECTED_TEMPLATES = {
-  1: { backend: 'romantic-garden-wedding', name: 'Forest Elegance' },
-  2: { backend: 'ivory-heirloom', name: 'Kerala Traditions' },
-  3: { backend: 'soft-pastels-wedding', name: 'Spring Blossom' },
-  4: { backend: 'black-tie-wedding', name: 'Evening Soirée' },
-  5: { backend: 'destination-wedding', name: 'Coastal Romance' },
-  6: { backend: 'modern-minimal-wedding', name: 'Modern Minimal' },
-  7: { backend: 'contemporary-floral-wedding', name: 'Lotus Reverie' },
-  8: { backend: 'contemporary-editorial-wedding', name: 'Destination Hills' }
+  13: { backend: 'modern-heritage', name: 'Modern Heritage' },
+  14: { backend: 'minimalist', name: 'Minimalist' },
+  15: { backend: 'cinematic', name: 'Cinematic' },
+  16: { backend: 'fairy-tale', name: 'Fairy Tale' },
+  18: { backend: 'bloom-reveal', name: 'Bloom Reveal' },
+  19: { backend: 'velvet-reveal', name: 'Velvet Reveal' },
+  20: { backend: 'under-the-same-moon', name: 'Under the Same Moon' },
+  21: { backend: 'golden-butterfly', name: 'Golden Butterfly' },
+  22: { backend: 'cherry-blossom', name: 'Cherry Blossom' },
+  23: { backend: 'lantern-night', name: 'Lantern Night' }
 };
+const FIRST = 13;
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
@@ -34,12 +37,14 @@ async function dbQuery(sql, params) {
 
 async function useTemplate(page, number) {
   await page.goto(`/templates/${number}`);
-  await expect(page.getByRole('heading', { name: EXPECTED_TEMPLATES[number].name })).toBeVisible({ timeout: 15000 });
-  await page.getByRole('button', { name: /use this template/i }).click();
+  await expect(page.getByRole('heading', { name: EXPECTED_TEMPLATES[number].name }).first()).toBeVisible({ timeout: 15000 });
+  // "Quick start" skips the setup steps and opens the editor on this design.
+  await page.getByRole('button', { name: /quick start/i }).click();
   await expect(page).toHaveURL(new RegExp(`/editor/${number}$`), { timeout: 15000 });
   // The old full editor is gone: the designer is the only editor.
   await expect(page.locator('button', { hasText: /advanced editing/i })).toHaveCount(0);
 }
+const sections = page => page.locator('.editor-pages');
 
 test('the home design renders, and only weddings are offered at launch', async ({ page }) => {
   await page.goto('/');
@@ -49,19 +54,14 @@ test('the home design renders, and only weddings are offered at launch', async (
   await expect(page.getByRole('button', { name: /birthday|baptism|engagement/i })).toHaveCount(0);
 });
 
-test('the primary action opens the existing setup flow', async ({ page }) => {
+test('the primary action takes a visitor to the designs, and every design is listed', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /start your invitation/i }).click();
-  await expect(page.getByRole('heading', { name: /create your invitation/i })).toBeVisible();
-});
-
-test('the templates page shows the eight designs, and the full catalogue stays reachable', async ({ page }) => {
-  await page.goto('/templates');
+  await page.getByRole('link', { name: /start your invitation/i }).first().click();
+  await expect(page).toHaveURL(/\/templates$/);
+  await expect(page.getByRole('heading', { name: /find the perfect invitation/i })).toBeVisible({ timeout: 15000 });
   for (const { name } of Object.values(EXPECTED_TEMPLATES)) {
     await expect(page.getByText(name, { exact: true }).first()).toBeVisible({ timeout: 15000 });
   }
-  await page.getByRole('button', { name: /browse every design/i }).click();
-  await expect(page.getByText(/find the feeling/i)).toBeVisible();
 });
 
 test('each Figma design maps to its backend template when a website is created', async ({ page }) => {
@@ -76,11 +76,11 @@ test('each Figma design maps to its backend template when a website is created',
 });
 
 test('editor fields save to the cloud draft and the save status follows', async ({ page }) => {
-  await useTemplate(page, 1);
+  await useTemplate(page, 13);
   const title = `Fields ${randomUUID().slice(0, 6)}`;
   await page.getByLabel('Couple or celebration names').fill(title);
-  await page.getByLabel('Location').fill('Kochi, Kerala');
-  await page.getByLabel('Date').fill('2027-02-14');
+  await page.getByLabel(/^Location \(optional\)/).fill('Kochi, Kerala');
+  await page.getByLabel(/^Date \(optional\)/).fill('2027-02-14');
   await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
 
   await expect.poll(async () => (await dbQuery('select title, location, event_date::text as event_date from weddings where title = $1', [title]))[0]?.event_date ?? null, { timeout: 20000 }).toBe('2027-02-14');
@@ -89,44 +89,45 @@ test('editor fields save to the cloud draft and the save status follows', async 
 });
 
 test('the canvas shows the real invitation, and the story toggle hides it on the invitation', async ({ page }) => {
-  await useTemplate(page, 2);
+  await useTemplate(page, 14);
   const title = `Canvas ${randomUUID().slice(0, 6)}`;
   await page.getByLabel('Couple or celebration names').fill(title);
   await expect(page.locator('.invitation-canvas')).toContainText(title, { timeout: 15000 });
 
-  await page.getByRole('button', { name: 'Our Story' }).click();
-  await page.getByLabel('Show Our Story on the invitation').uncheck();
+  await sections(page).getByRole('button', { name: /our story/i }).click();
+  await page.getByLabel('Show Our story on the invitation').uncheck();
   await expect.poll(async () => {
     const [row] = await dbQuery('select sections from weddings where title = $1', [title]);
     return row?.sections?.find(section => section.id === 'story')?.visible ?? null;
   }, { timeout: 20000 }).toBe(false);
 });
 
-test('hero images are locked until media storage exists, and no image preference is saved', async ({ page }) => {
-  await useTemplate(page, 3);
+test('a new draft keeps the design\'s own pictures: no hero image is saved, and the photos panel offers uploads', async ({ page }) => {
+  await useTemplate(page, 15);
   const title = `Hero ${randomUUID().slice(0, 6)}`;
   await page.getByLabel('Couple or celebration names').fill(title);
   await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
-  await expect(page.getByLabel('Image')).toHaveCount(0);
-  await expect(page.getByText(/unlock when photo storage is available/i)).toBeVisible();
+  await sections(page).getByRole('button', { name: /^Photos/ }).click();
+  await expect(page.getByText(/No photos yet/i)).toBeVisible();
+  await expect(page.locator('.editor-controls input[type="file"]')).toHaveCount(1);
   const [row] = await dbQuery(`select preferences->>'heroImageUrl' as url from weddings where title = $1`, [title]);
   expect(row.url).toBeNull();
 });
 
 test('returning to the site offers to continue the draft', async ({ page }) => {
-  await useTemplate(page, 4);
+  await useTemplate(page, 16);
   const title = `Continue ${randomUUID().slice(0, 6)}`;
   await page.getByLabel('Couple or celebration names').fill(title);
   await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
   await page.goto('/');
-  const banner = page.getByRole('region', { name: /continue your draft/i });
+  const banner = page.getByRole('region', { name: /continue your draft/i }).or(page.locator('section[aria-label="Continue your draft"]'));
   await expect(banner).toBeVisible({ timeout: 15000 });
   await banner.getByRole('button', { name: /continue editing/i }).click();
   await expect(page.getByLabel('Couple or celebration names')).toHaveValue(title, { timeout: 15000 });
 });
 
 test('the editor publishes through the existing dialog and the link is shared', async ({ page }) => {
-  await useTemplate(page, 6);
+  await useTemplate(page, 19);
   const title = `Publish ${randomUUID().slice(0, 6)}`;
   const slug = `figma-${randomUUID().slice(0, 6)}`;
   await page.getByLabel('Couple or celebration names').fill(title);
@@ -151,9 +152,9 @@ for (const width of [320, 375, 768, 1280]) {
     const overflows = async () => page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
     expect(await overflows(), 'home').toBe(false);
     await page.goto('/templates');
-    await expect(page.getByText(EXPECTED_TEMPLATES[1].name, { exact: true }).first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(EXPECTED_TEMPLATES[FIRST].name, { exact: true }).first()).toBeVisible({ timeout: 15000 });
     expect(await overflows(), 'templates').toBe(false);
-    await useTemplate(page, 7);
+    await useTemplate(page, 20);
     expect(await overflows(), 'editor').toBe(false);
   });
 }
