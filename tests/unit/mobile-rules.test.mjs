@@ -27,7 +27,9 @@ test('the pages never stop people from zooming', () => {
 
 test('the setup steps and the template page keep their phone controls', () => {
   const setup = read('figma/islands/Setup.tsx');
-  assert.ok(setup.includes('setup-actions-top') && setup.includes('setup-selected'), 'top actions and the chosen design stay in the setup steps');
+  assert.ok(setup.includes('setup-selected') && setup.includes('className="setup-actions"'), 'the chosen design and the pinned buttons stay in the setup steps');
+  assert.equal(setup.includes('setup-actions-top'), false, 'the buttons are pinned at the bottom only');
   assert.ok(read('figma/islands/TemplateDetail.tsx').includes('detail-sticky'), 'the template page keeps its pinned Start button');
-  assert.match(read('figma/islands/islands.css'), /\.detail-device \{ width: min\(300px, 100%\); height: auto; min-height: 0; aspect-ratio: 9 \/ 19; \}/);
+  assert.match(read('figma/islands/islands.css'), /\.detail-device \{ --pw: min\(300px, calc\(100vw - 96px\)\); width: var\(--pw\); height: calc\(var\(--pw\) \* 2\.1111\)/);
+  assert.match(read('figma/islands/islands.css'), /input\[type="date"\][^}]*min-width: 0/);
 });

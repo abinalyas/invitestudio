@@ -281,7 +281,7 @@
     var music = pkg.manifest.music;
     if (opts && opts.sound && !ctx.editable && music && music.src) {
       var icon = function (kind, paths) { return '<svg data-snd="' + kind + '" viewBox="0 0 24 24" aria-hidden="true">' + paths + "</svg>"; };
-      body += '<div data-sound-bar><button type="button" data-sound-toggle data-sound="off" aria-pressed="false" aria-label="Turn the music on" data-sound-src="' + esc(music.src) + '" data-sound-volume="' + esc(String(music.volume || 0.35)) + '">' +
+      body += '<div data-sound-bar><button type="button" data-sound-toggle' + (opts.sample ? " data-sound-demo" : "") + ' data-sound="off" aria-pressed="false" aria-label="Turn the music on" data-sound-src="' + esc(music.src) + '" data-sound-volume="' + esc(String(music.volume || 0.35)) + '">' +
         icon("off", '<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4Z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/>') +
         icon("on", '<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4Z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>') +
         "</button></div>";

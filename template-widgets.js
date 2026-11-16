@@ -178,8 +178,15 @@
   // a page start sound before the guest has touched it, so the track starts on the first tap, key press or click anywhere on the
   // page (a tap on the opening's own button counts), and the button shows what is really happening. Turning it off is remembered.
   var SOUND_KEY = "invitestudio-sound", soundButtons = new Set(), soundAudio = null, soundWanted = false, soundTimer = 0, soundResume = false;
-  function soundOff() { try { return window.localStorage.getItem(SOUND_KEY) === "off"; } catch (e) { return false; } }
-  function soundSave(on) { try { window.localStorage.setItem(SOUND_KEY, on ? "on" : "off"); } catch (e) { /* asked again next time */ } }
+  // The template page's sample (data-sound-demo) always starts with sound on the first tap: a "off" chosen on an earlier visit, or on a
+  // guest's own invitation, must not silence every sample for ever. Its choice is remembered for this visit only.
+  function soundStore() {
+    var demo = false;
+    soundButtons.forEach(function (b) { if (b.isConnected && b.hasAttribute("data-sound-demo")) demo = true; });
+    try { return demo ? window.sessionStorage : window.localStorage; } catch (e) { return null; }
+  }
+  function soundOff() { try { var store = soundStore(); return Boolean(store) && store.getItem(SOUND_KEY) === "off"; } catch (e) { return false; } }
+  function soundSave(on) { try { var store = soundStore(); if (store) store.setItem(SOUND_KEY, on ? "on" : "off"); } catch (e) { /* asked again next time */ } }
   function soundPaint() {
     var on = Boolean(soundAudio && !soundAudio.paused);
     soundButtons.forEach(function (b) {
