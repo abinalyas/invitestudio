@@ -420,6 +420,21 @@ export const galleryTemplates: GalleryTemplate[] = [
     image: "/assets/templates/cherry-blossom-wide.jpg",
     phone: "/assets/templates/cherry-blossom-phone.jpg",
   },
+  {
+    id: 23,
+    backendId: "lantern-night",
+    title: "Lantern Night",
+    names: "Meera & Abin",
+    tagline: "A film of a thousand floating lanterns plays behind the whole invitation, lanterns rise past your names, and the date waits under dark gold foil.",
+    tags: ["Cinematic", "Romantic"],
+    opening: {
+      name: "Lantern film",
+      text: "A short film of floating lanterns opens the invitation and keeps playing softly behind every section. Lanterns rise past your names, guests scratch a dark gold foil to find the date, then scroll through your story, the celebration, a countdown and a reply button.",
+    },
+    palette: ["#17172d", "#ffe1ad", "#c69b62"],
+    image: "/assets/templates/lantern-night-wide.jpg",
+    phone: "/assets/templates/lantern-night-phone.jpg",
+  },
 ]
 
 // What a couple can change on any of these templates, and what guests see. Taken from the editor

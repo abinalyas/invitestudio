@@ -108,6 +108,7 @@
     calendar: '<rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>',
     asterisk: '<path d="M12 3.5v17M3.5 12h17M6 6l12 12M18 6 6 18"/>',
     sparkle: '<path fill="currentColor" stroke="none" d="M12 2.5c.7 5 2.6 7 7.5 9.5-4.9 2.5-6.8 4.5-7.5 9.5-.7-5-2.6-7-7.5-9.5 4.9-2.5 6.8-4.5 7.5-9.5Z"/>',
+    "sparkle-line": '<path d="M12 3c.7 4.9 2.6 6.9 7.5 9-4.9 2.1-6.8 4.1-7.5 9-.7-4.9-2.6-6.9-7.5-9 4.9-2.1 6.8-4.1 7.5-9Z"/>',
     heart: '<path d="M12 20s-7.5-4.6-7.5-10.4A4.1 4.1 0 0 1 12 7.2a4.1 4.1 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20Z"/>',
     blossom: '<g fill="currentColor" stroke="none"><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.4" rx="2.7" ry="3.9" transform="rotate(288 12 12)"/></g><circle cx="12" cy="12" r="1.6" fill="#fff" fill-opacity=".75" stroke="none"/>',
     moon: '<path d="M15.8 4.2A8.2 8.2 0 1 0 19.8 17 6.8 6.8 0 0 1 15.8 4.2Z"/>',
