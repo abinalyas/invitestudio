@@ -39,7 +39,7 @@ test('only the public marketing pages are described', () => {
   assert.equal(pageFor('/').kind, 'home');
   assert.equal(pageFor('/templates/').kind, 'templates');
   assert.equal(pageFor('/templates/9').kind, 'detail');
-  for (const path of ['/templates/999', '/editor/9', '/edit/abc', '/s/slug', '/api/pricing', '/templates/templates.generated.js']) assert.equal(pageFor(path), null, path);
+  for (const path of ['/templates/999', '/editor/9', '/edit/abc', '/s/slug', '/api/pricing', '/templates/dist/bloom-reveal.js']) assert.equal(pageFor(path), null, path);
 });
 
 test('every page has a distinct title and description, a canonical address, and valid structured data', () => {

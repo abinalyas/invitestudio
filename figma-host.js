@@ -178,6 +178,8 @@
 
   // Called by cloud-sync whenever save status or project data changes.
   window.notifyInviteStudioChange = notify;
+  // The wording fields and picture spots come from the open design's manifest, which exists once the design has loaded.
+  document.addEventListener('invitestudio:template-ready', () => notify());
   // Going offline or back online changes the save state shown to the couple.
   window.addEventListener('online', notify);
   window.addEventListener('offline', notify);
@@ -197,6 +199,36 @@
       shadow.append(style, container);
     }
     return host.shadowRoot.querySelector('.invitation-canvas');
+  }
+
+  // A design's own CSS inside the shadow root. The page's styles are copied into the shadow root once, before later designs have
+  // loaded, so each design's CSS is added here when it is drawn (template-loader.js keeps the text).
+  function useTemplateCss(host, t) {
+    const shadow = host.shadowRoot;
+    if (!shadow) return;
+    const css = window.InviteTemplates ? window.InviteTemplates.cssFor(t) : '';
+    let style = shadow.querySelector('style[data-template-css]');
+    if (!style) {
+      style = document.createElement('style');
+      style.setAttribute('data-template-css', '');
+      shadow.insertBefore(style, shadow.firstChild);
+    }
+    if (style.dataset.design !== t.id) { style.textContent = css; style.dataset.design = t.id; }
+  }
+
+  // Draws `draw()` once the design is available. Designs load on demand, so a screen that is switched quickly keeps only its latest request.
+  function withTemplate(host, container, t, draw) {
+    const loader = window.InviteTemplates;
+    const token = (container.__drawToken = (container.__drawToken || 0) + 1);
+    const run = () => { if (container.__drawToken !== token) return; useTemplateCss(host, t); draw(); };
+    if (!loader || loader.ready(t)) { run(); return; }
+    container.innerHTML = '<div class="tpl-loading" role="status">Loading design…</div>';
+    loader.need(t).then(run, () => {
+      if (container.__drawToken !== token) return;
+      container.innerHTML = '<div class="tpl-loading" role="alert">We could not load this design. <button class="pv-btn small" type="button" data-retry-design>Try again</button></div>';
+      const button = container.querySelector('[data-retry-design]');
+      if (button) button.addEventListener('click', () => withTemplate(host, container, t, draw));
+    });
   }
 
   // Click-to-edit in the editor preview: the template marks the text the couple can change with data-edit
@@ -1017,10 +1049,13 @@
       // full=false: the editor canvas shows the invitation without its intro overlay.
       // Until the couple adds their names, the preview shows the template's example names.
       const shown = String(p.title || '').trim() ? p : { ...p, title: SAMPLE_NAMES, name: SAMPLE_NAMES };
-      container.innerHTML = sitePreview(shown, tpl(p.templateId), false, { editable: true }) + EDIT_STYLE;
-      showPill(container);
-      if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
-      enableTextEditing(container);
+      const design = tpl(p.templateId);
+      withTemplate(host, container, design, () => {
+        container.innerHTML = sitePreview(shown, design, false, { editable: true }) + EDIT_STYLE;
+        showPill(container);
+        if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
+        enableTextEditing(container);
+      });
     },
 
     createDraft(backendTemplateId, templateNumber, sampleNames) {
@@ -1067,8 +1102,10 @@
       container.style.width = '100%';
       container.style.maxWidth = '100%';
       // A design with an opening screen waits for a click in the phone, so a visitor starts it themselves.
-      container.innerHTML = sitePreview(templateDemoProject(t), t, false, { intro: 'wait', sound: true, showcase: true });
-      if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
+      withTemplate(host, container, t, () => {
+        container.innerHTML = sitePreview(templateDemoProject(t), t, false, { intro: 'wait', sound: true, showcase: true });
+        if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
+      });
     },
 
     // ---- Setup wizard (figma/islands/Setup.tsx) ----
@@ -1122,8 +1159,10 @@
       const container = invitationShadow(host);
       container.style.width = '100%';
       container.style.maxWidth = '100%';
-      container.innerHTML = sitePreview(draft, t, false);
-      if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
+      withTemplate(host, container, t, () => {
+        container.innerHTML = sitePreview(draft, t, false);
+        if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
+      });
     },
 
     setupStatus() {

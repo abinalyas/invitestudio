@@ -85,8 +85,9 @@ Savanna Sunset, Palmera Beach, Curtain Call and Lunaria are full length, phone s
 location, message, story, events and section switches all feed the design; guest responses stay
 "not open yet", as for every other design.
 
-- Styles live in `scene-templates.css` and are copied inline into `index.html` (the editor preview is a
-  shadow root that only copies inline styles). Run `npm run build:scene-css` after editing the file.
+- Styles live in `scene-templates.css`. Designs are fetched only when a page shows one (`template-loader.js`):
+  the loader fetches `scene-templates.js` and this stylesheet, adds the CSS to the page and hands the text to
+  the editor's shadow roots, so there is nothing to rebuild after editing the file.
 - Catalogue thumbnails are rendered from the real renderer: `npm run thumbs:scenes`.
 - After adding a design, run `npm run gen:templates` and apply a migration that inserts its id into
   `public.templates` (see `supabase/migrations/202611070001_scene_templates.sql`).

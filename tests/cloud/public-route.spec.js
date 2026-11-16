@@ -2,10 +2,10 @@
 const { test, expect } = require('@playwright/test');
 const { randomUUID } = require('node:crypto');
 
-async function createPublished(request, { title, slug, location = 'Kochi', date = '2027-01-20' }) {
+async function createPublished(request, { title, slug, location = 'Kochi', date = '2027-01-20', templateId = 'eternal' }) {
   const created = await request.post('/api/weddings', {
     headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `pub-${randomUUID()}` },
-    data: { templateId: 'eternal', title, date, location }
+    data: { templateId, title, date, location }
   });
   const draft = await created.json();
   const published = await request.post(`/api/weddings/${draft.wedding.id}/publish`, {
@@ -29,6 +29,22 @@ test('a published invitation serves link-preview metadata for crawlers', async (
   expect(html).toContain('name="robots" content="noindex,nofollow"');
   // The shell still ships: the browser reads the public API from here.
   expect(html).toContain('id="app"');
+  // The page learns which design it needs, to fetch it straight away.
+  expect(html).toContain('<meta name="invitestudio-template" content="eternal"/>');
+});
+
+test('a published invitation fetches only its own design, not the whole library', async ({ page, request }) => {
+  const slug = `lazy-${randomUUID().slice(0, 8)}`;
+  await createPublished(request, { title: 'Lazy Couple', slug, templateId: 'velvet-reveal' });
+  const files = [];
+  page.on('request', req => { const path = new URL(req.url()).pathname; if (/\.(js|css)$/.test(path)) files.push(path); });
+  await page.goto(`/s/${slug}`);
+  await expect(page.locator('[data-public-invitation]')).toContainText('Lazy Couple', { timeout: 20000 });
+  expect(files).toContain('/templates/dist/velvet-reveal.js');
+  expect(files).toContain('/packaged-templates.js');
+  for (const other of ['/templates/dist/bloom-reveal.js', '/templates/dist/cinematic.js', '/scene-templates.js', '/scene-templates.css', '/templates/templates.generated.js']) expect(files, other).not.toContain(other);
+  // The design starts loading as soon as the page does, in parallel with the invitation's data.
+  expect(await page.locator('meta[name="invitestudio-template"]').getAttribute('content')).toBe('velvet-reveal');
 });
 
 test('an unpublished or unknown invitation is a 404 with noindex', async ({ request }) => {

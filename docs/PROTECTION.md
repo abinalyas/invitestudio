@@ -5,7 +5,7 @@ Anything a browser shows can be copied, so this is about making copying harder, 
 ## What is in place
 
 1. **Terms.** The Terms of use have "Our templates and designs" and "Copies of our templates": templates are licensed only for an invitation built on InviteStudio; no copying, extracting, re-hosting, scraping or building a competing library. The Contact page has "Report a copy of our templates". (This is plain wording, not legal advice: have a lawyer read it when you can.)
-2. **Copyright notices.** Every footer says the templates and designs are protected by copyright. The template scripts, styles and `templates/templates.generated.js` start with a licence notice, and so does `index.html`.
+2. **Copyright notices.** Every footer says the templates and designs are protected by copyright. The template scripts, styles and every design bundle in `templates/dist/` start with a licence notice, and so does `index.html`.
 3. **Other sites cannot embed our artwork.** `_headers` sends `Cross-Origin-Resource-Policy: same-site` for the artwork, fonts, hero pictures, samples and music, so a browser refuses to show them on another site. The production files in `templates/<id>/assets/` and the music are also kept out of search (`X-Robots-Tag: noindex`). The small gallery previews in `assets/templates/` stay open to search engines, which show them as thumbnails.
 4. **A hidden marker in every design.** Each rendered invitation starts with an HTML comment such as `<!-- © InviteStudio · template velvet-reveal · ref is-1a2b3c4d · licensed for use on InviteStudio only -->` (`templateMark()` in `index.html`). The `ref` is fixed per template. A page saved or copied from an invitation normally keeps it. The designs also use their own class names (for example `tpl-vr`, `sx-`), which are just as telling.
 
@@ -36,6 +36,4 @@ These need the account, so they are yours to switch on:
 
 Code obfuscation, blocking right-click or "save image", and similar tricks. They annoy honest visitors and do not stop anyone who knows the browser's developer tools.
 
-## Possible next step
-
-Load only the template a page needs. Today every page downloads all the designs (`templates.generated.js`, `scene-templates.js/.css`). Splitting them per template means a visitor gets only the one they open, which also makes pages faster.
+5. **Only the design a page needs is sent.** Designs load on demand (`template-loader.js`, `templates/dist/<id>.js`). A visitor to one invitation downloads that design and the shared template code, not the whole library; the home page and the gallery download no design at all. There is no longer one file that holds every design. A published invitation's page names its design in a `<meta name="invitestudio-template">` tag so the browser fetches it at once.

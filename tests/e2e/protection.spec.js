@@ -4,9 +4,10 @@ const fs = require('node:fs');
 
 test('every rendered design carries the hidden marker, with a fixed ref that differs between designs', async ({ page }) => {
   await page.goto('/');
-  const marks = await page.evaluate(() => {
+  const marks = await page.evaluate(async () => {
     const out = {};
     for (const t of templates) {
+      await InviteTemplates.need(t);
       const first = sitePreview(templateDemoProject(t), t, true);
       const again = sitePreview(templateDemoProject(t), t, true);
       const match = /^<!-- © InviteStudio · template ([a-z0-9-]+) · ref (is-[0-9a-f]{8}) · licensed for use on InviteStudio only -->/.exec(first);
@@ -36,7 +37,7 @@ test('the artwork headers and the licence notices are in place', async () => {
     expect(block, `${path} has a rule`).toBeGreaterThan(-1);
     expect(headers.split('\n').slice(block + 1, block + 4).join('\n')).toContain('Cross-Origin-Resource-Policy: same-site');
   }
-  for (const file of ['scene-templates.js', 'packaged-templates.js', 'template-widgets.js', 'scene-templates.css', 'templates/templates.generated.js', 'index.html']) {
+  for (const file of ['scene-templates.js', 'packaged-templates.js', 'template-widgets.js', 'scene-templates.css', 'templates/dist/bloom-reveal.js', 'template-loader.js', 'index.html']) {
     expect(fs.readFileSync(file, 'utf8').slice(0, 600), `${file} starts with the notice`).toContain('© 2026 InviteStudio');
   }
 });
