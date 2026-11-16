@@ -34,6 +34,8 @@
   .tools { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:0 0 10px; }
   .tools input { flex:1 1 220px; font:inherit; padding:8px 12px; border:1px solid var(--line); border-radius:999px; background:#fff; }
   .chip { padding:5px 12px; font-size:13px; }
+  .btn-link { border:1px solid var(--green); border-radius:999px; background:#fff; color:var(--green); text-decoration:none; }
+  .tools select { font:inherit; padding:7px 10px; border:1px solid var(--line); border-radius:999px; background:#fff; }
   .chip[aria-pressed="true"] { background:var(--green); color:#fff; }
   .badge { display:inline-block; border-radius:999px; padding:1px 9px; font-size:12px; font-weight:600; }
   .badge.live { background:#dcefe2; color:var(--ok); } .badge.private { background:#ece8de; color:var(--muted); } .badge.offline { background:#f3dfdb; color:var(--bad); }
@@ -45,6 +47,7 @@
   .center { max-width:420px; margin:12vh auto; text-align:center; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:28px 22px; }
   .center h2 { margin-top:0; }
   .error { color:var(--bad); }
+  .linkbox { width:190px; font:12px/1.3 ui-monospace,monospace; padding:5px 8px; border:1px solid var(--line); border-radius:8px; margin-right:6px; }
 </style>
 </head>
 <body>

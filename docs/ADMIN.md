@@ -7,10 +7,16 @@ a 30 day chart, and a searchable list of websites with the number of guest repli
   account, "That Google account does not have access."
 - **Guest replies are only counted.** No guest name, phone number, note or message is sent to the page.
 - The page is kept out of search engines and is never cached.
+- **Private link (for support).** Each website has a *Create link* button. It makes a NEW private editing link on request: the
+  couple's own links are stored only as hashes, so an existing one can never be shown. The new link works for 90 days, does not
+  replace or revoke the couple's link, and the database records that it was issued from the admin page and by which account
+  (`edit_tokens.metadata`). **Whoever holds the link can edit the website and see its guest replies**, so use it only to help
+  a couple and do not share it.
 
 ## Switch it on (once)
 
-1. **Run the migration** in the Supabase SQL Editor: `supabase/migrations/202611160003_admin_overview.sql`.
+1. **Run the migrations** in the Supabase SQL Editor, in this order: `supabase/migrations/202611160003_admin_overview.sql`, then
+   `supabase/migrations/202611160004_admin_overview_progress.sql` (adds the progress columns and the idle / event-soon counts).
 2. **Create a Google sign-in** (Google Cloud Console, <https://console.cloud.google.com/>):
    1. APIs & Services, OAuth consent screen: User type *External*, app name *InviteStudio admin*, your email. Add yourself as a *test user*.
       (You can leave it in "Testing": only listed test users can sign in, which is what you want.)
@@ -30,6 +36,16 @@ a 30 day chart, and a searchable list of websites with the number of guest repli
 4. Redeploy, then open `https://invitestudio.co/admin`.
 
 Until the four settings exist, `/admin` says it is not set up and no data is shown.
+
+## Finding people who need help
+
+- **Progress** column: whether the story is written, how many events and photos, how long the website has been idle, and how
+  many days until the event (for websites that are not live).
+- Filters: **Idle 7+ days** (a private draft nobody has edited for a week) and **Event within 30 days** (the event is close and
+  the website is not live yet). Sort by *Longest idle* or *Event date, soonest*. Two cards at the top count the same things.
+- **Helping without their link:** *Create link*, then *Open editor* (best in a private window, so it does not mix with your own drafts).
+- The system does not hold an email address or phone number for a couple: a draft is anonymous. Names, place and date are
+  what identify one. (A couple may have typed a contact number for their guests under RSVP; that is for guests, and is not shown here.)
 
 ## How sign-in works
 
