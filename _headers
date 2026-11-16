@@ -9,9 +9,23 @@
 # (npm run thumbs:scenes), so they are kept for a day and refreshed in the background for a week after that.
 /assets/scene-fonts/*
   Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: same-site
 /assets/hero/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cross-Origin-Resource-Policy: same-site
 /assets/templates/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cross-Origin-Resource-Policy: same-site
 /assets/samples/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cross-Origin-Resource-Policy: same-site
+
+# The designs' artwork, fonts and animations are for InviteStudio pages only: other sites cannot embed them in a browser
+# (Cross-Origin-Resource-Policy, set above and below), and the full production files are kept out of image search. The
+# gallery previews under /assets/templates stay open to search engines, which show them as thumbnails. See docs/PROTECTION.md.
+/templates/:id/assets/*
+  Cross-Origin-Resource-Policy: same-site
+  X-Robots-Tag: noindex
+/assets/music/*
+  Cross-Origin-Resource-Policy: same-site
+  X-Robots-Tag: noindex

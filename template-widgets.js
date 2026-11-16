@@ -1,3 +1,4 @@
+/* © 2026 InviteStudio. All rights reserved. These templates, artwork and code are licensed only for use in an invitation built and hosted on InviteStudio (see /terms). Copying, extracting or re-hosting them is not permitted. */
 /* Shared behaviour for packaged templates (see packaged-templates.js). Templates carry only markers:
  *   data-scroll-to="name"   scroll to the section marked data-tpl-section="name" inside the same invitation
  *   data-menu-toggle        open or close the template's menu (the .main-nav next to it)

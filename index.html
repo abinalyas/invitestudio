@@ -1,9 +1,11 @@
 <!doctype html>
+<!-- © 2026 InviteStudio. All rights reserved. The templates, artwork and code on this site are licensed only for use on InviteStudio (see /terms). -->
 <html lang="en">
 <head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#f7f4ee"/><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="icon" href="/favicon.ico" sizes="48x48"/><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"/><title>InviteStudio — Make moments memorable</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,500&display=swap" rel="stylesheet">
 <style id="scene-templates-css">
+/* © 2026 InviteStudio. All rights reserved. Licensed only for use in an invitation built and hosted on InviteStudio (see /terms). */
 /* Scene templates: full length, phone shaped invitation designs (Savanna, Palmera, Curtain Call, Lunaria).
  * Every rule is scoped under .sx so nothing leaks into the editor. Fonts are self hosted (CSP font-src 'self'). */
 @font-face{font-family:"Pinyon Script";font-weight:400;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/pinyon-script-latin-400-normal.woff2") format("woff2")}
@@ -111,6 +113,7 @@
 }
 </style><!--/scene-templates-css-->
 <style id="packaged-templates-css">
+/* © 2026 InviteStudio. Licensed only for use in an invitation built and hosted on InviteStudio (see /terms). */
 .tpl-br [data-reveal]{transition:opacity 1s cubic-bezier(.22,1,.36,1) var(--rd,0s),transform 1.1s cubic-bezier(.22,1,.36,1) var(--rd,0s),filter 1s cubic-bezier(.22,1,.36,1) var(--rd,0s)}
 .tpl-br [data-reveal-armed]:not([data-revealed]){opacity:0;transform:translateY(24px)}
 .tpl-br [data-reveal="fade"][data-reveal-armed]:not([data-revealed]){transform:none}
@@ -2837,7 +2840,10 @@ function contrastOf(a,b){const x=luminanceOf(a),y=luminanceOf(b);return (Math.ma
 function paletteFor(p,t){if(t&&Array.isArray(t.colors)){const s=[...new Set(t.colors)].filter(c=>/^#[0-9a-f]{6}$/i.test(c));if(s.length>=3){const by=[...s].sort((a,b)=>luminanceOf(b)-luminanceOf(a));const background=by[0];const rest=by.slice(1);const text=[...rest].sort((a,b)=>luminanceOf(a)-luminanceOf(b)).find(c=>contrastOf(c,background)>=4.5)||'#28241f';const accent=rest.find(c=>c!==text)||rest[0];return {background,accent,text}}}return p.theme||{background:'#f4eee4',accent:'#a77d4d',text:'#28241f'}}
 // Button fill: the accent, darkened only until white text reaches 4.5:1.
 function accessibleButtonColor(hex){let c=hex;for(let i=0;i<30&&contrastOf('#ffffff',c)<4.5;i++){c='#'+[1,3,5].map(k=>Math.round(parseInt(c.slice(k,k+2),16)*0.92).toString(16).padStart(2,'0')).join('')}return c}
-function sitePreview(p,t,full,opts){if(t.unavailable)return templateUnavailableHtml();if(t.scene&&window.renderSceneTemplate)return window.renderSceneTemplate(p,t,{editable:Boolean(opts&&opts.editable)});if(t.packaged&&window.renderPackagedTemplate)return window.renderPackagedTemplate(p,t,{sample:!full,editable:Boolean(opts&&opts.editable),showcase:Boolean(opts&&opts.showcase),intro:full?'play':(opts&&opts.intro)||'',sound:full||Boolean(opts&&opts.sound)});const theme=paletteFor(p,t);const buttonBg=accessibleButtonColor(theme.accent);
+// A hidden marker in every rendered design: a copy of a page keeps it, so we can show where the design came from (docs/PROTECTION.md).
+function templateMark(t){let h=2166136261;const k='invitestudio-template:'+t.id;for(let i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return `<!-- © InviteStudio · template ${t.id} · ref is-${h.toString(16).padStart(8,'0')} · licensed for use on InviteStudio only -->`}
+function sitePreview(p,t,full,opts){const html=sitePreviewBody(p,t,full,opts);return t.unavailable?html:templateMark(t)+html}
+function sitePreviewBody(p,t,full,opts){if(t.unavailable)return templateUnavailableHtml();if(t.scene&&window.renderSceneTemplate)return window.renderSceneTemplate(p,t,{editable:Boolean(opts&&opts.editable)});if(t.packaged&&window.renderPackagedTemplate)return window.renderPackagedTemplate(p,t,{sample:!full,editable:Boolean(opts&&opts.editable),showcase:Boolean(opts&&opts.showcase),intro:full?'play':(opts&&opts.intro)||'',sound:full||Boolean(opts&&opts.sound)});const theme=paletteFor(p,t);const buttonBg=accessibleButtonColor(theme.accent);
  const title=p.title||p.name||'Your celebration';const animationConfig={...(p.animationSettings||{})};const effect=animationConfig.effect||t.effect||'fade';const speed=Math.max(.5,Math.min(2,Number(animationConfig.speed||1)));
  const date=p.date?new Date(p.date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'Date to be announced';
  const fns=(p.functions||[]).filter(f=>f.visible!==false);

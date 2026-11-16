@@ -32,6 +32,14 @@ export const POLICIES = Object.freeze([
       { h2: 'How long your invitation stays online', p: ['A published invitation stays online at least until 2 months after your last event date. The plan is to close invitations after that, and no later than 8 months after they were first published, but closing is not switched on yet. The editor shows when your invitation is due to close and warns you 14 days before. To keep it longer, or to bring a closed one back, contact us.'], },
       { h2: 'Your content', p: ['You keep ownership of the names, words, photos and other things you put into your invitation. You give us permission to store them and show them to the people you share the link with, for as long as the invitation is kept. You promise that you have the right to use what you upload, and that it does not break the law, infringe anyone’s rights, or harass or deceive anyone.', 'We may close an invitation that breaks these terms. Where we can, we tell you first.'] },
       { h2: 'Guest replies', p: ['When guests reply, you decide what to do with their details. Please use them only to organise your event. Replies are deleted with the rest of your invitation as described in the Privacy policy.'] },
+      { h2: 'Our templates and designs', p: ['The templates, artwork, animations, layouts and code on InviteStudio belong to InviteStudio and are protected by copyright. When you build an invitation you may use the template you chose for that invitation, at its InviteStudio link, for your own event.', 'You may not:'], list: [
+        'copy, download or extract a template’s files, code or artwork;',
+        'host, resell, share or republish a template, or any part of it, anywhere outside InviteStudio;',
+        'use automated tools to collect or scrape our templates;',
+        'remove copyright notices or the markings in our templates; or',
+        'use our templates to build a competing template library or service.'
+      ] },
+      { h2: 'Copies of our templates', p: ['If a template is copied without permission, we may ask the website or host that shows it to remove it, and we may close the invitation of anyone who breaks these rules. Your own words, photos and details stay yours: this section is about our designs. To report a copy, see the Contact page.'] },
       { h2: 'Availability and changes', p: ['We work to keep InviteStudio available, but we cannot promise it will never be interrupted or free of errors. We may change or improve the site and its templates. If we change these terms we will update the date on this page.'] },
       { h2: 'Responsibility', p: ['We are responsible for providing the service as described here. We are not responsible for losses that we could not reasonably have foreseen, or that come from something outside our control, such as your guests’ devices or internet. Nothing here limits any right you have by law.'] },
       { h2: 'Questions', p: ['Contact us on the Contact page.'] }
@@ -88,8 +96,10 @@ export const POLICIES = Object.freeze([
         'A refund or a payment problem (see the Refund policy)',
         'Keeping your invitation online for longer, or bringing a closed one back',
         'A custom design made just for you',
-        'Deleting your invitation and its replies, or what we hold about you'
-      ] }
+        'Deleting your invitation and its replies, or what we hold about you',
+        'Reporting a copy of an InviteStudio template on another website'
+      ] },
+      { h2: 'Report a copy of our templates', p: ['If you see an InviteStudio template or design on another website, or for sale somewhere else, please send us the web address of the copy and a few words about where you found it. We take copyright seriously and will ask the host to remove it.'] }
     ]
   }
 ]);

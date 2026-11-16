@@ -1,3 +1,4 @@
+/* © 2026 InviteStudio. All rights reserved. These templates, artwork and code are licensed only for use in an invitation built and hosted on InviteStudio (see /terms). Copying, extracting or re-hosting them is not permitted. */
 /* Scene templates: renderer and artwork for Savanna, Palmera, Curtain Call and Lunaria.
  *
  * sitePreview() in index.html hands a project to window.renderSceneTemplate() when the selected

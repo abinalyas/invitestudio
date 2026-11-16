@@ -764,3 +764,6 @@ table.rsvp-by-event { font-size: 13px; }
 .check-row input { flex: none; width: 22px; height: 22px; accent-color: #145c37; }
 .editor-form select { min-height: 46px; padding: 0 12px; border-radius: 12px; }
 .editor-form .tiny.muted { color: #5f5b54; line-height: 1.55; }
+
+/* Copyright line in the home page footer */
+.footer .footer-copy { flex: 0 0 100%; order: 9; margin: 0; padding: 6px 0 0; text-align: center; font-size: 12px; color: #6b6760; }
