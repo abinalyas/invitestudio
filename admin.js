@@ -152,7 +152,13 @@
       return response.json().catch(function () { return null; }).then(function (body) { return { status: response.status, body: body }; });
     }).then(function (result) {
       if (result.status === 401) return signInCard(denied);
-      if (result.status === 503) return message('Not set up yet', 'The admin page needs its Google sign-in settings in Cloudflare. See docs/ADMIN.md.');
+      if (result.status === 503) {
+        var error = (result.body && result.body.error) || {};
+        var missing = error.fields && error.fields.missing;
+        if (error.code === 'BACKEND_NOT_CONFIGURED') return message('Not set up yet', 'The database settings (SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY) are missing in Cloudflare.');
+        message('Not set up yet', 'The admin page needs its Google sign-in settings in Cloudflare (see docs/ADMIN.md).' + (missing && missing.length ? ' Missing or too short: ' + missing.join(', ') + '. Add them under Production, then redeploy.' : ''));
+        return;
+      }
       if (result.status !== 200 || !result.body) return message('Could not load', 'Something went wrong. Reload the page to try again.');
       data = result.body;
       render();
