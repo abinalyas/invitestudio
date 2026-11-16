@@ -65,6 +65,10 @@
     }
     try {
       const data = await window.inviteStudioApi.getPublishedWedding(slug);
+      // Fetch only the design this invitation uses (template-loader.js), then show the page.
+      const project = projectFromPublic(data.wedding, data.photos);
+      const design = typeof tpl === 'function' ? tpl(project.templateId) : null;
+      if (design && window.InviteTemplates) await window.InviteTemplates.need(design);
       state.publicInvitation = { status: 'ready', slug, data };
     } catch (error) {
       state.publicInvitation = { status: error.status === 404 ? 'not-found' : error.status === 410 ? 'ended' : 'error', slug, data: null };

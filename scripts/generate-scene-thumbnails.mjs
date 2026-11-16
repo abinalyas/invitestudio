@@ -59,7 +59,6 @@ for (const t of scenes) {
 // Packaged templates: the real renderer and the template's own stylesheet. The phone picture is the top of the
 // page; the wide picture is the page's paper and botanical corners without text (the gallery adds the names).
 const packaged = loadTemplates();
-const packagedCss = packaged.map(t => t.css).join('\n');
 for (const t of readCatalogue().templates.filter(t => t.packaged)) {
   const thumb = packaged.find(p => p.manifest.id === t.packaged).manifest.thumbnail;
   const open = async (width, height, scale) => {
@@ -67,9 +66,9 @@ for (const t of readCatalogue().templates.filter(t => t.packaged)) {
     // (showcase) fill the cover, as they do on the template page itself.
     const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale, reducedMotion: 'reduce' });
     await page.goto(`${base}/`);
-    await page.addStyleTag({ content: packagedCss });
-    await page.addScriptTag({ url: `${base}/templates/templates.generated.js` });
-    await page.addScriptTag({ url: `${base}/packaged-templates.js` });
+    // The page's loader fetches the design, its CSS and the shared template code, as a visitor's page does.
+    await page.addScriptTag({ url: `${base}/template-loader.js` });
+    await page.evaluate(id => InviteTemplates.need({ id, packaged: id }), t.packaged);
     await page.evaluate(([project, template]) => { document.body.innerHTML = window.renderPackagedTemplate(project, template, { sample: true, showcase: true }); }, [sample, t]);
     await page.evaluate(() => Promise.all([document.fonts.ready, ...[...document.images].map(img => img.decode().catch(() => {}))]));
     await page.waitForTimeout(300);

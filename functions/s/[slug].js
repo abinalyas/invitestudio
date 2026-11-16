@@ -28,7 +28,7 @@ async function publishedSummary(env, slug) {
     return null;
   }
   const query = new URLSearchParams({
-    select: 'title,event_date,location',
+    select: 'title,event_date,location,template_id',
     slug: `eq.${slug}`,
     status: 'eq.published',
     visibility: 'eq.public',
@@ -95,7 +95,9 @@ export async function onRequest(context) {
     `<meta property="og:description" content="${escapeHtml(description)}"/>`,
     `<meta property="og:url" content="${escapeHtml(canonical)}"/>`,
     '<meta name="twitter:card" content="summary"/>',
-    `<link rel="canonical" href="${escapeHtml(canonical)}"/>`
+    `<link rel="canonical" href="${escapeHtml(canonical)}"/>`,
+    // The page starts fetching this design right away, alongside the invitation's data (template-loader.js, index.html).
+    summary && /^[a-z0-9-]{1,60}$/.test(String(summary.template_id || '')) ? `<meta name="invitestudio-template" content="${escapeHtml(summary.template_id)}"/>` : ''
   ].join('');
 
   const source = new Response(asset.body, { status: summary ? 200 : 404, headers });

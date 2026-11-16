@@ -10,6 +10,7 @@ import vm from 'node:vm';
 import { createRequire } from 'node:module';
 import { validateWeddingInput } from '../../functions/_shared/api.js';
 import { LAUNCH_TEMPLATE_IDS } from '../../functions/_shared/templates.js';
+import { loadBundles } from '../support/templates-vm.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(import.meta.url);
@@ -64,7 +65,7 @@ test('invitations show times as 4:00 PM, and keep showing older free text as typ
   const ctx = { Math, Date, String, Array, Object, encodeURIComponent, Intl };
   ctx.globalThis = ctx;
   vm.createContext(ctx);
-  vm.runInContext(readFileSync(join(root, 'templates/templates.generated.js'), 'utf8'), ctx);
+  loadBundles(ctx);
   vm.runInContext(readFileSync(join(root, 'packaged-templates.js'), 'utf8'), ctx);
   const project = fns => ({ title: 'A & B', date: '2027-08-24', location: 'Hall, Town', functions: fns });
   const event = (title, time) => ({ title, date: '2027-08-24', time, venue: 'Hall', visible: true });

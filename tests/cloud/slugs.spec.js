@@ -167,13 +167,17 @@ test.describe('publishing dialog', () => {
     await page.getByRole('button', { name: /change web address/i }).click();
     await expect(page.locator('#modal-root')).toContainText(/old address will stop working/i);
     const update = page.getByRole('button', { name: /change address and update/i });
-    await page.locator('#publishSlug').fill(unique());
+    const secondSlug = unique();
+    await page.locator('#publishSlug').fill(secondSlug);
     await expect(update).toBeDisabled();
     await page.getByLabel(/i understand the old link will stop working/i).check();
     await expect(page.locator('#slug-status')).toContainText(/available/i, { timeout: 10000 });
     await expect(update).toBeEnabled();
     await update.click();
     await expect(page.locator('#modal-root h2')).toHaveText(/your invitation is live/i, { timeout: 20000 });
+    // The dialog already said "live" from the first publish: wait for the new address to be the live one before checking the old.
+    await expect(page.locator('#modal-root')).toContainText(`/s/${secondSlug}`, { timeout: 20000 });
+    await expect(page.getByRole('button', { name: /change web address/i })).toBeVisible();
     const old = await page.request.get(`/api/public-weddings/${firstSlug}`);
     expect(old.status()).toBe(404);
   });
