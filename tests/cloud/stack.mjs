@@ -24,7 +24,12 @@ const site = spawn(process.execPath, [
   '--port', String(SITE_PORT),
   '--binding', `SUPABASE_URL=http://127.0.0.1:${SHIM_PORT}`,
   '--binding', 'SUPABASE_SERVICE_ROLE_KEY=test-only-service-role-key',
-  '--binding', `ALLOWED_ORIGIN=http://127.0.0.1:${SITE_PORT}`
+  '--binding', `ALLOWED_ORIGIN=http://127.0.0.1:${SITE_PORT}`,
+  // Test-only admin sign-in settings (tests/cloud/admin.spec.js signs a session cookie with this secret).
+  '--binding', 'ADMIN_SESSION_SECRET=test-only-admin-session-secret-0123456789',
+  '--binding', 'ADMIN_EMAILS=owner@example.test',
+  '--binding', 'GOOGLE_CLIENT_ID=test-client-id',
+  '--binding', 'GOOGLE_CLIENT_SECRET=test-client-secret'
 ], {
   cwd: root,
   stdio: 'inherit',
