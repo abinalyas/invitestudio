@@ -1241,7 +1241,7 @@ function RepliesList({ snap }: { snap: EditorSnapshot }) {
                   <button key={value} type="button" className={filter === value ? "active" : ""} aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</button>
                 ))}
               </div>
-              <input type="search" placeholder="Search by name, needs or message" value={query} onChange={event => setQuery(event.target.value)} aria-label="Search replies" />
+              <input type="search" placeholder="Search replies" value={query} onChange={event => setQuery(event.target.value)} aria-label="Search replies" />
               <p className="tiny muted">Meal and access needs are private to you. Use the filter “With needs” when you brief your caterer.</p>
             </>
           )}
