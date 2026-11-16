@@ -3,7 +3,7 @@
   <img class="intro-poster" src="/templates/cherry-blossom/assets/poster.webp" alt="">
   <video class="intro-video" muted playsinline preload="none" data-src-wide="/templates/cherry-blossom/assets/opening.mp4" tabindex="-1"></video>
   <!--if intro_wait--><button class="intro-start" type="button" data-intro-start><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>Click to start</button><!--/if-->
-  <button class="intro-skip" type="button" data-intro-skip>{{copy:intro_skip}} <span aria-hidden="true">↗</span></button>
+  <button class="intro-skip" type="button" data-intro-skip>{{copy:intro_skip}} {{icon:arrow-up-right}}</button>
 </div>
 
 <!--part:header-->
@@ -17,7 +17,7 @@
     <!--if story--><button type="button" data-scroll-to="story">{{copy:nav_story}}</button><!--/if-->
     <!--if events--><button type="button" data-scroll-to="details">{{copy:nav_day}}</button><!--/if-->
     <!--if show_gallery--><button type="button" data-scroll-to="gallery">{{copy:nav_gallery}}</button><!--/if-->
-    <button class="nav-rsvp" type="button" data-scroll-to="rsvp">{{copy:nav_rsvp}} <span aria-hidden="true">↗</span></button>
+    <button class="nav-rsvp" type="button" data-scroll-to="rsvp">{{copy:nav_rsvp}} {{icon:arrow-up-right}}</button>
   </nav>
 </header>
 
@@ -33,14 +33,14 @@
     <!--if date-->
     <div class="date-reveal" data-tap="3"<!--if editable--> data-tap-done<!--/if--> data-tap-label-more="{{copy:tap_more}}" data-tap-label-one="{{copy:tap_one}}" data-tap-label-done="{{copy:tap_done}}">
       <p class="date-hint" data-tap-hint>{{copy:tap_hint}}</p>
-      <button class="date-petals" type="button" data-tap-button aria-label="{{copy:tap_hint}}"><span aria-hidden="true">✿</span><span aria-hidden="true">✿</span><span aria-hidden="true">✿</span></button>
+      <button class="date-petals" type="button" data-tap-button aria-label="{{copy:tap_hint}}">{{icon:blossom}}{{icon:blossom}}{{icon:blossom}}</button>
       <p class="hero-date"<!--if editable--> data-edit="date" data-raw="{{date_iso}}"<!--/if-->>{{date_num}}</p>
     </div>
     <!--else-->
     <p class="hero-date plain">{{edit:date_long}}</p>
     <!--/if-->
     <p class="hero-copy">{{edit:closing_note}}</p>
-    <!--if events--><button class="text-link" type="button" data-scroll-to="details">{{upper:copy:hero_link}} <span aria-hidden="true">↓</span></button><!--/if-->
+    <!--if events--><button class="text-link" type="button" data-scroll-to="details">{{upper:copy:hero_link}} {{icon:arrow-down}}</button><!--/if-->
   </div>
 </section>
 
@@ -49,7 +49,7 @@
   <div class="story-petals" aria-hidden="true"><img class="petal" src="/templates/cherry-blossom/assets/petal-05.webp" alt="" style="left:6%;animation-duration:15s;animation-delay:-2s;--drift:30px;--spin:180deg;width:16px"><img class="petal" src="/templates/cherry-blossom/assets/petal-11.webp" alt="" style="left:20%;animation-duration:19s;animation-delay:-9s;--drift:-24px;--spin:-200deg;width:13px"><img class="petal" src="/templates/cherry-blossom/assets/petal-17.webp" alt="" style="left:34%;animation-duration:17s;animation-delay:-5s;--drift:26px;--spin:160deg;width:17px"><img class="petal" src="/templates/cherry-blossom/assets/petal-23.webp" alt="" style="left:48%;animation-duration:21s;animation-delay:-13s;--drift:-30px;--spin:-170deg;width:14px"><img class="petal" src="/templates/cherry-blossom/assets/petal-02.webp" alt="" style="left:62%;animation-duration:16s;animation-delay:-7s;--drift:28px;--spin:190deg;width:15px"><img class="petal" src="/templates/cherry-blossom/assets/petal-08.webp" alt="" style="left:76%;animation-duration:20s;animation-delay:-3s;--drift:-22px;--spin:-150deg;width:16px"><img class="petal" src="/templates/cherry-blossom/assets/petal-14.webp" alt="" style="left:88%;animation-duration:18s;animation-delay:-11s;--drift:32px;--spin:210deg;width:13px"></div>
   <div class="heading" data-reveal>
     <h2 class="title">{{em:edit:copy:story_heading}}</h2>
-    <div class="story-ornament" aria-hidden="true"><span></span>✿<span></span></div>
+    <div class="story-ornament" aria-hidden="true"><span></span>{{icon:blossom}}<span></span></div>
     <p class="subtitle">{{edit:copy:story_subtitle}}</p>
   </div>
   <div class="story-layout">
@@ -79,7 +79,7 @@
         <!--if date_text--><p class="flow-date">{{date_text}}</p><!--/if-->
         <!--if venue--><p class="venue-name">{{edit:event_venue}}</p><!--/if-->
         <p class="event-time"><!--if time_text-->{{time_text}}<!--else-->{{copy:time_unknown}}<!--/if--></p>
-        <!--if map--><a class="outline" href="{{map}}" target="_blank" rel="noopener noreferrer">{{copy:directions}} ↗</a><!--/if-->
+        <!--if map--><a class="outline" href="{{map}}" target="_blank" rel="noopener noreferrer">{{copy:directions}} {{icon:arrow-up-right}}</a><!--/if-->
       </div>
     </article><!--/each-->
   </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
@@ -109,7 +109,7 @@
     <p class="subtitle">{{edit:copy:gallery_subtitle}}</p>
   </div>
   <div class="photo-grid">
-    <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each-->
+    <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->><!--if editable-->Your photo<!--else--><span data-ph-art aria-hidden="true"><b>{{ia}}</b><!--if ib--><i>&amp;</i><b>{{ib}}</b><!--/if--></span><!--/if--></span><!--/if--></figure><!--/each-->
   </div>
 </section>
 
@@ -144,8 +144,8 @@
     <h2>{{edit:copy:footer_love}}</h2>
     <p class="footer-names" style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <i>&amp;</i> {{edit:b}}<!--/if--></p>
     <p class="footer-date">{{footer_line}}</p>
-    <div class="footer-ornament" aria-hidden="true">✿</div>
-    <button class="back-top" type="button" data-scroll-to="home">{{copy:footer_top}} ↑</button>
+    <div class="footer-ornament" aria-hidden="true">{{icon:blossom}}</div>
+    <button class="back-top" type="button" data-scroll-to="home">{{copy:footer_top}} {{icon:arrow-up}}</button>
     <!--if intro--><button class="replay" type="button" data-intro-replay>{{upper:copy:closing_replay}}</button><!--/if-->
   </div>
   <div class="footer-bottom"><span>{{upper:edit:copy:footer_made}}</span></div>

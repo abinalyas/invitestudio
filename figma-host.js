@@ -1066,7 +1066,7 @@
       container.style.width = '100%';
       container.style.maxWidth = '100%';
       // A design with an opening screen waits for a click in the phone, so a visitor starts it themselves.
-      container.innerHTML = sitePreview(templateDemoProject(t), t, false, { intro: 'wait', sound: true });
+      container.innerHTML = sitePreview(templateDemoProject(t), t, false, { intro: 'wait', sound: true, showcase: true });
       if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
     },
 

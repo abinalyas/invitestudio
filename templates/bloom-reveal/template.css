@@ -35,10 +35,6 @@ svg{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-l
 .link:hover,.link:focus-visible{color:var(--rose-text)}
 
 /* motion: scroll reveals are driven by the platform (data-reveal); content stays visible without it */
-[data-reveal]{transition:opacity .9s cubic-bezier(.22,1,.36,1) var(--rd,0s),transform .9s cubic-bezier(.22,1,.36,1) var(--rd,0s)}
-[data-reveal-armed]:not([data-revealed]){opacity:0;transform:translateY(20px)}
-[data-reveal="fade"][data-reveal-armed]:not([data-revealed]){transform:none}
-[data-reveal="scale"][data-reveal-armed]:not([data-revealed]){transform:scale(.96)}
 @keyframes bloom{0%{mask-size:0% 0%,0% 0%,0% 0%,0% 0%;-webkit-mask-size:0% 0%,0% 0%,0% 0%,0% 0%}10%{mask-size:45% 45%,0% 0%,0% 0%,0% 0%;-webkit-mask-size:45% 45%,0% 0%,0% 0%,0% 0%}24%{mask-size:105% 105%,35% 35%,0% 0%,0% 0%;-webkit-mask-size:105% 105%,35% 35%,0% 0%,0% 0%}40%{mask-size:170% 170%,95% 95%,30% 30%,0% 0%;-webkit-mask-size:170% 170%,95% 95%,30% 30%,0% 0%}56%{mask-size:170% 170%,170% 170%,85% 85%,35% 35%;-webkit-mask-size:170% 170%,170% 170%,85% 85%,35% 35%}72%{mask-size:170% 170%,170% 170%,160% 160%,100% 100%;-webkit-mask-size:170% 170%,170% 170%,160% 160%,100% 100%}88%{mask-size:170% 170%,170% 170%,170% 170%,165% 165%;-webkit-mask-size:170% 170%,170% 170%,170% 170%,165% 165%}100%{mask-size:170% 170%,170% 170%,170% 170%,170% 170%;-webkit-mask-size:170% 170%,170% 170%,170% 170%,170% 170%}}
 @keyframes petal{0%{opacity:0;translate:0 -10px;rotate:0deg}15%{opacity:.8}60%{translate:34px 190px;rotate:200deg;opacity:.55}100%{opacity:0;translate:-12px 320px;rotate:380deg}}
 @keyframes bob{0%,100%{translate:0 0;opacity:.6}50%{translate:0 7px;opacity:1}}

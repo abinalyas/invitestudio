@@ -19,9 +19,6 @@ svg{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-l
 button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
 /* motion: scroll reveals are driven by the platform (data-reveal); content stays visible without it */
-[data-reveal]{transition:opacity 1s var(--ease) var(--rd,0s),transform 1s var(--ease) var(--rd,0s)}
-[data-reveal-armed]:not([data-revealed]){opacity:0;transform:translateY(24px)}
-[data-reveal="fade"][data-reveal-armed]:not([data-revealed]){transform:none}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes name-in{from{opacity:0;transform:translateY(.4em);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
 @keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
@@ -171,7 +168,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .footer-names{margin:0;font:400 min(clamp(2.4rem,7cqw,4.4rem),calc(140cqw / var(--nl,8)))/1.1 var(--serif);color:var(--fg);overflow-wrap:anywhere}
 .footer-names em{font-size:.7em;color:var(--accent)}
 .footer-love{margin:.6rem 0 0;font:italic 400 1.3rem/1.5 var(--serif);color:var(--muted)}
-.footer-love span{color:var(--accent);font-style:normal}
+.footer-love [data-icon]{color:var(--accent);font-style:normal}
 .replay{display:inline-flex;align-items:center;gap:8px;margin-top:18px;font:500 .62rem/1.6 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:3px}
 .replay svg{width:12px;height:12px;fill:currentColor;stroke:none}
 .footer-date{margin:16px 0 0;font:400 .66rem/1.6 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}

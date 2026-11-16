@@ -411,8 +411,9 @@
     Array.prototype.forEach.call(scope.querySelectorAll("[data-reveal]:not([data-reveal-armed]):not([data-revealed])"), function (el) {
       var root = el.closest("[data-packaged-template]");
       // The editor redraws the whole invitation on every keystroke. What is already on screen, or scrolled past, stays
-      // put instead of fading in again; only what is still below the fold waits for its reveal.
-      if (root && root.hasAttribute("data-preview") && el.getBoundingClientRect().top < viewBox(el).bottom) return;
+      // put instead of fading in again; only what is still below the fold waits for its reveal. The template page
+      // (data-showcase) draws once, so there the opening plays in full, as guests will see it.
+      if (root && root.hasAttribute("data-preview") && !root.hasAttribute("data-showcase") && el.getBoundingClientRect().top < viewBox(el).bottom) return;
       el.setAttribute("data-reveal-armed", "");
       revealObserver().observe(el);
     });

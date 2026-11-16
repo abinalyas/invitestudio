@@ -1,7 +1,7 @@
 <!--part:header-->
 <header class="site-header">
   <button class="brand" type="button" data-scroll-to="home" aria-label="{{names}} home">{{copy:headline_top}}<span>{{upper:copy:headline_bottom}}</span></button>
-  <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">☰</button>
+  <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">{{icon:menu}}</button>
   <nav class="nav" data-nav aria-label="Main navigation">
     <!--if story--><button type="button" data-scroll-to="story">{{copy:nav_story}}</button><!--/if-->
     <!--if events--><button type="button" data-scroll-to="wedding">{{copy:nav_wedding}}</button><!--/if-->
@@ -14,37 +14,40 @@
 <section class="hero" data-tpl-section="home" data-section="hero">
   <div class="hero-sky" aria-hidden="true"></div>
   <div class="hero-horizon" aria-hidden="true"></div>
-  <img class="hero-castle" src="/templates/fairy-tale/assets/castle.webp" alt="">
+  <img class="hero-castle" data-ambient src="/templates/fairy-tale/assets/castle.webp" alt="">
+  <div class="petals" data-ambient aria-hidden="true"><i style="--x:6%;--d:0.0s;--t:11.0s;--s:1.00"></i><i style="--x:18%;--d:3.2s;--t:13.0s;--s:0.70"></i><i style="--x:29%;--d:6.5s;--t:10.0s;--s:0.90"></i><i style="--x:41%;--d:1.4s;--t:14.0s;--s:0.60"></i><i style="--x:53%;--d:8.1s;--t:12.0s;--s:1.00"></i><i style="--x:64%;--d:4.6s;--t:11.5s;--s:0.75"></i><i style="--x:76%;--d:2.2s;--t:13.5s;--s:0.90"></i><i style="--x:88%;--d:7.3s;--t:10.5s;--s:0.65"></i><i style="--x:95%;--d:5.4s;--t:12.5s;--s:0.85"></i><i style="--x:12%;--d:9.6s;--t:14.5s;--s:0.55"></i></div>
+  <div class="mist" data-ambient aria-hidden="true"></div>
+  <div class="twinkles" data-ambient aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
   <div class="hero-content">
-    <p class="eyebrow">{{upper:edit:hosts_line}}</p>
-    <h1><span>{{edit:copy:headline_top}}</span> <span>{{edit:copy:headline_bottom}}</span></h1>
-    <p class="hero-subtitle">{{edit:copy:hero_subtitle}}</p>
-    <p class="couple-names"<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <span class="amp">&amp;</span> {{edit:b}}<!--/if--></p>
-    <p class="hero-meta">{{edit:date_long}}<!--if place_or_venue--> &nbsp;·&nbsp; {{edit:place_or_venue}}<!--/if--></p>
-    <p class="hero-copy">{{edit:closing_note}}</p>
-    <!--if date--><div class="countdown" data-countdown="{{date_iso}}" aria-label="Countdown">
+    <p class="eyebrow" data-reveal="fade">{{upper:edit:hosts_line}}</p>
+    <h1 data-reveal="soft" style="--rd:.15s"><span>{{edit:copy:headline_top}}</span> <span>{{edit:copy:headline_bottom}}</span></h1>
+    <p class="hero-subtitle" data-reveal style="--rd:.35s">{{edit:copy:hero_subtitle}}</p>
+    <p class="couple-names" data-reveal="soft"<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <span class="amp">&amp;</span> {{edit:b}}<!--/if--></p>
+    <p class="hero-meta" data-reveal style="--rd:.55s">{{edit:date_long}}<!--if place_or_venue--> &nbsp;·&nbsp; {{edit:place_or_venue}}<!--/if--></p>
+    <p class="hero-copy" data-reveal style="--rd:.65s">{{edit:closing_note}}</p>
+    <!--if date--><div class="countdown" data-reveal style="--rd:.75s" data-countdown="{{date_iso}}" aria-label="Countdown">
       <div class="count-item"><strong data-cd="days">—</strong><span>Days</span></div>
       <div class="count-item"><strong data-cd="hours">—</strong><span>Hours</span></div>
       <div class="count-item"><strong data-cd="minutes">—</strong><span>Minutes</span></div>
       <div class="count-item"><strong data-cd="seconds">—</strong><span>Seconds</span></div>
     </div>
-    <p class="count-note">{{edit:copy:countdown_note}}</p><!--/if-->
-    <!--if story--><button class="cta" type="button" data-scroll-to="story">{{copy:cta}} <span aria-hidden="true">→</span></button><!--/if-->
+    <p class="count-note" data-reveal="fade" style="--rd:.85s">{{edit:copy:countdown_note}}</p><!--/if-->
+    <!--if story--><button class="cta" data-reveal style="--rd:.95s" type="button" data-scroll-to="story">{{copy:cta}} {{icon:arrow-right}}</button><!--/if-->
   </div>
-  <p class="scroll-cue">{{edit:copy:scroll_cue}}</p>
+  <p class="scroll-cue" data-reveal="fade" style="--rd:1.3s">{{edit:copy:scroll_cue}}</p>
 </section>
 
 <!--part:story-->
 <section class="story section" data-tpl-section="story" data-section="story">
   <div class="wrap">
     <div class="section-heading">
-      <p class="eyebrow">{{upper:edit:copy:story_eyebrow}}</p><h2>{{em:edit:copy:story_title}}</h2><div class="gold-rule"></div>
-      <p class="section-text">{{edit:copy:story_intro}}</p>
+      <p class="eyebrow" data-reveal="fade">{{upper:edit:copy:story_eyebrow}}</p><h2 data-reveal="soft" style="--rd:.1s">{{em:edit:copy:story_title}}</h2><div class="gold-rule" data-reveal="draw" style="--rd:.25s"></div>
+      <p class="section-text" data-reveal style="--rd:.3s">{{edit:copy:story_intro}}</p>
     </div>
     <div class="story-layout">
-      <div class="story-photo"><!--if story_photo--><img src="{{story_photo}}" alt=""><!--/if--></div>
-      <div class="story-copy">
-        <p class="eyebrow">{{upper:edit:copy:story_kicker}}</p>
+      <div class="story-photo" data-reveal="curtain"><!--if story_photo--><img src="{{story_photo}}" alt=""><!--/if--></div>
+      <div class="story-copy" data-reveal style="--rd:.15s">
+        <p class="eyebrow" data-reveal="fade">{{upper:edit:copy:story_kicker}}</p>
         <h3>{{edit:copy:story_heading}}</h3>
         <!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p>{{.}}</p><!--/each--><!--if editable--></span><!--/if-->
         <p class="story-signoff">{{edit:copy:story_signoff}}</p>
@@ -57,16 +60,16 @@
 <section class="celebration section" data-tpl-section="wedding" data-section="functions">
   <div class="wrap">
     <div class="section-heading">
-      <p class="eyebrow">{{upper:edit:copy:wedding_eyebrow}}</p><h2>{{em:edit:copy:wedding_title}}</h2><div class="gold-rule"></div>
-      <p class="section-text">{{edit:copy:wedding_intro}}</p>
+      <p class="eyebrow" data-reveal="fade">{{upper:edit:copy:wedding_eyebrow}}</p><h2 data-reveal="soft" style="--rd:.1s">{{em:edit:copy:wedding_title}}</h2><div class="gold-rule" data-reveal="draw" style="--rd:.25s"></div>
+      <p class="section-text" data-reveal style="--rd:.3s">{{edit:copy:wedding_intro}}</p>
     </div>
     <div class="event-layout">
-      <!--each events--><article class="event">
+      <!--each events--><article class="event" data-reveal>
         <h3>{{edit:event_title}}</h3>
         <!--if date_text--><p class="event-date">{{date_text}}</p><!--/if-->
         <!--if time_text--><p class="event-date">{{time_text}}</p><!--/if-->
         <!--if venue--><p class="event-venue">{{edit:event_venue}}</p><!--/if-->
-        <!--if map--><a class="text-link" href="{{map}}" target="_blank" rel="noopener noreferrer">{{upper:copy:view_location}} ↗</a><!--/if-->
+        <!--if map--><a class="text-link" href="{{map}}" target="_blank" rel="noopener noreferrer">{{upper:copy:view_location}} {{icon:arrow-up-right}}</a><!--/if-->
       </article><!--/each-->
     </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
   </div>
@@ -76,11 +79,11 @@
 <section class="gallery section" data-tpl-section="gallery" data-section="gallery">
   <div class="wrap">
     <div class="section-heading">
-      <p class="eyebrow">{{upper:edit:copy:gallery_eyebrow}}</p><h2>{{em:edit:copy:gallery_title}}</h2><div class="gold-rule"></div>
-      <p class="section-text">{{edit:copy:gallery_intro}}</p>
+      <p class="eyebrow" data-reveal="fade">{{upper:edit:copy:gallery_eyebrow}}</p><h2 data-reveal="soft" style="--rd:.1s">{{em:edit:copy:gallery_title}}</h2><div class="gold-rule" data-reveal="draw" style="--rd:.25s"></div>
+      <p class="section-text" data-reveal style="--rd:.3s">{{edit:copy:gallery_intro}}</p>
     </div>
     <div class="gallery-grid">
-      <!--each photos--><figure class="gallery-item"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--><!--if caption--><figcaption>{{caption}}</figcaption><!--/if--></figure><!--/each-->
+      <!--each photos--><figure class="gallery-item" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->><!--if editable-->Your photo<!--else--><span data-ph-art aria-hidden="true"><b>{{ia}}</b><!--if ib--><i>&amp;</i><b>{{ib}}</b><!--/if--></span><!--/if--></span><!--/if--><!--if caption--><figcaption>{{caption}}</figcaption><!--/if--></figure><!--/each-->
     </div>
   </div>
 </section>
@@ -89,19 +92,19 @@
 <section class="rsvp section" data-tpl-section="rsvp" data-section="rsvp">
   <div class="wrap">
     <div class="section-heading">
-      <p class="eyebrow">{{upper:edit:copy:rsvp_eyebrow}}</p><h2>{{em:edit:copy:rsvp_title}}</h2><div class="gold-rule"></div>
-      <p class="section-text">{{edit:copy:rsvp_intro}}</p>
+      <p class="eyebrow" data-reveal="fade">{{upper:edit:copy:rsvp_eyebrow}}</p><h2 data-reveal="soft" style="--rd:.1s">{{em:edit:copy:rsvp_title}}</h2><div class="gold-rule" data-reveal="draw" style="--rd:.25s"></div>
+      <p class="section-text" data-reveal style="--rd:.3s">{{edit:copy:rsvp_intro}}</p>
     </div>
-    <!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if-->
-    <p class="rsvp-note">{{edit:copy:rsvp_note}}</p>
+    <!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}" data-reveal>Reply</button><!--/if-->
+    <p class="rsvp-note" data-reveal="fade">{{edit:copy:rsvp_note}}</p>
   </div>
 </section>
 
 <!--part:footer-->
 <footer class="site-footer">
-  <p class="eyebrow">{{upper:edit:copy:footer_eyebrow}}</p>
-  <p class="footer-names" style="--nl:{{name_len}}">{{edit:a}}<!--if b--> <span class="amp">&amp;</span> {{edit:b}}<!--/if--></p>
-  <div class="gold-rule"></div>
+  <p class="eyebrow" data-reveal="fade">{{upper:edit:copy:footer_eyebrow}}</p>
+  <p class="footer-names" data-reveal="soft" style="--rd:.1s;--nl:{{name_len}}">{{edit:a}}<!--if b--> <span class="amp">&amp;</span> {{edit:b}}<!--/if--></p>
+  <div class="gold-rule" data-reveal="draw" style="--rd:.25s"></div>
   <p class="footer-line">{{footer_line}}</p>
   <p class="footer-last">{{edit:copy:footer_last}}</p>
 </footer>

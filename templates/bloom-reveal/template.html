@@ -54,7 +54,7 @@
     <p class="intro-names">{{a}}<!--if b--> <i>&amp;</i> {{b}}<!--/if--></p>
     <p class="intro-line">{{upper:copy:intro_line}}</p>
     <!--if date--><p class="intro-date">{{date_num}}</p><!--/if-->
-    <span class="intro-open">{{upper:copy:intro_open}} ↓</span>
+    <span class="intro-open">{{upper:copy:intro_open}} {{icon:arrow-down}}</span>
   </div>
   <div class="intro-petals" aria-hidden="true"><i></i><i></i><i></i></div>
   <!--if intro_wait--><button class="intro-start" type="button" data-intro-start><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>Click to start</button><!--/if-->
@@ -176,7 +176,7 @@
       <svg class="divider" viewBox="0 0 120 34" aria-hidden="true" data-reveal="fade"><path pathLength="1" d="M8 17 C34 17 49 17 112 17 M37 17 C31 7 22 5 16 7 C19 15 27 18 37 17 M55 17 C57 7 66 4 74 6 C72 14 65 18 55 17 M76 17 C73 26 64 29 57 27 C60 20 67 16 76 17 M94 17 C98 8 106 7 113 10 C110 17 102 19 94 17"/></svg>
     </div>
     <div class="photo-grid">
-      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->>Your photo</span><!--/if--></figure><!--/each-->
+      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->><!--if editable-->Your photo<!--else--><span data-ph-art aria-hidden="true"><b>{{ia}}</b><!--if ib--><i>&amp;</i><b>{{ib}}</b><!--/if--></span><!--/if--></span><!--/if--></figure><!--/each-->
     </div>
   </div>
 </section>
@@ -204,5 +204,5 @@
   <p class="closing-line" data-reveal style="--rd:.3s">{{edit:copy:closing_line}}</p>
   <!--if intro--><button class="replay" type="button" data-intro-replay><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>{{copy:closing_replay}}</button><!--/if-->
   <p class="footer-date" data-reveal style="--rd:.4s">{{footer_line}}</p>
-  <div class="footer-row" data-reveal="fade" style="--rd:.5s"><span>{{upper:edit:copy:footer_made}}</span><button type="button" data-scroll-to="home">{{upper:copy:footer_top}} ↑</button></div>
+  <div class="footer-row" data-reveal="fade" style="--rd:.5s"><span>{{upper:edit:copy:footer_made}}</span><button type="button" data-scroll-to="home">{{upper:copy:footer_top}} {{icon:arrow-up}}</button></div>
 </footer>
