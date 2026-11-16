@@ -6,6 +6,8 @@ import { bridge } from "./bridge";
 import { MyProjectsLink, RecoveryBanner, TalkToUs } from "./extras";
 import { TemplateStrip } from "./TemplateStrip";
 export function HomePage() {
+  // The Instagram address is set once in site-config.js (social.instagram); with none set, no social icon is shown.
+  const instagramUrl = ((window as unknown as { INVITESTUDIO_SITE?: { social?: { instagram?: string } } }).INVITESTUDIO_SITE?.social?.instagram || "").trim()
   const { data: pricing } = usePricing()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -363,17 +365,17 @@ export function HomePage() {
         <p className="footer-talk">
           <TalkToUs topic="custom" lead="Want something unique? Talk to us:" />
         </p>
-        <div className="socials">
-          <a href="#instagram" aria-label="Instagram">
-            ◎
-          </a>
-          <a href="#youtube" aria-label="YouTube">
-            ▶
-          </a>
-          <a href="#pinterest" aria-label="Pinterest">
-            p
-          </a>
-        </div>
+        {instagramUrl ? (
+          <div className="socials">
+            <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="InviteStudio on Instagram">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.2" cy="6.8" r="0.8" fill="currentColor" stroke="none" />
+              </svg>
+            </a>
+          </div>
+        ) : null}
       </footer>
     </main>
   )
