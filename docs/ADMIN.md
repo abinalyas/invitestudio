@@ -7,6 +7,11 @@ a 30 day chart, and a searchable list of websites with the number of guest repli
   account, "That Google account does not have access."
 - **Guest replies are only counted.** No guest name, phone number, note or message is sent to the page.
 - The page is kept out of search engines and is never cached.
+- **Private link (for support).** Each website has a *Create link* button. It makes a NEW private editing link on request: the
+  couple's own links are stored only as hashes, so an existing one can never be shown. The new link works for 90 days, does not
+  replace or revoke the couple's link, and the database records that it was issued from the admin page and by which account
+  (`edit_tokens.metadata`). **Whoever holds the link can edit the website and see its guest replies**, so use it only to help
+  a couple and do not share it.
 
 ## Switch it on (once)
 

@@ -54,6 +54,31 @@
     ]));
   }
 
+  // A private editing link is made fresh on request (existing links are stored only as hashes and cannot be shown).
+  function privateLinkCell(site) {
+    var box = el('div', {});
+    var button = el('button', { type: 'button', class: 'chip', text: 'Create link' });
+    button.addEventListener('click', function () {
+      button.disabled = true; button.textContent = 'Creating…';
+      fetch('/api/admin/private-link', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: site.id }) })
+        .then(function (response) { return response.json().then(function (body) { return { ok: response.ok, body: body }; }); })
+        .then(function (result) {
+          clear(box);
+          if (!result.ok) { box.appendChild(el('span', { class: 'error small', text: 'Could not create the link.' })); return; }
+          var input = el('input', { type: 'text', readonly: 'readonly', value: result.body.link, 'aria-label': 'Private link for ' + (site.title || 'this website'), class: 'linkbox' });
+          var copy = el('button', { type: 'button', class: 'chip', text: 'Copy' });
+          copy.addEventListener('click', function () {
+            (navigator.clipboard ? navigator.clipboard.writeText(result.body.link) : Promise.reject()).then(
+              function () { copy.textContent = 'Copied'; }, function () { input.select(); copy.textContent = 'Select and copy'; });
+          });
+          box.appendChild(input); box.appendChild(copy);
+          box.appendChild(el('div', { class: 'small muted', text: 'Anyone with this link can edit the website and see its guest replies. Works for 90 days.' }));
+        }, function () { clear(box); box.appendChild(el('span', { class: 'error small', text: 'Could not create the link.' })); });
+    });
+    box.appendChild(button);
+    return box;
+  }
+
   function siteRow(site) {
     var status = statusOf(site);
     var link = status === 'live' && site.slug ? el('a', { href: '/s/' + encodeURIComponent(site.slug), target: '_blank', rel: 'noopener', text: '/s/' + site.slug }) : el('span', { class: 'muted', text: site.slug ? '/s/' + site.slug : '—' });
@@ -67,7 +92,8 @@
       el('td', {}, link),
       el('td', { text: site.unlocked ? (site.paid_minor ? money(site.paid_minor, site.paid_currency) : 'Yes') : '—' }),
       el('td', { text: replies }),
-      el('td', {}, [day(site.created_at), el('div', { class: 'small muted', text: 'edited ' + ago(site.updated_at) })])
+      el('td', {}, [day(site.created_at), el('div', { class: 'small muted', text: 'edited ' + ago(site.updated_at) })]),
+      el('td', {}, privateLinkCell(site))
     ]);
   }
 
@@ -81,7 +107,7 @@
         return !q || [s.title, s.name, s.slug, s.location, s.template_name].join(' ').toLowerCase().indexOf(q) !== -1;
       });
       clear(list);
-      list.appendChild(table(['Couple', 'Design', 'Status', 'Link', 'Paid', 'Replies', 'Created'], rows.map(siteRow)));
+      list.appendChild(table(['Couple', 'Design', 'Status', 'Link', 'Paid', 'Replies', 'Created', 'Private link'], rows.map(siteRow)));
       if (!rows.length) list.appendChild(el('p', { class: 'muted', text: 'No websites match.' }));
       if (data.sites.length >= 500) list.appendChild(el('p', { class: 'small muted', text: 'Showing the 500 most recently edited websites.' }));
       count.textContent = rows.length + ' of ' + data.sites.length;
