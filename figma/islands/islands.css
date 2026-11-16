@@ -718,3 +718,16 @@ input[type="date"], input[type="time"] { min-width: 0; max-width: 100%; box-sizi
 .my-projects-link { white-space: nowrap; }
 @media (max-width: 480px) { .header-actions { gap: 8px; } .my-projects-link { min-height: 44px; padding-inline: 12px; font-size: 12px; } }
 @media (max-width: 400px) { .header-actions:has(.my-projects-link) > a.button { display: none; } }
+
+/* Home page footer on a phone: one tidy centred column. Links wrap in rows (not a loose grid), each still a 44px touch target. */
+@media (max-width: 700px) {
+  .footer { flex-direction: column; align-items: center; gap: 4px; padding: 28px 0 32px; text-align: center; }
+  .footer nav, .footer nav.footer-guides { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 6px; width: 100%; font-size: 14px; opacity: 1; padding: 0; }
+  .footer nav a { min-height: 44px; padding: 0 10px; display: inline-flex; align-items: center; }
+  .footer .footer-guides { margin-top: 6px; padding-top: 10px; border-top: 1px solid #e6e0d9; }
+  .footer .footer-guides a { font-size: 13px; color: #4f4b44; }
+  .footer .footer-policies { border-top: 0; margin-top: 0; padding-top: 0; }
+  .footer .footer-policies a { font-size: 12.5px; color: #6b6760; }
+  .footer-talk { margin: 10px 0 4px; font-size: 14px; line-height: 1.5; max-width: 320px; }
+  .footer .socials { gap: 12px; margin-top: 6px; }
+}

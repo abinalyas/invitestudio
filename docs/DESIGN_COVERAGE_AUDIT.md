@@ -152,7 +152,7 @@ the advanced editor.
 - Four sample template cards on the home page (static, not linked to details).
 - The testimonial (stock photo and an invented quote attributed to a named couple).
 - FAQ answers and the closing call to action.
-- Social links point to `#instagram`, `#youtube`, `#pinterest`; footer links point to `#`.
+- Social links: only Instagram is kept, and it shows only once `social.instagram` is set in `site-config.js`; footer links point to real pages.
 - "See it in action" links to the "How it works" anchor, not a demo.
 - The editor's sample names, date and location are example data.
 - Template card images are Unsplash stock photos used as design placeholders.
