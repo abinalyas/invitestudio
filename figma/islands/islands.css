@@ -38,7 +38,7 @@
 .figma-canvas { min-height: 420px; }
 /* A design's own layers (headers, openings, overlays) must stay inside the preview. Without this they can sit above the editor's
    floating buttons on a phone, such as "Edit Our story", and swallow the tap. */
-.editor-site, .figma-canvas { isolation: isolate; }
+.editor-site { isolation: isolate; }
 /* The design hides file inputs inside the image control; this field is a URL input. */
 .image-control > div { display: grid; gap: 10px; }
 .image-control label:has(input[type="url"]) { display: block; padding: 0; margin: 0; border: 0; background: none; border-radius: 0; font-size: 13px; cursor: text; }

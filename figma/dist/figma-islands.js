@@ -877,7 +877,7 @@ Error generating stack: `+i.message+`
 .figma-app .page-toggle{ display: flex; align-items: center; gap: 8px; font-size: 14px; }
 .figma-app .browse-all{ padding: 18px 0 0; text-align: right; }
 .figma-app .figma-canvas{ min-height: 420px; }
-.figma-app .editor-site, .figma-app .figma-canvas{ isolation: isolate; }
+.figma-app .editor-site{ isolation: isolate; }
 .figma-app .image-control > div{ display: grid; gap: 10px; }
 .figma-app .image-control label:has(input[type="url"]){ display: block; padding: 0; margin: 0; border: 0; background: none; border-radius: 0; font-size: 13px; cursor: text; }
 .figma-app .image-control label input[type="url"]{ display: block; width: 100%; margin-top: 6px; padding: 9px 10px; border: 1px solid var(--line-strong); border-radius: 8px; font: inherit; font-size: 14px; background: #fffefa; }
