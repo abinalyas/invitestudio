@@ -98,8 +98,8 @@ figure{margin:0}
 .petals,.twinkles{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 .petals i{position:absolute;top:-6%;left:var(--x);width:calc(15px*var(--s));height:calc(11px*var(--s));border-radius:80% 10% 80% 10%;background:linear-gradient(135deg,#f9d3df,#e7a9bd);opacity:0;animation:fall var(--t) linear var(--d) infinite;box-shadow:inset -2px -2px 4px rgba(170,92,120,.18)}
 @keyframes fall{0%{opacity:0;top:-6%;transform:translateX(0) rotate(0)}8%{opacity:.85}25%{transform:translateX(28px) rotate(80deg)}50%{transform:translateX(-18px) rotate(170deg)}75%{transform:translateX(24px) rotate(260deg)}92%{opacity:.7}100%{opacity:0;top:98%;transform:translateX(-8px) rotate(340deg)}}
-.mist{position:absolute;z-index:-1;left:-30%;right:-30%;bottom:8%;height:38%;background:url("/templates/fairy-tale/assets/mist.webp") center/50% 100% repeat-x;opacity:.55;animation:mist 48s linear infinite;pointer-events:none}
-@keyframes mist{from{transform:translateX(0)}to{transform:translateX(25%)}}
+.mist{position:absolute;z-index:-4;left:-12%;right:-12%;bottom:6%;height:40%;background:url("/templates/fairy-tale/assets/mist.webp") center/100% 100% no-repeat;opacity:.5;-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 40%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 40%,transparent 100%);animation:mist 26s ease-in-out infinite alternate;pointer-events:none}
+@keyframes mist{from{transform:translateX(-6%)}to{transform:translateX(6%)}}
 .twinkles i{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 10px 3px rgba(255,236,214,.9);opacity:0;animation:twinkle 4.6s ease-in-out infinite}
 .twinkles i:nth-child(1){left:14%;top:16%}.twinkles i:nth-child(2){left:78%;top:12%;animation-delay:1.2s}.twinkles i:nth-child(3){left:66%;top:30%;animation-delay:2.4s}.twinkles i:nth-child(4){left:24%;top:38%;animation-delay:3.1s}.twinkles i:nth-child(5){left:88%;top:44%;animation-delay:.6s}
 @keyframes twinkle{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}

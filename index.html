@@ -902,7 +902,7 @@
 .tpl-cn .cn-final-scene{min-height:600px}
 .tpl-cn .cn-final-copy h2{font-size:3.8rem}}
 .tpl-cn .cn-letterbox{position:absolute;inset:0;z-index:4;pointer-events:none}
-.tpl-cn .cn-letterbox i{position:absolute;left:0;right:0;height:50%;background:#0d0c0b;animation:cn-part 1.5s cubic-bezier(.76,0,.24,1) .25s both}
+.tpl-cn .cn-letterbox i{position:absolute;left:0;right:0;height:50%;background:#0d0c0b;transform:scaleY(.085);animation:cn-part 1.5s cubic-bezier(.76,0,.24,1) .25s both}
 .tpl-cn .cn-letterbox i:first-child{top:0;transform-origin:top}
 .tpl-cn .cn-letterbox i:last-child{bottom:0;transform-origin:bottom}
 @keyframes cn-part{from{transform:scaleY(1)}to{transform:scaleY(.085)}}
@@ -1068,8 +1068,8 @@
 .tpl-ft .ft-petals,.tpl-ft .ft-twinkles{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 .tpl-ft .ft-petals i{position:absolute;top:-6%;left:var(--x);width:calc(15px*var(--s));height:calc(11px*var(--s));border-radius:80% 10% 80% 10%;background:linear-gradient(135deg,#f9d3df,#e7a9bd);opacity:0;animation:ft-fall var(--t) linear var(--d) infinite;box-shadow:inset -2px -2px 4px rgba(170,92,120,.18)}
 @keyframes ft-fall{0%{opacity:0;top:-6%;transform:translateX(0) rotate(0)}8%{opacity:.85}25%{transform:translateX(28px) rotate(80deg)}50%{transform:translateX(-18px) rotate(170deg)}75%{transform:translateX(24px) rotate(260deg)}92%{opacity:.7}100%{opacity:0;top:98%;transform:translateX(-8px) rotate(340deg)}}
-.tpl-ft .ft-mist{position:absolute;z-index:-1;left:-30%;right:-30%;bottom:8%;height:38%;background:url("/templates/fairy-tale/assets/mist.webp") center/50% 100% repeat-x;opacity:.55;animation:ft-mist 48s linear infinite;pointer-events:none}
-@keyframes ft-mist{from{transform:translateX(0)}to{transform:translateX(25%)}}
+.tpl-ft .ft-mist{position:absolute;z-index:-4;left:-12%;right:-12%;bottom:6%;height:40%;background:url("/templates/fairy-tale/assets/mist.webp") center/100% 100% no-repeat;opacity:.5;-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 40%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 40%,transparent 100%);animation:ft-mist 26s ease-in-out infinite alternate;pointer-events:none}
+@keyframes ft-mist{from{transform:translateX(-6%)}to{transform:translateX(6%)}}
 .tpl-ft .ft-twinkles i{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 10px 3px rgba(255,236,214,.9);opacity:0;animation:ft-twinkle 4.6s ease-in-out infinite}
 .tpl-ft .ft-twinkles i:nth-child(1){left:14%;top:16%}
 .tpl-ft .ft-twinkles i:nth-child(2){left:78%;top:12%;animation-delay:1.2s}
@@ -1511,6 +1511,7 @@
 .tpl-mn .mn-timeline-item{grid-template-columns:25px 1fr}
 .tpl-mn .mn-timeline-item small{grid-column:2;text-align:left;padding:0}
 .tpl-mn .mn-photo-grid{grid-template-columns:repeat(2,1fr)}
+.tpl-mn .mn-photo-grid figure:last-child:nth-child(odd){grid-column:1/-1;aspect-ratio:16/10}
 .tpl-mn .mn-footer{min-height:130px}
 .tpl-mn .mn-footer>span{max-width:160px;line-height:1.7}}
 .tpl-mn .mn-hero-image{overflow:hidden}
@@ -1749,16 +1750,16 @@
 .tpl-mh .mh-rsvp-frame h2{font-size:40px}
 .tpl-mh .mh-photo-grid{grid-template-columns:repeat(2,1fr)}
 .tpl-mh .mh-site-footer{padding-top:38px}}
-.tpl-mh .mh-crest-lines path[pathLength],.tpl-mh .mh-crest-vines path[pathLength]{stroke-dasharray:1;stroke-dashoffset:1;animation:mh-draw 2.4s cubic-bezier(.65,0,.35,1) .2s forwards}
+.tpl-mh .mh-crest-lines path[pathLength],.tpl-mh .mh-crest-vines path[pathLength]{stroke-dasharray:1;animation:mh-draw 2.4s cubic-bezier(.65,0,.35,1) .2s both}
 .tpl-mh .mh-crest-vines path[pathLength]{animation-delay:1s;animation-duration:1.8s}
-.tpl-mh .mh-crest-lines path:not([pathLength]){opacity:0;animation:mh-appear 1s ease 1.6s forwards}
-.tpl-mh .mh-crest-leaves path{transform-box:fill-box;transform-origin:center bottom;transform:scale(0);animation:mh-unfurl 1s cubic-bezier(.34,1.56,.64,1) forwards}
+.tpl-mh .mh-crest-lines path:not([pathLength]){animation:mh-appear 1s ease 1.6s both}
+.tpl-mh .mh-crest-leaves path{transform-box:fill-box;transform-origin:center bottom;animation:mh-unfurl 1s cubic-bezier(.34,1.56,.64,1) both}
 .tpl-mh .mh-crest-leaves path:nth-child(1),.tpl-mh .mh-crest-leaves path:nth-child(3){animation-delay:1.5s}
 .tpl-mh .mh-crest-leaves path:nth-child(2),.tpl-mh .mh-crest-leaves path:nth-child(4){animation-delay:1.7s}
 .tpl-mh .mh-crest-leaves path:nth-child(5),.tpl-mh .mh-crest-leaves path:nth-child(6){animation-delay:1.9s}
-@keyframes mh-draw{to{stroke-dashoffset:0}}
-@keyframes mh-appear{to{opacity:1}}
-@keyframes mh-unfurl{to{transform:scale(1)}}
+@keyframes mh-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes mh-appear{from{opacity:0}to{opacity:1}}
+@keyframes mh-unfurl{from{transform:scale(0)}to{transform:scale(1)}}
 .tpl-mh .mh-corner{animation:mh-sway 7s ease-in-out infinite alternate}
 .tpl-mh .mh-corner-tl{transform-origin:0 0}
 .tpl-mh .mh-corner-tr{transform-origin:100% 0;animation-delay:-2s}

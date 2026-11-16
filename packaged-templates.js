@@ -167,8 +167,16 @@
     return out;
   }
 
-  // Sample photographs for the template page (see derive). Site-relative paths only; empty until the set is added.
-  var SAMPLE_PHOTOS = [];
+  // Sample photographs for the template page (see derive), in the order photo spots take them: a template's named spots
+  // (cover, story, ...) first, then its gallery. Site-relative paths only. A template can give its own order in
+  // manifest example.photoSet (Cinematic puts the venue picture in its venue spot).
+  var SAMPLE_PHOTOS = [
+    "/assets/samples/couple-portrait.webp",
+    "/assets/samples/walk.webp",
+    "/assets/samples/rings.webp",
+    "/assets/samples/florals.webp",
+    "/assets/samples/venue.webp"
+  ];
 
   // The most photos one invitation can hold. Matches the photo limit in functions/_shared/media.js; the editor's "add one more" tile stops here.
   var PHOTO_LIMIT = 12;
@@ -212,7 +220,12 @@
     // example.photoSet, else the shared SAMPLE_PHOTOS). Nowhere else: not in the editor or the setup steps, where the
     // couple's own invitation is shown, and never on a published page, so these pictures can never be published.
     if (example && showcase && !editable && !photos.length) {
-      photos = (example.photoSet || SAMPLE_PHOTOS).map(function (src) { return { src: src, thumb: src, alt: "" }; });
+      // As many as the design shows: its named spots plus the gallery tiles its example asks for (a design that reuses
+      // its spot pictures in the gallery needs only the larger of the two), so no design shows a longer gallery here
+      // than it was drawn for.
+      var spots = (manifest.photoSlots || (manifest.heroPhoto ? ["hero"] : [])).length, tiles = example.photos || 0;
+      photos = (example.photoSet || SAMPLE_PHOTOS).slice(0, manifest.galleryReuse ? Math.max(spots, tiles) : spots + tiles)
+        .map(function (src) { return { src: src, thumb: src, alt: "" }; });
     }
     // Photo slots: the first photos fill the template's named slots (hero, story, ...), in order. The gallery gets the
     // rest, or all of them when the template reuses its slot photos (galleryReuse).

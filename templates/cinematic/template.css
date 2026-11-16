@@ -124,7 +124,7 @@ h1 i,.opening-note h2 i,.story h2 i,.section-top h2 i,.celebration h2 i,.venue-c
 /* motion: the cover opens like a film (letterbox bars part, the picture slowly pushes in), grain over the dark scenes,
  * a breathing scroll cue, and pictures that drift as the guest reads */
 .letterbox{position:absolute;inset:0;z-index:4;pointer-events:none}
-.letterbox i{position:absolute;left:0;right:0;height:50%;background:#0d0c0b;animation:part 1.5s cubic-bezier(.76,0,.24,1) .25s both}
+.letterbox i{position:absolute;left:0;right:0;height:50%;background:#0d0c0b;transform:scaleY(.085);animation:part 1.5s cubic-bezier(.76,0,.24,1) .25s both}
 .letterbox i:first-child{top:0;transform-origin:top}
 .letterbox i:last-child{bottom:0;transform-origin:bottom}
 @keyframes part{from{transform:scaleY(1)}to{transform:scaleY(.085)}}

@@ -13,7 +13,7 @@ import { readCatalogue } from './template-catalogue.mjs';
 import { loadTemplates } from './build-templates.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png' };
+const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
 // Which band of the 720 unit tall artwork the wide thumbnail shows (top of the band).
 const wideOffset = { savanna: 330, palmera: 340, lunaria: 100, curtain: 0 };
 const sample = {
@@ -63,13 +63,15 @@ const packagedCss = packaged.map(t => t.css).join('\n');
 for (const t of readCatalogue().templates.filter(t => t.packaged)) {
   const thumb = packaged.find(p => p.manifest.id === t.packaged).manifest.thumbnail;
   const open = async (width, height, scale) => {
-    const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale });
+    // Reduced motion: the picture shows each design settled, never mid-animation. The template page's sample photographs
+    // (showcase) fill the cover, as they do on the template page itself.
+    const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale, reducedMotion: 'reduce' });
     await page.goto(`${base}/`);
     await page.addStyleTag({ content: packagedCss });
     await page.addScriptTag({ url: `${base}/templates/templates.generated.js` });
     await page.addScriptTag({ url: `${base}/packaged-templates.js` });
-    await page.evaluate(([project, template]) => { document.body.innerHTML = window.renderPackagedTemplate(project, template); }, [sample, t]);
-    await page.evaluate(() => document.fonts.ready);
+    await page.evaluate(([project, template]) => { document.body.innerHTML = window.renderPackagedTemplate(project, template, { sample: true, showcase: true }); }, [sample, t]);
+    await page.evaluate(() => Promise.all([document.fonts.ready, ...[...document.images].map(img => img.decode().catch(() => {}))]));
     await page.waitForTimeout(300);
     return page;
   };

@@ -179,6 +179,17 @@ for (const { manifest, parts, css } of list) {
     }
   });
 
+  test(`${id}: the template page shows real sample photographs, all of them on this site, no more than the design shows`, () => {
+    const { renderPackagedTemplate } = renderer();
+    const out = renderPackagedTemplate({ title: 'Sam & Lee' }, { id, packaged: id }, { sample: true, showcase: true });
+    const shown = [...new Set([...out.matchAll(/src="(\/assets\/samples\/[^"]+)"/g)].map(m => m[1]))];
+    assert.ok(shown.length >= 1, 'sample photographs fill the photo spots');
+    for (const src of [...shown, ...(manifest.example.photoSet || [])]) assert.ok(existsSync(join(root, src)), `${src} exists`);
+    const spots = (manifest.photoSlots || (manifest.heroPhoto ? ['hero'] : [])).length;
+    assert.ok(shown.length <= Math.max(spots + (manifest.example.photos || 0), 1), `${shown.length} sample photos is more than the design shows`);
+    assert.doesNotMatch(stripped(out), /Your photo/);
+  });
+
   test(`${id}: long names, one name, no date and unicode names stay tidy`, () => {
     const { renderPackagedTemplate } = renderer();
     const t = { id, packaged: id };

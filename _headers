@@ -13,3 +13,5 @@
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 /assets/templates/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/assets/samples/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
