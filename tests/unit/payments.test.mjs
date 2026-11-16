@@ -59,7 +59,8 @@ function install(state) {
       if (url.searchParams.get('select') === '*') return json(200, [state.wedding]);
       return json(200, []);
     }
-    if (url.pathname === '/rest/v1/weddings' && method === 'PATCH') { Object.assign(state.wedding, body); return json(200, [{ id: WID }]); }
+    // Like the database, any update to the wedding raises its version.
+    if (url.pathname === '/rest/v1/weddings' && method === 'PATCH') { Object.assign(state.wedding, body); state.wedding.version += 1; return json(200, [{ ...state.wedding }]); }
     if (url.pathname === '/rest/v1/payments' && method === 'GET') {
       let rows = state.payments;
       for (const [key, value] of url.searchParams) {
@@ -87,6 +88,7 @@ function install(state) {
       if (!row) return json(400, { code: 'P0001', message: 'PAYMENT_NOT_FOUND' });
       row.status = 'paid';
       state.wedding.publish_unlocked_at = '2026-11-13T00:00:00Z';
+      state.wedding.version += 1;
       return json(200, { payment_id: row.id, status: 'paid' });
     }
     if (url.pathname === '/rest/v1/rpc/publish_wedding_slug' && method === 'POST') return json(200, { id: WID, slug: body.p_slug, status: 'published', visibility: 'public', version: 4 });
@@ -238,14 +240,17 @@ test('verify: an unpaid link unlocks nothing; the answer comes from Razorpay, ne
 test('verify: a link Razorpay says is paid, for the locked amount, unlocks publishing through the one database function', async () => {
   const { state, paymentId } = await startedPayment();
   paidLink(state, state.payments[0]);
+  const versionBefore = state.wedding.version;
   const r = await verifyRun(state, paymentId);
-  assert.deepEqual(r.body, { unlocked: true, status: 'paid' });
+  // Confirming the payment raises the wedding's version, and the answer carries the new one, so the page can still publish.
+  assert.equal(state.wedding.version, versionBefore + 1);
+  assert.deepEqual(r.body, { unlocked: true, status: 'paid', version: versionBefore + 1 });
   const rpc = state.calls.find(c => c.path === '/rest/v1/rpc/mark_payment_paid');
   assert.deepEqual(rpc.body, { p_payment_id: paymentId, p_provider_ref: 'plink_TEST1', p_amount: 299900, p_currency: 'INR', p_provider_payment_id: 'pay_ABC123' });
   assert.ok(state.wedding.publish_unlocked_at);
   // Asking again is harmless and needs no call to Razorpay.
   const before = razorpayCalls(state).length;
-  assert.deepEqual((await verifyRun(state, paymentId)).body, { unlocked: true, status: 'paid' });
+  assert.deepEqual((await verifyRun(state, paymentId)).body, { unlocked: true, status: 'paid', version: versionBefore + 1 });
   assert.equal(razorpayCalls(state).length, before);
 });
 
@@ -363,6 +368,8 @@ test('publishing: while payments are not live nothing is charged, and the websit
   const early = { ...LIVE, PAYMENTS_MODE: undefined };
   const r = await publishRun(state, early);
   assert.equal(r.status, 200);
+  // Recording the unlock raises the version once more: the answer must carry that latest number, or the page's next save conflicts.
+  assert.equal(r.body.wedding.version, state.wedding.version);
   assert.equal(state.wedding.publish_unlock_reason, 'early-access');
   assert.ok(state.wedding.publish_unlocked_at);
   // Later, with payments live, that website publishes again without paying.

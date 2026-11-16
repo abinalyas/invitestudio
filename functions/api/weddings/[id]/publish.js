@@ -96,16 +96,20 @@ export async function onRequest(context) {
     } catch (error) {
       throw publishErrorFrom(error);
     }
-    const wedding = Array.isArray(data) ? data[0] : data;
+    let wedding = Array.isArray(data) ? data[0] : data;
     if (!wedding?.id) {
       throw new ApiError('That slug may already be in use or the draft changed. Reload and try again.', 409, 'PUBLISH_CONFLICT');
     }
     // While payments are not live, publishing counts as early access: the website stays unlocked after payments open.
+    // Any update to the row raises its version, so the response must carry the version after this one too. Otherwise the
+    // page keeps the older number and its next save looks like a conflict.
     if (!live && !current.publish_unlocked_at) {
-      await db(env, `weddings?id=eq.${params.id}&publish_unlocked_at=is.null`, {
+      const unlocked = await db(env, `weddings?id=eq.${params.id}&publish_unlocked_at=is.null`, {
         method: 'PATCH',
+        headers: { Prefer: 'return=representation' },
         body: JSON.stringify({ publish_unlocked_at: new Date().toISOString(), publish_unlock_reason: 'early-access' })
-      }).catch(() => console.error('Could not record the early access unlock'));
+      }).catch(() => { console.error('Could not record the early access unlock'); return null; });
+      if (unlocked?.[0]?.id) wedding = { ...wedding, ...unlocked[0] };
     }
     return success(request, env, {
       wedding,

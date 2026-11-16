@@ -146,7 +146,8 @@ test.describe('publishing and the public invitation', () => {
 
     const published = await request.post(`/api/weddings/${draft.wedding.id}/publish`, { headers: auth, data: { version: 1, slug } });
     expect(published.status()).toBe(200);
-    expect((await published.json()).publicUrl).toBe(`/s/${slug}`);
+    const publishedBody = await published.json();
+    expect(publishedBody.publicUrl).toBe(`/s/${slug}`);
 
     const publicResponse = await request.get(`/api/public-weddings/${slug}`);
     expect(publicResponse.status()).toBe(200);
@@ -155,7 +156,8 @@ test.describe('publishing and the public invitation', () => {
     expect(publicText).not.toContain(draft.wedding.id);
     expect(JSON.parse(publicText).wedding.title).toBe('Public couple');
 
-    const unpublished = await request.post(`/api/weddings/${draft.wedding.id}/unpublish`, { headers: auth, data: { version: 2 } });
+    // The version after publishing comes from the publish answer (publishing also records the early access unlock, which raises it).
+    const unpublished = await request.post(`/api/weddings/${draft.wedding.id}/unpublish`, { headers: auth, data: { version: publishedBody.wedding.version } });
     expect(unpublished.status()).toBe(200);
     expect((await request.get(`/api/public-weddings/${slug}`)).status()).toBe(404);
   });

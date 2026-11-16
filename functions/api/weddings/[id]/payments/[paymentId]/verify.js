@@ -3,8 +3,13 @@
 // Nothing the browser says is believed. The server finds ITS OWN payment row, asks Razorpay for the link it created, and only when
 // Razorpay says the link is paid for exactly the amount and currency that were locked does it unlock publishing (through the one
 // database function that may do so). The signed webhook does the same independently, so a guest who never comes back is still unlocked.
-import { ApiError, assertUuid, db, fail, optionsResponse, requireEditAccess, rpc, success } from '../../../../../_shared/api.js';
+import { ApiError, assertUuid, db, fail, getWedding, optionsResponse, requireEditAccess, rpc, success } from '../../../../../_shared/api.js';
 import { fetchPaymentLink, paymentsLive, razorpayConfig } from '../../../../../_shared/razorpay.js';
+
+// Confirming a payment updates the wedding row, which raises its version. The page needs the new number to publish next.
+async function versionOf(env, id) {
+  try { return Number((await getWedding(env, id)).version) || undefined; } catch { return undefined; }
+}
 
 export async function onRequest(context) {
   const { request, env, params } = context;
@@ -27,7 +32,7 @@ export async function onRequest(context) {
     })}`);
     const payment = rows?.[0];
     if (!payment) throw new ApiError('Payment not found.', 404, 'NOT_FOUND');
-    if (payment.status === 'paid') return success(request, env, { unlocked: true, status: 'paid' });
+    if (payment.status === 'paid') return success(request, env, { unlocked: true, status: 'paid', version: await versionOf(env, params.id) });
     if (!payment.provider_payment_id) return success(request, env, { unlocked: false, status: 'pending' });
 
     const link = await fetchPaymentLink(env, payment.provider_payment_id);
@@ -53,7 +58,7 @@ export async function onRequest(context) {
         }
         throw error;
       }
-      return success(request, env, { unlocked: true, status: 'paid' });
+      return success(request, env, { unlocked: true, status: 'paid', version: await versionOf(env, params.id) });
     }
     if (link?.status === 'expired' || link?.status === 'cancelled') {
       await db(env, `payments?id=eq.${payment.id}&status=eq.pending`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) }).catch(() => null);
