@@ -693,8 +693,9 @@ input[type="date"], input[type="time"] { min-width: 0; max-width: 100%; box-sizi
 .input-with-icon { min-width: 0; max-width: 100%; }
 .setup-form input[type="date"] { display: block; width: 100%; }
 
-/* Keyboard open on a phone: the pinned bars give the typing field the room (figma-host.js sets data-keyboard on the host). */
-:host[data-keyboard] .setup-actions,
+/* Keyboard open on a phone: the pinned bars give the typing field the room (figma-host.js sets data-keyboard on the island root).
+   Continue stays reachable: it scrolls with the form instead of staying pinned, and the editor's tab bar steps aside. */
+:host[data-keyboard] .setup-actions { position: static; }
 :host[data-keyboard] .mobile-tabs,
 :host[data-keyboard] .mobile-edit-pill,
 :host[data-keyboard] .detail-sticky { display: none; }

@@ -92,9 +92,9 @@ test('create, edit, save, publish, share, edit after publishing, and take offlin
   await after.close();
 
   // 8. Take the invitation offline: the public address stops working.
-  page.once('dialog', dialog => dialog.accept());
   await page.evaluate(() => openPublish());
   await page.getByRole('button', { name: 'Take offline' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Take offline' }).click();
   await expect(page.locator('#modal-root')).toContainText(/Publish your invitation|Share your invitation/i, { timeout: 15000 });
   const offline = await browser.newContext();
   const offlinePage = await offline.newPage();

@@ -435,9 +435,10 @@
     container.append(input);
     input.click();
   }
+  const askConfirm = options => (window.inviteConfirm ? window.inviteConfirm(options) : Promise.resolve(window.confirm(options.message || options.title)));
   async function removePhotoFromPreview(container, id) {
     hidePhotoBar(container);
-    if (!window.confirm('Remove this photo?')) return;
+    if (!await askConfirm({ title: 'Remove this photo?', message: 'It will disappear from your invitation.', confirmLabel: 'Remove photo', cancelLabel: 'Keep it', danger: true })) return;
     await bridge.mediaRemove(id);
     setNotice(container, 'Photo removed.', 'info', 5000);
   }
@@ -1165,6 +1166,10 @@
         access: typeof draftAccessNote === 'function' ? draftAccessNote() : '',
         error: state.recoveryError || ''
       };
+    },
+
+    confirm(options) {
+      return askConfirm(options);
     },
 
     continueDraft() {

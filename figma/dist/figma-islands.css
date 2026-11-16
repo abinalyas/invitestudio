@@ -1372,7 +1372,8 @@
 .figma-app input[type="date"], .figma-app input[type="time"]{ min-width: 0; max-width: 100%; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
 .figma-app .input-with-icon{ min-width: 0; max-width: 100%; }
 .figma-app .setup-form input[type="date"]{ display: block; width: 100%; }
-.figma-app[data-keyboard] .setup-actions, .figma-app[data-keyboard] .mobile-tabs, .figma-app[data-keyboard] .mobile-edit-pill, .figma-app[data-keyboard] .detail-sticky{ display: none; }
+.figma-app[data-keyboard] .setup-actions{ position: static; }
+.figma-app[data-keyboard] .mobile-tabs, .figma-app[data-keyboard] .mobile-edit-pill, .figma-app[data-keyboard] .detail-sticky{ display: none; }
 @media (max-width: 480px){.figma-app .gallery-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .figma-app .gallery-preview{ aspect-ratio: 9 / 14; }
 .figma-app .gallery-preview strong{ font-size: 19px; }
