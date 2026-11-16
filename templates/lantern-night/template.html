@@ -1,0 +1,140 @@
+<!--part:intro-->
+<div class="intro" data-intro data-intro-ms="{{intro_ms}}"<!--if intro_wait--> data-wait<!--/if--> role="dialog" aria-label="Opening">
+  <div class="intro-stage" aria-hidden="true">
+    <img class="intro-poster" src="/templates/lantern-night/assets/poster-tall.webp" alt="">
+    <video class="intro-video" muted playsinline preload="none" poster="/templates/lantern-night/assets/poster-tall.webp" data-src-wide="/templates/lantern-night/assets/film-wide.mp4" data-src-tall="/templates/lantern-night/assets/film-tall.mp4"></video>
+  </div>
+  <p class="intro-note">{{edit:copy:intro_note}}</p>
+  <!--if intro_wait--><button class="intro-start" type="button" data-intro-start><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg>Click to start</button><!--/if-->
+  <button class="intro-skip" type="button" data-intro-skip>{{copy:intro_skip}} {{icon:arrow-up-right}}</button>
+</div>
+
+<!--part:header-->
+<div class="backdrop" aria-hidden="true">
+  <div class="backdrop-pin">
+    <picture><source media="(orientation: landscape)" srcset="/templates/lantern-night/assets/poster.webp"><img class="backdrop-poster" src="/templates/lantern-night/assets/poster-tall.webp" alt=""></picture>
+    <!--if editable--><!--else--><video class="backdrop-film" data-film muted playsinline preload="none" poster="/templates/lantern-night/assets/poster-tall.webp" data-src-wide="/templates/lantern-night/assets/film-wide.mp4" data-src-tall="/templates/lantern-night/assets/film-tall.mp4"></video><!--/if-->
+    <div class="backdrop-glow"></div>
+  </div>
+</div>
+<header class="site-header">
+  <button class="brand" type="button" data-scroll-to="home" aria-label="{{names}} home">{{ia}}<!--if ib--> <span>&amp;</span> {{ib}}<!--/if--></button>
+  <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">{{icon:menu}}</button>
+  <nav class="nav" data-nav aria-label="Main navigation">
+    <!--if story--><button type="button" data-scroll-to="story">{{copy:nav_story}}</button><!--/if-->
+    <!--if events--><button type="button" data-scroll-to="celebration">{{copy:nav_celebration}}</button><!--/if-->
+    <!--if show_gallery--><button type="button" data-scroll-to="gallery">{{copy:nav_gallery}}</button><!--/if-->
+    <button type="button" data-scroll-to="rsvp">{{copy:nav_rsvp}}</button>
+  </nav>
+</header>
+
+<!--part:hero-->
+<section class="hero" data-tpl-section="home" data-section="hero"<!--if editable--> data-still<!--/if-->>
+  <div class="lanterns" data-ambient aria-hidden="true"><span style="left:12%;--w:25px;--h:39px;--dur:30s;--delay:-8s"><i></i></span><span style="left:27%;--w:34px;--h:51px;--dur:34s;--delay:-22s"><i></i></span><span style="left:43%;--w:22px;--h:35px;--dur:27s;--delay:-14s"><i></i></span><span style="left:61%;--w:31px;--h:48px;--dur:33s;--delay:-4s"><i></i></span><span style="left:76%;--w:24px;--h:38px;--dur:29s;--delay:-19s"><i></i></span><span style="left:88%;--w:36px;--h:55px;--dur:36s;--delay:-27s"><i></i></span><span style="left:53%;--w:19px;--h:30px;--dur:31s;--delay:-11s"><i></i></span></div>
+  <div class="hero-content">
+    <p class="eyebrow" data-reveal="fade">{{upper:edit:copy:hero_kicker}}</p>
+    <span class="hero-rule" data-reveal="draw" style="--rd:.15s" aria-hidden="true"></span>
+    <h1 data-reveal="soft"<!--if long_names--> data-long<!--/if--> style="--nl:{{name_len}}">{{edit:a}}<!--if b--><span>&amp; {{edit:b}}</span><!--/if--></h1>
+    <p class="hero-copy" data-reveal style="--rd:.45s"><!--if hosts_line-->{{edit:hosts_line}},<br><!--/if-->{{edit:copy:hero_line}}</p>
+    <!--if date-->
+    <div class="date-zone" data-reveal style="--rd:.6s" data-scratch data-scratch-foil="night"<!--if editable--> data-scratched<!--/if--> data-scratch-label="{{copy:scratch_label}}">
+      <div class="date-pill" data-scratch-card>
+        <span class="date-text"<!--if editable--> data-edit="date" data-raw="{{date_iso}}"<!--/if-->><span>{{day}}</span><i aria-hidden="true">{{icon:sparkle}}</i><span>{{month_long}}</span><i aria-hidden="true">{{icon:sparkle}}</i><span>{{year}}</span></span>
+      </div>
+      <button class="date-btn" type="button" data-scratch-reveal>{{copy:reveal_button}}</button>
+    </div>
+    <!--else--><p class="date-pill date-pending">{{edit:date_long}}</p><!--/if-->
+  </div>
+  <!--if story--><button class="cue" type="button" data-scroll-to="story">{{upper:copy:cue}} {{icon:chevron-down}}</button><!--/if-->
+</section>
+
+<!--part:story-->
+<section class="story" data-tpl-section="story" data-section="story">
+  <div class="wrap">
+    <p class="kicker" data-reveal="fade">{{upper:edit:copy:story_kicker}}</p>
+    <h2 class="title" data-reveal="soft" style="--rd:.1s">{{edit:copy:story_title}}</h2>
+    <p class="intro-line" data-reveal style="--rd:.2s">{{edit:copy:story_intro}}</p>
+    <div class="story-grid">
+      <figure class="story-photo" data-reveal="scale"><!--if story_photo--><img src="{{story_photo}}" alt=""><!--else--><!--if editable--><span class="story-ph" data-photo-add>{{copy:story_photo_hint}}</span><!--else--><span class="story-ph" aria-hidden="true"><span class="story-mono">{{ia}}<!--if ib--> <i>&amp;</i> {{ib}}<!--/if--></span></span><!--/if--><!--/if--></figure>
+      <div class="story-copy" data-reveal style="--rd:.15s">
+        <h3>{{edit:copy:story_heading}}</h3>
+        <!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p>{{.}}</p><!--/each--><!--if editable--></span><!--/if-->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!--part:welcome-->
+<section class="welcome" data-tpl-section="invitation" data-section="welcome">
+  <div class="wrap narrow">
+    <p class="kicker" data-reveal="fade">{{upper:edit:copy:welcome_kicker}}</p>
+    <p class="welcome-note" data-reveal="soft" style="--rd:.1s">{{edit:closing_note}}</p>
+    <span class="ornament" data-reveal="draw" style="--rd:.25s" aria-hidden="true"></span>
+    <!--if has_venue--><p class="welcome-place" data-reveal style="--rd:.3s">{{edit:venue}}<!--if place--><br><span>{{edit:place}}</span><!--/if--></p><!--/if-->
+  </div>
+</section>
+
+<!--part:functions-->
+<section class="celebration" data-tpl-section="celebration" data-section="functions">
+  <div class="wrap">
+    <p class="kicker" data-reveal="fade">{{upper:edit:copy:events_kicker}}</p>
+    <h2 class="title" data-reveal="soft" style="--rd:.1s">{{edit:copy:events_title}}</h2>
+    <span class="ornament" data-reveal="draw" style="--rd:.2s" aria-hidden="true"></span>
+    <p class="intro-line" data-reveal style="--rd:.25s">{{edit:copy:events_intro}}</p>
+    <div class="events">
+      <!--each events--><article class="event-card" data-reveal>
+        <span class="event-icon" aria-hidden="true">{{icon:sparkle-line}}</span>
+        <h3>{{edit:event_title}}</h3>
+        <!--if date_text--><p class="event-date">{{date_text}}<!--if time_text--> · {{time_text}}<!--/if--></p><!--/if-->
+        <!--if venue--><p class="event-venue">{{edit:event_venue}}</p><!--/if-->
+        <!--if time_text--><!--else--><p class="event-note">{{upper:copy:time_unknown}}</p><!--/if-->
+        <!--if map--><a class="event-link" href="{{map}}" target="_blank" rel="noopener noreferrer">{{upper:copy:directions}} {{icon:arrow-up-right}}</a><!--/if-->
+      </article><!--/each-->
+    </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
+    <!--if date-->
+    <p class="kicker countdown-kicker" data-reveal="fade">{{upper:edit:copy:countdown_kicker}}</p>
+    <div class="countdown" data-reveal role="timer" aria-live="off" data-countdown="{{date_iso}}">
+      <div><strong data-cd="days">—</strong><small>DAYS</small></div>
+      <div><strong data-cd="hours">—</strong><small>HOURS</small></div>
+      <div><strong data-cd="minutes">—</strong><small>MINUTES</small></div>
+      <div><strong data-cd="seconds">—</strong><small>SECONDS</small></div>
+    </div>
+    <!--/if-->
+  </div>
+</section>
+
+<!--part:gallery-->
+<section class="gallery" data-tpl-section="gallery" data-section="gallery">
+  <div class="wrap">
+    <p class="kicker" data-reveal="fade">{{upper:edit:copy:gallery_kicker}}</p>
+    <h2 class="title" data-reveal="soft" style="--rd:.1s">{{edit:copy:gallery_title}}</h2>
+    <span class="ornament" data-reveal="draw" style="--rd:.2s" aria-hidden="true"></span>
+    <p class="intro-line" data-reveal style="--rd:.25s">{{edit:copy:gallery_intro}}</p>
+    <div class="photo-grid">
+      <!--each photos--><figure class="tile" data-reveal="scale"><!--if src--><img src="{{src}}" alt="{{alt}}" loading="lazy"><!--else--><span class="photo-ph"<!--if editable--> data-photo-add<!--/if-->><!--if editable-->Your photo<!--else--><span data-ph-art aria-hidden="true"><b>{{ia}}</b><!--if ib--><i>&amp;</i><b>{{ib}}</b><!--/if--></span><!--/if--></span><!--/if--></figure><!--/each-->
+    </div>
+  </div>
+</section>
+
+<!--part:rsvp-->
+<section class="rsvp" data-tpl-section="rsvp" data-section="rsvp">
+  <div class="rsvp-card" data-reveal="scale">
+    <span class="rsvp-star rsvp-star-a" aria-hidden="true">{{icon:sparkle-line}}</span><span class="rsvp-star rsvp-star-b" aria-hidden="true">{{icon:sparkle-line}}</span>
+    <p class="kicker">{{upper:edit:copy:rsvp_kicker}}</p>
+    <h2>{{edit:copy:rsvp_title}}</h2>
+    <p class="rsvp-lead">{{edit:copy:rsvp_lead}}</p>
+    <div class="reply"><!--if rsvp_status_show--><p class="rsvp-status" role="note">{{rsvp_status_text}}<!--if rsvp_contact--> <a class="rsvp-link" href="{{rsvp_href}}">{{rsvp_contact_label}}</a><!--/if--></p><!--/if--><!--if rsvp_online--><button type="button" class="rsvp-open" data-rsvp-open data-rsvp-config="{{rsvp_config}}">Reply</button><!--/if--></div>
+  </div>
+</section>
+
+<!--part:footer-->
+<footer class="site-footer">
+  <p class="footer-names" data-reveal="soft">{{edit:a}}<!--if b--> &amp; {{edit:b}}<!--/if--></p>
+  <p class="footer-line" data-reveal="fade" style="--rd:.1s">{{upper:footer_line}}</p>
+  <span class="ornament" data-reveal="draw" style="--rd:.2s" aria-hidden="true"></span>
+  <p class="footer-wish" data-reveal="fade" style="--rd:.3s">{{em:edit:copy:footer_wish}}</p>
+  <div class="footer-row">
+    <button type="button" data-scroll-to="home">{{upper:copy:footer_top}} {{icon:arrow-up}}</button>
+    <!--if intro--><button type="button" data-intro-replay>{{upper:copy:footer_replay}}</button><!--/if-->
+  </div>
+</footer>

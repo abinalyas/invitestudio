@@ -252,7 +252,7 @@ templates/<id>/
 | `countdown` | From the date and time rule in section 3.1. Shows "Today is the day" afterwards. Hidden with no date. |
 | `menu` | Header navigation generated from the sections that are shown. Mobile menu toggle. |
 | `reveal` | Scroll reveals, off for reduced motion. One motion language for every template (`templates/_shared/motion.css`): `data-reveal` (rise), `fade`, `scale`, `soft` (blur-in, for headings and names), `left`/`right`, `draw` (rules), `curtain` (pictures). Stagger a group with `--rd` in .08 to .12s steps. Mark looping decoration `data-ambient` so reduced motion stops it. On the template page (`showcase`) the opening plays in full; in the editor what is already on screen stays still. |
-| `icon` | `{{icon:name}}` draws the platform's line icons (arrows, chevron, menu, pin, clock, calendar, asterisk, sparkle, heart, blossom, moon, dot). Never Unicode arrows or stars: they differ per phone and some become colour emoji. |
+| `icon` | `{{icon:name}}` draws the platform's line icons (arrows, chevron, menu, pin, clock, calendar, asterisk, sparkle, sparkle-line, heart, blossom, moon, dot). Never Unicode arrows or stars: they differ per phone and some become colour emoji. |
 | `sample photos` | The template page (`showcase`) fills photo spots with sample photographs (`example.photoSet`, else the shared set in `packaged-templates.js`). Never in the editor, the setup steps or a published page. Empty tiles outside the editor are designed cards with the couple's initials (`templates/_shared/photo.css`). |
 | `map` | A "Get directions" link by default. An embedded map is **not allowed by the site's security policy today** (frames are blocked). Options: keep link-only, or add click-to-load embedding with a policy change. Decision needed. |
 | `rsvp` | One form for all templates, styled by the template. Fields follow the product decision: name, attending, number of guests (limit set by the couple), dietary note, message. Not open until the RSVP phase. |
@@ -455,6 +455,29 @@ Every packaged template can play a gentle background track, with a round on/off 
 - **The widget plays it** (`template-widgets.js`). Browsers refuse sound before the guest has touched the page, so the track starts on the first tap, key press or click anywhere on the invitation (a tap on the opening's own button or "Click to start" counts) and fades in; the button shows whether it is really playing, and if the browser refuses, the next touch tries again. The button turns it off and on; turning it off is remembered on that device (`invitestudio-sound` in local storage) and later pages stay silent after a tap until it is turned on again. The track loops, pauses while the tab is hidden, and stops when the page is left. Nothing downloads until the music starts.
 - **Tracks and templates**: Minimalist, Bloom Reveal and Cherry Blossom use "romantic piano"; Velvet Reveal and Under the Same Moon use "romantic"; Fairy Tale and Blue Hydrangea use "garden ceremony glow"; Modern Heritage uses "wedding music 1"; Cinematic and Golden Butterfly use "wedding music 2". Changing a template's track is a one-line manifest edit.
 - **Not yet**: the four scene templates (Savanna Sunset, Palmera Beach, Curtain Call, Lunaria Moon) are drawn by a different renderer and have no music button; the couple cannot yet choose a track or turn the music off for their invitation (guests can). The tracks were supplied by the project owner (file names credit Alex Morgan, AndriiG and AtlasAudio); confirm their licence terms cover this use before launch.
+
+### 15.12 Eleventh template: Lantern Night (implemented)
+
+Converted from a single-file static page (a night of a thousand lanterns: an opening film that keeps playing behind the
+whole invitation, rising lanterns, a date to scratch from a dark foil pill). What the conversion did:
+
+- **Opening**: a timed film opening as in section 15.8 (7.5 s, Enter, the welcome line over it), with a wide and a tall
+  file so a phone downloads only the portrait one. The 9 MB source film became about 1 MB per file (no sound track; the
+  platform's music plays instead).
+- **The film behind the page** is a new platform behaviour, `data-film`: a `<video>` with `data-src-wide` /
+  `data-src-tall`. The platform picks the file when the opening lifts (the same film, so it is not fetched twice at once),
+  plays it muted and looping, pauses it while the tab is hidden, and never plays it under reduced motion (the poster stays).
+  The template leaves it out of the editor. It is pinned to the visible frame with `position:sticky` and the new
+  `--frame-h` value the platform sets on every invitation (the editor's phone frame, else the window; measured again when
+  an opening lifts, because the frame does not scroll while one is up). Templates still may not use viewport units.
+- **The date**: the platform scratch widget with a new `data-scratch-foil="night"` style (dark bronze, a sheen, gold
+  speckles, a gold edge that follows the pill's rounded corners, small spaced capitals). The parts of the date rise in once
+  revealed.
+- **Sections**: cover (rising lanterns drawn in CSS, a soft dark halo behind the words), the couple's note, story (a photo
+  spot and a glass card), the celebration (a card per event) and a countdown, gallery, reply (the platform's Reply button
+  as a gold pill), closing. Glass panels over the film throughout; type and colours measured from the supplied page.
+- **Removed**: the page's own RSVP form (the platform's Reply), the "Enable sound" button (the platform's music button),
+  the Google Fonts request (Cormorant Garamond, Lora and DM Sans are self-hosted, OFL), hard-coded names, venues and times.
 
 ## Click-to-edit markers (editor preview only)
 

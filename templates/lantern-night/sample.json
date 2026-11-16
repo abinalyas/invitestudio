@@ -1,0 +1,27 @@
+{
+  "title": "Meera & Abin",
+  "date": "2027-08-24",
+  "location": "St Athanasius Jacobite Syrian Cathedral, Puthencruz, Kerala",
+  "message": "With grateful hearts and joyful anticipation, we invite you to be part of a day that means the world to us.",
+  "hosts": "Together with their families",
+  "story": "With grateful hearts and joyful anticipation, we invite you to be part of a day that means the world to us. Your presence will make our celebration even more special.\n\nWe cannot wait to share this beautiful new chapter with the people we love most.",
+  "functions": [
+    {
+      "title": "The Wedding",
+      "date": "2027-08-24",
+      "time": "",
+      "venue": "St Athanasius Jacobite Syrian Cathedral, Puthencruz",
+      "directionsUrl": "https://www.google.com/maps/search/?api=1&query=St+Athanasius+Jacobite+Syrian+Cathedral+Puthencruz+Kerala",
+      "visible": true
+    },
+    {
+      "title": "The Reception",
+      "date": "2027-08-24",
+      "time": "18:30",
+      "venue": "Petrose Convention Centre, Vadayampady",
+      "directionsUrl": "https://www.google.com/maps/search/?api=1&query=Petrose+Convention+Centre+Vadayampady+Kerala",
+      "visible": true
+    }
+  ],
+  "photos": []
+}
