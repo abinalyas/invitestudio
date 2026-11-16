@@ -214,6 +214,7 @@ export interface InviteStudioBridge {
   finishSetup(): void;
   renderTemplateDemo(host: HTMLElement, backendTemplateId: string): void;
   openPublish(): void;
+  openShareCard(): void;
   openLegacyTemplates(): void;
   recovery(): RecoveryCard | null;
   continueDraft(): void;
@@ -279,6 +280,7 @@ export const bridge = {
   finishSetup: () => host().finishSetup(),
   renderTemplateDemo: (element: HTMLElement, backendTemplateId: string) => host().renderTemplateDemo(element, backendTemplateId),
   openPublish: () => host().openPublish(),
+  openShareCard: () => host().openShareCard(),
   openLegacyTemplates: () => host().openLegacyTemplates(),
   recovery: () => host().recovery(),
   continueDraft: () => host().continueDraft(),

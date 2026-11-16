@@ -1007,6 +1007,7 @@
       ${explainer}${priceNote}${keptBlock}${addressField}${changeWarning}${notSaved}${info}${checkAgain}${error}${success}${liveBlock}
       <div class="modal-actions" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
         <button class="btn" type="button" data-publish-close>Close</button>
+        ${live && !session.changing ? '<button class="btn" type="button" data-share-card>Share card for WhatsApp</button>' : ''}
         ${live ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}
         ${justWentLive ? '' : `<button class="btn dark" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${session.busy ? (paying || session.info ? 'Please wait…' : 'Going live…') : primary}</button>`}
       </div>`);
@@ -1037,6 +1038,7 @@
       else { state.page = 'preview'; render(); }
     });
     root.querySelector('[data-unpublish]')?.addEventListener('click', () => unpublishFromDialog(project));
+    root.querySelector('[data-share-card]')?.addEventListener('click', () => { publishSession = null; if (typeof window.openShareCard === 'function') window.openShareCard(project); });
     root.querySelector('[data-copy-public-link]')?.addEventListener('click', () => copyPublicLink(publicLinkFor(project.publicSlug)));
     root.querySelector('[data-change-address]')?.addEventListener('click', () => {
       publishSession.changing = true;

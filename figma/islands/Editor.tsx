@@ -638,6 +638,7 @@ function ShareGuide({ snap }: { snap: EditorSnapshot }) {
         <div className="live-actions">
           <a className="btn small" href={url} target="_blank" rel="noopener noreferrer">Open</a>
           <button type="button" className="btn small" onClick={() => void copyLink(url)}>{copied === "yes" ? "Copied" : copied === "no" ? "Select the link to copy" : "Copy link"}</button>
+          <button type="button" className="btn small" onClick={() => bridge.openShareCard()}>Share card</button>
         </div>
       </section>
     );

@@ -1181,6 +1181,7 @@
       finishSetup();
     },
 
+    openShareCard() { if (typeof window.openShareCard === 'function') window.openShareCard(current()); },
     openPublish() {
       openPublish();
     },
