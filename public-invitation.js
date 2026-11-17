@@ -46,7 +46,7 @@
       sections: Array.isArray(wedding.sections) && wedding.sections.length ? wedding.sections : undefined,
       functions: Array.isArray(content.functions) ? content.functions : [],
       copy: content.copy && typeof content.copy === 'object' ? content.copy : {},
-      photos: (Array.isArray(photos) ? photos : []).map(photo => ({ id: photo.id, alt: photo.alt || '', width: photo.width, height: photo.height, data: photo.full, thumb: photo.thumb })),
+      photos: (Array.isArray(photos) ? photos : []).map(photo => ({ id: photo.id, alt: photo.alt || '', width: photo.width, height: photo.height, data: photo.full, thumb: photo.thumb, slot: photo.slot || '' })),
       introSettings: wedding.intro_settings || {},
       animationSettings: wedding.animation_settings || {},
       status: 'Published',

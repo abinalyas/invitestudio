@@ -576,3 +576,47 @@ test('the two names are told apart by a sign or by "and", "weds", "wed", "marrie
   assert.deepEqual(halves('Malcolm X Little'), ['Malcolm X Little', '']);
   assert.deepEqual(halves('Wedmore Sandy'), ['Wedmore Sandy', '']);
 });
+
+test('a photo goes where it was added: the gallery stays the gallery, and a cover photo fills the cover', () => {
+  const ctx = renderer();
+  const pic = n => `https://example.com/photo-${n}.webp`;
+  const render = (id, photos, extra = {}) => ctx.renderPackagedTemplate({ ...sampleOf(id), ...extra, photos }, { packaged: id }, { sample: false });
+  const at = (out, n) => out.indexOf(pic(n));
+  // Minimalist has one large picture, the cover (hero), drawn before the gallery.
+  const gallerySection = out => out.indexOf('photo-grid');
+  const onlyGallery = render('minimalist', [{ data: pic(1), slot: 'gallery' }, { data: pic(2), slot: 'gallery' }]);
+  assert.ok(at(onlyGallery, 1) > gallerySection(onlyGallery), 'a gallery photo is not the cover');
+  assert.ok(at(onlyGallery, 2) > gallerySection(onlyGallery));
+  const withCover = render('minimalist', [{ data: pic(1), slot: 'gallery' }, { data: pic(2), slot: 'hero' }]);
+  assert.ok(at(withCover, 2) > -1 && at(withCover, 2) < gallerySection(withCover), 'the cover photo fills the cover');
+  assert.ok(at(withCover, 1) > gallerySection(withCover), 'the gallery photo stays in the gallery');
+  assert.equal(withCover.split(pic(2)).length - 1, 1, 'the cover photo is not repeated in the gallery');
+  // A second photo for the same spot goes to the gallery.
+  const twoCovers = render('minimalist', [{ data: pic(1), slot: 'hero' }, { data: pic(2), slot: 'hero' }]);
+  assert.ok(at(twoCovers, 1) < gallerySection(twoCovers));
+  assert.ok(at(twoCovers, 2) > gallerySection(twoCovers));
+  // Photos with no place (added before places existed) keep the old rule: the first fills the cover, the rest go to the gallery.
+  const legacy = render('minimalist', [{ data: pic(1) }, { data: pic(2) }]);
+  assert.ok(at(legacy, 1) < gallerySection(legacy));
+  assert.ok(at(legacy, 2) > gallerySection(legacy));
+  // A photo for a spot the design does not have goes to the gallery as well (Modern Heritage has no cover picture).
+  const noSpot = render('modern-heritage', [{ data: pic(1), slot: 'hero' }]);
+  assert.ok(at(noSpot, 1) > -1);
+  // Mixed: a legacy photo fills a spot that is still empty, and does not take a spot that was filled on purpose.
+  const mixed = render('minimalist', [{ data: pic(1) }, { data: pic(2), slot: 'hero' }]);
+  assert.ok(at(mixed, 2) < gallerySection(mixed));
+  assert.ok(at(mixed, 1) > gallerySection(mixed));
+});
+
+test('in the editor an empty cover, story or venue picture offers its own add button, and a filled one does not', () => {
+  const ctx = renderer();
+  const editor = (id, photos) => ctx.renderPackagedTemplate({ ...sampleOf(id), photos }, { packaged: id }, { sample: false, editable: true });
+  const spots = out => [...out.matchAll(/<button type="button" data-photo-add="(hero|story|venue)"/g)].map(m => m[1]);
+  assert.deepEqual(spots(editor('minimalist', [])), ['hero']);
+  assert.deepEqual(spots(editor('minimalist', [{ data: 'https://example.com/c.webp', slot: 'hero' }])), []);
+  assert.deepEqual(spots(editor('minimalist', [{ data: 'https://example.com/g.webp', slot: 'gallery' }])), ['hero'], 'a gallery photo does not use up the cover');
+  assert.deepEqual(spots(editor('cinematic', [])).sort(), ['hero', 'story', 'venue']);
+  // The published page never has an add button.
+  const published = ctx.renderPackagedTemplate({ ...sampleOf('minimalist'), photos: [] }, { packaged: 'minimalist' }, { sample: false });
+  assert.equal(published.includes('data-photo-add'), false);
+});

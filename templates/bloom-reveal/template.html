@@ -125,7 +125,7 @@
 <section class="story section" data-tpl-section="story" data-section="story">
   <div class="wrap story-layout">
     <figure class="story-panel" data-reveal="scale">
-      <!--if story_photo--><img src="{{story_photo}}" alt="" loading="lazy"><!--else--><div class="story-art" aria-hidden="true"></div><!--/if-->
+      <!--if story_photo--><img src="{{story_photo}}" alt="" loading="lazy"><!--else--><div class="story-art" aria-hidden="true"></div><!--if editable--><button type="button" data-photo-add="story" data-photo-flow></button><!--/if--><!--/if-->
       <figcaption>{{edit:copy:story_note}}</figcaption>
     </figure>
     <div class="story-copy">

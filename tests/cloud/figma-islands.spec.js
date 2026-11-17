@@ -110,7 +110,7 @@ test('a new draft keeps the design\'s own pictures: no hero image is saved, and 
   await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
   await sections(page).getByRole('button', { name: /^Photos/ }).click();
   await expect(page.getByText(/No photos yet/i)).toBeVisible();
-  await expect(page.locator('.editor-controls input[type="file"]')).toHaveCount(1);
+  await expect(page.getByLabel('Add photos to the gallery')).toHaveCount(1); // the gallery's button; the design's own pictures have theirs
   const [row] = await dbQuery(`select preferences->>'heroImageUrl' as url from weddings where title = $1`, [title]);
   expect(row.url).toBeNull();
 });

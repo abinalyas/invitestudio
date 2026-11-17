@@ -483,7 +483,7 @@ test.describe('guest replies', () => {
     const wid = '55555555-5555-4555-8555-555555555555', token = 'm'.repeat(43);
     const calls = { uploads: [], patches: [], deleted: [], orders: [] };
     const photos = [];
-    const view = () => ({ enabled, reason, limits: { photos: 12, totalBytes: 8388608 }, usage: { count: photos.length, bytes: photos.length * 90000 }, photos: photos.map(p => ({ id: p.id, alt: p.alt, width: p.width, height: p.height, full: p.full, thumb: p.thumb, bytes: 90000 })) });
+    const view = () => ({ enabled, reason, limits: { photos: 12, totalBytes: 8388608 }, usage: { count: photos.length, bytes: photos.length * 90000 }, photos: photos.map(p => ({ id: p.id, alt: p.alt, width: p.width, height: p.height, full: p.full, thumb: p.thumb, bytes: 90000, slot: p.slot || '' })) });
     await page.route('**/api/**', route => route.abort());
     await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding', 'cinematic'));
     await page.locator('#projectTitle').fill('Mira & Arun');
@@ -509,7 +509,7 @@ test.describe('guest replies', () => {
         const parts = parseMultipart(request);
         calls.uploads.push(parts);
         const id = `66666666-6666-4666-8666-${String(photos.length + 1).padStart(12, '0')}`;
-        photos.push({ id, alt: '', width: 1600, height: 1067, full: `/media/w/${wid}/${id}-full.webp`, thumb: `/media/w/${wid}/${id}-thumb.webp` });
+        photos.push({ id, alt: '', width: 1600, height: 1067, full: `/media/w/${wid}/${id}-full.webp`, thumb: `/media/w/${wid}/${id}-thumb.webp`, slot: parts.slot ? parts.slot.toString() : '' });
         return json({ photo: photos[photos.length - 1] }, 201);
       }
       if (url.pathname === base && method === 'PATCH') { const order = request.postDataJSON().order; calls.orders.push(order); photos.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id)); return json(view()); }
@@ -535,7 +535,8 @@ test.describe('guest replies', () => {
     const { sniffImage, imageSize, MEDIA_LIMITS } = await import('../../functions/_shared/media.js');
     const { calls } = await openSavedDraft(page);
     await expect(page.getByTestId('photo-usage')).toContainText('0 of 12 photos');
-    await expect(page.getByText(/first 3 photos fill this design/)).toBeVisible();
+    await expect(page.getByText(/Photos added with the button below go to the gallery/)).toBeVisible();
+    await expect(page.getByText(/The design's own pictures have their own places/)).toBeVisible();
     const big = Buffer.from(await makeImage(page, 'image/png', 3000, 2000), 'base64');
     const portrait = Buffer.from(await makeImage(page, 'image/jpeg', 1200, 1800), 'base64');
     await page.getByLabel('Add photos').setInputFiles([
@@ -544,7 +545,7 @@ test.describe('guest replies', () => {
     ]);
     await expect(page.getByTestId('photo-usage')).toContainText('2 of 12 photos');
     await expect(page.locator('.photo-list li')).toHaveCount(2);
-    await expect(page.locator('.photo-slot').first()).toHaveText('Cover picture');
+    await expect(page.locator('.photo-list .photo-slot').first()).toHaveText('Gallery'); // added with the main button: the gallery, not the cover
 
     // What the browser made is what the server accepts: right format, shrunk, small.
     expect(calls.uploads).toHaveLength(2);

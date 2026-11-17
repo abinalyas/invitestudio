@@ -95,6 +95,7 @@ export interface RsvpData {
 export interface PhotoItem {
   id: string;
   alt: string;
+  slot: string; // where it was added: hero, story, venue or gallery ('' for photos added before places existed)
   thumb: string;
   width: number | null;
   height: number | null;
@@ -190,7 +191,7 @@ export interface InviteStudioBridge {
   loadRetention(): Promise<RetentionInfo>;
   contactLinks(topic: "extend" | "restore" | "custom" | "general", address?: string): ContactLinks;
   mediaLoad(): Promise<void>;
-  mediaUpload(files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void): Promise<UploadResult>;
+  mediaUpload(files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void, slot?: string): Promise<UploadResult>;
   mediaAlt(id: string, alt: string): Promise<void>;
   mediaMove(id: string, delta: number): Promise<void>;
   mediaRemove(id: string): Promise<void>;
@@ -256,7 +257,7 @@ export const bridge = {
   loadRetention: () => host().loadRetention(),
   contactLinks: (topic: "extend" | "restore" | "custom" | "general", address?: string) => host().contactLinks(topic, address),
   mediaLoad: () => host().mediaLoad(),
-  mediaUpload: (files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void) => host().mediaUpload(files, onProgress),
+  mediaUpload: (files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void, slot?: string) => host().mediaUpload(files, onProgress, slot),
   mediaAlt: (id: string, alt: string) => host().mediaAlt(id, alt),
   mediaMove: (id: string, delta: number) => host().mediaMove(id, delta),
   mediaRemove: (id: string) => host().mediaRemove(id),
