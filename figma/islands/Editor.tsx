@@ -210,6 +210,14 @@ export function EditorPage() {
   const [device, setDeviceState] = useState<Device>(remembered.device);
   const [active, setActiveState] = useState<SectionKey>(remembered.active);
   const [designsOpen, setDesignsOpen] = useState(false);
+  const designListRef = useRef<HTMLDivElement>(null);
+  // When the list of designs opens, bring the current design into view inside it (the list scrolls on its own).
+  useEffect(() => {
+    if (!designsOpen) return;
+    const list = designListRef.current;
+    const current = list?.querySelector<HTMLElement>(".design-option.selected");
+    if (list && current) list.scrollTop += current.getBoundingClientRect().top - list.getBoundingClientRect().top - 8;
+  }, [designsOpen]);
   const [mobileTab, setMobileTabState] = useState<MobileTab>(remembered.mobileTab);
   const setDevice = (next: Device) => { remembered.device = next; setDeviceState(next); };
   const setActive = (next: SectionKey) => { remembered.active = next; setActiveState(next); };
@@ -478,7 +486,7 @@ export function EditorPage() {
               </button>
             </div>
             {designsOpen ? (
-              <div className="design-list" role="group" aria-label="Designs">
+              <div className="design-list" role="group" aria-label="Designs" ref={designListRef}>
                 <p className="tiny muted">Your names, dates, story and events stay the same when you change design.</p>
                 {snap.paidTier && pricing ? (
                   <p className="tiny muted design-lock-note" id="designLockNote">
