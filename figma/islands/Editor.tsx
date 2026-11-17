@@ -491,10 +491,7 @@ export function EditorPage() {
             <div className="draft-access">
               <span className="draft-access-icon"><Icon name="lock" size={22} /></span>
               <strong>Your draft is private</strong>
-              <p>
-                Only you can see it, and it is not public until you share it. This browser holds the key. To open it on another device,
-                copy your private link and open that there. Anyone with the link can edit, so keep it to yourself.
-              </p>
+              <p>Only you can see it. Anyone with your private link can edit, so keep it to yourself. To open this draft on another device, copy the link there.</p>
               <button type="button" className="btn small" onClick={() => bridge.copyPrivateLink()}><Icon name="link" size={18} /> Copy private link</button>
             </div>
           ) : null}
