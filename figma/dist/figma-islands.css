@@ -1491,3 +1491,6 @@
 .figma-app .draft-access-icon{ left: 12px; top: 10px; }
 .figma-app .draft-access p{ margin: 2px 0 6px; }
 .figma-app .draft-access .btn.small{ min-height: 40px; }}
+.figma-app .design-option.locked{ opacity: .55; cursor: not-allowed; }
+.figma-app .design-option.locked svg{ flex: none; margin-left: auto; color: #6b6760; }
+.figma-app .design-lock-note{ margin: 0 0 8px; line-height: 1.5; }

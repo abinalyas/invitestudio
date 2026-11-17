@@ -170,6 +170,7 @@
       sections,
       events: (p?.functions || []).map(normaliseEvent),
       ceremonyEventId: p?.ceremonyEventId || '',
+      paidTier: p?.paidTier || '',
       rsvp: prefs.rsvp || 'count',
       rsvpOpen: prefs.rsvpOpen !== false,
       rsvpReplyBy: /^\d{4}-\d{2}-\d{2}$/.test(prefs.rsvpReplyBy || '') ? prefs.rsvpReplyBy : '',

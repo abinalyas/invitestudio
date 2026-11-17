@@ -154,6 +154,7 @@ export type EditorSnapshot = EditorFields & {
   // Visibility of the sections on the invitation: hero, welcome, story, functions, gallery, rsvp.
   sections: Record<string, boolean>;
   events: EventItem[];
+  paidTier: string; // the price tier paid for ('' if none): designs above it are locked
   ceremonyEventId: string; // the event added automatically from the setup date, or empty
   rsvp: string;
   rsvpOpen: boolean;

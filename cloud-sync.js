@@ -511,6 +511,7 @@
     project.publicSlug = wedding.slug || project.publicSlug || null;
     project.published = wedding.status === 'published';
     project.publishUnlocked = Boolean(wedding.publish_unlocked_at);
+    if ('paid_tier' in wedding) project.paidTier = wedding.paid_tier || ''; // the price tier that was paid for; designs above it are locked
     project.status = PUBLISH_LABELS[wedding.status] || 'Draft';
     project.updated = wedding.updated_at || 'Just now';
     project.name = wedding.name || project.name;
@@ -699,6 +700,13 @@
         project.cloudStatus = 'pending';
         localSave();
         paintStatus(project);
+        return;
+      }
+      if (error.code === 'DESIGN_LOCKED') {
+        // The paid plan does not include that design: say so, and put the saved design back.
+        if (window.toast) toast(error.message || 'That design is not included in what you paid for.');
+        project.cloudStatus = 'pending';
+        try { await refreshFromCloud(project); } catch { /* the design is put back on the next load */ }
         return;
       }
       project.cloudStatus = conflict ? 'conflict' : 'error';
@@ -1358,6 +1366,7 @@
         const result = await window.inviteStudioApi.verifyPayment(project.cloudId, tokenFor(project.cloudId), paymentId);
         if (result.unlocked) {
           project.publishUnlocked = true;
+          if (result.paidTier) project.paidTier = result.paidTier;
           // Confirming the payment changed the website's record on the server: keep its version, so "Make it live" is not refused.
           if (Number.isInteger(result.version) && result.version >= Number(project.cloudVersion || 0)) project.cloudVersion = result.version;
           try { window.localStorage.removeItem(PENDING_PAYMENT_KEY); } catch { /* nothing to clear */ }
