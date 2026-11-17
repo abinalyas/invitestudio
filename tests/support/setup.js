@@ -13,4 +13,12 @@ async function completeSetupSteps(page) {
   await open.click();
 }
 
-module.exports = { completeSetupSteps };
+// A returning visitor with a saved draft: the welcome-back card has one button, "My invitations"; the list shows each invitation with
+// an Edit button. This does what "Continue editing" used to do: open the (most recent) saved draft in the editor.
+async function openLatestDraft(page) {
+  await page.locator('section[aria-label="Continue your draft"]').getByRole('button', { name: 'My invitations' }).click();
+  await expect(page.getByRole('heading', { name: 'My invitations' })).toBeVisible();
+  await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
+}
+
+module.exports = { completeSetupSteps, openLatestDraft };

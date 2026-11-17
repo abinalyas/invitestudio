@@ -1,4 +1,4 @@
-const { completeSetupSteps } = require('../support/setup');
+const { completeSetupSteps, openLatestDraft } = require('../support/setup');
 const { test, expect } = require('@playwright/test');
 
 test.beforeEach(async ({ page }) => {
@@ -405,7 +405,7 @@ test.describe('guest replies', () => {
     await completeSetupSteps(page);
     await page.getByRole('button', { name: 'Replies', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'RSVP' })).toBeVisible();
-    // "Continue editing" redraws the whole page about a second later, when the draft has refreshed from the cloud.
+    // Opening a saved draft redraws the whole page about a second later, when the draft has refreshed from the cloud.
     await page.evaluate(() => window.render());
     await page.waitForTimeout(300);
     await expect(page.getByRole('heading', { name: 'RSVP' })).toBeVisible();
@@ -447,7 +447,7 @@ test.describe('guest replies', () => {
       return route.abort();
     });
     await page.reload();
-    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await openLatestDraft(page);
     await page.getByRole('button', { name: /^RSVP/ }).click();
     await expect(page.getByText('Meera Nair')).toBeVisible();
     await expect(page.locator('.rsvp-cards')).toContainText('3people');
@@ -519,7 +519,7 @@ test.describe('guest replies', () => {
       return route.abort();
     });
     await page.reload();
-    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await openLatestDraft(page);
     await page.getByRole('button', { name: /^Photos/ }).click();
     return { calls, photos };
   }
@@ -764,7 +764,7 @@ test.describe('guest replies', () => {
 
   test('straight after the first publish the dialog shows the link, with no "update" explanation or button', async ({ page }) => {
     await savedDraftWithServer(page);
-    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toBeVisible();
     await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
     const dialog = page.locator('#modal-root');
@@ -790,7 +790,7 @@ test.describe('guest replies', () => {
 
   test('a welcome message typed just before a crash is still there when the draft is reopened', async ({ page }) => {
     const { server, wid } = await savedDraftWithServer(page);
-    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toBeVisible();
 
     // Type the message. The moment it is typed, this device must already know the server does not have it yet.
@@ -804,7 +804,7 @@ test.describe('guest replies', () => {
     await page.reload();
     expect(server.message, 'the server still has the old (empty) message').toBe('');
     server.dropPatches = false;
-    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toHaveValue('Welcome from Mira and Arun');
 
     // And it is sent now, on top of the version it was written against.
@@ -815,7 +815,7 @@ test.describe('guest replies', () => {
 
   test('a save the server accepted but the tab never heard back about does not lose the next edit', async ({ page }) => {
     const { server } = await savedDraftWithServer(page);
-    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toBeVisible();
 
     server.loseReply = true;
@@ -829,7 +829,7 @@ test.describe('guest replies', () => {
     server.loseReply = false;
     await expect.poll(() => server.message, { timeout: 15000 }).toBe('First words, then more');
     await page.reload();
-    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toHaveValue('First words, then more');
   });
 
@@ -837,7 +837,7 @@ test.describe('guest replies', () => {
     const { server } = await savedDraftWithServer(page);
     server.getDelay = 1500;
     await page.reload();
-    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toBeVisible();
     await page.evaluate(() => window.InviteStudioBridge.update({ message: 'Typed during the load' }));
     await page.waitForTimeout(2500);                    // the old copy has now arrived
@@ -848,14 +848,14 @@ test.describe('guest replies', () => {
   test('edits that were already saved are not disturbed when the draft is reopened', async ({ page }) => {
     const { server } = await savedDraftWithServer(page);
     server.message = 'Saved earlier';
-    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toHaveValue('Saved earlier');
     expect(server.patches).toHaveLength(0);
   });
 
   test('the Share panel says plainly: private now, a link when made live, anyone with the link can open it', async ({ page }) => {
     await savedDraftWithServer(page);
-    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toBeVisible();
     // The note above the editor
     const guide = page.locator('.share-guide');
@@ -877,7 +877,7 @@ test.describe('guest replies', () => {
 
   test('the Share panel describes replies the way this invitation is set up', async ({ page }) => {
     await savedDraftWithServer(page);
-    await page.getByRole('button', { name: 'Continue editing' }).click();
+    await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toBeVisible();
     for (const [mode, expected, absent] of [['contact', 'Guests will see your contact details', 'Guests can reply from the live invitation'], ['none', null, 'Replies.']]) {
       await page.evaluate(mode => window.InviteStudioBridge.setRsvp(mode), mode);
