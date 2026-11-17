@@ -341,42 +341,59 @@ export function HomePage() {
       </section>
 
       <footer className="footer shell" id="footer">
-        <Logo />
-        <nav>
-          <a href="/templates">Templates</a>
-          <a href="#features">Features</a>
-          <a href="#how">How it works</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#faq-list">FAQs</a>
-        </nav>
-        <nav className="footer-guides" aria-label="Guides">
-          <a href="/wedding-invitation-website">Wedding invitation website</a>
-          <a href="/digital-wedding-invitation">Digital wedding invitation</a>
-          <a href="/online-wedding-invitation-with-rsvp">Invitation with RSVP</a>
-          <a href="/animated-wedding-invitation">Animated invitations</a>
-          <a href="/whatsapp-wedding-invitation">Share on WhatsApp</a>
-        </nav>
-        <nav className="footer-guides footer-policies" aria-label="Policies">
-          <a href="/terms">Terms</a>
-          <a href="/refund-policy">Refund policy</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/contact">Contact</a>
-        </nav>
-        <p className="footer-talk">
-          <TalkToUs topic="custom" lead="Want something unique? Talk to us:" />
-        </p>
-        {instagramUrl ? (
-          <div className="socials">
-            <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="InviteStudio on Instagram">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="3" y="3" width="18" height="18" rx="5" />
-                <circle cx="12" cy="12" r="4" />
-                <circle cx="17.2" cy="6.8" r="0.8" fill="currentColor" stroke="none" />
-              </svg>
-            </a>
+        <div className="footer-grid">
+          <div className="footer-brand">
+            <Logo />
+            <p className="footer-tag">Wedding invitation websites, made beautiful and easy to share.</p>
+            <p className="footer-talk">
+              <strong>Want something unique?</strong>
+              <TalkToUs topic="custom" lead="Talk to us:" />
+            </p>
+            {instagramUrl ? (
+              <div className="socials">
+                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="InviteStudio on Instagram">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle cx="17.2" cy="6.8" r="0.8" fill="currentColor" stroke="none" />
+                  </svg>
+                </a>
+              </div>
+            ) : null}
           </div>
-        ) : null}
-        <p className="footer-copy">© {new Date().getFullYear()} InviteStudio. The templates and designs on this site are protected by copyright.</p>
+          <nav className="footer-col" aria-labelledby="footer-product">
+            <h3 id="footer-product">Product</h3>
+            <ul>
+              <li><a href="/templates">Templates</a></li>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#how">How it works</a></li>
+              <li><a href="#pricing">Pricing</a></li>
+              <li><a href="#faq-list">FAQs</a></li>
+            </ul>
+          </nav>
+          <nav className="footer-col footer-guides" aria-labelledby="footer-guides">
+            <h3 id="footer-guides">Guides</h3>
+            <ul>
+              <li><a href="/wedding-invitation-website">Wedding invitation website</a></li>
+              <li><a href="/digital-wedding-invitation">Digital wedding invitation</a></li>
+              <li><a href="/online-wedding-invitation-with-rsvp">Invitation with RSVP</a></li>
+              <li><a href="/animated-wedding-invitation">Animated invitations</a></li>
+              <li><a href="/whatsapp-wedding-invitation">Share on WhatsApp</a></li>
+            </ul>
+          </nav>
+          <nav className="footer-col footer-policies" aria-labelledby="footer-company">
+            <h3 id="footer-company">Company</h3>
+            <ul>
+              <li><a href="/contact">Contact</a></li>
+              <li><a href="/terms">Terms</a></li>
+              <li><a href="/refund-policy">Refund policy</a></li>
+              <li><a href="/privacy">Privacy</a></li>
+            </ul>
+          </nav>
+        </div>
+        <div className="footer-bottom">
+          <p className="footer-copy">© {new Date().getFullYear()} InviteStudio. The templates and designs on this site are protected by copyright.</p>
+        </div>
       </footer>
     </main>
   )
