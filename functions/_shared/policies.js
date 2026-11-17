@@ -18,6 +18,8 @@ export const BUSINESS = Object.freeze({ legalName: 'InviteStudio', address: 'Koc
 
 // Same details as site-config.js (the browser's copy); tests/unit/policies.test.mjs fails if they differ.
 export const CONTACT = Object.freeze({ email: 'abinalyas@gmail.com', whatsapp: '919567882568' });
+// The same address as site-config.js (tests/unit/footers.test.mjs keeps them equal).
+export const SOCIAL = Object.freeze({ instagram: 'https://www.instagram.com/invite__studio.co/' });
 
 export const POLICIES = Object.freeze([
   {

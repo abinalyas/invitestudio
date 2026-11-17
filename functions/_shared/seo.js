@@ -10,7 +10,7 @@
 // (galleryTemplates); tests/unit/seo.test.mjs fails if they drift apart.
 
 import { LANDING, renderLanding, renderPolicy, smallImage } from './landing.js';
-import { BUSINESS, CONTACT, POLICIES, UPDATED } from './policies.js';
+import { BUSINESS, CONTACT, POLICIES, SOCIAL, UPDATED } from './policies.js';
 
 export const SITE_NAME = 'InviteStudio';
 
@@ -320,11 +320,11 @@ ${TEMPLATES.map(template => `- [${template.title}](${absolute(origin, `/template
 // `replay` is the session-recording project id to offer on this page, or '' (functions/_shared/replay.js).
 export function landingDocument(page, origin, { replay = '' } = {}) {
   const { title, html } = headTags(page, origin);
-  return renderLanding(page.landing, origin, { templates: TEMPLATES, head: html + (replay ? `<meta name="invitestudio-replay" content="${replay}">` : ''), title, replay });
+  return renderLanding(page.landing, origin, { templates: TEMPLATES, head: html + (replay ? `<meta name="invitestudio-replay" content="${replay}">` : ''), title, replay, contact: CONTACT, social: SOCIAL });
 }
 
 // The full HTML document for a policy page (terms, refund policy, privacy, contact).
 export function policyDocument(page, origin, options = {}) {
   const { title, html } = headTags(page, origin);
-  return renderPolicy(page.policy, origin, { head: html, title, updated: UPDATED, contact: CONTACT, business: BUSINESS });
+  return renderPolicy(page.policy, origin, { head: html, title, updated: UPDATED, contact: CONTACT, business: BUSINESS, social: SOCIAL });
 }
