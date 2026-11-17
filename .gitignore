@@ -8,3 +8,4 @@ test-results/
 
 # Output of npm run audit:mobile
 mobile-audit/
+node_modules

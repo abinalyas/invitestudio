@@ -151,7 +151,7 @@ test('guided setup opens with the chosen design already selected', async ({ page
   await expect(page.getByRole('heading', { name: /create your invitation/i })).toBeVisible();
   await page.locator('#projectTitle').fill('Mira & Arun');
   await page.getByRole('button', { name: /^Continue/ }).click();
-  await expect(page.locator('.setup-template.selected')).toContainText('Minimalist');
+  await expect(page.locator('.setup-selected')).toContainText('Minimalist');
 });
 
 test('event times are real time fields, saved as HH:MM and shown as 4:00 PM', async ({ page }) => {
