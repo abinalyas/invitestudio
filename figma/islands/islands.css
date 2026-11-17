@@ -595,11 +595,15 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
 }
 
 /* Sample wording chips. */
-.sample-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: -4px 0 4px; }
-.sample-chips-label { flex: 1 1 100%; color: #5c625e; font-size: 12px; }
+.sample-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -2px 0 6px; padding: 12px 14px; border: 1px solid #cfe0d4; border-radius: 16px; background: #f1f7f2; }
+.sample-chips-label { flex: 1 1 100%; color: #145c37; font-size: 14px; font-weight: 700; }
 .sample-chips-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.sample-chip { min-height: 36px; padding: 0 14px; border: 1px solid #8a8276; border-radius: 999px; background: #fff; color: #17221c; font: 600 13px/1 inherit; cursor: pointer; }
-.sample-chip:hover, .sample-chip:focus-visible { border-color: #145c37; background: #eef4ef; outline: none; }
+.sample-card { display: grid; flex: 1 1 100%; gap: 10px; padding: 12px 14px; border: 1px dashed #145c37; border-radius: 12px; background: #fff; }
+.sample-card p { margin: 0; color: #36403a; font-size: 15px; font-style: italic; line-height: 1.5; }
+.sample-use { justify-self: start; }
+.sample-chip { min-height: 36px; padding: 0 14px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: 600 13px/1 inherit; cursor: pointer; }
+.sample-chip:hover, .sample-chip:focus-visible { background: #e2eee5; outline: none; }
+.sample-chip.active { background: #145c37; color: #fff; }
 @media (pointer: coarse) { .sample-chip { min-height: 44px; } }
 
 /* Very small phones (320 px): the three step buttons share one row, so drop the arrows and trim the padding. */
