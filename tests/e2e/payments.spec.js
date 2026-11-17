@@ -258,3 +258,38 @@ test('after going live the dialog shows the link, the design and the live-page a
   await expect(dialog.getByRole('button', { name: 'Take offline' })).toBeVisible();
   await expect(dialog.getByText('Your order')).toHaveCount(0);
 });
+
+test('coming back from the payment page: a cover shows at once and the dialog does not wait for the other invitations', async ({ page }) => {
+  const server = await draftWithServer(page);
+  // Three other saved invitations whose server copies are slow to arrive (3 seconds each). They used to be fetched one after another
+  // before the payment was even looked at, so the person waited nine seconds on the home page.
+  await page.evaluate(() => {
+    const tokens = JSON.parse(localStorage.getItem('invitestudio-edit-tokens') || '{}');
+    const others = [1, 2, 3].map(n => {
+      const id = `0000000${n}-0000-4000-8000-00000000000${n}`;
+      tokens[id] = 't'.repeat(43);
+      return { id, cloudId: id, cloudVersion: 1, cloudStatus: 'saved', name: `Other ${n}`, title: `Other ${n}`, category: 'Wedding', templateId: 'minimalist', status: 'Draft', functions: [], photos: [] };
+    });
+    localStorage.setItem('invitestudio-edit-tokens', JSON.stringify(tokens));
+    const projects = JSON.parse(localStorage.getItem('invitestudio-projects') || '[]');
+    localStorage.setItem('invitestudio-projects', JSON.stringify([...projects, ...others]));
+  });
+  await page.route(/\/api\/weddings\/0000000\d-/, async route => { await new Promise(resolve => setTimeout(resolve, 3000)); await route.abort(); });
+  await page.addInitScript(() => {
+    // Notes whether the "confirming your payment" cover was ever shown on this page (it is added by a script in the head).
+    window.__coverAtStart = false;
+    new MutationObserver(() => { if (document.documentElement.classList.contains('payment-return')) window.__coverAtStart = true; }).observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  });
+  await page.reload();
+  const dialog = await openShare(page);
+  await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeDisabled({ timeout: 15000 });
+  await fillDetails(dialog);
+  const started = Date.now();
+  await dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' }).click();
+  await expect(dialog.locator('[data-payment-info]')).toContainText(/Confirming your payment|Payment received/, { timeout: 20000 });
+  expect(Date.now() - started).toBeLessThan(5000);
+  expect(await page.evaluate(() => window.__coverAtStart)).toBe(true);
+  await expect(page.locator('html.payment-return')).toHaveCount(0);
+  await expect(dialog.locator('[data-payment-info]')).toContainText('Payment received', { timeout: 20000 });
+  expect(server.verifies).toBeGreaterThan(0);
+});

@@ -786,17 +786,20 @@
     }
   }
 
-  async function hydrateCloudProjects() {
+  // Brings every saved invitation up to date with the server, all at once (they used to be fetched one after another, which made
+  // opening the app slow for anyone with several invitations). `skip` leaves one project alone (the one being paid for), and
+  // `redraw: false` does not redraw the screen when done.
+  async function hydrateCloudProjects({ skip = '', redraw = true } = {}) {
     if (!window.inviteStudioApi?.enabled) return;
     // Resume a creation that was interrupted by a reload or a closed tab.
     for (const project of state.projects.filter(item => !item.cloudId && item.createRequestId)) {
       createCloudDraft(project);
     }
-    for (const project of state.projects.filter(item => item.cloudId)) {
+    await Promise.all(state.projects.filter(item => item.cloudId && item.id !== skip).map(async project => {
       const token = tokenFor(project.cloudId);
       if (!token) {
         project.cloudStatus = 'token-missing';
-        continue;
+        return;
       }
       const hasUnsavedLocalChanges = ['pending', 'saving', 'retrying', 'error'].includes(project.cloudStatus);
       if (hasUnsavedLocalChanges) {
@@ -804,14 +807,14 @@
         meta.revision = Math.max(meta.revision, 1);
         project.cloudStatus = 'pending';
         queueCloudSave(project, 0);
-        continue;
+        return;
       }
       try {
         const revisionBefore = metaFor(project).revision;
         const result = await window.inviteStudioApi.getWedding(project.cloudId, token);
         if (metaFor(project).revision !== revisionBefore) {
           // The person edited while this copy was on its way. Their newer text must not be replaced by it.
-          continue;
+          return;
         }
         mergeServerWedding(project, result.wedding);
         project.cloudStatus = 'saved';
@@ -821,8 +824,9 @@
         project.cloudStatus = 'error';
         project.cloudError = error.message;
       }
-    }
+    }));
     localSave();
+    if (!redraw) return;
     // A template's own page (/templates/<n>) shows nothing from the drafts. Drawing it again would throw away what the
     // visitor is doing in its phone preview (for example the opening they have just started) the moment this
     // slower, first-visit request finishes.
@@ -1330,7 +1334,11 @@
   }
 
   // Back from the payment page (?payment=<id>): ask the server whether it was paid, and carry on in the publish dialog.
-  async function handlePaymentReturn() {
+  function hidePaymentCover() {
+    document.documentElement.classList.remove('payment-return');
+  }
+
+  async function handlePaymentReturn({ onShown } = {}) {
     const params = new URLSearchParams(window.location.search);
     const paymentId = params.get('payment');
     if (!paymentId) return;
@@ -1348,6 +1356,7 @@
     state.page = 'editor';
     render();
     window.openCloudPublish(project);
+    if (onShown) onShown();
     if (!publishSession) return;
     publishSession.typed = pending.slug || publishSession.typed;
     await confirmPayment(project, paymentId);
@@ -1654,7 +1663,16 @@
     if (privateLink) {
       recoverFromPrivateLink(privateLink);
     } else {
-      Promise.resolve(hydrateCloudProjects()).catch(() => null).then(handlePaymentReturn).catch(() => null);
+      if (new URLSearchParams(window.location.search).has('payment')) {
+        // Back from the payment page: carry on with the payment at once (the other invitations are brought up to date afterwards,
+        // not before), and take the "confirming your payment" cover away as soon as the dialog is on the screen.
+        let paying = '';
+        try { paying = JSON.parse(window.localStorage.getItem(PENDING_PAYMENT_KEY) || 'null')?.projectId || ''; } catch { paying = ''; }
+        handlePaymentReturn({ onShown: hidePaymentCover }).catch(() => null).finally(hidePaymentCover);
+        Promise.resolve(hydrateCloudProjects({ skip: paying, redraw: false })).catch(() => null);
+      } else {
+        Promise.resolve(hydrateCloudProjects()).catch(() => null).then(handlePaymentReturn).catch(() => null);
+      }
     }
   };
 })();
