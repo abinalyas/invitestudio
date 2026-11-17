@@ -9,6 +9,7 @@
 // - Only supported content is editable here. Palette, typography and layout belong to
 //   the template. Photos stay disabled until persistent photo storage exists.
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { usePricing } from "./pricing";
 import { Icon, IconName, PlaceList, Logo, openPickerOnClick, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
 import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, RetentionInfo, RsvpData } from "./bridge";
 import { useBridgeVersion, TalkToUs, SampleChips } from "./extras";
@@ -216,6 +217,7 @@ export function EditorPage() {
   const replyCount = useReplyCount(snap);
   useEffect(() => { if (snap.available) void bridge.mediaLoad(); }, [snap.available, snap.draftId]);
   const controlsRef = useRef<HTMLElement>(null);
+  const { data: pricing } = usePricing();
   // Editing text directly in the design: show the matching field in the panel, scrolled into view and briefly highlighted, so the change
   // can be seen in both places. Focus stays where the person is typing (in the design).
   const wordingSection = (key: string) => snap.copyFields.find(field => field.key === key)?.section as SectionKey | undefined;
@@ -374,6 +376,12 @@ export function EditorPage() {
 
   const designs = bridge.designs();
   const currentDesign = designs.find(design => design.id === snap.templateId);
+  // After a payment, only designs in the paid price tier or a cheaper one can be chosen (the server checks this too).
+  const isDesignLocked = (designId: string) => {
+    if (!snap.paidTier || !pricing) return false;
+    const rank = (tier: string) => pricing.tiers.findIndex(item => item.id === tier);
+    return rank(pricing.templates[designId] || "classic") > rank(snap.paidTier);
+  };
   const failed = snap.saveState === "error";
   const conflict = snap.saveState === "conflict";
 
@@ -472,18 +480,30 @@ export function EditorPage() {
             {designsOpen ? (
               <div className="design-list" role="group" aria-label="Designs">
                 <p className="tiny muted">Your names, dates, story and events stay the same when you change design.</p>
-                {designs.map(design => (
-                  <button
-                    key={design.id}
-                    type="button"
-                    className={snap.templateId === design.id ? "design-option selected" : "design-option"}
-                    aria-pressed={snap.templateId === design.id}
-                    onClick={() => bridge.setTemplate(design.id)}
-                  >
-                    {design.image ? <img src={design.image} alt="" /> : <span className="design-thumb-empty" />}
-                    <span>{design.name}</span>
-                  </button>
-                ))}
+                {snap.paidTier && pricing ? (
+                  <p className="tiny muted design-lock-note" id="designLockNote">
+                    You paid for the {pricing.tiers.find(tier => tier.id === snap.paidTier)?.name ?? "chosen"} tier. You can switch to any design in it or a cheaper one.{" "}
+                    <TalkToUs topic="custom" lead="Want a higher tier? Talk to us:" />
+                  </p>
+                ) : null}
+                {designs.map(design => {
+                  const locked = isDesignLocked(design.id)
+                  return (
+                    <button
+                      key={design.id}
+                      type="button"
+                      className={snap.templateId === design.id ? "design-option selected" : locked ? "design-option locked" : "design-option"}
+                      aria-pressed={snap.templateId === design.id}
+                      disabled={locked}
+                      title={locked ? "Not included in the tier you paid for" : undefined}
+                      onClick={() => bridge.setTemplate(design.id)}
+                    >
+                      {design.image ? <img src={design.image} alt="" /> : <span className="design-thumb-empty" />}
+                      <span>{design.name}</span>
+                      {locked ? <Icon name="lock" size={16} /> : null}
+                    </button>
+                  )
+                })}
               </div>
             ) : null}
           </div>

@@ -866,3 +866,8 @@ table.rsvp-by-event { font-size: 13px; }
   .draft-access p { margin: 2px 0 6px; }
   .draft-access .btn.small { min-height: 40px; }
 }
+
+/* Designs outside the tier that was paid for. */
+.design-option.locked { opacity: .55; cursor: not-allowed; }
+.design-option.locked svg { flex: none; margin-left: auto; color: #6b6760; }
+.design-lock-note { margin: 0 0 8px; line-height: 1.5; }

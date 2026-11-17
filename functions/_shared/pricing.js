@@ -98,6 +98,18 @@ export function regionForCountry(country) {
   return COUNTRY_REGION[code] || DEFAULT_REGION;
 }
 
+// The order of the price tiers, cheapest first (the order of TIERS). -1 for a tier that does not exist.
+export function tierRank(tierId) {
+  return TIERS.findIndex(item => item.id === tierId);
+}
+
+// The most expensive tier in a list of tier ids; '' when there is none.
+export function highestTier(tierIds) {
+  let best = '';
+  for (const id of tierIds || []) if (tierRank(id) > tierRank(best)) best = id;
+  return best;
+}
+
 export function tierFor(templateId) {
   const tier = TEMPLATE_TIERS[String(templateId || '')];
   return TIERS.some(item => item.id === tier) ? tier : DEFAULT_TIER;

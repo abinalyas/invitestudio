@@ -32,7 +32,7 @@ export async function onRequest(context) {
     })}`);
     const payment = rows?.[0];
     if (!payment) throw new ApiError('Payment not found.', 404, 'NOT_FOUND');
-    if (payment.status === 'paid') return success(request, env, { unlocked: true, status: 'paid', version: await versionOf(env, params.id) });
+    if (payment.status === 'paid') return success(request, env, { unlocked: true, status: 'paid', paidTier: String(payment.metadata?.tier || ''), version: await versionOf(env, params.id) });
     if (!payment.provider_payment_id) return success(request, env, { unlocked: false, status: 'pending' });
 
     const link = await fetchPaymentLink(env, payment.provider_payment_id);
@@ -58,7 +58,7 @@ export async function onRequest(context) {
         }
         throw error;
       }
-      return success(request, env, { unlocked: true, status: 'paid', version: await versionOf(env, params.id) });
+      return success(request, env, { unlocked: true, status: 'paid', paidTier: String(payment.metadata?.tier || ''), version: await versionOf(env, params.id) });
     }
     if (link?.status === 'expired' || link?.status === 'cancelled') {
       await db(env, `payments?id=eq.${payment.id}&status=eq.pending`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) }).catch(() => null);

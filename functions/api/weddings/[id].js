@@ -2,6 +2,7 @@ import {
   ApiError,
   assertUuid,
   db,
+  assertDesignAllowed,
   fail,
   getWedding,
   getWeddingChildren,
@@ -10,7 +11,8 @@ import {
   requireEditAccess,
   readJson,
   success,
-  validateWeddingInput
+  validateWeddingInput,
+  withPaidTier
 } from '../../_shared/api.js';
 import { deleteWeddingMedia } from '../../_shared/media.js';
 
@@ -27,7 +29,7 @@ export async function onRequest(context) {
         getWedding(env, id),
         getWeddingChildren(env, id)
       ]);
-      return success(request, env, { wedding, ...children });
+      return success(request, env, { wedding: await withPaidTier(env, wedding), ...children });
     }
 
     if (request.method === 'DELETE') {
@@ -57,6 +59,8 @@ export async function onRequest(context) {
       throw new ApiError('At least one wedding field is required.', 422, 'NO_CHANGES');
     }
 
+    if (patch.template_id !== undefined) await assertDesignAllowed(env, await getWedding(env, id), patch.template_id);
+
     const rows = await db(env, `weddings?id=eq.${id}&version=eq.${body.version}`, {
       method: 'PATCH',
       headers: { Prefer: 'return=representation' },
@@ -65,7 +69,7 @@ export async function onRequest(context) {
     if (!rows?.[0]) {
       throw new ApiError('The wedding changed elsewhere. Reload before saving.', 409, 'VERSION_CONFLICT');
     }
-    return success(request, env, { wedding: rows[0] });
+    return success(request, env, { wedding: await withPaidTier(env, rows[0]) });
   } catch (error) {
     return fail(request, env, error);
   }
