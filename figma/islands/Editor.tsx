@@ -532,7 +532,7 @@ export function EditorPage() {
               <label>
                 Welcome message <span className="optional">(optional)</span>
                 <textarea rows={3} value={snap.message} placeholder={snap.shown.message} onChange={event => set({ message: event.target.value })} />
-                <SampleChips samples={sampleWelcomes()} onPick={(text) => set({ message: text })} />
+                <SampleChips value={snap.message} samples={sampleWelcomes()} onPick={(text) => set({ message: text })} />
               </label>
               <label>
                 Date <span className="optional">(optional)</span>
@@ -553,7 +553,7 @@ export function EditorPage() {
               <label>
                 Hosts <span className="optional">(optional)</span>
                 <input value={snap.hosts} placeholder={snap.shown.hosts} onChange={event => set({ hosts: event.target.value })} />
-                <SampleChips samples={sampleHosts(snap.title)} onPick={(text) => set({ hosts: text })} />
+                <SampleChips value={snap.hosts} samples={sampleHosts(snap.title)} onPick={(text) => set({ hosts: text })} />
               </label>
               <p className="tiny muted">Your design's hero image is used for now. Your own hero photos unlock when photo storage is available.</p>
             </div>
@@ -568,7 +568,7 @@ export function EditorPage() {
               <label>
                 Your story
                 <textarea rows={6} value={snap.storyCopy} onChange={event => set({ storyCopy: event.target.value })} />
-                <SampleChips samples={sampleStories()} onPick={(text) => set({ storyCopy: text })} />
+                <SampleChips value={snap.storyCopy} samples={sampleStories()} onPick={(text) => set({ storyCopy: text })} />
               </label>
             </div>
           ) : null}

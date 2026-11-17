@@ -1,7 +1,7 @@
 // Components the Figma design does not contain, but the existing application needs.
 // They keep working features reachable from the new screens (requirement: nothing is
 // removed just because the export does not show it).
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { bridge } from "./bridge";
 
 export function useBridgeVersion(): number {
@@ -75,14 +75,37 @@ export function TalkToUs({ topic, address, lead }: { topic: "extend" | "restore"
   );
 }
 
-// "Need a start?" - tap a sample and it fills the field; the couple edits it from there.
-export function SampleChips({ samples, onPick, label = "Need a start? Tap one to use it, then make it yours." }: { samples: { label: string; text: string }[]; onPick: (text: string) => void; label?: string }) {
+// "Start from an example". While the field is empty, the first example is shown in full in a card with a "Use this" button, and the
+// chips switch which example the card shows. Once the field has text, the chips offer other wording that replaces it (the couple can
+// always edit it afterwards). Nothing is saved until the couple taps "Use this" or a chip on a filled field.
+export function SampleChips({ samples, onPick, value, label }: { samples: { label: string; text: string }[]; onPick: (text: string) => void; value?: string; label?: string }) {
+  const [active, setActive] = useState(0);
+  const empty = value !== undefined && !value.trim();
+  const shown = samples[Math.min(active, samples.length - 1)];
+  const heading = label ?? (empty ? "Start from an example" : "Try other wording");
   return (
-    <div className="sample-chips" role="group" aria-label={label}>
-      <span className="sample-chips-label">{label}</span>
+    <div className={empty ? "sample-chips has-card" : "sample-chips"} role="group" aria-label={heading}>
+      <span className="sample-chips-label">
+        <span aria-hidden="true">✨ </span>
+        {heading}
+      </span>
+      {empty && shown ? (
+        <div className="sample-card">
+          <p>{shown.text}</p>
+          <button type="button" className="button small sample-use" onClick={() => onPick(shown.text)}>
+            Use this
+          </button>
+        </div>
+      ) : null}
       <span className="sample-chips-row">
-        {samples.map((sample) => (
-          <button key={sample.label} type="button" className="sample-chip" onClick={() => onPick(sample.text)}>
+        {samples.map((sample, index) => (
+          <button
+            key={sample.label}
+            type="button"
+            className={empty && index === active ? "sample-chip active" : "sample-chip"}
+            aria-pressed={empty ? index === active : undefined}
+            onClick={() => (empty ? setActive(index) : onPick(sample.text))}
+          >
             {sample.label}
           </button>
         ))}

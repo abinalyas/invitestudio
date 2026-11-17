@@ -1298,11 +1298,15 @@
 .figma-app .setup-screen{ overscroll-behavior: auto; }
 .figma-app .setup-card{ padding: 16px 14px; }
 .figma-app .setup-card h2{ font-size: 26px; }}
-.figma-app .sample-chips{ display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: -4px 0 4px; }
-.figma-app .sample-chips-label{ flex: 1 1 100%; color: #5c625e; font-size: 12px; }
+.figma-app .sample-chips{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -2px 0 6px; padding: 12px 14px; border: 1px solid #cfe0d4; border-radius: 16px; background: #f1f7f2; }
+.figma-app .sample-chips-label{ flex: 1 1 100%; color: #145c37; font-size: 14px; font-weight: 700; }
 .figma-app .sample-chips-row{ display: flex; flex-wrap: wrap; gap: 8px; }
-.figma-app .sample-chip{ min-height: 36px; padding: 0 14px; border: 1px solid #8a8276; border-radius: 999px; background: #fff; color: #17221c; font: 600 13px/1 inherit; cursor: pointer; }
-.figma-app .sample-chip:hover, .figma-app .sample-chip:focus-visible{ border-color: #145c37; background: #eef4ef; outline: none; }
+.figma-app .sample-card{ display: grid; flex: 1 1 100%; gap: 10px; padding: 12px 14px; border: 1px dashed #145c37; border-radius: 12px; background: #fff; }
+.figma-app .sample-card p{ margin: 0; color: #36403a; font-size: 15px; font-style: italic; line-height: 1.5; }
+.figma-app .sample-use{ justify-self: start; }
+.figma-app .sample-chip{ min-height: 36px; padding: 0 14px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: 600 13px/1 inherit; cursor: pointer; }
+.figma-app .sample-chip:hover, .figma-app .sample-chip:focus-visible{ background: #e2eee5; outline: none; }
+.figma-app .sample-chip.active{ background: #145c37; color: #fff; }
 @media (pointer: coarse){.figma-app .sample-chip{ min-height: 44px; }}
 @media (max-width: 400px){.figma-app .setup-actions .button{ padding-inline: 6px; font-size: 14px; }
 .figma-app .setup-actions .button svg{ display: none; }

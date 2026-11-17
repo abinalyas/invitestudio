@@ -30,12 +30,12 @@ export function SetupPage() {
           title: snap.title,
           date: snap.date,
           location: snap.location,
-          message: snap.message,
+          message: snap.message || sampleWelcomes()[0].text,
           story: snap.storyCopy,
           hosts: snap.hosts,
           templateId: known ? snap.templateId : defaults.templateId,
         }
-      : { title: "", date: "", location: "", message: "", story: "", hosts: "", templateId: defaults.templateId };
+      : { title: "", date: "", location: "", message: sampleWelcomes()[0].text, story: "", hosts: "", templateId: defaults.templateId };
   });
   const screenRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -214,20 +214,20 @@ export function SetupPage() {
                 <p className="setup-intro">Everything here is optional. Skip it now and add it in the editor whenever you like.</p>
                 <div className="setup-form">
                   <label>
-                    Welcome message <span className="optional">(optional)</span>
+                    Welcome message <span className="optional">(optional, edit it any way you like)</span>
                     <textarea id="projectMessage" rows={3} value={fields.message} placeholder="A few words for your guests…" onChange={(event) => set({ message: event.target.value })} />
                   </label>
-                  <SampleChips samples={sampleWelcomes()} onPick={(text) => set({ message: text })} />
+                  <SampleChips value={fields.message} samples={sampleWelcomes()} onPick={(text) => set({ message: text })} />
                   <label>
                     Your story <span className="optional">(optional)</span>
                     <textarea id="projectStory" rows={5} value={fields.story} placeholder="Share a little about the people or occasion…" onChange={(event) => set({ story: event.target.value })} />
                   </label>
-                  <SampleChips samples={sampleStories()} onPick={(text) => set({ story: text })} />
+                  <SampleChips value={fields.story} samples={sampleStories()} onPick={(text) => set({ story: text })} />
                   <label>
                     Hosts <span className="optional">(optional)</span>
                     <input id="projectHosts" value={fields.hosts} placeholder="Names to display" onChange={(event) => set({ hosts: event.target.value })} />
                   </label>
-                  <SampleChips samples={sampleHosts(fields.title)} onPick={(text) => set({ hosts: text })} />
+                  <SampleChips value={fields.hosts} samples={sampleHosts(fields.title)} onPick={(text) => set({ hosts: text })} />
                 </div>
                 <h3 className="setup-subhead">
                   Events <span className="optional">(optional)</span>

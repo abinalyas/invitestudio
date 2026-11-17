@@ -16,7 +16,8 @@ const CONTENT = {
   story: 'We met on a rainy Tuesday.\nIt was love at first umbrella.',
   hosts: 'Mr & Mrs Rao'
 };
-const BLANK = { message: '', story: '', hosts: '' };
+// The welcome message is pre-filled in setup (and can be edited); story and hosts stay empty unless the person adds them.
+const BLANK = { message: 'Together with our families, we invite you to celebrate the beginning of our forever.', story: '', hosts: '' };
 const uniq = prefix => `${prefix} ${randomUUID().slice(0, 6)}`;
 const next = page => page.getByRole('button', { name: /^Continue/ });
 
