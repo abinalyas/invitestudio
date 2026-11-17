@@ -5,7 +5,7 @@
 // (bridge.commitSetup), which creates the draft the first time and keeps it up to date.
 // The preview is the real invitation renderer, so it is what guests will see.
 import { useEffect, useRef, useState } from "react";
-import { Icon, Logo, galleryTemplates, openPickerOnClick, phoneSmall, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
+import { Icon, PlaceList, Logo, galleryTemplates, openPickerOnClick, phoneSmall, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
 import { bridge, SetupFields } from "./bridge";
 import { EventsPanel } from "./Editor";
 import { SampleChips, useBridgeVersion } from "./extras";
@@ -200,7 +200,8 @@ export function SetupPage() {
                     Main location <span className="optional">(optional)</span>
                     <span className="input-with-icon">
                       <Icon name="pin" size={18} />
-                      <input id="projectLocation" value={fields.location} placeholder="City or venue" onChange={(event) => set({ location: event.target.value })} />
+                      <input id="projectLocation" list="invitestudio-places" autoComplete="off" value={fields.location} placeholder="City or venue" onChange={(event) => set({ location: event.target.value })} />
+                      <PlaceList />
                     </span>
                   </label>
                 </div>
