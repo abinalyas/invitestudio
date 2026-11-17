@@ -8,7 +8,7 @@ export function useBridgeVersion(): number {
   return useSyncExternalStore(bridge.subscribe, bridge.version, bridge.version);
 }
 
-// Continue-editing prompt for returning visitors (the existing recovery card).
+// Welcome-back prompt for returning visitors: one way in, to their list of invitations.
 export function RecoveryBanner() {
   useBridgeVersion();
   const card = bridge.recovery();
@@ -17,30 +17,26 @@ export function RecoveryBanner() {
     <section className="recovery-banner" aria-label="Continue your draft">
       <div>
         <span className="section-kicker">Welcome back</span>
-        <strong>Continue {card.title}</strong>
+        <strong>Pick up where you left off</strong>
         <p>{card.status}</p>
-        {card.access ? <p className="recovery-access">{card.access}</p> : null}
         {card.error ? <p role="alert" className="recovery-error">{card.error}</p> : null}
       </div>
       <div className="recovery-actions">
-        <button className="button small" type="button" onClick={() => bridge.continueDraft()}>
-          Continue editing
-        </button>
-        <button className="button outline small" type="button" onClick={() => bridge.startCreate("Wedding")}>
-          New website
+        <button className="button small" type="button" onClick={() => bridge.openProjects()}>
+          My invitations
         </button>
       </div>
     </section>
   );
 }
 
-// "My projects" in the header, only for people who already have a draft.
+// "My invitations" in the header, only for people who already have a draft.
 export function MyProjectsLink() {
   useBridgeVersion();
   if (!bridge.hasProjects()) return null;
   return (
     <button className="button outline small my-projects-link" type="button" onClick={() => bridge.openProjects()}>
-      My projects
+      My invitations
     </button>
   );
 }

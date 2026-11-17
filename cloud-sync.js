@@ -186,7 +186,7 @@
     const status = project.cloudStatus === 'error'
       ? 'Your local copy is safe. Check your connection and try again.'
       : cloud ? 'Your latest changes are saved securely in the cloud.' : 'Your draft is saved on this device.';
-    return `<section class="container" aria-label="Continue your draft" style="margin-top:18px"><div style="display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#f3eee5;border:1px solid #dfd4c5;border-radius:12px;padding:18px 20px"><div><div class="eyebrow">Welcome back</div><strong style="font-family:var(--serif);font-size:22px">Continue ${esc(title)}</strong><p class="tiny muted" style="margin:5px 0 0">${esc(status)}</p>${state.recoveryError?`<p class="tiny" role="alert" style="color:#9b5147;margin:5px 0 0">${esc(state.recoveryError)}</p>`:''}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn dark" onclick="continueLastDraft()">Continue editing</button><button class="btn" onclick="startCreate()">＋ New website</button></div></div></section>`;
+    return `<section class="container" aria-label="Continue your draft" style="margin-top:18px"><div style="display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#f3eee5;border:1px solid #dfd4c5;border-radius:12px;padding:18px 20px"><div><div class="eyebrow">Welcome back</div><strong style="font-family:var(--serif);font-size:22px">Pick up where you left off</strong><p class="tiny muted" style="margin:5px 0 0">${esc(status)}</p>${state.recoveryError?`<p class="tiny" role="alert" style="color:#9b5147;margin:5px 0 0">${esc(state.recoveryError)}</p>`:''}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn dark" onclick="go('dashboard')">My invitations</button></div></div></section>`;
   }
 
   window.copyPrivateEditLink = async function copyPrivateEditLink() {
@@ -382,19 +382,18 @@
       && same(project.message, wedding.message) && same(project.story, wedding.story) && same(project.hosts, wedding.hosts);
   }
 
-  window.continueLastDraft = async function continueLastDraft() {
-    const project = projectForReference();
-    const reference = draftReference();
-    if (!project && reference?.cloudId && tokenFor(reference.cloudId)) {
-      await recoverFromPrivateLink({ id: reference.cloudId, token: tokenFor(reference.cloudId) });
-      return;
-    }
-    if (!project) { toast('This draft is no longer available on this device.'); return; }
+  // Opens a draft in the editor, then refreshes it from the cloud (keeping any edits this device has not sent yet).
+  // "Continue" uses both steps; Edit on the My invitations page opens the draft itself and then runs the refresh.
+  async function openAndRefresh(project) {
     state.currentId = project.id;
     state.page = 'editor';
     state.recoveryError = '';
     rememberDraftReference(project);
     render();
+    await refreshFromCloud(project);
+  }
+
+  async function refreshFromCloud(project) {
     if (project.cloudId && tokenFor(project.cloudId) && window.inviteStudioApi?.enabled) {
       const unsent = ['pending', 'saving', 'retrying', 'error'].includes(project.cloudStatus);
       try {
@@ -428,6 +427,17 @@
         toast('Cloud draft could not be refreshed. Your local copy is still available.');
       }
     }
+  }
+
+  window.continueLastDraft = async function continueLastDraft() {
+    const project = projectForReference();
+    const reference = draftReference();
+    if (!project && reference?.cloudId && tokenFor(reference.cloudId)) {
+      await recoverFromPrivateLink({ id: reference.cloudId, token: tokenFor(reference.cloudId) });
+      return;
+    }
+    if (!project) { toast('This draft is no longer available on this device.'); return; }
+    await openAndRefresh(project);
   };
 
   // Who can see and edit a draft, in plain words. The key to a draft is held by this browser (there is no sign-in), so
@@ -1422,12 +1432,12 @@
       closeModal();
       state.page = 'dashboard';
       render();
-      toast('Website deleted from this device.');
+      toast('Invitation deleted from this device.');
       return;
     }
     const token = tokenFor(project.cloudId);
     if (!token || !window.inviteStudioApi?.enabled) {
-      fail('This website\'s private link is not on this device, so its cloud copy cannot be deleted from here. Nothing has been deleted.');
+      fail('This invitation\'s private link is not on this device, so its cloud copy cannot be deleted from here. Nothing has been deleted.');
       return;
     }
     try {
@@ -1436,10 +1446,10 @@
       if (error.status === 404) {
         // Already gone on the server: finish the local cleanup.
       } else if (error.status === 401 || error.status === 403) {
-        fail('This private link is no longer valid, so the website cannot be deleted from here. Nothing has been deleted.');
+        fail('This private link is no longer valid, so the invitation cannot be deleted from here. Nothing has been deleted.');
         return;
       } else {
-        fail('The website could not be deleted right now. Check your connection and try again. Nothing has been deleted.');
+        fail('The invitation could not be deleted right now. Check your connection and try again. Nothing has been deleted.');
         return;
       }
     }
@@ -1447,16 +1457,16 @@
     closeModal();
     state.page = 'dashboard';
     render();
-    toast('Website permanently deleted.');
+    toast('Invitation permanently deleted.');
   }
 
   function confirmDeleteWebsite(project) {
     if (!project) return;
-    const name = escapeText(project.title || project.name || 'this website');
+    const name = escapeText(project.title || project.name || 'this invitation');
     const publicNote = project.publishStatus === 'published'
       ? '<p class="tiny" style="color:#9b5147;margin:8px 0 0">Its public address will stop working straight away.</p>'
       : '';
-    renderModal(`<div class="eyebrow">Delete website</div>
+    renderModal(`<div class="eyebrow">Delete invitation</div>
       <h2 id="modal-title">Delete \u201c${name}\u201d?</h2>
       <p class="muted">This permanently removes the invitation, its private edit links and its RSVP and photo records. It cannot be undone.</p>
       ${publicNote}
@@ -1497,6 +1507,7 @@
   window.bootInviteStudioCloud = function bootInviteStudioCloud() {
     const originalLoad = window.load;
     const originalSave = window.save;
+    const originalOpenProject = window.openProject;
     const originalStartCreate = window.startCreate;
     const originalRender = window.render;
     const originalDuplicateProject = window.duplicateProject;
@@ -1513,6 +1524,20 @@
       if (cloudProject) rememberDraftReference(cloudProject);
     }
     const privateLink = parsePrivateEditLink();
+
+    // Edit on the My invitations page opens the draft and refreshes it from the cloud, as "continue" always did.
+    if (typeof originalOpenProject === 'function') {
+      window.openProject = function openProjectAndRefresh(id) {
+        const result = originalOpenProject.apply(this, arguments);
+        const project = state.projects.find(item => item.id === id);
+        if (project) {
+          state.recoveryError = '';
+          rememberDraftReference(project);
+          void refreshFromCloud(project);
+        }
+        return result;
+      };
+    }
 
     window.save = function cloudAwareSave() {
       const result = originalSave();
