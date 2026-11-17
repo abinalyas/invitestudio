@@ -5,7 +5,9 @@
   var main = document.getElementById('main');
   var who = document.getElementById('who');
   var logout = document.getElementById('logout');
-  var data = null, filter = 'all', query = '', sortBy = 'edited';
+  var data = null, filter = 'all', query = '', sortBy = 'edited', trafficDays = 30;
+  // The owner's own visits should not count as visitors: this browser stops reporting page views (analytics.js).
+  try { window.localStorage.setItem('invitestudio-no-track', '1'); } catch (e) { /* the owner's visits may then be counted */ }
 
   function el(tag, attrs, children) {
     var node = document.createElement(tag);
@@ -185,6 +187,97 @@
     return wrap;
   }
 
+
+  // ---- Visitors: anonymous visit statistics (docs/ANALYTICS.md) ----
+  var DESIGN_NAMES = { 13: 'Modern Heritage', 14: 'Minimalist', 15: 'Cinematic', 16: 'Fairy Tale', 18: 'Bloom Reveal', 19: 'Velvet Reveal', 20: 'Under the Same Moon', 21: 'Golden Butterfly', 22: 'Cherry Blossom', 23: 'Lantern Night' };
+  var COUNTRY_NAMES = (function () { try { return new Intl.DisplayNames(undefined, { type: 'region' }); } catch (e) { return null; } })();
+  function countryName(code) { try { return (COUNTRY_NAMES && code && code !== '??' && COUNTRY_NAMES.of(code)) || code; } catch (e) { return code; } }
+  function percent(part, whole) { return whole ? Math.round((part / whole) * 100) + '%' : '—'; }
+
+  // A small table with a bar behind each number. rows: [{ name, value, extra }]
+  function barList(title, rows, total) {
+    var max = Math.max.apply(null, rows.map(function (r) { return r.value; }).concat([1]));
+    var box = el('div', { class: 'card tbl' }, [el('div', { class: 'l', text: title })]);
+    if (!rows.length) box.appendChild(el('div', { class: 'small muted', text: 'Nothing yet.' }));
+    rows.forEach(function (r) {
+      var bar = el('i', {}); bar.style.width = Math.max(2, (r.value / max) * 100) + '%';
+      box.appendChild(el('div', { class: 'row' }, [
+        el('div', { class: 'bar' }, bar),
+        el('span', { class: 'nm', text: r.name }),
+        el('span', { class: 'nv', text: number(r.value) + (total ? ' · ' + percent(r.value, total) : '') + (r.extra ? ' · ' + r.extra : '') })
+      ]));
+    });
+    return box;
+  }
+
+  function trafficSection() {
+    var wrap = el('div', {});
+    var body = el('div', {}, el('p', { class: 'muted', text: 'Loading visitors…' }));
+    var chips = [7, 30, 90].map(function (n) {
+      var chip = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(n === trafficDays), text: 'Last ' + n + ' days' });
+      chip.addEventListener('click', function () { trafficDays = n; chips.forEach(function (c, i) { c.setAttribute('aria-pressed', String([7, 30, 90][i] === n)); }); load(); });
+      return chip;
+    });
+    wrap.appendChild(el('div', { class: 'tools' }, chips));
+    wrap.appendChild(body);
+
+    function paint(t) {
+      clear(body);
+      var visitors = t.totals.visitors;
+      body.appendChild(el('div', { class: 'cards' }, [
+        card(number(visitors), 'Visitors', 'unique per day, added up'),
+        card(number(t.totals.pageviews), 'Page views'),
+        card(number(t.totals.invitationViews), 'Invitation views', number(t.totals.invitationVisitors) + ' visitors to published invitations'),
+        card(visitors ? (t.totals.pageviews / visitors).toFixed(1) : '—', 'Pages per visitor')
+      ]));
+
+      var max = Math.max.apply(null, t.daily.map(function (d) { return d.visitors; }).concat([1]));
+      var bars = el('div', { class: 'bars', role: 'img', 'aria-label': 'Visitors each day' });
+      t.daily.forEach(function (d) {
+        var b = el('div', { title: day(d.day + 'T00:00:00') + ': ' + d.visitors + ' visitors, ' + d.pageviews + ' page views' });
+        b.style.height = Math.max(2, (d.visitors / max) * 100) + '%';
+        bars.appendChild(b);
+      });
+      body.appendChild(el('div', { style: 'margin-top:12px' }, [bars, el('p', { class: 'legend', text: 'Visitors per day, last ' + t.days + ' days.' })]));
+
+      var f = t.funnel;
+      body.appendChild(el('h2', { text: 'From visit to live website' }));
+      body.appendChild(table(['Step', 'People', 'Of visitors'], [
+        ['Visited the site', f.visitors], ['Looked at a design', f.viewedADesign], ['Started a draft', f.draftsCreated], ['Paid', f.paid], ['Made it live', f.wentLive]
+      ].map(function (r) { return el('tr', {}, [el('td', { text: r[0] }), el('td', { text: number(r[1]) }), el('td', { text: percent(r[1], f.visitors) })]); })));
+      body.appendChild(el('p', { class: 'small muted', text: 'Visits are counted per day; drafts, payments and live websites are counted in the same period from the database, so a draft may be from someone who visited earlier.' }));
+
+      var grid = el('div', { class: 'grid3' }, [
+        barList('Pages', t.pages.map(function (r) { return { name: r.path, value: r.views, extra: number(r.visitors) + ' visitors' }; })),
+        barList('Where visitors come from', t.referrers.map(function (r) { return { name: r.name, value: r.visitors }; }), visitors),
+        barList('Countries', t.countries.map(function (r) { return { name: countryName(r.name), value: r.visitors }; }), visitors),
+        barList('Devices', t.devices.map(function (r) { return { name: r.name.charAt(0).toUpperCase() + r.name.slice(1), value: r.visitors }; }), visitors),
+        barList('Browsers', t.browsers.map(function (r) { return { name: r.name, value: r.visitors }; }), visitors),
+        barList('Systems', t.systems.map(function (r) { return { name: r.name, value: r.visitors }; }), visitors),
+        barList('Screen width (pixels)', t.screens.map(function (r) { return { name: r.name, value: r.visitors }; }), visitors),
+        barList('Languages', t.languages.map(function (r) { return { name: r.name, value: r.visitors }; }), visitors),
+        barList('Designs looked at', t.designs.map(function (r) { return { name: DESIGN_NAMES[r.number] || 'Design ' + r.number, value: r.views, extra: number(r.visitors) + ' visitors' }; })),
+        barList('Campaign links (utm_)', t.campaigns.map(function (r) { return { name: [r.source, r.medium, r.campaign].filter(Boolean).join(' / '), value: r.visitors }; })),
+        barList('Published invitations viewed', t.invitations.map(function (r) { return { name: '/s/' + r.slug, value: r.views, extra: number(r.visitors) + ' visitors' }; }))
+      ]);
+      body.appendChild(grid);
+      body.appendChild(el('p', { class: 'small muted', text: 'Anonymous: no cookies, no addresses, no user-agent text are stored. A visitor is a hash that changes every day. Visitors who send Do Not Track and your own browsers are not counted.' }));
+    }
+
+    function load() {
+      clear(body); body.appendChild(el('p', { class: 'muted', text: 'Loading visitors…' }));
+      fetch('/api/admin/traffic?days=' + trafficDays, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+        .then(function (response) { return response.json().catch(function () { return null; }).then(function (b) { return { status: response.status, body: b }; }); })
+        .then(function (result) {
+          if (result.status === 200 && result.body && result.body.totals) return paint(result.body);
+          clear(body);
+          body.appendChild(el('p', { class: 'error', text: result.status === 502 ? 'Visitors are not available yet. Run the analytics migration in Supabase (docs/ANALYTICS.md).' : 'Could not load the visitors.' }));
+        }, function () { clear(body); body.appendChild(el('p', { class: 'error', text: 'Could not load the visitors.' })); });
+    }
+    load();
+    return wrap;
+  }
+
   function chart() {
     var max = Math.max.apply(null, data.daily.map(function (d) { return Math.max(d.created, d.live); }).concat([1]));
     var bars = el('div', { class: 'bars', role: 'img', 'aria-label': 'Websites created and made live each day for 30 days' });
@@ -216,7 +309,9 @@
       card(revenue, 'Revenue'),
       card(number(t.replies), 'Guest replies', number(t.attendingReplies) + ' coming · ' + number(t.guestsComing) + ' guests')
     ]));
-    main.appendChild(el('h2', { text: 'Last 30 days' }));
+    main.appendChild(el('h2', { text: 'Visitors' }));
+    main.appendChild(trafficSection());
+    main.appendChild(el('h2', { text: 'Websites created and made live, last 30 days' }));
     main.appendChild(chart());
     main.appendChild(el('h2', { text: 'Designs' }));
     main.appendChild(table(['Design', 'Websites', 'Live', 'Paid'], data.byDesign.map(function (d) {

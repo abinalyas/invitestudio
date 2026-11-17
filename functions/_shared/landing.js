@@ -162,7 +162,7 @@ ${sections}
 <section class="faq"><h2>Questions</h2>${page.faq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}</section>
 <div class="cta"><h2>Make your invitation</h2><p>Build and preview it free. Pay once, only when you publish.</p><a class="btn" href="/templates">Choose a template</a></div>
 <section class="more"><h2>More guides</h2><ul>${others.map(p => `<li><a href="${abs(`/${p.slug}`)}">${esc(p.h1)}</a></li>`).join('')}</ul></section></main>
-<footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.<nav aria-label="Policies">${POLICY_LINKS.map(([name, path]) => `<a href="${path}">${name}</a>`).join('')}</nav><p class="copy">${COPYRIGHT}</p></footer></div></body></html>`;
+<footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.<nav aria-label="Policies">${POLICY_LINKS.map(([name, path]) => `<a href="${path}">${name}</a>`).join('')}</nav><p class="copy">${COPYRIGHT}</p></footer></div><script src="/analytics.js" defer></script></body></html>`;
 }
 
 const ICONS = '<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="icon" href="/favicon.ico" sizes="48x48"/><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"/>';
@@ -177,5 +177,5 @@ export function renderPolicy(page, origin, { head, title, updated, contact, busi
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#fbf7f2"/>${ICONS}<title>${esc(title)}</title>${head}<style>${CSS}</style></head>
 <body><div class="w"><header class="top"><a class="logo" href="/"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>InviteStudio</span></a><nav aria-label="Main"><a href="/templates">Templates</a><a href="/#pricing">Pricing</a></nav></header>
 <main class="doc"><h1>${esc(page.h1)}</h1>${page.contact ? '' : `<p class="updated">Last updated: ${esc(updated)}</p>`}${actions}${sections}</main>
-<footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.<nav aria-label="Policies">${POLICY_LINKS.map(([name, path]) => `<a href="${path}">${name}</a>`).join('')}</nav><p class="copy">${COPYRIGHT}</p></footer></div></body></html>`;
+<footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.<nav aria-label="Policies">${POLICY_LINKS.map(([name, path]) => `<a href="${path}">${name}</a>`).join('')}</nav><p class="copy">${COPYRIGHT}</p></footer></div><script src="/analytics.js" defer></script></body></html>`;
 }

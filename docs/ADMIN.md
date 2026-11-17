@@ -37,6 +37,12 @@ a 30 day chart, and a searchable list of websites with the number of guest repli
 
 Until the four settings exist, `/admin` says it is not set up and no data is shown.
 
+## Visitors
+
+The **Visitors** section shows anonymous visit statistics: visitors, page views, devices, browsers, countries, where people come from,
+which designs they look at, and the path from visit to a live website. How it works and what it keeps: `docs/ANALYTICS.md`.
+Run `supabase/migrations/202611170001_analytics.sql` first (until then the section says it is not available yet).
+
 ## Buyers' contact details
 
 Before the Razorpay page, the payment dialog asks for **name, email, optional phone or WhatsApp, and an optional tick for tips and
