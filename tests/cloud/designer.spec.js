@@ -274,13 +274,13 @@ test('the default copy is THE WEDDING OF and Our Story, and clearing a field ret
   await openDesigner(page, 2);
   await expect(page.getByLabel(/^Pre-title/)).toHaveValue('THE WEDDING OF');
   await page.locator('.editor-pages').getByRole('button', { name: /our story/i }).click();
-  await expect(page.getByLabel('Section heading')).toHaveValue('Our Story');
+  await expect(page.getByLabel(/^Heading/)).toHaveValue('Our Story');
 
-  await page.getByLabel('Section heading').fill('Our journey');
+  await page.getByLabel(/^Heading/).fill('Our journey');
   await waitSaved(page);
-  await page.getByLabel('Section heading').fill('');
+  await page.getByLabel(/^Heading/).fill('');
   await waitSaved(page);
-  await expect(page.getByLabel('Section heading')).toHaveValue('Our Story', { timeout: 15000 });
+  await expect(page.getByLabel(/^Heading/)).toHaveValue('Our Story', { timeout: 15000 });
 });
 
 test('quick-add uses the setup presets, and custom events still work', async ({ page }) => {

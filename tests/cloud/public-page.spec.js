@@ -50,7 +50,7 @@ test('a published invitation renders read-only, without tokens or hidden events'
 test('an invitation that does not exist shows a clear not-available message', async ({ page }) => {
   await page.goto(`/s/no-such-invitation-${randomUUID().slice(0, 6)}`);
   await expect(page.getByText('This invitation is not available.')).toBeVisible({ timeout: 15000 });
-  await expect(page.getByRole('link', { name: /create an invitestudio website/i })).toBeVisible();
+  await expect(page.getByRole('link', { name: /create your own invitation/i })).toBeVisible();
 });
 
 test('an invalid public address is handled without an error', async ({ page }) => {

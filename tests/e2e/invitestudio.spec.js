@@ -89,9 +89,9 @@ test('preview and publish dialog provide an honest path back to the invitation',
   await page.evaluate(() => { state.page = 'preview'; state.device = 'mobile'; render(); });
   await expect(page.locator('main')).toContainText('Mira & Arun');
   await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
-  await expect(page.getByText(/you can’t publish a live website yet/i)).toBeVisible();
+  await expect(page.getByText(/you can’t publish your invitation yet/i)).toBeVisible();
   await page.getByRole('button', { name: /view my preview/i }).click();
-  await expect(page.getByText('Website preview')).toBeVisible();
+  await expect(page.getByText('Invitation preview')).toBeVisible();
   await expect(page.locator('main')).toContainText('Mira & Arun');
 });
 
@@ -356,7 +356,7 @@ test.describe('guest replies', () => {
     await expect(page.locator('[data-rsvp-open]').first()).toBeVisible();
 
     const download = page.waitForEvent('download');
-    await page.getByRole('button', { name: /Download spreadsheet/ }).click();
+    await page.getByRole('button', { name: /Download as spreadsheet/ }).click();
     const file = await download;
     expect(file.suggestedFilename()).toBe('wedding-replies.csv');
     const csv = require('fs').readFileSync(await file.path(), 'utf8');
@@ -640,7 +640,7 @@ test.describe('guest replies', () => {
     await openSavedDraft(page, { retention: keepInfo({ endsOn: '2027-09-20', daysLeft: 9 }) });
     const notice = page.locator('[data-retention="soon"]');
     await expect(notice).toBeVisible();
-    await expect(notice).toContainText('Your website closes on 20 September 2027');
+    await expect(notice).toContainText('Your invitation closes on 20 September 2027');
     await expect(notice).toContainText('in 9 days');
     await expect(notice.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/919567882568\?text=.*keep%20my%20InviteStudio%20website%20online%20for%20longer/);
     await expect(notice.getByRole('link', { name: 'Email' })).toHaveAttribute('href', /^mailto:abinalyas@gmail\.com\?subject=Keep%20my%20InviteStudio%20website%20longer/);
@@ -692,7 +692,7 @@ test.describe('guest replies', () => {
   test('retention: a draft that would close before the event is warned before it is published', async ({ page }) => {
     await openSavedDraft(page, { retention: keepInfo({ hasClock: false, endsOn: null, deleteOn: null, stage: 'no_clock', daysLeft: null, source: 'none', estimatedEndsOn: '2027-06-01', estimateBeforeEvent: true, lastEventDate: '2027-12-20' }) });
     const notice = page.locator('[data-retention="estimate-before-event"]');
-    await expect(notice).toContainText('If you publish today, your website would close on 1 June 2027');
+    await expect(notice).toContainText('If you publish today, your invitation would close on 1 June 2027');
     await expect(notice).toContainText('before your event on 20 December 2027');
   });
 
@@ -701,7 +701,7 @@ test.describe('guest replies', () => {
     await page.waitForTimeout(600);
     await page.getByRole('button', { name: /Share invitation/ }).first().click();
     const note = page.locator('[data-kept-note]');
-    await expect(note).toContainText('Once live, your website stays online until 20 September 2027');
+    await expect(note).toContainText('Once live, your invitation stays online until 20 September 2027');
     await expect(note.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/919567882568/);
   });
 
