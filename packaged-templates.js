@@ -225,7 +225,7 @@
     if (example && !story) story = example.story || "";
     if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", event_id: "", event_title: e.title, event_venue: e.venue || "", when: "", date_text: "", time_text: "", map: "" }; });
     events = numbered(events);
-    var photos = (Array.isArray(p.photos) ? p.photos : []).map(function (ph) { return ph && { src: safePhoto(ph.data), thumb: safePhoto(ph.thumb), alt: ph.alt || "" }; }).filter(function (ph) { return ph && ph.src; });
+    var photos = (Array.isArray(p.photos) ? p.photos : []).map(function (ph) { return ph && { src: safePhoto(ph.data), thumb: safePhoto(ph.thumb), alt: ph.alt || "", slot: ph.slot || "" }; }).filter(function (ph) { return ph && ph.src; });
     // The template page (opts.showcase) shows a design at its best: its sample photographs fill the photo spots (manifest
     // example.photoSet, else the shared SAMPLE_PHOTOS). Nowhere else: not in the editor or the setup steps, where the
     // couple's own invitation is shown, and never on a published page, so these pictures can never be published.
@@ -237,16 +237,28 @@
       photos = (example.photoSet || SAMPLE_PHOTOS).slice(0, manifest.galleryReuse ? Math.max(spots, tiles) : spots + tiles)
         .map(function (src) { return { src: src, thumb: src, alt: "" }; });
     }
-    // Photo slots: the first photos fill the template's named slots (hero, story, ...), in order. The gallery gets the
-    // rest, or all of them when the template reuses its slot photos (galleryReuse).
+    // Photo slots: a photo goes where it was added. One added to a named spot (cover, story, venue) fills that spot; one added to the
+    // gallery stays in the gallery. A photo with no place (added before places existed), or for a spot this design does not have, fills
+    // the spots that are still empty in order, as it always did, and the rest go to the gallery. A design that reuses its slot
+    // photos in the gallery (galleryReuse) shows all of them there.
     var slots = manifest.photoSlots || (manifest.heroPhoto ? ["hero"] : []);
     // A named picture spot only counts when its section is on the page: a published page leaves out the story section when no
     // story is written (and the events section when there are no events), and a picture put there would vanish. Such photos move
     // to the gallery instead, in the order they were added.
     var slotShown = { hero: visible.hero !== false, story: Boolean(visible.story && story), venue: Boolean(visible.functions && events.length) };
-    var slotPhoto = {}, spilled = [];
-    photos.slice(0, slots.length).forEach(function (ph, i) { if (slotShown[slots[i]] === false) spilled.push(ph); else slotPhoto[slots[i]] = ph; });
-    var gallery = manifest.galleryReuse ? photos : spilled.concat(photos.slice(slots.length));
+    var slotPhoto = {}, loose = [];
+    photos.forEach(function (ph) {
+      if (ph.slot && ph.slot !== "gallery" && slots.indexOf(ph.slot) >= 0 && !slotPhoto[ph.slot]) {
+        if (slotShown[ph.slot] !== false) slotPhoto[ph.slot] = ph; // otherwise it stays in the gallery
+      } else if (ph.slot !== "gallery") loose.push(ph);
+    });
+    slots.forEach(function (name) {
+      if (slotPhoto[name] || !loose.length) return;
+      var ph = loose.shift();
+      if (slotShown[name] !== false) slotPhoto[name] = ph; // otherwise it stays in the gallery
+    });
+    var inSlot = photos.filter(function (ph) { return slots.some(function (name) { return slotPhoto[name] === ph; }); });
+    var gallery = manifest.galleryReuse ? photos : photos.filter(function (ph) { return inSlot.indexOf(ph) < 0; });
     if (example && !photos.length) { gallery = []; for (var k = 0; k < (example.photos || 0); k++) gallery.push({ src: "", alt: "" }); }
     // In the editor, the empty "Your photo" tiles stay until the design's gallery is full of the couple's own pictures, and one
     // more tile always follows the last photo (until the limit), so adding the next photo is one tap. Without this the tiles

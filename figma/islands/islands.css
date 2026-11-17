@@ -876,3 +876,12 @@ table.rsvp-by-event { font-size: 13px; }
    rounded corners, which showed as grey wedges over the bezel; clipping the screen to its own rounded shape stops that. */
 .device-frame.mobile .editor-site { clip-path: inset(0 round 34px); }
 .device-frame.tablet .editor-site { clip-path: inset(0 round 18px); }
+/* The design's own picture places in the Photos panel (cover, story, venue). */
+.photo-places { margin: 0 0 14px; padding: 12px 14px; border: 1px solid #e6e0d9; border-radius: 14px; background: rgba(255, 255, 255, .6); }
+.photo-places h3 { margin: 0 0 8px; font-size: 16px; font-weight: 700; color: #10281d; }
+.photo-places ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.photo-places li { display: flex; align-items: center; gap: 12px; }
+.photo-places img, .photo-place-empty { flex: none; width: 48px; height: 48px; border-radius: 10px; object-fit: cover; background: #efeae2; border: 1px dashed #b9b2a4; box-sizing: border-box; }
+.photo-places img { border: 0; }
+.photo-place-text { display: grid; flex: 1 1 auto; min-width: 0; line-height: 1.3; }
+.photo-place-text small { color: #5c625e; font-size: 12.5px; }

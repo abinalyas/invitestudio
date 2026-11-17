@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { usePricing } from "./pricing";
 import { Icon, IconName, PlaceList, Logo, openPickerOnClick, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
-import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, RetentionInfo, RsvpData } from "./bridge";
+import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, PhotoItem, RetentionInfo, RsvpData } from "./bridge";
 import { useBridgeVersion, TalkToUs, SampleChips } from "./extras";
 
 type SectionKey = "home" | "story" | "functions" | "gallery" | "rsvp";
@@ -1040,6 +1040,21 @@ const mediaOffNotes: Record<string, string> = {
 
 // Photos: the first ones fill the design's large pictures, the rest form the gallery. Each is resized on this device
 // before it is uploaded, so a phone photo of several MB becomes a few hundred KB.
+// Which photo fills which of the design's large pictures: a photo goes where it was added; one with no place (added before places
+// existed) fills a spot that is still empty, in order. The same rule as the design uses (packaged-templates.js).
+function placePhotos(photos: PhotoItem[], slots: string[]) {
+  const placed: Record<string, PhotoItem | undefined> = {};
+  const loose: PhotoItem[] = [];
+  for (const photo of photos) {
+    if (photo.slot && photo.slot !== "gallery" && slots.includes(photo.slot) && !placed[photo.slot]) placed[photo.slot] = photo;
+    else if (photo.slot !== "gallery") loose.push(photo);
+  }
+  for (const name of slots) if (!placed[name] && loose.length) placed[name] = loose.shift();
+  const where = new Map<string, string>();
+  for (const name of slots) if (placed[name]) where.set(placed[name]!.id, name);
+  return { placed, where };
+}
+
 function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
   const [progress, setProgress] = useState("");
   const [problems, setProblems] = useState<string[]>([]);
@@ -1060,17 +1075,19 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
   }
 
   const full = snap.photos.length >= media.limits.photos;
-  const add = async (files: FileList | null) => {
+  const { placed, where } = placePhotos(snap.photos, slots);
+  // `slot` is where the photos go: the gallery, or one of the design's large pictures (then `replaceId` swaps the photo that is there).
+  const add = async (files: FileList | null, slot = "gallery", replaceId = "") => {
     if (!files || !files.length) return;
     setProblems([]);
     setAdded("");
-    const result = await bridge.mediaUpload(Array.from(files), p => setProgress(`Adding photo ${p.index} of ${p.total}…`));
+    const onProgress = (p: { index: number; total: number }) => setProgress(`Adding photo ${p.index} of ${p.total}…`);
+    const result = replaceId ? await bridge.mediaReplace(replaceId, files[0], onProgress) : await bridge.mediaUpload(Array.from(files), onProgress, slot);
     setProgress("");
-    if (result.added) setAdded(`Added ${result.added} ${result.added === 1 ? "photo" : "photos"}. Add more any time.`);
+    if (result.added) setAdded(`Added ${result.added} ${result.added === 1 ? "photo" : "photos"} to the ${slot === "gallery" ? "gallery" : (slotLabels[slot] ?? "picture").toLowerCase()}. Add more any time.`);
     setProblems(result.errors.map(error => (error.name ? `${error.name}: ${error.message}` : error.message)));
     if (inputRef.current) inputRef.current.value = "";
   };
-  const slotName = (index: number) => slotLabels[slots[index]] ?? "Large picture";
 
   return (
     <div className="editor-form">
@@ -1078,11 +1095,39 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
         <strong>{media.usage.count} of {media.limits.photos} photos</strong> · {mb(media.usage.bytes)} of {mb(media.limits.totalBytes)} MB
       </p>
       <p className="tiny muted">
-        You can add up to {media.limits.photos} photos, and choose several at once.{" "}
-        {slots.length
-          ? `The first ${slots.length} ${slots.length === 1 ? "photo fills" : "photos fill"} this design's large ${slots.length === 1 ? "picture" : "pictures"}; the rest go in the gallery. Use the arrows to change the order.`
-          : "They appear in the gallery. Use the arrows to change the order."}
+        You can add up to {media.limits.photos} photos, and choose several at once. Photos added with the button below go to the gallery.
+        {slots.length ? " The design's own pictures have their own places, just below." : ""} Use the arrows to change the order.
       </p>
+      {slots.length ? (
+        <section className="photo-places" aria-label="Pictures in this design">
+          <h3>Pictures in this design</h3>
+          <ul>
+            {slots.map(name => {
+              const photo = placed[name];
+              const label = slotLabels[name] ?? "Large picture";
+              return (
+                <li key={name} data-photo-place={name}>
+                  {photo ? <img src={photo.thumb} alt="" width={48} height={48} /> : <span className="photo-place-empty" aria-hidden="true" />}
+                  <span className="photo-place-text">
+                    <strong>{label}</strong>
+                    <small>{photo ? "Your photo" : "Not added yet. The design's own picture is shown."}</small>
+                  </span>
+                  <label className={(!photo && full) || progress ? "button small outline photo-add disabled" : "button small outline photo-add"}>
+                    <input
+                      type="file"
+                      accept="image/*,.heic,.heif"
+                      disabled={(!photo && full) || Boolean(progress)}
+                      onChange={event => { void add(event.target.files, name, photo ? photo.id : ""); event.target.value = ""; }}
+                      aria-label={`${photo ? "Replace" : "Add"} ${label.toLowerCase()}`}
+                    />
+                    {photo ? "Replace" : "Add"}
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
       <div className="photo-add-bar">
         <label className={full || progress ? "button small photo-add disabled" : "button small photo-add"}>
           <input
@@ -1092,9 +1137,9 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
             multiple
             disabled={full || Boolean(progress)}
             onChange={event => void add(event.target.files)}
-            aria-label="Add photos"
+            aria-label="Add photos to the gallery"
           />
-          {progress ? progress : full ? `Photo limit reached (${media.limits.photos})` : snap.photos.length ? "Add more photos" : "Add photos"}
+          {progress ? progress : full ? `Photo limit reached (${media.limits.photos})` : snap.photos.length ? "Add more to the gallery" : "Add to the gallery"}
         </label>
       </div>
       {added ? <p className="tiny photo-added" role="status">{added}</p> : null}
@@ -1110,7 +1155,7 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
           <li key={photo.id}>
             <img src={photo.thumb} alt="" width={72} height={72} />
             <div className="photo-fields">
-              {index < slots.length ? <span className="photo-slot">{slotName(index)}</span> : <span className="photo-slot muted">Gallery</span>}
+              {where.has(photo.id) ? <span className="photo-slot">{slotLabels[where.get(photo.id)!] ?? "Large picture"}</span> : <span className="photo-slot muted">Gallery</span>}
               <input
                 aria-label={`Description of photo ${index + 1}`}
                 placeholder="Describe this photo (for screen readers)"
