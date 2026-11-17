@@ -50,7 +50,7 @@ test('create, edit, save, publish, share, edit after publishing, and take offlin
 
   // 4. Preview the website as guests will see it.
   await page.evaluate(() => go('preview'));
-  await expect(page.getByText('Website preview')).toBeVisible();
+  await expect(page.getByText('Invitation preview')).toBeVisible();
 
   // 5. Publish with a web address.
   await page.getByRole('button', { name: 'Share invitation', exact: true }).click();

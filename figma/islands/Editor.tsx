@@ -28,7 +28,7 @@ function isPhone(): boolean {
 type SectionItem = { key: SectionKey; label: string; icon: IconName; sectionId?: string };
 
 const sections: SectionItem[] = [
-  { key: "home", label: "Home", icon: "home" },
+  { key: "home", label: "Cover", icon: "home" },
   { key: "story", label: "Our story", icon: "heart", sectionId: "story" },
   { key: "functions", label: "Events", icon: "calendar", sectionId: "functions" },
   { key: "gallery", label: "Photos", icon: "gallery", sectionId: "gallery" },
@@ -124,7 +124,7 @@ function RetentionNotice({ snap }: { snap: EditorSnapshot }) {
     return (
       <div className="retention-notice alert" role="alert" data-retention="closed">
         <p>
-          <strong>Your website closed on {longDay(info.endsOn ?? "")}.</strong>{" "}
+          <strong>Your invitation closed on {longDay(info.endsOn ?? "")}.</strong>{" "}
           Everything is deleted for good on {longDay(info.deleteOn ?? "")}. Download your replies before then.
         </p>
         <p className="retention-actions">
@@ -141,7 +141,7 @@ function RetentionNotice({ snap }: { snap: EditorSnapshot }) {
       return (
         <div className="retention-notice warn" role="status" data-retention="soon">
           <p>
-            <strong>Your website closes on {longDay(info.endsOn ?? "")}</strong> ({days <= 0 ? "today" : `in ${days} ${days === 1 ? "day" : "days"}`}).
+            <strong>Your invitation closes on {longDay(info.endsOn ?? "")}</strong> ({days <= 0 ? "today" : `in ${days} ${days === 1 ? "day" : "days"}`}).
             Download your replies now, or ask us to keep it online longer.
           </p>
           <p className="retention-actions">
@@ -155,7 +155,7 @@ function RetentionNotice({ snap }: { snap: EditorSnapshot }) {
       return (
         <div className="retention-notice warn" role="status" data-retention="before-event">
           <p>
-            <strong>Your website will close on {longDay(info.endsOn ?? "")}, before your event on {longDay(info.lastEventDate ?? "")}.</strong>{" "}
+            <strong>Your invitation will close on {longDay(info.endsOn ?? "")}, before your event on {longDay(info.lastEventDate ?? "")}.</strong>{" "}
             To keep it online through your event, ask us to extend it.
           </p>
           <p className="retention-actions"><TalkToUs topic="extend" address={address} lead="Talk to us:" /></p>
@@ -174,7 +174,7 @@ function RetentionNotice({ snap }: { snap: EditorSnapshot }) {
     return (
       <div className="retention-notice warn" role="status" data-retention="estimate-before-event">
         <p>
-          <strong>If you publish today, your website would close on {longDay(info.estimatedEndsOn)}, before your event on {longDay(info.lastEventDate ?? "")}.</strong>{" "}
+          <strong>If you publish today, your invitation would close on {longDay(info.estimatedEndsOn)}, before your event on {longDay(info.lastEventDate ?? "")}.</strong>{" "}
           You can publish later, or ask us to extend it.
         </p>
         <p className="retention-actions"><TalkToUs topic="extend" address={address} lead="Talk to us:" /></p>
@@ -203,7 +203,7 @@ function sectionHint(key: SectionKey, snap: EditorSnapshot): string {
 
 // The page redraws the whole editor whenever the draft finishes syncing with the cloud (a second or so after it
 // opens), which rebuilds this component from scratch. Where the couple was (section, phone tab, preview size) is
-// kept here, outside the component, so a redraw does not send them back to Home. A different draft starts fresh.
+// kept here, outside the component, so a redraw does not send them back to the cover. A different draft starts fresh.
 const remembered: { draft: string; device: Device; active: SectionKey; mobileTab: MobileTab } = {
   draft: "", device: "mobile", active: "home", mobileTab: "preview"
 };
@@ -304,9 +304,9 @@ export function EditorPage() {
     return (
       <main className="editor-page">
         <section className="editor-empty shell">
-          <p className="section-kicker">No website open</p>
+          <p className="section-kicker">No invitation open</p>
           <h1>Choose a design to start</h1>
-          <p>Pick a template and your invitation draft is created and saved.</p>
+          <p>Pick a design and your invitation draft is created and saved.</p>
           <a className="button" href="/templates">Browse designs</a>
         </section>
       </main>
@@ -547,7 +547,7 @@ export function EditorPage() {
 
           {active === "home" ? (
             <div className="editor-form">
-              <p className="tiny muted">Home is always shown. Names, date and welcome message appear at the top of the invitation.</p>
+              <p className="tiny muted">The first thing guests see: your names, date, place and welcome message. The cover is always shown.</p>
               <label>
                 Pre-title <span className="optional">(optional)</span>
                 <input value={snap.pretitle} placeholder="e.g. The wedding of" onChange={event => set({ pretitle: event.target.value })} />
@@ -595,14 +595,14 @@ export function EditorPage() {
                 <input data-field="hosts" value={snap.hosts} placeholder={snap.shown.hosts} onChange={event => set({ hosts: event.target.value })} />
                 <SampleChips value={snap.hosts} samples={sampleHosts(snap.title)} onPick={(text) => set({ hosts: text })} />
               </label>
-              <p className="tiny muted">Your design's hero image is used for now. Your own hero photos unlock when photo storage is available.</p>
+              <p className="tiny muted">Your design's cover image is used for now. Your own cover photos unlock when photo storage is available.</p>
             </div>
           ) : null}
 
           {active === "story" ? (
             <div className="editor-form">
               <label>
-                Section heading <span className="optional">(optional)</span>
+                Heading <span className="optional">(optional)</span>
                 <input value={snap.storyTitle} placeholder="e.g. Our story" onChange={event => set({ storyTitle: event.target.value })} />
               </label>
               <label>
@@ -734,7 +734,7 @@ function WordingPanel({ snap, section }: { snap: EditorSnapshot; section: Sectio
   return (
     <details className="editor-wording">
       <summary>Wording</summary>
-      <p className="tiny muted">Change the template's own text for this section. Leave a field empty to keep the original.</p>
+      <p className="tiny muted">Change the design's own text for this section. Leave a field empty to keep the original.</p>
       <div className="editor-form">
         {fields.map(field => (
           <label key={field.key}>
@@ -1313,7 +1313,7 @@ function RepliesList({ snap }: { snap: EditorSnapshot }) {
           {data.replies.length > 0 && rows.length === 0 ? <p className="tiny muted">No replies match.</p> : null}
           <div className="rsvp-actions-row">
             {data.replies.length > 0 ? (
-              <button type="button" className="button small outline" onClick={() => bridge.downloadRepliesCsv(data, counted)}>Download spreadsheet (CSV)</button>
+              <button type="button" className="button small outline" onClick={() => bridge.downloadRepliesCsv(data, counted)}>Download as spreadsheet</button>
             ) : null}
             <button type="button" className="link-button" onClick={load}>Refresh</button>
           </div>

@@ -185,18 +185,18 @@
     const title = project.name || project.title || 'Your invitation draft';
     const status = project.cloudStatus === 'error'
       ? 'Your local copy is safe. Check your connection and try again.'
-      : cloud ? 'Your latest changes are saved securely in the cloud.' : 'Your draft is saved on this device.';
+      : cloud ? 'Your latest changes are saved securely online.' : 'Your draft is saved on this device.';
     return `<section class="container" aria-label="Continue your draft" style="margin-top:18px"><div style="display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#f3eee5;border:1px solid #dfd4c5;border-radius:12px;padding:18px 20px"><div><div class="eyebrow">Welcome back</div><strong style="font-family:var(--serif);font-size:22px">Pick up where you left off</strong><p class="tiny muted" style="margin:5px 0 0">${esc(status)}</p>${state.recoveryError?`<p class="tiny" role="alert" style="color:#9b5147;margin:5px 0 0">${esc(state.recoveryError)}</p>`:''}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn dark" onclick="go('dashboard')">My invitations</button></div></div></section>`;
   }
 
   window.copyPrivateEditLink = async function copyPrivateEditLink() {
     const link = privateEditLink(typeof current === 'function' ? current() : null);
-    if (!link) { toast('A private edit link is available after cloud draft creation.'); return; }
+    if (!link) { toast('Your private link is available once your draft has been saved online.'); return; }
     try {
       await navigator.clipboard.writeText(link);
-      toast('Private edit link copied. Keep it safe.');
+      toast('Private link copied. Keep it safe.');
     } catch {
-      window.prompt('Copy your private edit link:', link);
+      window.prompt('Copy your private link:', link);
     }
   };
 
@@ -333,10 +333,10 @@
     const project = typeof current === 'function' ? current() : null;
     const token = project?.cloudId ? tokenFor(project.cloudId) : '';
     if (!project?.cloudId || !token || !window.inviteStudioApi?.enabled) {
-      toast('An active private edit link is required to regenerate access.');
+      toast('You need your private link to get a new one.');
       return;
     }
-    if (!await askConfirm({ title: 'Regenerate your private edit link?', message: 'The previous link will stop working.', confirmLabel: 'Regenerate link' })) return;
+    if (!await askConfirm({ title: 'Get a new private link?', message: 'The old link will stop working.', confirmLabel: 'Get new link' })) return;
     try {
       const result = await window.inviteStudioApi.regenerateEditToken(project.cloudId, token);
       rememberToken(project.cloudId, result.editToken);
@@ -344,9 +344,9 @@
       project.cloudStatus = 'saved';
       localSave();
       decorateRecoveryUi(project);
-      toast('Private edit link regenerated. The previous link is revoked.');
+      toast('You have a new private link. The old one no longer works.');
     } catch (error) {
-      toast(error.message || 'The private edit link could not be regenerated.');
+      toast(error.message || 'A new private link could not be made.');
     }
   };
 
@@ -354,20 +354,20 @@
     const project = typeof current === 'function' ? current() : null;
     const token = project?.cloudId ? tokenFor(project.cloudId) : '';
     if (!project?.cloudId || !token || !window.inviteStudioApi?.enabled) {
-      toast('No active private edit link is available.');
+      toast('There is no private link to turn off.');
       return;
     }
-    if (!await askConfirm({ title: 'Revoke every private edit link?', message: 'Nobody will be able to open this draft with an old link. This cannot be undone.', confirmLabel: 'Revoke all links', danger: true })) return;
+    if (!await askConfirm({ title: 'Turn off all private links?', message: 'Nobody will be able to open this draft with an old link. This cannot be undone.', confirmLabel: 'Turn off all links', danger: true })) return;
     try {
       await window.inviteStudioApi.revokeEditTokens(project.cloudId, token);
       forgetToken(project.cloudId);
       project.cloudStatus = 'token-missing';
-      project.cloudError = 'Private edit links have been revoked.';
+      project.cloudError = 'All private links have been turned off.';
       localSave();
       render();
-      toast('All private edit links have been revoked.');
+      toast('All private links have been turned off.');
     } catch (error) {
-      toast(error.message || 'The private edit links could not be revoked.');
+      toast(error.message || 'The private links could not be turned off.');
     }
   };
 
@@ -424,7 +424,7 @@
         project.cloudError = error.message;
         localSave();
         paintStatus(project);
-        toast('Cloud draft could not be refreshed. Your local copy is still available.');
+        toast('Your draft could not be refreshed. The copy on this device is still here.');
       }
     }
   }
@@ -452,8 +452,8 @@
   window.draftStorageNote = () => {
     const project = projectForReference();
     return project?.cloudId
-      ? 'Your draft is private and saved in the cloud.'
-      : 'Drafts are saved on this device until cloud setup is available.';
+      ? 'Your draft is private and saved online.'
+      : 'Drafts are saved on this device until online saving is available.';
   };
 
   function galleryPayload(project) {
@@ -713,7 +713,7 @@
         paintStatus(project);
         meta.retryTimer = setTimeout(() => syncProject(project), retryDelay(meta.retryCount));
       } else if (window.toast) {
-        toast('Cloud save failed. Your local draft is still safe; try again when online.');
+        toast('We could not save online. Your changes are kept on this device; try again when you are back online.');
       }
     } finally {
       meta.inFlight = false;
@@ -771,7 +771,7 @@
         paintStatus(project);
         decorateRecoveryUi(project);
         const why = createFailureReason(error);
-        if (window.toast) toast(`Cloud draft could not be created${why ? `: ${why}` : ''}. Your local draft is still available.`);
+        if (window.toast) toast(`Your draft could not be saved online${why ? `: ${why}` : ''}. It is kept on this device.`);
       }
     } finally {
       meta.inFlight = false;
@@ -826,9 +826,9 @@
   }
 
   window.cloudSaveLabel = project => {
-    if (project?.cloudStatus === 'creating') return 'Creating cloud draft…';
+    if (project?.cloudStatus === 'creating') return 'Creating your draft…';
     if (project?.cloudStatus === 'pending') return 'Saving changes…';
-    if (project?.cloudStatus === 'saving') return 'Saving to cloud…';
+    if (project?.cloudStatus === 'saving') return 'Saving…';
     if (project?.cloudStatus === 'retrying') return 'Retrying save…';
     if (project?.cloudStatus === 'saved') {
       const age = project.cloudSavedAt ? Date.now() - project.cloudSavedAt : 0;
@@ -837,8 +837,8 @@
       return 'Saved ✓';
     }
     if (project?.cloudStatus === 'conflict') return 'Save conflict — reload';
-    if (project?.cloudStatus === 'error') return 'Cloud save failed — local copy safe';
-    if (project?.cloudStatus === 'token-missing') return 'Edit link unavailable — local copy safe';
+    if (project?.cloudStatus === 'error') return 'Could not save online — kept on this device';
+    if (project?.cloudStatus === 'token-missing') return 'Private link missing — kept on this device';
     return 'Saved on this device';
   };
 
@@ -1027,7 +1027,7 @@
     const keptBefore = kept ? Boolean(kept.endsBeforeEvent || kept.estimateBeforeEvent) : false;
     const keptLinks = window.InviteContact ? window.InviteContact.links('extend', live ? publicLinkFor(project.publicSlug) : '') : null;
     const keptBlock = keptDate
-      ? `<p class="tiny" style="margin:12px 0 0;${keptBefore ? 'color:#9b5147' : 'color:#6b6760'}" data-kept-note>${live ? 'Your website stays online until' : 'Once live, your website stays online until'} <strong>${escapeText(new Date(keptDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }))}</strong>.${keptBefore ? ' That is before your event.' : ''} Need longer? Talk to us: ${keptLinks && keptLinks.whatsapp ? `<a href="${escapeText(keptLinks.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}${keptLinks && keptLinks.whatsapp && keptLinks.email ? ' · ' : ''}${keptLinks && keptLinks.email ? `<a href="${escapeText(keptLinks.email)}">Email</a>` : ''}</p>`
+      ? `<p class="tiny" style="margin:12px 0 0;${keptBefore ? 'color:#9b5147' : 'color:#6b6760'}" data-kept-note>${live ? 'Your invitation stays online until' : 'Once live, your invitation stays online until'} <strong>${escapeText(new Date(keptDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }))}</strong>.${keptBefore ? ' That is before your event.' : ''} Need longer? Talk to us: ${keptLinks && keptLinks.whatsapp ? `<a href="${escapeText(keptLinks.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}${keptLinks && keptLinks.whatsapp && keptLinks.email ? ' · ' : ''}${keptLinks && keptLinks.email ? `<a href="${escapeText(keptLinks.email)}">Email</a>` : ''}</p>`
       : '';
     // What guests can do about replies, from the couple's own RSVP choice (kept true to what the invitation does).
     const rsvpMode = project.preferences?.rsvp || 'count';
@@ -1437,7 +1437,7 @@
     }
     const token = tokenFor(project.cloudId);
     if (!token || !window.inviteStudioApi?.enabled) {
-      fail('This invitation\'s private link is not on this device, so its cloud copy cannot be deleted from here. Nothing has been deleted.');
+      fail('This invitation\'s private link is not on this device, so its online copy cannot be deleted from here. Nothing has been deleted.');
       return;
     }
     try {
@@ -1468,7 +1468,7 @@
       : '';
     renderModal(`<div class="eyebrow">Delete invitation</div>
       <h2 id="modal-title">Delete \u201c${name}\u201d?</h2>
-      <p class="muted">This permanently removes the invitation, its private edit links and its RSVP and photo records. It cannot be undone.</p>
+      <p class="muted">This permanently removes the invitation, its private links and its RSVP and photo records. It cannot be undone.</p>
       ${publicNote}
       <p id="delete-website-error" role="alert" class="tiny" style="color:#9b5147;margin:10px 0 0"></p>
       <div class="modal-actions" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:18px">
@@ -1489,7 +1489,7 @@
   window.openCloudPublish = function openCloudPublish(project) {
     if (!window.inviteStudioApi?.enabled) return false;
     if (!project?.cloudId || !tokenFor(project.cloudId)) {
-      renderModal(`<div class="eyebrow">Share your invitation</div><h2 id="modal-title">Almost ready</h2><p class="muted">Your draft is still being saved to the cloud. Publishing becomes available as soon as it is saved.</p><div class="modal-actions"><button class="btn dark" type="button" onclick="closeModal()">Got it</button></div>`);
+      renderModal(`<div class="eyebrow">Share your invitation</div><h2 id="modal-title">Almost ready</h2><p class="muted">Your draft is still being saved online. Publishing becomes available as soon as it is saved.</p><div class="modal-actions"><button class="btn dark" type="button" onclick="closeModal()">Got it</button></div>`);
       return true;
     }
     if (!String(project.title || '').trim()) {

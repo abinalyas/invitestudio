@@ -15,10 +15,10 @@ async function createWithServerAnswer(page, status, body) {
 
 test('a design the server does not have is named as the reason', async ({ page }) => {
   await createWithServerAnswer(page, 422, { error: { code: 'VALIDATION_ERROR', message: 'Selected template is not available.', fields: { templateId: 'Choose an active template.' } } });
-  await expect(page.locator('.toast')).toContainText('Cloud draft could not be created: this design is not set up on the server yet. Your local draft is still available.', { timeout: 20000 });
+  await expect(page.locator('.toast')).toContainText('Your draft could not be saved online: this design is not set up on the server yet. It is kept on this device.', { timeout: 20000 });
 });
 
 test('another refusal shows the server\'s own words', async ({ page }) => {
-  await createWithServerAnswer(page, 409, { error: { code: 'CREATE_REPLAY_EXPIRED', message: 'This draft creation can no longer be repeated. Start a new website.' } });
-  await expect(page.locator('.toast')).toContainText('Cloud draft could not be created: This draft creation can no longer be repeated. Start a new website', { timeout: 20000 });
+  await createWithServerAnswer(page, 409, { error: { code: 'CREATE_REPLAY_EXPIRED', message: 'This draft creation can no longer be repeated. Start a new invitation.' } });
+  await expect(page.locator('.toast')).toContainText('Your draft could not be saved online: This draft creation can no longer be repeated. Start a new invitation', { timeout: 20000 });
 });
