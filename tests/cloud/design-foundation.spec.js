@@ -2,6 +2,7 @@
 // the Kerala button meets contrast, and unsupported launch controls are gone.
 // See docs/DESIGN_SYSTEM.md and docs/PRODUCT_DECISIONS.md.
 const { test, expect } = require('@playwright/test');
+const { quickStart } = require('../support/setup');
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
@@ -87,7 +88,7 @@ test('the RSVP choice is made in the editor, and setup no longer asks for it', a
   await expect(page.locator('#projectTitle')).toBeVisible({ timeout: 15000 });
   await expect(page.locator('#prefRsvp')).toHaveCount(0);
   await page.goto('/templates/13');
-  await page.getByRole('button', { name: /quick start/i }).click();
+  await quickStart(page, 13);
   await expect(page).toHaveURL(/\/editor\/13$/, { timeout: 15000 });
   await page.locator('.editor-pages').getByRole('button', { name: /^RSVP/ }).click();
   await expect(page.getByLabel('How guests reply')).toBeVisible({ timeout: 15000 });

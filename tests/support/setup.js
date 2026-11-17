@@ -1,4 +1,4 @@
-// Drives the four-step setup wizard (Essentials, Template, Story and details, Ready)
+// Drives the three-step setup wizard (Essentials, Story and details, Ready)
 // the way a couple does. Names are required; every later step is optional.
 const { expect } = require('@playwright/test');
 
@@ -20,4 +20,17 @@ async function openLatestDraft(page) {
   await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
 }
 
-module.exports = { completeSetupSteps, openLatestDraft };
+// Opens the editor straight on a design, skipping the setup steps (the template page no longer offers this to customers). `number` is the
+// design's number in its address (/templates/13); its backend id is read from the design list in figma/islands/shared.tsx.
+function backendIdOf(number) {
+  const source = require('node:fs').readFileSync(require('node:path').join(__dirname, '../../figma/islands/shared.tsx'), 'utf8');
+  const match = new RegExp(`id:\\s*${number},\\s*backendId:\\s*"([^"]+)"`).exec(source);
+  if (!match) throw new Error(`No design number ${number} in shared.tsx`);
+  return match[1];
+}
+
+async function quickStart(page, number) {
+  await page.evaluate(([backendId, n]) => window.InviteStudioBridge.createDraft(backendId, n, ''), [backendIdOf(number), Number(number)]);
+}
+
+module.exports = { completeSetupSteps, openLatestDraft, quickStart };
