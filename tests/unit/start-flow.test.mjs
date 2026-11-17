@@ -78,7 +78,7 @@ test('the last step says what it does before and inside the Share dialog', () =>
   assert.doesNotMatch(editor, /Nothing is public until you do/, 'one voice: private now, a link once live (no "nothing is public" next to "anyone can open it")');
   assert.match(editor, /Update live page/); // the live state explains how changes go live
   const sync = read('cloud-sync.js');
-  for (const text of ['Right now it is private.', 'Only you can see your invitation.', 'Making it live gives it a web link.', 'Anyone who has the link can open it', 'Guests can reply from the live invitation.', 'You can change your mind.', 'Preview it first', 'Your link will be', 'Make it live']) {
+  for (const text of ['Right now it is private.', 'Only you can see your invitation.', 'Making it live gives it a web link.', 'Anyone who has the link can open it', 'Guests can reply from the live invitation.', 'You can change your mind.', 'Preview invitation', 'Your link will be', 'Make it live']) {
     assert.ok(sync.includes(text), text);
   }
   // Replies are live, and the panel must never say they are not, or say nobody can see what a link makes visible.
