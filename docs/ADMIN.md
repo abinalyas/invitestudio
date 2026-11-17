@@ -43,6 +43,11 @@ The **Visitors** section shows anonymous visit statistics: visitors, page views,
 which designs they look at, and the path from visit to a live website. How it works and what it keeps: `docs/ANALYTICS.md`.
 Run `supabase/migrations/202611170001_analytics.sql` first (until then the section says it is not available yet).
 
+## Session recordings
+
+Optional Microsoft Clarity recordings of the public marketing pages (never the editor, setup, previews, dialogs or invitations, and not for
+visitors in Europe). Setup, safety rules and how to check them: `docs/REPLAY.md`.
+
 ## Buyers' contact details
 
 Before the Razorpay page, the payment dialog asks for **name, email, optional phone or WhatsApp, and an optional tick for tips and

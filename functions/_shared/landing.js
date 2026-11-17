@@ -148,7 +148,7 @@ function esc(value) {
 }
 
 // A complete HTML document. `templates` is seo.js TEMPLATES; `head` is the shared head tags from seo.js (title excluded).
-export function renderLanding(page, origin, { templates, head, title }) {
+export function renderLanding(page, origin, { templates, head, title, replay = '' }) {
   const abs = path => new URL(path, origin).href;
   const picks = page.picks.map(id => templates.find(t => t.id === id));
   const others = LANDING.filter(p => p.slug !== page.slug);
@@ -162,7 +162,7 @@ ${sections}
 <section class="faq"><h2>Questions</h2>${page.faq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}</section>
 <div class="cta"><h2>Make your invitation</h2><p>Build and preview it free. Pay once, only when you publish.</p><a class="btn" href="/templates">Choose a template</a></div>
 <section class="more"><h2>More guides</h2><ul>${others.map(p => `<li><a href="${abs(`/${p.slug}`)}">${esc(p.h1)}</a></li>`).join('')}</ul></section></main>
-<footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.<nav aria-label="Policies">${POLICY_LINKS.map(([name, path]) => `<a href="${path}">${name}</a>`).join('')}</nav><p class="copy">${COPYRIGHT}</p></footer></div><script src="/analytics.js" defer></script></body></html>`;
+<footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.<nav aria-label="Policies">${POLICY_LINKS.map(([name, path]) => `<a href="${path}">${name}</a>`).join('')}</nav><p class="copy">${COPYRIGHT}</p></footer></div><script src="/analytics.js" defer></script>${replay ? '<script src="/replay.js" defer></script>' : ''}</body></html>`;
 }
 
 const ICONS = '<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="icon" href="/favicon.ico" sizes="48x48"/><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"/>';

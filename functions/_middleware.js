@@ -1,4 +1,5 @@
 import { SECURITY_HEADERS } from './_shared/security.js';
+import { replayFor, replayMeta, withReplayPolicy } from './_shared/replay.js';
 import { headTags, isPrivateHost, landingDocument, originFor, pageFor, policyDocument, staticContent } from './_shared/seo.js';
 
 // Gives each public marketing page (/, /templates, /templates/<id>) and serves the search-intent landing pages (functions/_shared/landing.js) its own title, description, canonical address, social card,
@@ -15,7 +16,10 @@ export async function onRequest(context) {
     const headers = new Headers({ 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
     for (const [name, value] of Object.entries(SECURITY_HEADERS)) headers.set(name, value);
     if (isPrivateHost(url.hostname)) headers.set('X-Robots-Tag', 'noindex, nofollow');
-    return new Response(request.method === 'HEAD' ? null : (page.kind === 'policy' ? policyDocument : landingDocument)(page, originFor(env)), { status: 200, headers });
+    // Session recordings (docs/REPLAY.md) are offered on search landing pages only, never on the policy pages.
+    const replay = replayFor(env, page.kind, request.cf?.country);
+    if (replay && headers.get('Content-Security-Policy')) headers.set('Content-Security-Policy', withReplayPolicy(headers.get('Content-Security-Policy')));
+    return new Response(request.method === 'HEAD' ? null : (page.kind === 'policy' ? policyDocument : landingDocument)(page, originFor(env), { replay }), { status: 200, headers });
   }
 
   const response = await context.next();
@@ -25,9 +29,12 @@ export async function onRequest(context) {
   const { title, html } = headTags(page, origin);
   const headers = new Headers(response.headers);
   if (isPrivateHost(url.hostname)) headers.set('X-Robots-Tag', 'noindex, nofollow');
+  // The recording script is only offered on these marketing pages, and only where the visitor's country allows it (docs/REPLAY.md).
+  const replay = replayFor(env, page.kind, request.cf?.country);
+  if (replay && headers.get('Content-Security-Policy')) headers.set('Content-Security-Policy', withReplayPolicy(headers.get('Content-Security-Policy')));
   return new HTMLRewriter()
     .on('title', { element(element) { element.setInnerContent(title); } })
-    .on('head', { element(element) { element.append(html, { html: true }); } })
+    .on('head', { element(element) { element.append(html + replayMeta(replay), { html: true }); } })
     .on('#app', { element(element) { element.append(staticContent(page, origin), { html: true }); } })
     .transform(new Response(response.body, { status: response.status, statusText: response.statusText, headers }));
 }
