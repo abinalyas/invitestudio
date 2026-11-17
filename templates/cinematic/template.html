@@ -14,7 +14,7 @@
 <!--part:hero-->
 <section class="hero scene" data-tpl-section="home" data-section="hero">
   <div class="letterbox" aria-hidden="true"><i></i><i></i></div>
-  <!--if hero_photo--><img class="hero-image" data-ambient src="{{hero_photo}}" alt=""><!--else--><div class="hero-backdrop" data-ambient aria-hidden="true"><span>{{ia}}<!--if ib-->&amp;{{ib}}<!--/if--></span></div><!--/if-->
+  <!--if hero_photo--><img class="hero-image" data-ambient src="{{hero_photo}}" alt=""><!--else--><div class="hero-backdrop" data-ambient aria-hidden="true"><span>{{ia}}<!--if ib-->&amp;{{ib}}<!--/if--></span></div><!--if editable--><button type="button" data-photo-add="hero" data-photo-top></button><!--/if--><!--/if-->
   <div class="hero-shade"></div>
   <div class="hero-copy">
     <p class="eyebrow" data-reveal="fade" style="--rd:.9s">{{upper:edit:copy:eyebrow}}</p>
@@ -47,7 +47,7 @@
   <p class="note-copy" data-reveal style="--rd:.25s">{{edit:closing_note}}</p>
 </section>
 <!--if show_venue--><section class="venue-scene" data-tpl-section="venue" data-section="welcome">
-  <div class="venue-photo" data-reveal="curtain"><!--if venue_photo--><img src="{{venue_photo}}" alt=""><!--else--><div class="venue-backdrop" aria-hidden="true"><span>{{ia}}<!--if ib-->&amp;{{ib}}<!--/if--></span></div><!--/if--></div>
+  <div class="venue-photo" data-reveal="curtain"><!--if venue_photo--><img src="{{venue_photo}}" alt=""><!--else--><div class="venue-backdrop" aria-hidden="true"><span>{{ia}}<!--if ib-->&amp;{{ib}}<!--/if--></span></div><!--if editable--><button type="button" data-photo-add="venue"></button><!--/if--><!--/if--></div>
   <div class="venue-copy" data-reveal style="--rd:.2s">
     <p class="eyebrow">{{upper:edit:copy:venue_eyebrow}}</p>
     <h2>{{em:edit:copy:venue_title}}</h2>
@@ -59,7 +59,7 @@
 
 <!--part:story-->
 <section class="story scene"<!--if story_photo--> data-photo<!--/if--> data-tpl-section="story" data-section="story">
-  <!--if story_photo--><div class="story-image image-frame" data-reveal="curtain"><img src="{{story_photo}}" alt=""></div><!--/if-->
+  <!--if story_photo--><div class="story-image image-frame" data-reveal="curtain"><img src="{{story_photo}}" alt=""></div><!--else--><!--if editable--><button type="button" data-photo-add="story" data-photo-flow></button><!--/if--><!--/if-->
   <div class="story-copy" data-reveal>
     <p class="eyebrow">{{upper:edit:copy:story_eyebrow}}</p>
     <h2>{{em:edit:copy:story_title}}</h2>

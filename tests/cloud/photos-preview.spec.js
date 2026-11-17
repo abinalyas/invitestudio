@@ -34,12 +34,12 @@ const openPhotos = async page => { await page.getByRole('tab', { name: /Sections
 const photoIds = page => page.evaluate(() => [...document.querySelector('.figma-island-host').shadowRoot.querySelectorAll('.photo-list li img')].map(img => img.src.match(/([0-9a-f-]{36})-thumb/)[1]));
 
 test('after the first photo the editor still offers a place to add the next, and the published page shows it without a story', async ({ page, browser }) => {
-  await openEditor(page, 'Fairy Tale'); // this design puts the first photo in its story picture
+  await openEditor(page, 'Fairy Tale'); // a photo added with the main button goes to the gallery, not to the story picture
   await openPhotos(page);
   await page.getByLabel('Add photos').setInputFiles(await makeJpeg(page, 'first'));
   await expect(page.locator('.photo-list li')).toHaveCount(1, { timeout: 20000 });
   await expect(page.getByTestId('photo-usage')).toContainText('1 of 12 photos');
-  await expect(page.getByText('Add more photos')).toBeVisible();
+  await expect(page.getByText('Add more to the gallery')).toBeVisible();
 
   await page.getByRole('tab', { name: /Preview/ }).click();
   await expect(page.locator('.editor-site [data-photo-add]').first()).toBeVisible(); // still a tile to tap for the next photo

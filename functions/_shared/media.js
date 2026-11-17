@@ -84,7 +84,17 @@ export function mediaUrl(env, key) {
   return base ? `${base}/${key}` : `/media/${key}`;
 }
 
-const PHOTO_COLUMNS = 'id,alt,width,height,sort_order,full_key,thumb_key,full_bytes,thumb_bytes,format';
+const PHOTO_COLUMNS = 'id,alt,width,height,sort_order,full_key,thumb_key,full_bytes,thumb_bytes,format,metadata';
+
+// Where a photo was added: one of the design's large pictures (cover, story, venue) or the gallery. Kept in the photo's metadata. A photo with
+// no place (added before places existed) is placed by its position in the list, as it always was.
+export const PHOTO_SLOTS = Object.freeze(['hero', 'story', 'venue', 'gallery']);
+// '' when nothing was asked for, a valid place, or null when the value is not a place.
+export function cleanSlot(value) {
+  if (value === undefined || value === null || value === '') return '';
+  const slot = String(value);
+  return PHOTO_SLOTS.includes(slot) ? slot : null;
+}
 
 // The shape guests and the editor receive. Never the storage path.
 export function photoView(env, row) {
@@ -95,7 +105,8 @@ export function photoView(env, row) {
     height: row.height || null,
     full: mediaUrl(env, row.full_key),
     thumb: mediaUrl(env, row.thumb_key || row.full_key),
-    bytes: (row.full_bytes || 0) + (row.thumb_bytes || 0)
+    bytes: (row.full_bytes || 0) + (row.thumb_bytes || 0),
+    slot: PHOTO_SLOTS.includes(row.metadata?.slot) ? row.metadata.slot : ''
   };
 }
 

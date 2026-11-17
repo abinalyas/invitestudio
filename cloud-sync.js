@@ -133,7 +133,7 @@
   function localPhotos(list) {
     return list.map(photo => ({
       id: photo.id, alt: photo.alt || '', width: photo.width || null, height: photo.height || null,
-      data: photo.full, thumb: photo.thumb
+      data: photo.full, thumb: photo.thumb, slot: photo.slot || ''
     }));
   }
 
@@ -234,7 +234,8 @@
     window.notifyInviteStudioChange?.();
   };
   // Adds photos one at a time (each is resized here first). Returns what was added and what failed, with reasons.
-  window.uploadMediaPhotos = async function uploadMediaPhotos(files, onProgress) {
+  // `slot` is where they go: 'hero', 'story', 'venue' (the design's large pictures) or 'gallery'; empty means no place was asked for.
+  window.uploadMediaPhotos = async function uploadMediaPhotos(files, onProgress, slot = '') {
     const { project, token, api, ready } = mediaContext();
     const result = { added: 0, errors: [] };
     if (!ready) { result.errors.push({ name: '', message: 'Your invitation needs to be saved online before you can add photos.' }); return result; }
@@ -249,6 +250,7 @@
         form.set('full', prepared.full, `full.${ext}`);
         form.set('thumb', prepared.thumb, `thumb.${ext}`);
         form.set('alt', '');
+        if (slot) form.set('slot', slot);
         await api.uploadMedia(project.cloudId, token, form);
         result.added += 1;
       } catch (error) {
@@ -267,7 +269,9 @@
     const before = (project.photos || []).map(item => item.id);
     const index = before.indexOf(oldId);
     if (index < 0) return { added: 0, errors: [{ name: '', message: 'That photo is no longer in your invitation.' }] };
-    const result = await window.uploadMediaPhotos([file], onProgress);
+    // The new picture takes the old one's place, in the design and in the list.
+    const oldSlot = (project.photos || []).find(item => item.id === oldId)?.slot || '';
+    const result = await window.uploadMediaPhotos([file], onProgress, oldSlot);
     if (!result.added) return result;
     const now = (project.photos || []).map(item => item.id);
     const fresh = now.filter(id => !before.includes(id));

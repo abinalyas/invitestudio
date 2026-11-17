@@ -45,7 +45,7 @@
       <p class="section-text" data-reveal style="--rd:.3s">{{edit:copy:story_intro}}</p>
     </div>
     <div class="story-layout">
-      <div class="story-photo" data-reveal="curtain"><!--if story_photo--><img src="{{story_photo}}" alt=""><!--/if--></div>
+      <div class="story-photo" data-reveal="curtain"><!--if story_photo--><img src="{{story_photo}}" alt=""><!--else--><!--if editable--><button type="button" data-photo-add="story" data-photo-mid></button><!--/if--><!--/if--></div>
       <div class="story-copy" data-reveal style="--rd:.15s">
         <p class="eyebrow" data-reveal="fade">{{upper:edit:copy:story_kicker}}</p>
         <h3>{{edit:copy:story_heading}}</h3>
