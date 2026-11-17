@@ -21,9 +21,16 @@
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; });
   }
+  // The two names are told apart by a sign ("A & B", "A+B", "A × B", with or without spaces) or by a word between them:
+  // "and", "weds", "wed", "weds to", "marries", or a lower-case "x" ("A x B"). A capital X is left alone (it can be an initial).
+  // The same rule is in sampleHosts (figma/islands/shared.tsx), which suggests the hosts line from the names.
+  var NAME_SEPARATOR = /\s*[&+×]\s*|\s+(?:and|weds?(?:\s+to)?|marries)\s+/i, NAME_X = /\s+x\s+/;
   function splitNames(title) {
-    var t = String(title || "").trim(), parts = t.split(/\s+(?:&|and|\+)\s+/i);
-    return parts.length >= 2 ? [parts[0].trim(), parts.slice(1).join(" & ").trim()] : [t, ""];
+    var t = String(title || "").trim();
+    var clean = function (list) { return list.map(function (part) { return part.trim(); }).filter(Boolean); };
+    var parts = clean(t.split(NAME_SEPARATOR));
+    if (parts.length < 2) parts = clean(t.split(NAME_X));
+    return parts.length >= 2 ? [parts[0], parts.slice(1).join(" & ")] : [t, ""];
   }
   // Length of the longest word in the names, counting a hyphenated name as separate words (it can wrap there).
   // Templates scale their big names by it so a long word fits the screen instead of breaking mid-word.
