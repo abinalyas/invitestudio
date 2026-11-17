@@ -1,7 +1,7 @@
 // Template detail screen. Everything shown comes from galleryTemplates in shared.tsx, so the page
 // only claims what the template and the editor really do.
 import { useEffect, useRef, useState } from "react";
-import { Icon, Logo, backendTemplateIds, editableItems, galleryTemplates, guestSections } from "./shared";
+import { Icon, Logo, editableItems, galleryTemplates, guestSections } from "./shared";
 import { bridge } from "./bridge"
 import { MyProjectsLink } from "./extras"
 import { formatMoney, tierOf, usePricing } from "./pricing";
@@ -112,16 +112,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
                 Start with this design
               </button>
             </div>
-            <p className="detail-path">
-              Guided setup takes about a minute: your names, date and place, then the editor.{" "}
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => bridge.createDraft(backendTemplateIds[template.id], template.id, template.names)}
-              >
-                Quick start: skip setup and open the editor
-              </button>
-            </p>
+            <p className="detail-path">Next: your names, date and place. It takes about a minute, and you can edit your details afterwards.</p>
 
             <div className="detail-block">
               <h2>Opening</h2>

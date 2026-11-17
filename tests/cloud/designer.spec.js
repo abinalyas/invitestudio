@@ -1,6 +1,7 @@
 // Designer (D3) behaviour against the real cloud stack: editing, preview sync, section
 // selection, visibility, template changes, save status and honest empty states.
 const { test, expect } = require('@playwright/test');
+const { quickStart } = require('../support/setup');
 const { Client } = require('pg');
 const { randomUUID } = require('node:crypto');
 
@@ -35,8 +36,8 @@ async function openDesigner(page, position) {
   const { number, name } = DESIGNS[position];
   await page.goto(`/templates/${number}`);
   await expect(page.getByRole('heading', { name }).first()).toBeVisible({ timeout: 15000 });
-  // "Quick start" skips the setup steps and opens the editor on this design.
-  await page.getByRole('button', { name: /quick start/i }).click();
+  // Skip the setup steps and open the editor on this design.
+  await quickStart(page, number);
   await expect(page).toHaveURL(new RegExp(`/editor/${number}$`), { timeout: 15000 });
   await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
 }

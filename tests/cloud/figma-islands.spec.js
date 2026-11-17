@@ -1,7 +1,7 @@
 // Frontend integration tests for the Figma Make islands, against the real cloud stack.
 // Islands render inside open shadow roots; Playwright locators pierce those by default.
 const { test, expect } = require('@playwright/test');
-const { openLatestDraft } = require('../support/setup');
+const { openLatestDraft, quickStart } = require('../support/setup');
 const { Client } = require('pg');
 const { randomUUID } = require('node:crypto');
 
@@ -39,8 +39,8 @@ async function dbQuery(sql, params) {
 async function useTemplate(page, number) {
   await page.goto(`/templates/${number}`);
   await expect(page.getByRole('heading', { name: EXPECTED_TEMPLATES[number].name }).first()).toBeVisible({ timeout: 15000 });
-  // "Quick start" skips the setup steps and opens the editor on this design.
-  await page.getByRole('button', { name: /quick start/i }).click();
+  // Skip the setup steps and open the editor on this design.
+  await quickStart(page, number);
   await expect(page).toHaveURL(new RegExp(`/editor/${number}$`), { timeout: 15000 });
   // The old full editor is gone: the designer is the only editor.
   await expect(page.locator('button', { hasText: /advanced editing/i })).toHaveCount(0);
