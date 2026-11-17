@@ -39,7 +39,7 @@ async function assertActiveTemplate(env, templateId) {
 // fresh token is returned to the caller.
 async function replayCreate(request, env, existing, keyHash, weddingInput) {
   if (Date.now() - Date.parse(existing.created_at) > CREATE_REPLAY_WINDOW_MS) {
-    throw new ApiError('This draft creation can no longer be repeated. Start a new website.', 409, 'CREATE_REPLAY_EXPIRED');
+    throw new ApiError('This draft creation can no longer be repeated. Start a new invitation.', 409, 'CREATE_REPLAY_EXPIRED');
   }
   const current = await getWedding(env, existing.wedding_id);
   const rows = await db(env, `weddings?id=eq.${current.id}&version=eq.${current.version}`, {
