@@ -607,7 +607,12 @@ export function EditorPage() {
                 <input data-field="hosts" value={snap.hosts} placeholder={snap.shown.hosts} onChange={event => set({ hosts: event.target.value })} />
                 <SampleChips value={snap.hosts} samples={sampleHosts(snap.title)} onPick={(text) => set({ hosts: text })} />
               </label>
-              <p className="tiny muted">Your design's cover image is used for now. Your own cover photos unlock when photo storage is available.</p>
+              {snap.photoSlots.includes("hero") ? (
+                <p className="tiny muted cover-photo-note">
+                  Your first photo becomes the cover picture; until then the design's own picture is shown.{" "}
+                  <button type="button" className="link-button" onClick={() => choose("gallery")}>Add photos</button>
+                </p>
+              ) : null}
             </div>
           ) : null}
 
