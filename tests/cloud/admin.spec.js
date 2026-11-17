@@ -75,7 +75,7 @@ test('the admin page asks for a sign-in, then shows the overview to the owner', 
   await expect(page.getByRole('link', { name: 'Sign in with Google' })).toBeVisible();
   await context.addCookies([{ name: 'is_admin', value: (await sessionCookie('owner@example.test')).split('=')[1], url: 'http://127.0.0.1:8788' }]);
   await page.goto('/admin');
-  await expect(page.getByText('Live websites')).toBeVisible();
+  await expect(page.getByText('Live websites', { exact: true })).toBeVisible();
   await expect(page.locator('#who')).toHaveText('owner@example.test');
   await expect(page.locator('table').last()).toBeVisible();
 });
