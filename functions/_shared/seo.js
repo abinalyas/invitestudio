@@ -317,13 +317,14 @@ ${TEMPLATES.map(template => `- [${template.title}](${absolute(origin, `/template
 }
 
 // The full HTML document for a landing page (served directly, not through the application shell).
-export function landingDocument(page, origin) {
+// `replay` is the session-recording project id to offer on this page, or '' (functions/_shared/replay.js).
+export function landingDocument(page, origin, { replay = '' } = {}) {
   const { title, html } = headTags(page, origin);
-  return renderLanding(page.landing, origin, { templates: TEMPLATES, head: html, title });
+  return renderLanding(page.landing, origin, { templates: TEMPLATES, head: html + (replay ? `<meta name="invitestudio-replay" content="${replay}">` : ''), title, replay });
 }
 
 // The full HTML document for a policy page (terms, refund policy, privacy, contact).
-export function policyDocument(page, origin) {
+export function policyDocument(page, origin, options = {}) {
   const { title, html } = headTags(page, origin);
   return renderPolicy(page.policy, origin, { head: html, title, updated: UPDATED, contact: CONTACT, business: BUSINESS });
 }
