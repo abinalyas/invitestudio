@@ -9,7 +9,7 @@
 // - Only supported content is editable here. Palette, typography and layout belong to
 //   the template. Photos stay disabled until persistent photo storage exists.
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { Icon, IconName, Logo, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
+import { Icon, IconName, Logo, openPickerOnClick, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
 import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, RetentionInfo, RsvpData } from "./bridge";
 import { useBridgeVersion, TalkToUs, SampleChips } from "./extras";
 
@@ -538,7 +538,7 @@ export function EditorPage() {
                 Date <span className="optional">(optional)</span>
                 <span className="input-with-icon">
                   <Icon name="calendar" size={18} />
-                  <input type="date" value={snap.date} onChange={event => set({ date: event.target.value })} />
+                  <input type="date" value={snap.date} onClick={openPickerOnClick} onChange={event => set({ date: event.target.value })} />
                 </span>
                 {snap.date ? null : <span className="field-hint">Until you choose a date, the invitation shows “{snap.shown.date}”.</span>}
               </label>
@@ -889,11 +889,11 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
       <div className="two-up">
         <label>
           Date <span className="optional">(optional)</span>
-          <input type="date" value={item.date} onChange={event => change({ date: event.target.value })} />
+          <input type="date" value={item.date} onClick={openPickerOnClick} onChange={event => change({ date: event.target.value })} />
         </label>
         <label>
           Start time <span className="optional">(optional)</span>
-          <input type="time" value={item.time} onChange={event => change({ time: event.target.value })} />
+          <input type="time" value={item.time} onClick={openPickerOnClick} onChange={event => change({ time: event.target.value })} />
         </label>
       </div>
       <label>
@@ -908,6 +908,7 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
           <input
             type="time"
             value={item.endTime}
+            onClick={openPickerOnClick}
             aria-invalid={endBeforeStart ? true : undefined}
             onChange={event => change({ endTime: event.target.value })}
           />
@@ -1105,7 +1106,7 @@ function RsvpPanel({ snap }: { snap: EditorSnapshot }) {
           </label>
           <label>
             Reply by (optional)
-            <input type="date" value={snap.rsvpReplyBy} onChange={event => bridge.setRsvpOption("rsvpReplyBy", event.target.value)} />
+            <input type="date" value={snap.rsvpReplyBy} onClick={openPickerOnClick} onChange={event => bridge.setRsvpOption("rsvpReplyBy", event.target.value)} />
           </label>
           {snap.rsvp === "count" ? (
             <label>

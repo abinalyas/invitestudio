@@ -183,6 +183,15 @@ export const faqs = [
   ],
 ]
 
+// A date or time field opens its picker wherever it is clicked, not only on the small calendar icon at its edge (Chrome and Edge
+// open the picker from the icon only). Keyboard use is unchanged: tabbing into the field does not open it, and the day, month and
+// year can still be typed. Where the browser has no showPicker, the field behaves as before.
+export function openPickerOnClick(event: { currentTarget: HTMLInputElement }) {
+  const field = event.currentTarget
+  if (field.disabled || field.readOnly) return
+  try { field.showPicker?.() } catch { /* the browser would not open it now: the field still works by typing */ }
+}
+
 export function Logo() {
   return (
     <a href="/" className="logo" aria-label="InviteStudio home">
