@@ -782,3 +782,12 @@ table.rsvp-by-event { font-size: 13px; }
 /* The panel field that matches the text being edited in the design. */
 @keyframes field-flash { 0% { background: #fff3c4; box-shadow: 0 0 0 6px #fff3c4; } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 .field-flash { border-radius: 10px; animation: field-flash 1.6s ease-out; }
+
+/* The header on a phone or tablet: logo on the left, then the action button, and the menu button always at the far right
+   (it used to sit in the middle when the other buttons were few). */
+@media (max-width: 980px) {
+  .site-header .logo { order: 1; }
+  .site-header .header-actions { order: 2; margin-left: auto; }
+  .site-header .menu-button { order: 3; margin-left: 6px; }
+  .site-header .nav { order: 4; }
+}

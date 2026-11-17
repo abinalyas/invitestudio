@@ -162,7 +162,7 @@ header.top nav a{margin-right:22px}
 
 
 // ---- The footer, shared by the guide pages and the policy pages: the same columns and type scale as the home page footer. ----
-const FOOTER_PRODUCT = Object.freeze([['Templates', '/templates'], ['Features', '/#features'], ['How it works', '/#how'], ['Pricing', '/#pricing'], ['FAQs', '/#faq-list']]);
+const FOOTER_PRODUCT = Object.freeze([['Templates', '/templates'], ['How it works', '/#how'], ['Pricing', '/#pricing'], ['FAQs', '/#faq-list']]);
 const FOOTER_GUIDES = Object.freeze([
   ['Wedding invitation website', '/wedding-invitation-website'], ['Digital wedding invitation', '/digital-wedding-invitation'],
   ['Invitation with RSVP', '/online-wedding-invitation-with-rsvp'], ['Animated invitations', '/animated-wedding-invitation'], ['Share on WhatsApp', '/whatsapp-wedding-invitation']

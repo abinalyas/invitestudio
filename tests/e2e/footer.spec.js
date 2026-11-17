@@ -11,7 +11,7 @@ test('the footer is structured: three labelled link columns, every link in the r
     links: [...nav.querySelectorAll('a')].map(a => [a.textContent.trim(), a.getAttribute('href')])
   })));
   expect(columns.map(c => c.label)).toEqual(['Product', 'Guides', 'Company']);
-  expect(columns[0].links).toEqual([['Templates', '/templates'], ['Features', '#features'], ['How it works', '#how'], ['Pricing', '#pricing'], ['FAQs', '#faq-list']]);
+  expect(columns[0].links).toEqual([['Templates', '/templates'], ['How it works', '#how'], ['Pricing', '#pricing'], ['FAQs', '#faq-list']]);
   expect(columns[1].links.map(l => l[1])).toEqual(['/wedding-invitation-website', '/digital-wedding-invitation', '/online-wedding-invitation-with-rsvp', '/animated-wedding-invitation', '/whatsapp-wedding-invitation']);
   expect(columns[2].links).toEqual([['Contact', '/contact'], ['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Privacy', '/privacy']]);
   // Each column is a navigation landmark named by its heading.

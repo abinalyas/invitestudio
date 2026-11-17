@@ -10,7 +10,7 @@ test('every guide and policy page has the three labelled columns, with the right
     await expect(footer(page), path).toBeVisible();
     const columns = await footer(page).evaluate(el => [...el.querySelectorAll('nav.footer-col')].map(nav => ({ label: nav.querySelector('h3').textContent.trim(), links: [...nav.querySelectorAll('a')].map(a => [a.textContent.trim(), a.getAttribute('href')]) })));
     expect(columns.map(c => c.label), path).toEqual(['Product', 'Guides', 'Company']);
-    expect(columns[0].links.map(l => l[1])).toEqual(['/templates', '/#features', '/#how', '/#pricing', '/#faq-list']);
+    expect(columns[0].links.map(l => l[1])).toEqual(['/templates', '/#how', '/#pricing', '/#faq-list']);
     expect(columns[1].links.map(l => l[0])).toEqual(['Wedding invitation website', 'Digital wedding invitation', 'Invitation with RSVP', 'Animated invitations', 'Share on WhatsApp']);
     expect(columns[2].links).toEqual([['Contact', '/contact'], ['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Privacy', '/privacy']]);
     await expect(footer(page).getByRole('link', { name: 'InviteStudio on Instagram' })).toHaveAttribute('href', /instagram\.com/);

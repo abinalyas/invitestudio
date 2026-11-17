@@ -37,7 +37,7 @@ test('the footer links point at real pages: the guides exist, the company links 
   for (const [, path] of FOOTER_LINKS.guides) assert.ok(guideSlugs.has(path), path);
   const policyPaths = new Set(POLICIES.map(p => `/${p.slug}`));
   for (const [, path] of FOOTER_LINKS.company) assert.ok(policyPaths.has(path), path);
-  assert.deepEqual(FOOTER_LINKS.product.map(l => l[1]), ['/templates', '/#features', '/#how', '/#pricing', '/#faq-list']);
+  assert.deepEqual(FOOTER_LINKS.product.map(l => l[1]), ['/templates', '/#how', '/#pricing', '/#faq-list']);
 });
 
 test('the home page footer and the server footers list the same links', () => {
