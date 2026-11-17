@@ -9,7 +9,7 @@
 // - Only supported content is editable here. Palette, typography and layout belong to
 //   the template. Photos stay disabled until persistent photo storage exists.
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { Icon, IconName, Logo, openPickerOnClick, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
+import { Icon, IconName, PlaceList, Logo, openPickerOnClick, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
 import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, RetentionInfo, RsvpData } from "./bridge";
 import { useBridgeVersion, TalkToUs, SampleChips } from "./extras";
 
@@ -546,7 +546,8 @@ export function EditorPage() {
                 Location <span className="optional">(optional)</span>
                 <span className="input-with-icon">
                   <Icon name="pin" size={18} />
-                  <input value={snap.location} placeholder="Venue, city" onChange={event => set({ location: event.target.value })} />
+                  <input list="invitestudio-places" autoComplete="off" value={snap.location} placeholder="Venue, city" onChange={event => set({ location: event.target.value })} />
+                  <PlaceList />
                 </span>
               </label>
               <label>

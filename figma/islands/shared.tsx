@@ -223,6 +223,19 @@ export type GalleryTemplate = {
 // The small (320 px wide) version of a template's phone picture, for places that show it at about 160 px.
 // The build id (see scripts/stamp-build.mjs) goes on each picture address, so a new deploy never shows a cached older picture.
 const buildId = typeof document !== "undefined" ? document.querySelector('meta[name="invitestudio-build"]')?.getAttribute("content") : ""
+import { places } from "./places"
+
+// A hidden list of suggestions that a text input picks up with list="invitestudio-places". It has to sit in the same screen as the input.
+export function PlaceList() {
+  return (
+    <datalist id="invitestudio-places">
+      {places.map((place) => (
+        <option key={place} value={place} />
+      ))}
+    </datalist>
+  )
+}
+
 export const art = (path: string) => (buildId ? `${path}?v=${buildId}` : path)
 export const phoneSmall = (path: string) => path.replace(/-phone\.jpg(\?.*)?$/, (_m, q) => "-phone-sm.webp" + (q || ""))
 
