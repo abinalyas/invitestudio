@@ -256,12 +256,12 @@ test.describe('setup on a phone', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
 
-  test('the four setup steps fit on one row with no sideways scrolling', async ({ page }) => {
+  test('the three setup steps fit on one row with no sideways scrolling', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => { localStorage.clear(); startCreate('Wedding'); });
     await expect(page.locator('#projectTitle')).toBeVisible({ timeout: 15000 });
     const steps = page.locator('.setup-steps li');
-    await expect(steps).toHaveCount(4);
+    await expect(steps).toHaveCount(3);
     const list = await page.locator('.setup-steps').evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth }));
     expect(list.scroll).toBeLessThanOrEqual(list.client);
     const tops = await steps.evaluateAll(items => new Set(items.map(item => Math.round(item.getBoundingClientRect().top))).size);

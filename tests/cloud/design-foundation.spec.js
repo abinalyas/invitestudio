@@ -73,8 +73,8 @@ test('unsupported launch controls are gone from every setup step', async ({ page
   await expect(page.locator('#projectTitle')).toBeVisible({ timeout: 15000 });
   await page.locator('#projectTitle').fill('Controls Check');
   const steps = page.locator('.setup-steps li button');
-  await expect(steps).toHaveCount(4);
-  for (let index = 0; index < 4; index += 1) {
+  await expect(steps).toHaveCount(3);
+  for (let index = 0; index < 3; index += 1) {
     await steps.nth(index).click();
     await expect(steps.nth(index)).toHaveAttribute('aria-current', 'step');
     await expect(page.locator(UNSUPPORTED)).toHaveCount(0);

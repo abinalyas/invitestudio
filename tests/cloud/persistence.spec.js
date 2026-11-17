@@ -34,7 +34,6 @@ async function guidedSetup(page, template, title, content = CONTENT) {
   await page.locator('#projectDate').fill('2027-01-20');
   await page.locator('#projectLocation').fill('Kochi');
   await next(page).click();
-  await next(page).click();
   if (content) {
     await page.locator('#projectMessage').fill(content.message);
     await page.locator('#projectStory').fill(content.story);

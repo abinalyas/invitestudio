@@ -4,8 +4,7 @@ const { expect } = require('@playwright/test');
 
 async function completeSetupSteps(page) {
   const next = () => page.getByRole('button', { name: /^Continue/ });
-  await next().click(); // Essentials -> Template
-  await next().click(); // Template -> Story and details
+  await next().click(); // Essentials -> Story and details
   await next().click(); // Story and details -> Ready
   const open = page.getByRole('button', { name: /open editor/i });
   // With the API enabled, the Ready step only unlocks once the server confirms the draft.

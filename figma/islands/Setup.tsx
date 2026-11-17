@@ -1,4 +1,4 @@
-// Setup wizard in the redesigned style: four steps, a live phone preview, and the Continue button
+// Setup wizard in the redesigned style: three steps, a live phone preview, and the Continue button
 // at the bottom (so on a phone the preview comes first and the person scrolls down to continue).
 //
 // The fields live in this screen. Each time a step is finished they are handed to the app
@@ -10,7 +10,7 @@ import { bridge, SetupFields } from "./bridge";
 import { EventsPanel } from "./Editor";
 import { SampleChips, useBridgeVersion } from "./extras";
 
-const steps = ["Essentials", "Template", "Story and details", "Ready"] as const;
+const steps = ["Essentials", "Story and details", "Ready"] as const;
 const namesMissing = "Add the couple or celebration names to continue.";
 
 export function SetupPage() {
@@ -41,7 +41,7 @@ export function SetupPage() {
   const titleRef = useRef<HTMLInputElement>(null);
   const template = galleryTemplates.find((item) => item.backendId === fields.templateId) ?? galleryTemplates[0];
   const status = bridge.setupStatus();
-  const showPreview = step < 3;
+  const showPreview = step < 2;
 
   const set = (patch: Partial<SetupFields>) => {
     setFields((current) => ({ ...current, ...patch }));
@@ -83,12 +83,12 @@ export function SetupPage() {
           <Icon name="arrow" size={17} /> Back
         </button>
       ) : null}
-      {step === 2 ? (
-        <button className="button outline" type="button" onClick={() => go(3)}>
+      {step === 1 ? (
+        <button className="button outline" type="button" onClick={() => go(2)}>
           Skip for now
         </button>
       ) : null}
-      {step < 3 ? (
+      {step < 2 ? (
         <button className="button" type="button" onClick={() => go(step + 1)}>
           Continue <Icon name="arrow" size={17} />
         </button>
@@ -155,11 +155,6 @@ export function SetupPage() {
             <small>Your design</small>
             <strong>{template.title}</strong>
           </span>
-          {step !== 1 ? (
-            <button type="button" className="button outline small" onClick={() => go(1)}>
-              Change
-            </button>
-          ) : null}
           {showPreview ? (
             <button type="button" className="button outline small setup-preview-toggle" aria-expanded={previewOpen} onClick={() => setPreviewOpen(!previewOpen)}>
               {previewOpen ? "Hide preview" : "Preview"}
@@ -214,35 +209,6 @@ export function SetupPage() {
 
             {step === 1 ? (
               <>
-                <h2 id="setup-title">Choose a design.</h2>
-                <p className="setup-intro">Pick a starting point. Your names, date and story stay as you entered them when you change designs.</p>
-                <div className="setup-templates" role="group" aria-label="Wedding designs">
-                  {galleryTemplates.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={item.backendId === fields.templateId ? "setup-template selected" : "setup-template"}
-                      aria-pressed={item.backendId === fields.templateId}
-                      onClick={() => set({ templateId: item.backendId })}
-                    >
-                      <span className="setup-template-image">
-                        <img src={phoneSmall(item.phone)} alt="" loading="lazy" decoding="async" />
-                        {item.backendId === fields.templateId ? (
-                          <span className="setup-template-check" aria-hidden="true">
-                            <Icon name="check" size={16} />
-                          </span>
-                        ) : null}
-                      </span>
-                      <strong>{item.title}</strong>
-                      <small>{item.tags.join(" · ")}</small>
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : null}
-
-            {step === 2 ? (
-              <>
                 <h2 id="setup-title">Story and details.</h2>
                 <p className="setup-intro">Everything here is optional. Skip it now and add it in the editor whenever you like.</p>
                 <div className="setup-form">
@@ -269,7 +235,7 @@ export function SetupPage() {
               </>
             ) : null}
 
-            {step === 3 ? (
+            {step === 2 ? (
               <>
                 <h2 id="setup-title">Ready when you are.</h2>
                 <p className="setup-intro">Here is your first draft. You can change any of this in the editor.</p>
