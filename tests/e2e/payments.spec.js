@@ -207,3 +207,54 @@ test('early access and unlocked websites are never asked for these details', asy
   await expect(dialog.getByRole('button', { name: 'Make it live' })).toBeEnabled({ timeout: 15000 });
   await expect(dialog.getByLabel('Your name')).toHaveCount(0);
 });
+
+test('the dialog is a purchase screen: steps, your details, your link, the design, what is included and the order', async ({ page }) => {
+  await draftWithServer(page, { country: 'IN' });
+  const dialog = await openShare(page);
+  await expect(dialog.getByRole('heading', { name: 'Your invitation is almost ready.' })).toBeVisible();
+  await expect(dialog.getByRole('list', { name: 'How it works' }).getByRole('listitem').filter({ hasText: /Private now|Pay once|Get a live link/ })).toHaveCount(3);
+  await expect(dialog.getByRole('heading', { name: 'Your details' })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Your invitation link' })).toBeVisible();
+  await expect(dialog.locator('.pub-design')).toContainText('Your selected design');
+  await expect(dialog.locator('.pub-benefits')).toContainText('Keep editing anytime');
+  await expect(dialog.locator('.pub-benefits')).toContainText('Secure and trusted');
+  await expect(dialog.locator('.pub-order')).toContainText('Your order');
+  await expect(dialog.locator('.pub-order .pub-total')).toContainText('₹2,999');
+  await expect(dialog.locator('.pub-order')).toContainText('One-time payment · No recurring charges');
+  await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeVisible();
+});
+
+test('the dialog closes from the X and from the Close button', async ({ page }) => {
+  await draftWithServer(page, { country: 'IN' });
+  let dialog = await openShare(page);
+  await dialog.getByRole('button', { name: 'Dismiss' }).click();
+  await expect(page.locator('#modal-root')).toBeEmpty();
+  dialog = await openShareAgain(page);
+  await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.locator('#modal-root')).toBeEmpty();
+});
+
+test('on a phone the dialog is one column and does not scroll sideways', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await draftWithServer(page, { country: 'IN' });
+  const dialog = await openShare(page);
+  await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeAttached({ timeout: 15000 });
+  const shell = page.locator('.modal.publish-shell');
+  const sizes = await shell.evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
+  const main = await page.locator('.pub-main').boundingBox();
+  const side = await page.locator('.pub-side').boundingBox();
+  expect(side.y).toBeGreaterThan(main.y + main.height - 2); // the side column sits below, not beside
+});
+
+test('after going live the dialog shows the link, the design and the live-page actions, and no order', async ({ page }) => {
+  await draftWithServer(page, { mode: 'free', country: 'IN' });
+  const dialog = await openShare(page);
+  await expect(dialog.getByRole('button', { name: 'Make it live' })).toBeEnabled({ timeout: 15000 });
+  await dialog.getByRole('button', { name: 'Make it live' }).click();
+  await expect(dialog.getByRole('heading', { name: 'Your invitation is live' })).toBeVisible();
+  await expect(dialog.locator('.pub-live')).toContainText('Current public link');
+  await expect(dialog.locator('.pub-design')).toContainText('Your selected design');
+  await expect(dialog.getByRole('button', { name: 'Take offline' })).toBeVisible();
+  await expect(dialog.getByText('Your order')).toHaveCount(0);
+});

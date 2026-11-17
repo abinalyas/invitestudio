@@ -978,56 +978,80 @@
     if (notice.error !== undefined) session.error = notice.error;
     if (notice.success !== undefined) session.success = notice.success;
     const live = isLive(project);
-    const status = slugStatusText(project, session);
-    const toneColor = { ok: '#2f6b45', bad: '#9b5147', muted: '#6b6760' }[status.tone];
-    const suggestions = session.availability && !session.availability.available && session.availability.suggestions?.length
-      ? `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap" role="group" aria-label="Available alternatives">${session.availability.suggestions.map(s => `<button class="btn small" type="button" data-use-suggestion="${escapeText(s)}">${escapeText(s)}</button>`).join('')}</div>`
-      : '';
-    const notSaved = project.cloudStatus !== 'saved'
-      ? '<p class="tiny" role="status" style="color:#6b6760;margin:8px 0 0">Saving your latest changes first. You can go live as soon as they are saved.</p>'
-      : '';
+    const ICON = {
+      lock: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+      card: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></svg>',
+      link: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>',
+      user: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>',
+      mail: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+      phone: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>',
+      pencil: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/><path d="m14 7 3 3"/></svg>',
+      layers: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>',
+      shield: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>',
+      eye: '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>',
+      bolt: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg>',
+      check: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg>',
+      help: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></svg>'
+    };
+    const publicLink = live ? publicLinkFor(project.publicSlug) : '';
     const liveBlock = live && !session.changing
-      ? `<div style="margin-top:14px;background:#f2eee6;border-radius:9px;padding:12px"><div class="tiny muted">Current public link</div><a href="${escapeText(publicLinkFor(project.publicSlug))}" target="_blank" rel="noopener" style="word-break:break-all">${escapeText(publicLinkFor(project.publicSlug))}</a><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" data-copy-public-link>Copy link</button><button class="btn small" type="button" data-change-address>Change web address</button></div></div>`
+      ? `<section class="pub-card pub-live"><h3>Your live link</h3><div class="tiny muted">Current public link</div><a href="${escapeText(publicLink)}" target="_blank" rel="noopener">${escapeText(publicLink)}</a><div class="pub-row"><button class="btn small" type="button" data-copy-public-link>Copy link</button><button class="btn small" type="button" data-change-address>Change web address</button></div></section>`
       : '';
     const changeWarning = session.changing
-      ? `<div role="alert" style="margin-top:14px;background:#f7ebe8;border:1px solid #e3c2bb;border-radius:9px;padding:12px;font-size:14px"><strong>The old address will stop working.</strong><p style="margin:6px 0 0">Guests who have <span>${escapeText(publicLinkFor(project.publicSlug))}</span> will see "not available". Share the new link with them.</p><label style="display:flex;gap:8px;align-items:flex-start;margin-top:10px"><input type="checkbox" data-confirm-change ${session.confirmed ? 'checked' : ''}> <span>I understand the old link will stop working.</span></label></div>`
+      ? `<div role="alert" class="pub-warn"><strong>The old address will stop working.</strong><p>Guests who have <span>${escapeText(publicLink)}</span> will see "not available". Share the new link with them.</p><label class="pub-check"><input type="checkbox" data-confirm-change ${session.confirmed ? 'checked' : ''}> <span>I understand the old link will stop working.</span></label></div>`
       : '';
-    const error = session.error ? `<p class="tiny" role="alert" style="color:#9b5147;margin:10px 0 0">${escapeText(session.error)}</p>` : '';
-    const success = session.success ? '<p class="tiny" role="status" style="color:#2f6b45;margin:10px 0 0">Your invitation is live. Share the link below.</p>' : '';
+    const error = session.error ? `<p class="pub-note bad" role="alert">${escapeText(session.error)}</p>` : '';
+    const success = session.success ? '<p class="pub-note ok" role="status">Your invitation is live. Share the link below.</p>' : '';
+    const notSaved = project.cloudStatus !== 'saved'
+      ? '<p class="pub-note" role="status">Saving your latest changes first. You can go live as soon as they are saved.</p>'
+      : '';
+    const info = session.info ? `<p class="pub-note ok" role="status" data-payment-info>${escapeText(session.info)}</p>` : '';
+    const checkAgain = session.checkAgain ? '<button class="btn small" type="button" data-check-payment>Check again</button>' : '';
     const paying = needsPayment(project, session);
     const priceText = session.price && session.price.text ? session.price.text : '';
     const primary = live ? (session.changing ? 'Change address and update' : 'Update live page') : paying ? (priceText ? `Pay ${priceText} and continue` : 'Pay and continue') : 'Make it live';
     const priceNote = live || project.publishUnlocked || !session.price ? ''
       : session.price.mode === 'live'
-        ? `<p class="tiny" data-price-note style="margin:12px 0 0;color:#2f4a36"><strong>One-time price: ${escapeText(session.price.text)}</strong> (${escapeText(session.price.tierName)} design). You pay once, securely on Razorpay's page with UPI, a card or netbanking, then come straight back to make it live. Editing and previewing stay free. By paying you agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a>; see the <a href="/refund-policy" target="_blank" rel="noopener">Refund policy</a>.</p>`
-        : `<p class="tiny" data-price-note style="margin:12px 0 0;color:#2f4a36"><strong>Free during early access.</strong> The price that will apply later is ${escapeText(session.price.text)} (${escapeText(session.price.tierName)} design), paid once.</p>`;
-    const contactBlock = paying ? `<fieldset data-buyer-contact style="margin:14px 0 0;border:1px solid #e5dfd2;border-radius:10px;padding:12px 14px">
-        <legend class="tiny" style="padding:0 6px"><strong>Your details</strong></legend>
-        <p class="tiny muted" style="margin:0 0 8px">For your receipt and to help you if you lose your private link. Razorpay's page is filled in with them, so you do not type them twice.</p>
-        <label class="tiny muted" for="buyerName" style="display:block">Your name</label>
-        <input id="buyerName" type="text" autocomplete="name" maxlength="120" value="${escapeText(session.contact.name)}" style="width:100%">
-        <label class="tiny muted" for="buyerEmail" style="display:block;margin-top:8px">Email</label>
-        <input id="buyerEmail" type="email" autocomplete="email" inputmode="email" maxlength="254" value="${escapeText(session.contact.email)}" style="width:100%">
-        <label class="tiny muted" for="buyerPhone" style="display:block;margin-top:8px">Phone or WhatsApp number <span>(optional)</span></label>
-        <input id="buyerPhone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" value="${escapeText(session.contact.phone)}" style="width:100%">
-        <label class="tiny" style="display:flex;gap:8px;align-items:flex-start;margin:10px 0 0"><input id="buyerMarketing" type="checkbox" ${session.contact.marketing ? 'checked' : ''} style="margin-top:3px"><span>Send me tips and reminders about my invitation <span class="muted">(optional)</span></span></label>
-        <p id="contact-status" class="tiny" aria-live="polite" style="margin:8px 0 0;color:#6b6760">${escapeText(contactProblem(session.contact))}</p>
+        ? `<p class="pub-fine" data-price-note><strong>One-time price: ${escapeText(session.price.text)}</strong> (${escapeText(session.price.tierName)} design). You pay once, securely on Razorpay's page with UPI, a card or netbanking, then come straight back to make it live. Editing and previewing stay free. By paying you agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a>; see the <a href="/refund-policy" target="_blank" rel="noopener">Refund policy</a>.</p>`
+        : `<p class="pub-fine" data-price-note><strong>Free during early access.</strong> The price that will apply later is ${escapeText(session.price.text)} (${escapeText(session.price.tierName)} design), paid once.</p>`;
+
+    // Your details (asked for before paying).
+    const contactBlock = paying ? `<fieldset class="pub-card" data-buyer-contact>
+        <legend class="sr-only">Your details</legend>
+        <h3 class="pub-card-title">Your details</h3>
+        <p class="pub-sub">Used for your payment receipt and for recovering your private link. Razorpay's page is filled in with them, so you do not type them twice.</p>
+        <label for="buyerName">Your name <b class="req" aria-hidden="true">*</b></label>
+        <span class="pub-field">${ICON.user}<input id="buyerName" type="text" autocomplete="name" maxlength="120" placeholder="Enter your full name" value="${escapeText(session.contact.name)}"></span>
+        <label for="buyerEmail">Email address <b class="req" aria-hidden="true">*</b></label>
+        <span class="pub-field">${ICON.mail}<input id="buyerEmail" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="you@example.com" value="${escapeText(session.contact.email)}"></span>
+        <label for="buyerPhone">Phone or WhatsApp number <span class="pub-opt">(optional)</span></label>
+        <span class="pub-field">${ICON.phone}<input id="buyerPhone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="Enter your number" value="${escapeText(session.contact.phone)}"></span>
+        <label class="pub-check"><input id="buyerMarketing" type="checkbox" ${session.contact.marketing ? 'checked' : ''}><span>Send me tips and reminders about my invitation <span class="pub-opt">(optional)</span></span></label>
+        <p id="contact-status" class="pub-sub bad" aria-live="polite">${escapeText(contactProblem(session.contact))}</p>
       </fieldset>` : '';
-    const info = session.info ? `<p class="tiny" role="status" data-payment-info style="margin:10px 0 0;color:#2f4a36">${escapeText(session.info)}</p>` : '';
-    const checkAgain = session.checkAgain ? '<button class="btn small" type="button" data-check-payment style="margin-top:8px">Check again</button>' : '';
+
+    // Your invitation link.
+    const status = slugStatusText(project, session);
+    const suggestions = session.availability && !session.availability.available && session.availability.suggestions?.length
+      ? `<div class="pub-suggest" role="group" aria-label="Available alternatives"><span>Suggested alternatives</span><div>${session.availability.suggestions.map(sug => `<button class="pub-chip" type="button" data-use-suggestion="${escapeText(sug)}">${escapeText(sug)}</button>`).join('')}</div></div>`
+      : '';
     const addressField = live && !session.changing
       ? ''
-      : `<label class="tiny muted" for="publishSlug" style="display:block;margin-top:14px">Web address</label>
-         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="tiny muted">${escapeText(window.location.origin)}/s/</span><input id="publishSlug" type="text" value="${escapeText(session.typed)}" maxlength="60" autocomplete="off" spellcheck="false" aria-describedby="slug-status" style="flex:1;min-width:160px;padding:9px 10px;border:1px solid #8a8276;border-radius:8px" ${session.busy ? 'disabled' : ''}></div>
-         <p id="slug-status" aria-live="polite" class="tiny" style="color:${toneColor};margin:6px 0 0">${escapeText(status.text)}</p>${suggestions}
-         <p class="tiny" style="margin:8px 0 0;word-break:break-all"><span class="muted">Your link will be</span> <strong id="link-preview">${escapeText(window.location.origin)}/s/${escapeText(session.typed || '…')}</strong></p>`;
-    // How long the website stays online: the closing date, or an estimate before it is live (docs/RETENTION_PLAN.md).
+      : `<section class="pub-card">
+         <h3 class="pub-card-title">Your invitation link</h3>
+         <p class="pub-sub">Choose a unique, easy-to-remember web address for your invitation.</p>
+         <label class="sr-only" for="publishSlug">Web address</label>
+         <div class="pub-slug"><span class="pub-prefix">${escapeText(window.location.origin)}/s/</span><input id="publishSlug" type="text" value="${escapeText(session.typed)}" maxlength="60" autocomplete="off" spellcheck="false" aria-describedby="slug-status"></div>
+         <p id="slug-status" aria-live="polite" class="pub-status-pill" data-tone="${status.tone}">${escapeText(status.text)}</p>${suggestions}
+         <p class="pub-fine"><span>Your link will be</span> <strong id="link-preview">${escapeText(window.location.origin)}/s/${escapeText(session.typed || '…')}</strong></p>
+       </section>`;
+    // How long the invitation stays online: the closing date, or an estimate before it is live (docs/RETENTION_PLAN.md).
     const kept = window.InviteRetentionLast && window.InviteRetentionLast.projectId === project.id ? window.InviteRetentionLast : null;
     const keptDate = kept ? (kept.endsOn || kept.estimatedEndsOn) : '';
     const keptBefore = kept ? Boolean(kept.endsBeforeEvent || kept.estimateBeforeEvent) : false;
     const keptLinks = window.InviteContact ? window.InviteContact.links('extend', live ? publicLinkFor(project.publicSlug) : '') : null;
     const keptBlock = keptDate
-      ? `<p class="tiny" style="margin:12px 0 0;${keptBefore ? 'color:#9b5147' : 'color:#6b6760'}" data-kept-note>${live ? 'Your invitation stays online until' : 'Once live, your invitation stays online until'} <strong>${escapeText(new Date(keptDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }))}</strong>.${keptBefore ? ' That is before your event.' : ''} Need longer? Talk to us: ${keptLinks && keptLinks.whatsapp ? `<a href="${escapeText(keptLinks.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}${keptLinks && keptLinks.whatsapp && keptLinks.email ? ' · ' : ''}${keptLinks && keptLinks.email ? `<a href="${escapeText(keptLinks.email)}">Email</a>` : ''}</p>`
+      ? `<p class="pub-fine${keptBefore ? ' bad' : ''}" data-kept-note>${live ? 'Your invitation stays online until' : 'Once live, your invitation stays online until'} <strong>${escapeText(new Date(keptDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }))}</strong>.${keptBefore ? ' That is before your event.' : ''} Need longer? Talk to us: ${keptLinks && keptLinks.whatsapp ? `<a href="${escapeText(keptLinks.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}${keptLinks && keptLinks.whatsapp && keptLinks.email ? ' · ' : ''}${keptLinks && keptLinks.email ? `<a href="${escapeText(keptLinks.email)}">Email</a>` : ''}</p>`
       : '';
     // What guests can do about replies, from the couple's own RSVP choice (kept true to what the invitation does).
     const rsvpMode = project.preferences?.rsvp || 'count';
@@ -1038,24 +1062,61 @@
     // Straight after going live there is nothing to update yet, so the dialog only shows the link (and Close / Take offline).
     const justWentLive = live && session.success && !session.changing;
     const explainer = justWentLive ? '' : live
-      ? '<p class="tiny muted" style="margin:10px 0 0">Made changes since going live? Choose <strong>Update live page</strong> to show them. Choose <strong>Take offline</strong> to make the link stop working.</p>'
-      : `<ul style="margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px;font-size:14px;line-height:1.5">
+      ? '<p class="pub-fine">Made changes since going live? Choose <strong>Update live page</strong> to show them. Choose <strong>Take offline</strong> to make the link stop working.</p>'
+      : `<section class="pub-card pub-explain"><h3 class="pub-card-title">What happens next</h3><ul>
           <li><strong>Right now it is private.</strong> Only you can see your invitation. It stays private until you choose <em>Make it live</em>. You can look at it as guests will see it first.</li>
           <li><strong>Making it live gives it a web link.</strong> Anyone who has the link can open it, so share it only with the people you want to invite.</li>
           ${repliesLine}
           <li><strong>You can change your mind.</strong> Keep editing and choose <em>Update live page</em>, or <em>Take offline</em> any time. The link then stops working.</li>
-        </ul>
-        <button class="btn small" type="button" data-preview-first style="margin-top:12px">Preview it first</button>`;
-    renderModal(`<div class="eyebrow">Share your invitation</div>
-      <h2 id="modal-title">${live ? 'Your invitation is live' : 'Get your invitation link'}</h2>
-      <p class="muted">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>${live ? '' : ', not public yet'}.</p>
-      ${explainer}${priceNote}${contactBlock}${keptBlock}${addressField}${changeWarning}${notSaved}${info}${checkAgain}${error}${success}${liveBlock}
-      <div class="modal-actions" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-        <button class="btn" type="button" data-publish-close>Close</button>
-        ${live && !session.changing ? '<button class="btn" type="button" data-share-card>Share card for WhatsApp</button>' : ''}
-        ${live ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}
-        ${justWentLive ? '' : `<button class="btn dark" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${session.busy ? (paying || session.info ? 'Please wait…' : 'Going live…') : primary}</button>`}
-      </div>`);
+        </ul></section>`;
+
+    // The right-hand column: the chosen design, what is included, and the order with the main button.
+    const design = typeof tpl === 'function' ? tpl(project.templateId) : null;
+    const designName = escapeText((design && design.name) || project.templateName || 'Your design');
+    const designCard = `<section class="pub-card pub-design">
+        ${design && design.image ? `<img src="${escapeText(design.image)}" alt="" width="190" height="190">` : '<span class="pub-design-empty"></span>'}
+        <div><h3>${designName}</h3><p class="pub-sub">Your selected design</p>
+        ${live ? '' : `<button class="btn small pub-ghost" type="button" data-preview-first>${ICON.eye} Preview invitation</button>`}</div>
+      </section>`;
+    const benefits = live ? '' : `<section class="pub-benefits"><ul>
+        <li><span>${ICON.pencil}</span><div><strong>Keep editing anytime</strong><p>You can update your invitation even after it is live.</p></div></li>
+        ${paying || (session.price && session.price.mode === 'live') ? `<li><span>${ICON.layers}</span><div><strong>One-time payment</strong><p>${priceText ? `Pay ${escapeText(priceText)} once.` : 'Pay once.'} No subscription, ever.</p></div></li>
+        <li><span>${ICON.shield}</span><div><strong>Secure and trusted</strong><p>Payments are processed securely by Razorpay.</p></div></li>` : ''}
+      </ul></section>`;
+    const submit = justWentLive ? '' : `<button class="btn dark pub-primary" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${paying && !session.busy ? ICON.card + ' ' : ''}${session.busy ? (paying || session.info ? 'Please wait…' : 'Going live…') : primary}</button>`;
+    const showOrder = !live && !project.publishUnlocked && session.price;
+    const orderCard = `<section class="pub-card pub-order">
+        ${showOrder ? `<h3 class="pub-card-title">Your order</h3>
+        <div class="pub-line"><span>${designName} (live invitation)</span><span>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</span></div>
+        <div class="pub-total"><span>${session.price.mode === 'live' ? 'Total payable' : 'Total today'}</span><strong>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</strong></div>
+        <p class="pub-pill">${ICON.bolt} ${session.price.mode === 'live' ? 'One-time payment · No recurring charges' : 'Free during early access'}</p>` : `<h3 class="pub-card-title">${live ? 'Your live page' : 'Ready to go live'}</h3>`}
+        ${priceNote}${keptBlock}${notSaved}${info}${checkAgain}${error}${success}
+        <div class="pub-actions">${submit}
+          ${live && !session.changing ? '<button class="btn" type="button" data-share-card>Share card for WhatsApp</button>' : ''}
+          ${live ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}
+        </div>
+      </section>`;
+    const stepsPay = paying || (session.price && session.price.mode === 'live')
+      ? `<li><span>${ICON.card}</span><div><strong>Pay once</strong><small>${priceText ? escapeText(priceText) + ' (one-time)' : 'One-time payment'}</small></div></li>`
+      : `<li><span>${ICON.card}</span><div><strong>Free for now</strong><small>Early access</small></div></li>`;
+    const steps = live ? '' : `<ol class="pub-steps" aria-label="How it works"><li><span>${ICON.lock}</span><div><strong>Private now</strong><small>Only you can see it</small></div></li><li class="pub-arrow" aria-hidden="true">›</li>${stepsPay}<li class="pub-arrow" aria-hidden="true">›</li><li><span>${ICON.link}</span><div><strong>Get a live link</strong><small>Share with your guests</small></div></li></ol>`;
+    const lead = live
+      ? 'Guests can open your invitation with the link below.'
+      : paying ? 'Your invitation is currently private. Complete your purchase to make it live and share it with your guests.'
+      : 'Your invitation is currently private. Make it live to get a link you can share with your guests.';
+    renderModal(`<div class="pub-shell">
+      <div class="pub-top"><span class="pub-logo">${typeof logoMark === 'string' ? logoMark : ''}<span>InviteStudio</span></span><button class="pub-x" type="button" data-publish-close aria-label="Dismiss">×</button></div>
+      <div class="eyebrow">${live ? 'Your live invitation' : 'Share your invitation'}</div>
+      <h2 id="modal-title">${live ? 'Your invitation is live' : 'Your invitation is almost ready.'}</h2>
+      <p class="pub-lead">${lead}</p>
+      <p class="pub-status">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>${live ? '' : ', not public yet'}.</p>
+      ${steps}
+      <div class="pub-grid">
+        <div class="pub-main">${contactBlock}${addressField}${changeWarning}${liveBlock}${explainer}</div>
+        <aside class="pub-side">${designCard}${benefits}${orderCard}</aside>
+      </div>
+      <div class="pub-foot"><p>${ICON.help} <span><strong>Questions?</strong> <a href="/contact" target="_blank" rel="noopener">Contact us</a> and we will help.</span></p><button class="btn" type="button" data-publish-close>Close</button></div>
+    </div>`);
     wirePublishDialog(project);
     ensureAddressChecked(project);
     loadPublishPrice(project);
@@ -1073,7 +1134,7 @@
 
   function wirePublishDialog(project) {
     const root = document.querySelector('#modal-root');
-    root.querySelector('[data-publish-close]')?.addEventListener('click', () => { publishSession = null; closeModal(); });
+    root.querySelectorAll('[data-publish-close]').forEach(button => button.addEventListener('click', () => { publishSession = null; closeModal(); }));
     root.querySelector('[data-publish-submit]')?.addEventListener('click', () => (needsPayment(project, publishSession) ? startPayment(project) : publishFromDialog(project)));
     root.querySelector('[data-check-payment]')?.addEventListener('click', () => { if (publishSession) publishSession.checkAgain = false; handlePaymentReturnAgain(project); });
     root.querySelector('[data-preview-first]')?.addEventListener('click', () => {
@@ -1128,7 +1189,7 @@
     const line = root?.querySelector('#slug-status');
     if (line) {
       line.textContent = status.text;
-      line.style.color = { ok: '#2f6b45', bad: '#9b5147', muted: '#6b6760' }[status.tone];
+      line.dataset.tone = status.tone;
     }
     const linkLine = root?.querySelector('#link-preview');
     if (linkLine) linkLine.textContent = `${window.location.origin}/s/${publishSession.typed || '…'}`;
