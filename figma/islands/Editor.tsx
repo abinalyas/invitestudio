@@ -184,22 +184,14 @@ function RetentionNotice({ snap }: { snap: EditorSnapshot }) {
   return null;
 }
 
-function sectionHint(key: SectionKey, snap: EditorSnapshot): string {
-  if (key === "home") return "Always shown";
-  if (key === "story") return snap.storyCopy ? "Written" : "Not written yet";
-  if (key === "functions") {
-    const count = snap.events.length;
-    return count ? `${count} ${count === 1 ? "event" : "events"}` : "No events yet";
-  }
-  if (key === "gallery") {
-    if (snap.galleryCount) return `${snap.galleryCount} ${snap.galleryCount === 1 ? "photo" : "photos"}`;
-    return snap.media.enabled ? "Add your photos" : "Not available yet";
-  }
-  if (snap.rsvp === "none") return "No response form";
-  if (snap.rsvp === "contact") return "Contact details only";
-  const closed = !snap.rsvpOpen || (Boolean(snap.rsvpReplyBy) && new Date().toISOString().slice(0, 10) > snap.rsvpReplyBy);
-  return closed ? "Replies closed" : "Online replies";
-}
+// The line under each section's name: what the section is for (a hidden section says so instead).
+const sectionNote: Record<SectionKey, string> = {
+  home: "Intro, names and date",
+  story: "Your journey together",
+  functions: "Wedding and reception details",
+  gallery: "Gallery of your moments",
+  rsvp: "Collect guest responses"
+};
 
 // The page redraws the whole editor whenever the draft finishes syncing with the cloud (a second or so after it
 // opens), which rebuilds this component from scratch. Where the couple was (section, phone tab, preview size) is
@@ -381,6 +373,7 @@ export function EditorPage() {
   }
 
   const designs = bridge.designs();
+  const currentDesign = designs.find(design => design.id === snap.templateId);
   const failed = snap.saveState === "error";
   const conflict = snap.saveState === "conflict";
 
@@ -448,7 +441,7 @@ export function EditorPage() {
                     <Icon name={item.icon} size={21} />
                     <span>
                       <strong>{item.label}</strong>
-                      <small>{visible ? sectionHint(item.key, snap) : "Hidden from guests"}</small>
+                      <small>{visible ? sectionNote[item.key] : "Hidden from guests"}</small>
                     </span>
                   </button>
                   {item.sectionId ? (
@@ -468,13 +461,14 @@ export function EditorPage() {
           </nav>
 
           <div className="design-picker">
-            <div className="design-current">
-              <span className="tiny muted">Design</span>
-              <strong>{snap.templateName || "Choose a design"}</strong>
+            <h3 className="design-heading">Design</h3>
+            <strong className="design-name">{snap.templateName || "Choose a design"}</strong>
+            <div className="design-current-row">
+              {currentDesign?.image ? <img className="design-current-thumb" src={currentDesign.image} alt="" /> : null}
+              <button type="button" className="btn small" aria-expanded={designsOpen} onClick={() => setDesignsOpen(open => !open)}>
+                <Icon name="swap" size={18} /> {designsOpen ? "Close designs" : "Change design"}
+              </button>
             </div>
-            <button type="button" className="btn small" aria-expanded={designsOpen} onClick={() => setDesignsOpen(open => !open)}>
-              {designsOpen ? "Close designs" : "Change design"}
-            </button>
             {designsOpen ? (
               <div className="design-list" role="group" aria-label="Designs">
                 <p className="tiny muted">Your names, dates, story and events stay the same when you change design.</p>
@@ -495,12 +489,13 @@ export function EditorPage() {
           </div>
           {snap.hasPrivateLink ? (
             <div className="draft-access">
+              <span className="draft-access-icon"><Icon name="lock" size={22} /></span>
               <strong>Your draft is private</strong>
               <p>
                 Only you can see it, and it is not public until you share it. This browser holds the key. To open it on another device,
                 copy your private link and open that there. Anyone with the link can edit, so keep it to yourself.
               </p>
-              <button type="button" className="btn small" onClick={() => bridge.copyPrivateLink()}>Copy private link</button>
+              <button type="button" className="btn small" onClick={() => bridge.copyPrivateLink()}><Icon name="link" size={18} /> Copy private link</button>
             </div>
           ) : null}
         </aside>
