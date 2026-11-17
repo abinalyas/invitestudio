@@ -68,7 +68,6 @@ export function TemplatesPage() {
           <a className="active" href="/templates">
             Templates
           </a>
-          <a href="/#features">Features</a>
           <a href="/#how">How it works</a>
           <a href="/#pricing">Pricing</a>
         </nav>
