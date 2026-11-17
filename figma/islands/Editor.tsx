@@ -224,6 +224,45 @@ export function EditorPage() {
   const replyCount = useReplyCount(snap);
   useEffect(() => { if (snap.available) void bridge.mediaLoad(); }, [snap.available, snap.draftId]);
   const controlsRef = useRef<HTMLElement>(null);
+  // Editing text directly in the design: show the matching field in the panel, scrolled into view and briefly highlighted, so the change
+  // can be seen in both places. Focus stays where the person is typing (in the design).
+  const wordingSection = (key: string) => snap.copyFields.find(field => field.key === key)?.section as SectionKey | undefined;
+  useEffect(() => {
+    const onEdit = (event: Event) => {
+      const { field, id } = (event as CustomEvent<{ field: string; id: string }>).detail ?? { field: "", id: "" };
+      let target: SectionKey | undefined;
+      let name = field;
+      if (field === "title" || field.startsWith("names:")) { target = "home"; name = "title"; }
+      else if (field.startsWith("location:")) { target = "home"; name = "location"; }
+      else if (field === "message" || field === "hosts" || field === "date" || field === "location") target = "home";
+      else if (field === "storyCopy") target = "story";
+      else if (field.startsWith("copy:")) target = wordingSection(field.slice(5));
+      else if (field.startsWith("event:")) target = "functions";
+      if (!target) return;
+      setActive(target);
+      window.setTimeout(() => {
+        const panel = controlsRef.current;
+        if (!panel) return;
+        let el: HTMLElement | null = null;
+        if (field.startsWith("event:")) {
+          el = [...panel.querySelectorAll<HTMLElement>("[data-grip]")].find(item => item.dataset.grip === id)?.closest("li") ?? null;
+        } else {
+          el = panel.querySelector<HTMLElement>(`[data-field="${name}"]`);
+          el?.closest("details")?.setAttribute("open", "");
+        }
+        if (!el) return;
+        const box = el.closest("label") ?? el;
+        box.scrollIntoView({ block: "center", behavior: "smooth" });
+        box.classList.remove("field-flash");
+        void (box as HTMLElement).offsetWidth;
+        box.classList.add("field-flash");
+        window.setTimeout(() => box.classList.remove("field-flash"), 1600);
+      }, 80);
+    };
+    window.addEventListener("invitestudio:edit-field", onEdit);
+    return () => window.removeEventListener("invitestudio:edit-field", onEdit);
+  });
+
   const [picked, setPicked] = useState(false);
   const [namesNeeded, setNamesNeeded] = useState(false);
   const namesRef = useRef<HTMLInputElement>(null);
@@ -517,6 +556,7 @@ export function EditorPage() {
                 Couple or celebration names
                 <input
                   ref={namesRef}
+                  data-field="title"
                   value={snap.title}
                   placeholder={snap.shown.title}
                   aria-invalid={namesNeeded && !snap.title.trim() ? true : undefined}
@@ -531,14 +571,14 @@ export function EditorPage() {
               </label>
               <label>
                 Welcome message <span className="optional">(optional)</span>
-                <textarea rows={3} value={snap.message} placeholder={snap.shown.message} onChange={event => set({ message: event.target.value })} />
+                <textarea rows={3} data-field="message" value={snap.message} placeholder={snap.shown.message} onChange={event => set({ message: event.target.value })} />
                 <SampleChips value={snap.message} samples={sampleWelcomes()} onPick={(text) => set({ message: text })} />
               </label>
               <label>
                 Date <span className="optional">(optional)</span>
                 <span className="input-with-icon">
                   <Icon name="calendar" size={18} />
-                  <input type="date" value={snap.date} onClick={openPickerOnClick} onChange={event => set({ date: event.target.value })} />
+                  <input type="date" data-field="date" value={snap.date} onClick={openPickerOnClick} onChange={event => set({ date: event.target.value })} />
                 </span>
                 {snap.date ? null : <span className="field-hint">Until you choose a date, the invitation shows “{snap.shown.date}”.</span>}
               </label>
@@ -546,13 +586,13 @@ export function EditorPage() {
                 Location <span className="optional">(optional)</span>
                 <span className="input-with-icon">
                   <Icon name="pin" size={18} />
-                  <input list="invitestudio-places" autoComplete="off" value={snap.location} placeholder="Venue, city" onChange={event => set({ location: event.target.value })} />
+                  <input list="invitestudio-places" autoComplete="off" data-field="location" value={snap.location} placeholder="Venue, city" onChange={event => set({ location: event.target.value })} />
                   <PlaceList />
                 </span>
               </label>
               <label>
                 Hosts <span className="optional">(optional)</span>
-                <input value={snap.hosts} placeholder={snap.shown.hosts} onChange={event => set({ hosts: event.target.value })} />
+                <input data-field="hosts" value={snap.hosts} placeholder={snap.shown.hosts} onChange={event => set({ hosts: event.target.value })} />
                 <SampleChips value={snap.hosts} samples={sampleHosts(snap.title)} onPick={(text) => set({ hosts: text })} />
               </label>
               <p className="tiny muted">Your design's hero image is used for now. Your own hero photos unlock when photo storage is available.</p>
@@ -567,7 +607,7 @@ export function EditorPage() {
               </label>
               <label>
                 Your story
-                <textarea rows={6} value={snap.storyCopy} onChange={event => set({ storyCopy: event.target.value })} />
+                <textarea rows={6} data-field="storyCopy" value={snap.storyCopy} placeholder={snap.shown.story || undefined} onChange={event => set({ storyCopy: event.target.value })} />
                 <SampleChips value={snap.storyCopy} samples={sampleStories()} onPick={(text) => set({ storyCopy: text })} />
               </label>
             </div>
@@ -699,7 +739,7 @@ function WordingPanel({ snap, section }: { snap: EditorSnapshot; section: Sectio
         {fields.map(field => (
           <label key={field.key}>
             {field.label}
-            <input value={field.value} maxLength={field.max} placeholder={field.fallback} onChange={event => bridge.setCopy(field.key, event.target.value)} />
+            <input data-field={`copy:${field.key}`} value={field.value} maxLength={field.max} placeholder={field.fallback} onChange={event => bridge.setCopy(field.key, event.target.value)} />
           </label>
         ))}
       </div>
