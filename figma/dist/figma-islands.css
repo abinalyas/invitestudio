@@ -1456,3 +1456,38 @@
 .figma-app .site-header .header-actions{ order: 2; margin-left: auto; }
 .figma-app .site-header .menu-button{ order: 3; margin-left: 6px; }
 .figma-app .site-header .nav{ order: 4; }}
+@media (min-width: 981px){.figma-app .editor-workspace{ grid-template-columns: 350px minmax(0, 1fr) 360px; }}
+@media (min-width: 981px) and (max-width: 1280px){.figma-app .editor-workspace{ grid-template-columns: 330px minmax(0, 1fr) 320px; }}
+@media (min-width: 981px) and (max-width: 1100px){.figma-app .editor-workspace{ grid-template-columns: 280px minmax(0, 1fr) 300px; }}
+@media (min-width: 981px){.figma-app .editor-pages{ padding: 14px 10px; }
+.figma-app .editor-pages nav{ gap: 6px; }
+.figma-app .editor-pages nav .section-select{ min-height: 56px; padding: 6px 14px; gap: 14px; }
+.figma-app .editor-pages nav .section-select small{ margin-top: 0; }
+.figma-app .editor-panel-heading{ padding-bottom: 10px; }
+.figma-app .design-picker{ margin-top: 16px; padding-top: 12px; gap: 6px; }
+.figma-app .design-heading{ font-size: 22px; }
+.figma-app .design-current-thumb{ width: 72px; height: 44px; }
+.figma-app .design-picker > .design-current-row > button.btn{ min-height: 44px; padding: 0 16px; }
+.figma-app .draft-access{ margin-top: 14px; padding: 12px 14px 14px 48px; font-size: 13px; line-height: 1.45; }
+.figma-app .draft-access-icon{ left: 14px; top: 12px; }
+.figma-app .draft-access strong{ font-size: 16px; }
+.figma-app .draft-access p{ margin: 4px 0 8px; }
+.figma-app .draft-access .btn.small{ min-height: 44px; padding: 0 16px; }}
+@media (min-width: 981px) and (max-height: 860px){.figma-app .editor-pages{ padding: 10px 10px; }
+.figma-app .editor-panel-heading{ padding-bottom: 6px; }
+.figma-app .editor-panel-heading h2{ font-size: 22px; }
+.figma-app .editor-pages nav{ gap: 4px; }
+.figma-app .editor-pages nav .section-select{ min-height: 48px; padding: 4px 12px; }
+.figma-app .editor-pages nav .section-select svg{ width: 22px; height: 22px; }
+.figma-app .editor-pages nav .section-select strong{ font-size: 15px; }
+.figma-app .editor-pages nav .section-select small{ font-size: 12px; }
+.figma-app .editor-pages .visibility-switch{ height: 40px; }
+.figma-app .design-picker{ margin-top: 10px; padding-top: 8px; gap: 4px; }
+.figma-app .design-heading{ font-size: 18px; }
+.figma-app .design-name{ font-size: 15px; }
+.figma-app .design-current-thumb{ display: none; }
+.figma-app .design-picker > .design-current-row > button.btn{ min-height: 40px; }
+.figma-app .draft-access{ margin-top: 10px; padding: 10px 12px 12px 42px; font-size: 12.5px; }
+.figma-app .draft-access-icon{ left: 12px; top: 10px; }
+.figma-app .draft-access p{ margin: 2px 0 6px; }
+.figma-app .draft-access .btn.small{ min-height: 40px; }}

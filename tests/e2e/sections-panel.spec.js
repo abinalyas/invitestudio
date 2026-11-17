@@ -34,6 +34,7 @@ test('a hidden section says so instead of its description', async ({ page }) => 
 });
 
 test('the Design block shows the current design and opens the list', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 }); // the thumbnail is hidden on short screens, to save room
   await openEditor(page);
   const picker = page.locator('.design-picker');
   await expect(picker.locator('.design-heading')).toHaveText('Design');
