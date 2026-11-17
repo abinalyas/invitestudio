@@ -21,10 +21,8 @@ async function openEditor(page, design) {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await page.evaluate(() => startCreate('Wedding'));
+  await page.evaluate(id => window.InviteStudioBridge.startSetup(id), design.toLowerCase().replace(/ /g, '-'));
   await page.locator('#projectTitle').fill(`Photo Couple ${randomUUID().slice(0, 4)}`);
-  await page.getByRole('button', { name: /^Continue/ }).first().click();
-  await page.getByRole('button', { name: new RegExp(`^\\s*${design}`) }).first().click();
   for (let i = 0; i < 2; i += 1) await page.getByRole('button', { name: /^Continue/ }).first().click();
   const open = page.getByRole('button', { name: /open editor/i });
   await expect(open).toBeEnabled({ timeout: 15000 });
