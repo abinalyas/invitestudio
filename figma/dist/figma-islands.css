@@ -1494,6 +1494,8 @@
 .figma-app .design-option.locked{ opacity: .55; cursor: not-allowed; }
 .figma-app .design-option.locked svg{ flex: none; margin-left: auto; color: #6b6760; }
 .figma-app .design-lock-note{ margin: 0 0 8px; line-height: 1.5; }
+.figma-app .device-frame.mobile .editor-site{ clip-path: inset(0 round 34px); }
+.figma-app .device-frame.tablet .editor-site{ clip-path: inset(0 round 18px); }
 .figma-app .photo-places{ margin: 0 0 14px; padding: 12px 14px; border: 1px solid #e6e0d9; border-radius: 14px; background: rgba(255, 255, 255, .6); }
 .figma-app .photo-places h3{ margin: 0 0 8px; font-size: 16px; font-weight: 700; color: #10281d; }
 .figma-app .photo-places ul{ display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }

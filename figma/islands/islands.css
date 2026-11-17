@@ -872,6 +872,10 @@ table.rsvp-by-event { font-size: 13px; }
 .design-option.locked svg { flex: none; margin-left: auto; color: #6b6760; }
 .design-lock-note { margin: 0 0 8px; line-height: 1.5; }
 
+/* The phone and tablet frames clip the design to the rounded screen. Some designs paint a light gradient (a header fade) past the
+   rounded corners, which showed as grey wedges over the bezel; clipping the screen to its own rounded shape stops that. */
+.device-frame.mobile .editor-site { clip-path: inset(0 round 34px); }
+.device-frame.tablet .editor-site { clip-path: inset(0 round 18px); }
 /* The design's own picture places in the Photos panel (cover, story, venue). */
 .photo-places { margin: 0 0 14px; padding: 12px 14px; border: 1px solid #e6e0d9; border-radius: 14px; background: rgba(255, 255, 255, .6); }
 .photo-places h3 { margin: 0 0 8px; font-size: 16px; font-weight: 700; color: #10281d; }
