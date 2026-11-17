@@ -64,3 +64,38 @@ test('editing stamps the edit time; just opening does not', async ({ page }) => 
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem('invitestudio-projects'))[0].editedAt);
   expect(after).toBeGreaterThan(before + 86400000);
 });
+
+test('the whole card opens the editor, but its own buttons do their own job', async ({ page }) => {
+  await seed(page, LIST);
+  const card = page.locator('article.dash-card', { hasText: 'Meera and Abin' });
+  await card.getByRole('button', { name: 'Preview', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => state.page)).toBe('preview');
+  await page.evaluate(() => { state.page = 'dashboard'; render(); });
+  await page.locator('article.dash-card', { hasText: 'Meera and Abin' }).locator('h3').click();
+  await expect.poll(() => page.evaluate(() => state.page)).toBe('editor');
+});
+
+test('a server-saved invitation shows a readable edited date, not a raw timestamp', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.clear();
+    const p = { id: 'a', name: 'Meera and Abin', title: 'Meera and Abin', category: 'Wedding', templateId: 'minimalist', status: 'Draft', functions: [], photos: [], updated: '2026-11-17T12:37:27.457706+00:00' };
+    localStorage.setItem('invitestudio-projects', JSON.stringify([p]));
+    // eslint-disable-next-line no-undef
+    state.projects = [p]; state.page = 'dashboard'; render();
+  });
+  const text = await page.locator('article.dash-card .dash-edited').innerText();
+  expect(text).toMatch(/^Edited [A-Z][a-z]{2} \d{1,2}, 2026, \d{1,2}:\d{2} (AM|PM)$/);
+  expect(text).not.toContain('T12:37');
+});
+
+for (const width of [1600, 1280]) {
+  test(`all four card buttons sit on one row at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await seed(page, LIST);
+    const card = page.locator('article.dash-card').first();
+    const tops = await card.locator('.dash-actions > button').evaluateAll(buttons => buttons.map(b => Math.round(b.getBoundingClientRect().top)));
+    expect(tops).toHaveLength(4);
+    expect(new Set(tops).size).toBe(1);
+  });
+}
