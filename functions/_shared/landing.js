@@ -103,7 +103,11 @@ export const LANDING = Object.freeze([
 
 // The links in every footer. tests/unit/policies.test.mjs checks they are the policy pages.
 // Shown in every footer. The templates, artwork and code are protected by copyright (see the Terms, "Our templates and designs").
-export const COPYRIGHT = `© ${new Date().getFullYear()} InviteStudio. The templates and designs on this site are protected by copyright.`;
+// The copyright line. The year is worked out when a page is drawn, NOT when this file loads: on Cloudflare the clock is frozen at
+// 1 January 1970 until a request arrives, so a value computed at load time would print 1970.
+export function copyright(year = new Date().getFullYear()) {
+  return `© ${year} InviteStudio. The templates and designs on this site are protected by copyright.`;
+}
 
 export const POLICY_LINKS = Object.freeze([['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Privacy', '/privacy'], ['Contact', '/contact']]);
 
@@ -119,7 +123,7 @@ header.top{display:flex;justify-content:space-between;align-items:center;gap:16p
 .logo{display:inline-flex;align-items:center;gap:9px;font:600 21px/1 "Playfair Display",Georgia,serif;text-decoration:none;color:var(--deep)}
 .mark{position:relative;display:block;width:23px;height:23px;transform:rotate(45deg);flex:none}.mark i{position:absolute;width:10px;height:10px;border:1.5px solid currentColor;border-radius:8px 8px 2px 8px}
 .mark i:nth-child(1){left:1px;top:1px}.mark i:nth-child(2){right:1px;top:1px;transform:rotate(90deg)}.mark i:nth-child(3){right:1px;bottom:1px;transform:rotate(180deg)}.mark i:nth-child(4){left:1px;bottom:1px;transform:rotate(270deg)}
-nav a{margin-right:22px;color:#4f4b44;text-decoration:none;font-weight:500;font-size:15px}nav a:hover{color:var(--green)}
+header.top nav a{color:#4f4b44;text-decoration:none;font-weight:500;font-size:15px}header.top nav a:hover{color:var(--green)}
 h1,h2,h3{font-family:"Playfair Display",Georgia,serif;font-weight:500;line-height:1.15;margin:0;color:var(--deep)}
 h1{font-size:clamp(34px,6.4vw,54px);letter-spacing:-.6px;margin:30px 0 18px}h2{font-size:clamp(26px,4.4vw,34px);letter-spacing:-.3px;margin:46px 0 12px}
 .lead{font-size:19px;color:var(--muted);margin:0 0 26px}
@@ -134,9 +138,59 @@ ul,ol{padding-left:22px}li{margin:6px 0}
 .faq h3{font-size:22px;margin:22px 0 4px}.faq p{margin:0}
 .cta{background:#f1ece3;border:1px solid var(--line);border-radius:24px;padding:32px 24px;margin:52px 0;text-align:center}.cta h2{margin:0 0 10px}
 .more ul{list-style:none;padding:0}.more li{margin:8px 0}
-footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 40px;color:var(--muted);font-size:15px}footer nav{margin:10px 0 0}footer nav a{margin-right:16px}footer .copy{margin:14px 0 0;font-size:13px}@media(pointer:coarse){nav a,footer a,.logo{display:inline-flex;align-items:center;min-height:44px;padding:0 6px;margin-right:12px}footer nav a{margin-right:10px}}.doc h2{margin-top:36px}.doc .updated{color:var(--muted);font-size:15px;margin:0 0 20px}.contact-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+header.top nav a{margin-right:22px}
+.site-footer{border-top:1px solid var(--line);margin-top:48px;padding:48px 0 28px;color:#3a3630;font-size:14px;line-height:1.6}
+.site-footer .footer-grid{display:grid;grid-template-columns:minmax(200px,1.1fr) minmax(120px,.8fr) minmax(210px,1.3fr) minmax(110px,.8fr);gap:36px 40px;align-items:start}
+.site-footer .footer-brand{display:grid;gap:12px;justify-items:start}
+.site-footer .logo{font-size:24px;margin:0}
+.site-footer .footer-tag,.site-footer .footer-talk{margin:0;font-size:14px;line-height:1.6;color:var(--muted);max-width:34ch}
+.site-footer .footer-talk{display:grid;gap:2px}.site-footer .footer-talk strong{font-weight:600;color:#3a3630}
+.site-footer .footer-talk a{font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.site-footer .insta{display:inline-grid;place-items:center;width:40px;height:40px;border:1px solid #ddd5cc;border-radius:50%;color:#3a3630;margin:2px 0 0}.site-footer .insta:hover{background:var(--green);border-color:var(--green);color:#fff}
+.site-footer h3{margin:0 0 12px;font:600 12px/1.3 "DM Sans",system-ui,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:#6b6760}
+.site-footer .footer-col ul{list-style:none;margin:0;padding:0;display:grid;gap:0}.site-footer .footer-col li{margin:0}
+.site-footer .footer-col a{display:inline-flex;align-items:center;min-height:32px;margin:0;padding:0;font-size:14px;font-weight:400;line-height:1.4;color:#3a3630;text-decoration:none}
+.site-footer .footer-col a:hover{color:var(--green);text-decoration:underline;text-underline-offset:3px}
+.site-footer .footer-bottom{margin-top:36px;padding-top:20px;border-top:1px solid var(--line)}
+.site-footer .copy{margin:0;font-size:13px;line-height:1.5;color:#6b6760}
+@media(max-width:900px){.site-footer{padding:40px 0 24px}.site-footer .footer-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 24px}.site-footer .footer-brand{grid-column:1/-1}}
+@media(max-width:767px),(pointer:coarse){.site-footer .footer-col a{min-height:44px}header.top nav a,.logo{display:inline-flex;align-items:center;min-height:44px}}
+@media(max-width:560px){.site-footer{padding:32px 0 20px;margin-top:32px}.site-footer .footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 20px}.site-footer .footer-col:last-of-type{grid-column:1/-1}.site-footer .footer-col:last-of-type ul{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px}.site-footer .footer-bottom{margin-top:26px}}
+.doc h2{margin-top:36px}.doc .updated{color:var(--muted);font-size:15px;margin:0 0 20px}.contact-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
 @media(max-width:560px){body{font-size:16px}.lead{font-size:17px}header.top nav a{margin-right:14px}.btn{width:100%}.hero-actions .btn,.contact-actions .btn{width:100%}}
 `;
+
+
+// ---- The footer, shared by the guide pages and the policy pages: the same columns and type scale as the home page footer. ----
+const FOOTER_PRODUCT = Object.freeze([['Templates', '/templates'], ['Features', '/#features'], ['How it works', '/#how'], ['Pricing', '/#pricing'], ['FAQs', '/#faq-list']]);
+const FOOTER_GUIDES = Object.freeze([
+  ['Wedding invitation website', '/wedding-invitation-website'], ['Digital wedding invitation', '/digital-wedding-invitation'],
+  ['Invitation with RSVP', '/online-wedding-invitation-with-rsvp'], ['Animated invitations', '/animated-wedding-invitation'], ['Share on WhatsApp', '/whatsapp-wedding-invitation']
+]);
+const FOOTER_COMPANY = Object.freeze([['Contact', '/contact'], ['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Privacy', '/privacy']]);
+export const FOOTER_LINKS = Object.freeze({ product: FOOTER_PRODUCT, guides: FOOTER_GUIDES, company: FOOTER_COMPANY });
+const TALK = { subject: 'Something unique for my celebration', text: 'Hello, I would like to talk about a design made just for us.' };   // the same message as contact-links.js, topic "custom"
+
+export function talkLinks(contact = {}) {
+  const digits = String(contact.whatsapp || '').replace(/\D/g, '');
+  const email = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(contact.email || '') ? contact.email : '';
+  return {
+    whatsapp: digits.length >= 7 && digits.length <= 15 ? `https://wa.me/${digits}?text=${encodeURIComponent(TALK.text)}` : '',
+    email: email ? `mailto:${email}?subject=${encodeURIComponent(TALK.subject)}&body=${encodeURIComponent(TALK.text)}` : ''
+  };
+}
+
+export function renderFooter({ contact = {}, social = {} } = {}) {
+  const column = (id, title, links) => `<nav class="footer-col" aria-labelledby="${id}"><h3 id="${id}">${title}</h3><ul>${links.map(([name, path]) => `<li><a href="${path}">${esc(name)}</a></li>`).join('')}</ul></nav>`;
+  const talk = talkLinks(contact);
+  const talkLine = talk.whatsapp || talk.email
+    ? `<p class="footer-talk"><strong>Want something unique?</strong><span>Talk to us: ${[talk.whatsapp ? `<a href="${esc(talk.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : '', talk.email ? `<a href="${esc(talk.email)}">Email</a>` : ''].filter(Boolean).join(' · ')}</span></p>`
+    : '';
+  const instagram = /^https:\/\/(www\.)?instagram\.com\//.test(social.instagram || '')
+    ? `<a class="insta" href="${esc(social.instagram)}" target="_blank" rel="noopener noreferrer" aria-label="InviteStudio on Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".8" fill="currentColor" stroke="none"/></svg></a>`
+    : '';
+  return `<footer class="site-footer"><div class="footer-grid"><div class="footer-brand"><a class="logo" href="/" aria-label="InviteStudio home"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>InviteStudio</span></a><p class="footer-tag">Wedding invitation websites, made beautiful and easy to share.</p>${talkLine}${instagram}</div>${column('footer-product', 'Product', FOOTER_PRODUCT)}${column('footer-guides', 'Guides', FOOTER_GUIDES)}${column('footer-company', 'Company', FOOTER_COMPANY)}</div><div class="footer-bottom"><p class="copy">${copyright()}</p></div></footer>`;
+}
 
 // The small (320 px wide) version of a template's phone picture; scripts/ keeps the pair in step (tests/unit/seo.test.mjs checks it exists).
 export function smallImage(path) {
@@ -148,7 +202,7 @@ function esc(value) {
 }
 
 // A complete HTML document. `templates` is seo.js TEMPLATES; `head` is the shared head tags from seo.js (title excluded).
-export function renderLanding(page, origin, { templates, head, title, replay = '' }) {
+export function renderLanding(page, origin, { templates, head, title, replay = '', contact = {}, social = {} }) {
   const abs = path => new URL(path, origin).href;
   const picks = page.picks.map(id => templates.find(t => t.id === id));
   const others = LANDING.filter(p => p.slug !== page.slug);
@@ -162,13 +216,13 @@ ${sections}
 <section class="faq"><h2>Questions</h2>${page.faq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}</section>
 <div class="cta"><h2>Make your invitation</h2><p>Build and preview it free. Pay once, only when you publish.</p><a class="btn" href="/templates">Choose a template</a></div>
 <section class="more"><h2>More guides</h2><ul>${others.map(p => `<li><a href="${abs(`/${p.slug}`)}">${esc(p.h1)}</a></li>`).join('')}</ul></section></main>
-<footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.<nav aria-label="Policies">${POLICY_LINKS.map(([name, path]) => `<a href="${path}">${name}</a>`).join('')}</nav><p class="copy">${COPYRIGHT}</p></footer></div><script src="/analytics.js" defer></script>${replay ? '<script src="/replay.js" defer></script>' : ''}</body></html>`;
+${renderFooter({ contact, social })}</div><script src="/analytics.js" defer></script>${replay ? '<script src="/replay.js" defer></script>' : ''}</body></html>`;
 }
 
 const ICONS = '<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="icon" href="/favicon.ico" sizes="48x48"/><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"/>';
 
 // A policy page: the same look as the landing pages, plain text. `extra` is { updated, contact: {email, whatsapp}, business: {legalName, address} }.
-export function renderPolicy(page, origin, { head, title, updated, contact, business }) {
+export function renderPolicy(page, origin, { head, title, updated, contact, business, social = {} }) {
   const sections = page.sections.map(s => `<section><h2>${esc(s.h2)}</h2>${(s.p || []).map(t => `<p>${esc(t)}</p>`).join('')}${s.list ? `<ul>${s.list.map(i => `<li>${esc(i)}</li>`).join('')}</ul>` : ''}</section>`).join('');
   const digits = String(contact.whatsapp || '').replace(/\D/g, '');
   const actions = page.contact
@@ -177,5 +231,5 @@ export function renderPolicy(page, origin, { head, title, updated, contact, busi
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#fbf7f2"/>${ICONS}<title>${esc(title)}</title>${head}<style>${CSS}</style></head>
 <body><div class="w"><header class="top"><a class="logo" href="/"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>InviteStudio</span></a><nav aria-label="Main"><a href="/templates">Templates</a><a href="/#pricing">Pricing</a></nav></header>
 <main class="doc"><h1>${esc(page.h1)}</h1>${page.contact ? '' : `<p class="updated">Last updated: ${esc(updated)}</p>`}${actions}${sections}</main>
-<footer><a href="/">InviteStudio</a>: wedding invitation websites. Weddings only for now.<nav aria-label="Policies">${POLICY_LINKS.map(([name, path]) => `<a href="${path}">${name}</a>`).join('')}</nav><p class="copy">${COPYRIGHT}</p></footer></div><script src="/analytics.js" defer></script></body></html>`;
+${renderFooter({ contact, social })}</div><script src="/analytics.js" defer></script></body></html>`;
 }
