@@ -1494,3 +1494,5 @@
 .figma-app .design-option.locked{ opacity: .55; cursor: not-allowed; }
 .figma-app .design-option.locked svg{ flex: none; margin-left: auto; color: #6b6760; }
 .figma-app .design-lock-note{ margin: 0 0 8px; line-height: 1.5; }
+.figma-app .device-frame.mobile .editor-site{ clip-path: inset(0 round 34px); }
+.figma-app .device-frame.tablet .editor-site{ clip-path: inset(0 round 18px); }

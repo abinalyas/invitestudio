@@ -871,3 +871,8 @@ table.rsvp-by-event { font-size: 13px; }
 .design-option.locked { opacity: .55; cursor: not-allowed; }
 .design-option.locked svg { flex: none; margin-left: auto; color: #6b6760; }
 .design-lock-note { margin: 0 0 8px; line-height: 1.5; }
+
+/* The phone and tablet frames clip the design to the rounded screen. Some designs paint a light gradient (a header fade) past the
+   rounded corners, which showed as grey wedges over the bezel; clipping the screen to its own rounded shape stops that. */
+.device-frame.mobile .editor-site { clip-path: inset(0 round 34px); }
+.device-frame.tablet .editor-site { clip-path: inset(0 round 18px); }
