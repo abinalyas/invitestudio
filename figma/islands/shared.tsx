@@ -1,7 +1,7 @@
 // Shared design data and small components from the Figma Make export (App.tsx lines 1-316).
 // Adapted only by exporting names; see figma/source/src/App.tsx for the original.
 
-export type IconName = "arrow" | "calendar" | "check" | "chevron" | "clock" | "cloud" | "device" | "edit" | "eye" | "gallery" | "grid" | "heart" | "home" | "layers" | "link" | "pin" | "people" | "play" | "search" | "send" | "sparkle" | "user"
+export type IconName = "arrow" | "calendar" | "check" | "chevron" | "clock" | "cloud" | "device" | "edit" | "eye" | "gallery" | "grid" | "heart" | "home" | "layers" | "link" | "pin" | "people" | "play" | "search" | "swap" | "lock" | "send" | "sparkle" | "user"
 
 export function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
   const common = {
@@ -86,6 +86,21 @@ export function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
       <>
         <path d="m12 2 9 5-9 5-9-5 9-5Z" />
         <path d="m3 12 9 5 9-5M3 17l9 5 9-5" />
+      </>
+    ),
+    swap: (
+      <>
+        <path d="M4 8h14" />
+        <path d="m14 4 4 4-4 4" />
+        <path d="M20 16H6" />
+        <path d="m10 12-4 4 4 4" />
+      </>
+    ),
+    lock: (
+      <>
+        <rect x="5" y="11" width="14" height="10" rx="2" />
+        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+        <path d="M12 15v2" />
       </>
     ),
     link: (
