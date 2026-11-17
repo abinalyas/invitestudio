@@ -35,7 +35,6 @@ export function HomePage() {
           </button>
           <nav className={menuOpen ? "nav open" : "nav"} onClick={() => setMenuOpen(false)}>
             <a href="/templates">Templates</a>
-            <a href="#features">Features</a>
             <a href="#how">How it works</a>
             <a href="#pricing">Pricing</a>
           </nav>
@@ -365,7 +364,6 @@ export function HomePage() {
             <h3 id="footer-product">Product</h3>
             <ul>
               <li><a href="/templates">Templates</a></li>
-              <li><a href="#features">Features</a></li>
               <li><a href="#how">How it works</a></li>
               <li><a href="#pricing">Pricing</a></li>
               <li><a href="#faq-list">FAQs</a></li>
