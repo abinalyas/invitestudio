@@ -1097,6 +1097,7 @@
 .figma-app .setup-card{ grid-area: card; padding: 32px; border: 1px solid #e8e1d9; border-radius: 22px; background: rgba(255, 253, 249, .9); box-shadow: 0 18px 40px -28px rgba(62, 16, 22, .3); }
 .figma-app .setup-card h2{ margin: 0; color: var(--ink); font-size: 30px; font-weight: 500; }
 .figma-app .setup-intro{ margin: 8px 0 22px; color: #5c625e; font-size: 14px; line-height: 1.55; }
+.figma-app .ceremony-note{ margin: 0 0 10px; padding: 10px 14px; border-radius: 12px; background: #f1f7f2; color: #145c37; font-size: 14px; }
 .figma-app .setup-subhead{ margin: 26px 0 8px; font-size: 20px; font-weight: 500; }
 .figma-app .setup-error{ margin: 0 0 16px; padding: 10px 14px; border-radius: 10px; background: #f7ebe8; color: #8a3f33; font-size: 14px; }
 .figma-app .setup-save{ margin: 22px 0 0; padding-top: 16px; border-top: 1px solid #ebe5dd; color: #6b6a64; font-size: 13px; }
@@ -1427,3 +1428,5 @@
 .figma-app .footer-col:last-of-type{ grid-column: 1 / -1; }
 .figma-app .footer-col:last-of-type ul{ grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 20px; }
 .figma-app .footer-bottom{ margin-top: 28px; }}
+@keyframes field-flash{ 0% { background: #fff3c4; box-shadow: 0 0 0 6px #fff3c4; } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
+.figma-app .field-flash{ border-radius: 10px; animation: field-flash 1.6s ease-out; }

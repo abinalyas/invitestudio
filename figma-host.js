@@ -43,6 +43,13 @@
     }));
   }
 
+  // The story the open design shows while the couple has not written one (its manifest's example), so the form can show the same words.
+  function exampleStoryFor(p) {
+    const t = p ? tpl(p.templateId) : null;
+    const manifest = t && t.packaged && window.packagedTemplateManifest ? window.packagedTemplateManifest(t.packaged) : null;
+    return manifest && manifest.example && typeof manifest.example.story === 'string' ? manifest.example.story : '';
+  }
+
   // The picture spots the open design defines (hero, story, venue ...). The first photos fill them, the rest form the gallery.
   function photoSlotsFor(p) {
     const t = p ? tpl(p.templateId) : null;
@@ -86,6 +93,33 @@
     if (status === 'error') return 'error';
     if (!p.cloudId && !status) return 'creating';
     return 'local';
+  }
+
+  // The wedding date from the first setup step becomes a "Wedding ceremony" event, added once and only when the invitation has no
+  // events yet. Until the person edits that event, it follows the date and location they typed in step 1. Once they change it, or
+  // delete it, it is left alone and never added back. No time is guessed.
+  function syncCeremonyEvent(p) {
+    if (!Array.isArray(p.functions)) p.functions = [];
+    const date = String(p.date || '');
+    const venue = String(p.location || '');
+    if (p.ceremonyEventId) {
+      const item = p.functions.find(x => x.id === p.ceremonyEventId);
+      const last = p.ceremonyAuto || {};
+      if (item && item.date === (last.date || '') && item.venue === (last.venue || '')) {
+        item.date = date;
+        item.venue = venue;
+        p.ceremonyAuto = { date, venue };
+      }
+      return;
+    }
+    if (!date || p.functions.length) return;
+    const id = crypto.randomUUID();
+    p.functions.push({
+      id, title: 'Wedding ceremony', date, time: '', endTime: '', venue,
+      description: '', dressCode: '', directionsUrl: '', parking: '', accommodation: '', accessibility: '', visible: true
+    });
+    p.ceremonyEventId = id;
+    p.ceremonyAuto = { date, venue };
   }
 
   function normaliseEvent(f) {
@@ -135,6 +169,7 @@
       saveFailed: Boolean(state.saveFailed),
       sections,
       events: (p?.functions || []).map(normaliseEvent),
+      ceremonyEventId: p?.ceremonyEventId || '',
       rsvp: prefs.rsvp || 'count',
       rsvpOpen: prefs.rsvpOpen !== false,
       rsvpReplyBy: /^\d{4}-\d{2}-\d{2}$/.test(prefs.rsvpReplyBy || '') ? prefs.rsvpReplyBy : '',
@@ -160,7 +195,8 @@
         title: SAMPLE_NAMES,
         message: EMPTY_HINTS.message,
         hosts: EMPTY_HINTS.hosts,
-        date: EMPTY_HINTS.date
+        date: EMPTY_HINTS.date,
+        story: exampleStoryFor(p)
       }
     };
   }
@@ -716,6 +752,8 @@
 
   function startEditing(el) {
     const field = el.dataset.edit;
+    // Tell the panel which field is being edited, so it can show it too.
+    try { window.dispatchEvent(new CustomEvent('invitestudio:edit-field', { detail: { field, id: el.dataset.id || '' } })); } catch (e) { /* no panel to tell */ }
     if (field === 'date') { pickDate(el); return; }
     const multiline = el.dataset.multiline === '1'; // the story: Enter starts a new paragraph, Ctrl/Cmd+Enter saves
     const shown = el.innerHTML; // restored on cancel or when nothing changed
@@ -1152,6 +1190,7 @@
       p.hosts = fields.hosts;
       p.name = p.title || p.name;
       p.templateId = templateId;
+      syncCeremonyEvent(p);
       const saved = save();
       notify();
       return saved;

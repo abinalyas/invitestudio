@@ -154,6 +154,7 @@ export type EditorSnapshot = EditorFields & {
   // Visibility of the sections on the invitation: hero, welcome, story, functions, gallery, rsvp.
   sections: Record<string, boolean>;
   events: EventItem[];
+  ceremonyEventId: string; // the event added automatically from the setup date, or empty
   rsvp: string;
   rsvpOpen: boolean;
   rsvpReplyBy: string;
@@ -165,7 +166,7 @@ export type EditorSnapshot = EditorFields & {
   // A cloud draft has a private link that opens it on another device.
   hasPrivateLink: boolean;
   // What the invitation shows while a field is empty (used as the field's hint).
-  shown: { title: string; message: string; hosts: string; date: string };
+  shown: { title: string; message: string; hosts: string; date: string; story: string };
 };
 
 export type RecoveryCard = { title: string; status: string; access: string; error: string };
