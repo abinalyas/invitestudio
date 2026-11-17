@@ -556,3 +556,23 @@ test('the sound choice of the template page sample is kept for the visit only (s
   const widgets = readFileSync(join(root, 'template-widgets.js'), 'utf8');
   assert.match(widgets, /demo \? window\.sessionStorage : window\.localStorage/);
 });
+
+test('the two names are told apart by a sign or by "and", "weds", "wed", "marries" or a lower-case x', () => {
+  const ctx = renderer();
+  const halves = title => {
+    const out = ctx.renderPackagedTemplate({ ...sampleOf('minimalist'), title }, { packaged: 'minimalist' }, { sample: false, editable: true });
+    const m = /data-edit="names:first" data-raw="([^"]*)" data-other="([^"]*)"/.exec(out);
+    return m ? [m[1], m[2]] : null;
+  };
+  for (const title of ['Anna & Ben', 'Anna&Ben', 'Anna + Ben', 'Anna × Ben', 'Anna and Ben', 'ANNA AND BEN', 'Anna weds Ben', 'Anna Weds Ben', 'Anna wed Ben', 'Anna weds to Ben', 'Anna marries Ben', 'Anna x Ben']) {
+    assert.deepEqual(halves(title), [title.toUpperCase() === title ? 'ANNA' : 'Anna', title.toUpperCase() === title ? 'BEN' : 'Ben'], title);
+  }
+  // Longer names keep their words; more than two names keep the rest together.
+  assert.deepEqual(halves('Mary Jane Watson weds Peter Parker'), ['Mary Jane Watson', 'Peter Parker']);
+  assert.deepEqual(halves('Anna & Ben & Cleo'), ['Anna', 'Ben &amp; Cleo']);
+  // Words that only contain the separators, a capital X (an initial) and a single name are not split.
+  assert.deepEqual(halves('Brandon Edwards'), ['Brandon Edwards', '']);
+  assert.deepEqual(halves('Malcolm X'), ['Malcolm X', '']);
+  assert.deepEqual(halves('Malcolm X Little'), ['Malcolm X Little', '']);
+  assert.deepEqual(halves('Wedmore Sandy'), ['Wedmore Sandy', '']);
+});
