@@ -1,7 +1,7 @@
 // End-to-end journey through the real UI and the real cloud stack:
 // create -> edit -> save -> reload and continue -> preview -> publish -> share ->
 // public page -> edit after publishing -> take offline.
-const { completeSetupSteps } = require('../support/setup');
+const { completeSetupSteps, openLatestDraft } = require('../support/setup');
 const { test, expect } = require('@playwright/test');
 const { randomUUID } = require('node:crypto');
 
@@ -45,7 +45,7 @@ test('create, edit, save, publish, share, edit after publishing, and take offlin
   // 3. Come back later: the draft is restored from the cloud on this browser.
   await page.reload();
   await expect(page.getByRole('region', { name: /continue your draft/i }).or(page.locator('section[aria-label="Continue your draft"]'))).toBeVisible();
-  await page.getByRole('button', { name: /continue editing/i }).click();
+  await openLatestDraft(page);
   await expect(page.locator('body')).toContainText(title, { timeout: 15000 });
 
   // 4. Preview the website as guests will see it.

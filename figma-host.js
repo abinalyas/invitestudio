@@ -1237,7 +1237,7 @@
       if (typeof continueLastDraft === 'function') continueLastDraft();
     },
 
-    // People who have a saved draft on this device get a "My projects" link in the header.
+    // People who have a saved draft on this device get a "My invitations" link in the header.
     hasProjects() {
       return Array.isArray(state.projects) && state.projects.length > 0;
     },

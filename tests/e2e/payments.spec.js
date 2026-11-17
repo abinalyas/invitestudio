@@ -1,6 +1,6 @@
 // Paying to publish: the dialog shows the price, takes the person to the payment page, brings them back, confirms with the server and
 // carries on to publishing. The payment page itself is a stand-in (Razorpay is never contacted); the server is a small stand-in too.
-const { completeSetupSteps } = require('../support/setup');
+const { completeSetupSteps, openLatestDraft } = require('../support/setup');
 const { test, expect } = require('@playwright/test');
 
 const WID = '88888888-8888-4888-8888-888888888888';
@@ -87,7 +87,7 @@ async function openShareAgain(page) {
 }
 
 async function openShare(page) {
-  await page.getByRole('button', { name: 'Continue editing' }).click();
+  await openLatestDraft(page);
   await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
   return page.locator('#modal-root');
 }

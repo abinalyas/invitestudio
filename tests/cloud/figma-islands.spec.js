@@ -1,6 +1,7 @@
 // Frontend integration tests for the Figma Make islands, against the real cloud stack.
 // Islands render inside open shadow roots; Playwright locators pierce those by default.
 const { test, expect } = require('@playwright/test');
+const { openLatestDraft } = require('../support/setup');
 const { Client } = require('pg');
 const { randomUUID } = require('node:crypto');
 
@@ -122,7 +123,7 @@ test('returning to the site offers to continue the draft', async ({ page }) => {
   await page.goto('/');
   const banner = page.getByRole('region', { name: /continue your draft/i }).or(page.locator('section[aria-label="Continue your draft"]'));
   await expect(banner).toBeVisible({ timeout: 15000 });
-  await banner.getByRole('button', { name: /continue editing/i }).click();
+  await openLatestDraft(page);
   await expect(page.getByLabel('Couple or celebration names')).toHaveValue(title, { timeout: 15000 });
 });
 
