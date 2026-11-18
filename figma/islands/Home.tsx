@@ -56,7 +56,10 @@ export function HomePage() {
                 will <em>love</em>
               </span>
             </h1>
-            <p className="lead">
+            <p className="lead hero-promise">
+              <strong>Preview your own invitation free. Pay only when you make it live.</strong>
+            </p>
+            <p className="lead hero-sub">
               Beautiful, interactive wedding invitations with
               <br className="desktop-only" /> animations, events and travel details.
             </p>
@@ -70,7 +73,7 @@ export function HomePage() {
             </div>
             <div className="trust-row">
               <span>
-                <Icon name="sparkle" size={18} /> Set up in minutes
+                <Icon name="sparkle" size={18} /> Free to build and preview
               </span>
               <span>
                 <Icon name="device" size={18} /> Works on all devices
