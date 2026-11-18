@@ -99,8 +99,15 @@
 .event-grip:focus-visible { outline: 2px solid #145c37; outline-offset: -2px; background: #f6f2ea; }
 .event-list.is-dragging, .event-list.is-dragging * { cursor: grabbing; user-select: none; }
 .event-item.dragging { border-color: #145c37; box-shadow: 0 8px 22px rgba(11, 47, 32, .22); position: relative; z-index: 1; }
-.event-toggle { flex: 1; min-width: 0; display: grid; gap: 2px; width: 100%; min-height: 56px; padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
+.event-toggle { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 56px; padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
+.event-toggle:hover, .event-toggle:focus-visible { background: #f6f2ea; }
+.event-toggle:focus-visible { outline: 2px solid #145c37; outline-offset: -2px; }
+.event-toggle-text { display: grid; gap: 2px; min-width: 0; }
 .event-toggle small { font-size: 13px; color: #6b6760; }
+.event-toggle .event-hint { color: #145c37; }
+.event-open { flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: #145c37; white-space: nowrap; }
+.event-open b { font-size: 18px; line-height: 1; font-weight: 700; }
+@media (max-width: 420px) { .event-open { font-size: 12px; } }
 .event-form { display: grid; gap: 14px; padding: 4px 14px 16px; border-top: 1px solid #ded9d0; }
 .event-form label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
 .event-form input, .event-form textarea, .add-event input { min-height: 44px; padding: 10px 12px; border: 1px solid #8a8276; border-radius: 8px; background: #fff; font: inherit; font-weight: 400; }

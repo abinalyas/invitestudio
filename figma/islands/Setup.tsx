@@ -233,7 +233,7 @@ export function SetupPage() {
                 </h3>
                 {snap.events.some((item) => item.id === snap.ceremonyEventId) ? (
                   <p className="setup-note ceremony-note" id="ceremonyNote">
-                    We added your ceremony from the date you entered. Edit or remove it any time.
+                    We added your ceremony from the date you entered. Tap it to add the time and venue, or remove it any time.
                   </p>
                 ) : null}
                 {snap.available ? <EventsPanel snap={snap} /> : null}
