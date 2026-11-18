@@ -539,14 +539,13 @@ test('music: the first tap starts the track, the button turns it off and on, the
 
 // The reply form opens inside the device's screen in every preview, not over the whole page.
 test('template page: the Reply form opens inside the phone, covering only its screen', async ({ page }) => {
+  test.setTimeout(60000); // waits through the whole opening first
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   await page.evaluate(() => { history.pushState({}, '', '/templates/18'); state.page = 'home'; render(); });
   const screen = page.locator('.figma-island-host .detail-screen');
   await expect(screen).toBeVisible();
-  // Let the opening lift so the Reply button is reachable (started by a click, or by itself once that change is in).
-  const start = screen.getByText('Click to start');
-  if (await start.count()) await start.click();
+  // The opening starts by itself; let it lift so the Reply button is reachable.
   await expect.poll(() => screen.evaluate(el => { const n = el.shadowRoot.querySelector('[data-intro]'); return !n || n.hasAttribute('data-done'); }), { timeout: 20000 }).toBe(true);
   await screen.evaluate(el => el.shadowRoot.querySelector('[data-rsvp-open]').scrollIntoView({ block: 'center' }));
   await screen.evaluate(el => el.shadowRoot.querySelector('[data-rsvp-open]').click());
