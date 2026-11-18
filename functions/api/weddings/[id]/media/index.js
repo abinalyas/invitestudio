@@ -12,6 +12,7 @@ import {
 import {
   MEDIA_LIMITS,
   cleanAlt,
+  cleanSlot,
   imageSize,
   listPhotoRows,
   mediaKey,
@@ -79,6 +80,8 @@ export async function onRequest(context) {
       try { form = await request.formData(); } catch { throw new ApiError('The upload could not be read.', 400, 'BAD_UPLOAD'); }
       const alt = cleanAlt(form.get('alt'));
       if (alt === null) throw new ApiError('Please check the description.', 422, 'VALIDATION_ERROR', { alt: 'Keep this to 300 characters or fewer.' });
+      const slot = cleanSlot(form.get('slot'));
+      if (slot === null) throw new ApiError('Please check where the photo goes.', 422, 'VALIDATION_ERROR', { slot: 'Must be hero, story, venue or gallery.' });
       const full = await readPart(form, 'full', MEDIA_LIMITS.fullBytes, MEDIA_LIMITS.fullEdge);
       const thumb = await readPart(form, 'thumb', MEDIA_LIMITS.thumbBytes, MEDIA_LIMITS.thumbEdge);
       if (full.format !== thumb.format) throw new ApiError('Both pictures must use the same format.', 422, 'MEDIA_TYPE');
@@ -108,7 +111,7 @@ export async function onRequest(context) {
           body: JSON.stringify({
             id: photoId, wedding_id: params.id, storage_path: fullKey, full_key: fullKey, thumb_key: thumbKey,
             full_bytes: full.bytes.length, thumb_bytes: thumb.bytes.length, format: full.format,
-            alt, width: full.width, height: full.height, sort_order: sortOrder
+            alt, width: full.width, height: full.height, sort_order: sortOrder, metadata: slot ? { slot } : {}
           })
         });
       } catch (error) {

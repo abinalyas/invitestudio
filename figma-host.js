@@ -170,6 +170,7 @@
       sections,
       events: (p?.functions || []).map(normaliseEvent),
       ceremonyEventId: p?.ceremonyEventId || '',
+      paidTier: p?.paidTier || '',
       rsvp: prefs.rsvp || 'count',
       rsvpOpen: prefs.rsvpOpen !== false,
       rsvpReplyBy: /^\d{4}-\d{2}-\d{2}$/.test(prefs.rsvpReplyBy || '') ? prefs.rsvpReplyBy : '',
@@ -177,7 +178,7 @@
       rsvpContact: prefs.rsvpContact && typeof prefs.rsvpContact === 'object' ? { type: prefs.rsvpContact.type === 'phone' ? 'phone' : 'whatsapp', value: String(prefs.rsvpContact.value || '') } : { type: 'whatsapp', value: '' },
       galleryCount: (p?.photos || []).length,
       photos: (p?.photos || []).filter(photo => photo && photo.id).map(photo => ({
-        id: photo.id, alt: photo.alt || '', thumb: photo.thumb || photo.data || '', width: photo.width || null, height: photo.height || null
+        id: photo.id, alt: photo.alt || '', thumb: photo.thumb || photo.data || '', width: photo.width || null, height: photo.height || null, slot: photo.slot || ''
       })),
       photoSlots: photoSlotsFor(p),
       media: {
@@ -292,6 +293,14 @@
     // Photo placeholders open the file picker; the add-event button and its choices sit under the events list.
     '[data-photo-add]{cursor:pointer;outline:1px dashed rgba(128,128,128,.7);outline:1px dashed color-mix(in srgb,currentColor 45%,transparent);outline-offset:-6px}' +
     '[data-photo-add]:hover,[data-photo-add]:focus-visible{outline-style:solid;background:rgba(128,128,128,.14);background:color-mix(in srgb,currentColor 10%,transparent)}' +
+    // A placeholder button for the cover, story or venue picture sits over the design's own artwork (or, with data-photo-flow, takes its own line).
+    'button[data-photo-add]{all:unset;box-sizing:border-box;cursor:pointer;position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:6;padding:10px 16px;' +
+    'border-radius:999px;background:rgba(255,255,255,.94);color:#145c37;font:600 13px/1.2 var(--sans,system-ui,sans-serif);letter-spacing:0;text-transform:none;' +
+    'white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.28);outline:1px dashed #145c37;outline-offset:3px}' +
+    'button[data-photo-add]:hover,button[data-photo-add]:focus-visible{background:#fff;outline-style:solid}' +
+    'button[data-photo-add][data-photo-top]{top:84px;bottom:auto}' +
+    'button[data-photo-add][data-photo-mid]{top:50%;bottom:auto;transform:translate(-50%,-50%)}' +
+    'button[data-photo-add][data-photo-flow]{position:static;transform:none;display:block;width:100%;margin:14px 0;text-align:center;border-radius:12px}' +
     '[data-add-wrap]{text-align:center;margin:20px 0 0;padding:0 12px}' +
     // !important: a design's own button styles must not turn these into plain text.
     '[data-add-event],.edit-chip{all:unset!important;box-sizing:border-box!important;cursor:pointer!important;display:inline-block!important;padding:9px 16px!important;border-radius:999px!important;' +
@@ -378,12 +387,14 @@
 
   // ---- Photos: a placeholder in the gallery opens the file picker and uploads the way the Photos panel does.
   const SLOT_NAMES = { hero: 'cover picture', story: 'story picture', venue: 'venue picture' };
+  const PHOTO_SPOT_LABELS = { hero: 'cover photo', story: 'story photo', venue: 'venue photo' };
   const PHOTO_OFF_NOTES = {
     NOT_SAVED_ONLINE: 'Photos need your invitation to be saved online. Open it with your private link, or wait until it finishes saving.',
     NO_STORAGE: "Photo storage is not set up yet. Until it is, your invitation uses the design's own pictures.",
     MIGRATION_PENDING: 'Photo storage is being set up. Please try again later.'
   };
-  function startPhotoAdd(container) {
+  // `slot` is the place the photo goes: 'hero', 'story', 'venue' or 'gallery'. A placeholder in the design says which; the gallery's has none.
+  function startPhotoAdd(container, slot = 'gallery') {
     const snap = bridge.snapshot();
     if (!snap.media.loaded) {
       void bridge.mediaLoad();
@@ -408,18 +419,16 @@
     input.addEventListener('change', () => {
       const files = Array.from(input.files || []);
       input.remove();
-      if (files.length) void addPhotos(container, files);
+      if (files.length) void addPhotos(container, files, slot);
     });
     container.append(input);
     input.click();
   }
-  async function addPhotos(container, files) {
-    const before = bridge.snapshot();
-    const start = before.photos.length;
+  async function addPhotos(container, files, slot = 'gallery') {
     setNotice(container, `Adding photo 1 of ${files.length}\u2026`, 'info', 180000);
     let result;
     try {
-      result = await bridge.mediaUpload(files, p => setNotice(container, `Adding photo ${p.index} of ${p.total}\u2026`, 'info', 180000));
+      result = await bridge.mediaUpload(files, p => setNotice(container, `Adding photo ${p.index} of ${p.total}\u2026`, 'info', 180000), slot);
     } catch {
       setNotice(container, 'The photos could not be added. Check your connection and try again.', 'error', 9000);
       return;
@@ -428,15 +437,8 @@
     const added = (result && result.added) || 0;
     let text = '';
     if (added) {
-      // The first photos fill the design's large pictures and the rest form the gallery: say where these went.
-      const pieces = [];
-      for (let i = 0; i < added; i += 1) {
-        const slot = before.photoSlots[start + i];
-        if (slot) pieces.push(`1 to the ${SLOT_NAMES[slot] || 'large picture'}`);
-      }
-      const gallery = added - pieces.length;
-      if (gallery > 0) pieces.push(`${gallery} to the gallery`);
-      text = `Added ${added} ${added === 1 ? 'photo' : 'photos'}: ${pieces.join(', ')}.`;
+      // Say where these went: the gallery, or the design's cover, story or venue picture.
+      text = `Added ${added} ${added === 1 ? 'photo' : 'photos'} to the ${slot === 'gallery' ? 'gallery' : (SLOT_NAMES[slot] || 'gallery')}.`;
     }
     if (errors.length) {
       const problems = errors.slice(0, 2).map(error => (error.name ? `${error.name}: ${error.message}` : error.message)).join(' ');
@@ -646,8 +648,10 @@
     container.querySelectorAll('[data-photo-add]').forEach(el => {
       el.tabIndex = 0;
       el.setAttribute('role', 'button');
-      el.title = 'Click to add photos';
-      el.textContent = '+ Add photos';
+      // Gallery tiles add to the gallery; a placeholder for the cover, story or venue picture says so and adds to that spot only.
+      const place = el.getAttribute('data-photo-add');
+      el.title = place && PHOTO_SPOT_LABELS[place] ? `Click to add the ${SLOT_NAMES[place]}` : 'Click to add photos';
+      el.textContent = place && PHOTO_SPOT_LABELS[place] ? `+ Add ${PHOTO_SPOT_LABELS[place]}` : '+ Add photos';
     });
     if (container.dataset.editWired) return;
     container.dataset.editWired = '1';
@@ -684,7 +688,7 @@
         return;
       }
       if (target && target.closest('[data-photo-add]')) {
-        startPhotoAdd(container);
+        startPhotoAdd(container, target.closest('[data-photo-add]').getAttribute('data-photo-add') || 'gallery');
         return;
       }
       const photoBar = target && target.closest('[data-photo-bar]');
@@ -719,7 +723,7 @@
       const photo = event.target instanceof Element ? event.target.closest('[data-photo-add]') : null;
       if (photo) {
         event.preventDefault();
-        startPhotoAdd(container);
+        startPhotoAdd(container, photo.getAttribute('data-photo-add') || 'gallery');
         return;
       }
       const el = fieldOf(event);
@@ -1004,7 +1008,7 @@
 
     // Photos
     mediaLoad() { return typeof window.loadMedia === 'function' ? window.loadMedia() : Promise.resolve(); },
-    mediaUpload(files, onProgress) { return window.uploadMediaPhotos(files, onProgress); },
+    mediaUpload(files, onProgress, slot) { return window.uploadMediaPhotos(files, onProgress, slot || ''); },
     mediaAlt(id, alt) { return window.setMediaAlt(id, alt); },
     mediaMove(id, delta) { return window.moveMediaPhoto(id, delta); },
     mediaRemove(id) { return window.deleteMediaPhoto(id); },
@@ -1282,8 +1286,7 @@
     },
 
     openProjects() {
-      state.page = 'dashboard';
-      history.pushState({}, '', '/');
+      state.page = 'dashboard'; // render() gives the page its own address
       render();
       window.scrollTo(0, 0);
     },
@@ -1383,11 +1386,22 @@
     });
   }());
 
+  // The My invitations page has its own address, so refreshing the browser keeps the person on it (not the home page).
+  window.syncMyInvitationsUrl = function syncMyInvitationsUrl() {
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    try {
+      if (state.page === 'dashboard' && path !== '/my-invitations') history.pushState({}, '', '/my-invitations');
+      else if (state.page !== 'dashboard' && path === '/my-invitations') history.replaceState({}, '', '/');
+    } catch { /* history may be unavailable in an embedded preview */ }
+  };
+
   // Browser back and forward move between routes that the application state tracks.
   window.addEventListener('popstate', () => {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
     if (state.page === 'setup' && path !== '/') state.page = 'home'; // leaving the setup page by going back
-    if (path === '/') {
+    if (path === '/my-invitations') {
+      state.page = Array.isArray(state.projects) && state.projects.length ? 'dashboard' : 'home';
+    } else if (path === '/') {
       if (state.page !== 'home' && state.page !== 'editor' && state.page !== 'preview') state.page = 'home';
     } else if (path === '/templates') {
       state.page = 'home';

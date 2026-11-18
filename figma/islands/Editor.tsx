@@ -9,8 +9,9 @@
 // - Only supported content is editable here. Palette, typography and layout belong to
 //   the template. Photos stay disabled until persistent photo storage exists.
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { usePricing } from "./pricing";
 import { Icon, IconName, PlaceList, Logo, openPickerOnClick, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
-import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, RetentionInfo, RsvpData } from "./bridge";
+import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, PhotoItem, RetentionInfo, RsvpData } from "./bridge";
 import { useBridgeVersion, TalkToUs, SampleChips } from "./extras";
 
 type SectionKey = "home" | "story" | "functions" | "gallery" | "rsvp";
@@ -103,6 +104,18 @@ function useRetention(snap: EditorSnapshot): RetentionInfo | null {
   }, [snap.hasPrivateLink, snap.published, snap.draftId]);
   return info;
 }
+
+// "28 Jan 2027": the short date on the event cards (the saved value is 2027-01-28).
+const shortDay = (iso: string) => {
+  const date = new Date(`${iso}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+};
+
+// What a closed event card offers: it says what can be added, so it reads as something to open (not a finished summary).
+const detailsHint = (item: { time: string; venue: string }) => {
+  const missing = [item.time ? "" : "time", item.venue ? "" : "venue"].filter(Boolean);
+  return missing.length ? `Add ${missing.join(" and ")}, dress code and directions` : "Add dress code and directions";
+};
 
 const longDay = (iso: string) => {
   const date = new Date(`${iso}T00:00:00`);
@@ -209,6 +222,14 @@ export function EditorPage() {
   const [device, setDeviceState] = useState<Device>(remembered.device);
   const [active, setActiveState] = useState<SectionKey>(remembered.active);
   const [designsOpen, setDesignsOpen] = useState(false);
+  const designListRef = useRef<HTMLDivElement>(null);
+  // When the list of designs opens, bring the current design into view inside it (the list scrolls on its own).
+  useEffect(() => {
+    if (!designsOpen) return;
+    const list = designListRef.current;
+    const current = list?.querySelector<HTMLElement>(".design-option.selected");
+    if (list && current) list.scrollTop += current.getBoundingClientRect().top - list.getBoundingClientRect().top - 8;
+  }, [designsOpen]);
   const [mobileTab, setMobileTabState] = useState<MobileTab>(remembered.mobileTab);
   const setDevice = (next: Device) => { remembered.device = next; setDeviceState(next); };
   const setActive = (next: SectionKey) => { remembered.active = next; setActiveState(next); };
@@ -216,6 +237,7 @@ export function EditorPage() {
   const replyCount = useReplyCount(snap);
   useEffect(() => { if (snap.available) void bridge.mediaLoad(); }, [snap.available, snap.draftId]);
   const controlsRef = useRef<HTMLElement>(null);
+  const { data: pricing } = usePricing();
   // Editing text directly in the design: show the matching field in the panel, scrolled into view and briefly highlighted, so the change
   // can be seen in both places. Focus stays where the person is typing (in the design).
   const wordingSection = (key: string) => snap.copyFields.find(field => field.key === key)?.section as SectionKey | undefined;
@@ -374,6 +396,12 @@ export function EditorPage() {
 
   const designs = bridge.designs();
   const currentDesign = designs.find(design => design.id === snap.templateId);
+  // After a payment, only designs in the paid price tier or a cheaper one can be chosen (the server checks this too).
+  const isDesignLocked = (designId: string) => {
+    if (!snap.paidTier || !pricing) return false;
+    const rank = (tier: string) => pricing.tiers.findIndex(item => item.id === tier);
+    return rank(pricing.templates[designId] || "classic") > rank(snap.paidTier);
+  };
   const failed = snap.saveState === "error";
   const conflict = snap.saveState === "conflict";
 
@@ -470,20 +498,32 @@ export function EditorPage() {
               </button>
             </div>
             {designsOpen ? (
-              <div className="design-list" role="group" aria-label="Designs">
+              <div className="design-list" role="group" aria-label="Designs" ref={designListRef}>
                 <p className="tiny muted">Your names, dates, story and events stay the same when you change design.</p>
-                {designs.map(design => (
-                  <button
-                    key={design.id}
-                    type="button"
-                    className={snap.templateId === design.id ? "design-option selected" : "design-option"}
-                    aria-pressed={snap.templateId === design.id}
-                    onClick={() => bridge.setTemplate(design.id)}
-                  >
-                    {design.image ? <img src={design.image} alt="" /> : <span className="design-thumb-empty" />}
-                    <span>{design.name}</span>
-                  </button>
-                ))}
+                {snap.paidTier && pricing ? (
+                  <p className="tiny muted design-lock-note" id="designLockNote">
+                    You paid for the {pricing.tiers.find(tier => tier.id === snap.paidTier)?.name ?? "chosen"} tier. You can switch to any design in it or a cheaper one.{" "}
+                    <TalkToUs topic="custom" lead="Want a higher tier? Talk to us:" />
+                  </p>
+                ) : null}
+                {designs.map(design => {
+                  const locked = isDesignLocked(design.id)
+                  return (
+                    <button
+                      key={design.id}
+                      type="button"
+                      className={snap.templateId === design.id ? "design-option selected" : locked ? "design-option locked" : "design-option"}
+                      aria-pressed={snap.templateId === design.id}
+                      disabled={locked}
+                      title={locked ? "Not included in the tier you paid for" : undefined}
+                      onClick={() => bridge.setTemplate(design.id)}
+                    >
+                      {design.image ? <img src={design.image} alt="" /> : <span className="design-thumb-empty" />}
+                      <span>{design.name}</span>
+                      {locked ? <Icon name="lock" size={16} /> : null}
+                    </button>
+                  )
+                })}
               </div>
             ) : null}
           </div>
@@ -587,7 +627,12 @@ export function EditorPage() {
                 <input data-field="hosts" value={snap.hosts} placeholder={snap.shown.hosts} onChange={event => set({ hosts: event.target.value })} />
                 <SampleChips value={snap.hosts} samples={sampleHosts(snap.title)} onPick={(text) => set({ hosts: text })} />
               </label>
-              <p className="tiny muted">Your design's cover image is used for now. Your own cover photos unlock when photo storage is available.</p>
+              {snap.photoSlots.includes("hero") ? (
+                <p className="tiny muted cover-photo-note">
+                  Your first photo becomes the cover picture; until then the design's own picture is shown.{" "}
+                  <button type="button" className="link-button" onClick={() => choose("gallery")}>Add photos</button>
+                </p>
+              ) : null}
             </div>
           ) : null}
 
@@ -861,8 +906,12 @@ export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
                 aria-expanded={openId === item.id}
                 onClick={() => setOpenId(openId === item.id ? null : item.id)}
               >
-                <strong>{item.title || "Untitled event"}</strong>
-                <small>{item.visible ? [item.date, item.venue].filter(Boolean).join(" · ") || "Details to add" : "Hidden from guests"}</small>
+                <span className="event-toggle-text">
+                  <strong>{item.title || "Untitled event"}</strong>
+                  <small>{item.visible ? [item.date ? shortDay(item.date) : "", item.venue].filter(Boolean).join(" · ") || "Details to add" : "Hidden from guests"}</small>
+                  {item.visible && openId !== item.id ? <small className="event-hint">{detailsHint(item)}</small> : null}
+                </span>
+                <span className="event-open" aria-hidden="true">{openId === item.id ? "Close" : "Add details"} <b>{openId === item.id ? "⌃" : "›"}</b></span>
               </button>
             </div>
             {openId === item.id ? (
@@ -1007,6 +1056,21 @@ const mediaOffNotes: Record<string, string> = {
 
 // Photos: the first ones fill the design's large pictures, the rest form the gallery. Each is resized on this device
 // before it is uploaded, so a phone photo of several MB becomes a few hundred KB.
+// Which photo fills which of the design's large pictures: a photo goes where it was added; one with no place (added before places
+// existed) fills a spot that is still empty, in order. The same rule as the design uses (packaged-templates.js).
+function placePhotos(photos: PhotoItem[], slots: string[]) {
+  const placed: Record<string, PhotoItem | undefined> = {};
+  const loose: PhotoItem[] = [];
+  for (const photo of photos) {
+    if (photo.slot && photo.slot !== "gallery" && slots.includes(photo.slot) && !placed[photo.slot]) placed[photo.slot] = photo;
+    else if (photo.slot !== "gallery") loose.push(photo);
+  }
+  for (const name of slots) if (!placed[name] && loose.length) placed[name] = loose.shift();
+  const where = new Map<string, string>();
+  for (const name of slots) if (placed[name]) where.set(placed[name]!.id, name);
+  return { placed, where };
+}
+
 function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
   const [progress, setProgress] = useState("");
   const [problems, setProblems] = useState<string[]>([]);
@@ -1027,17 +1091,19 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
   }
 
   const full = snap.photos.length >= media.limits.photos;
-  const add = async (files: FileList | null) => {
+  const { placed, where } = placePhotos(snap.photos, slots);
+  // `slot` is where the photos go: the gallery, or one of the design's large pictures (then `replaceId` swaps the photo that is there).
+  const add = async (files: FileList | null, slot = "gallery", replaceId = "") => {
     if (!files || !files.length) return;
     setProblems([]);
     setAdded("");
-    const result = await bridge.mediaUpload(Array.from(files), p => setProgress(`Adding photo ${p.index} of ${p.total}…`));
+    const onProgress = (p: { index: number; total: number }) => setProgress(`Adding photo ${p.index} of ${p.total}…`);
+    const result = replaceId ? await bridge.mediaReplace(replaceId, files[0], onProgress) : await bridge.mediaUpload(Array.from(files), onProgress, slot);
     setProgress("");
-    if (result.added) setAdded(`Added ${result.added} ${result.added === 1 ? "photo" : "photos"}. Add more any time.`);
+    if (result.added) setAdded(`Added ${result.added} ${result.added === 1 ? "photo" : "photos"} to the ${slot === "gallery" ? "gallery" : (slotLabels[slot] ?? "picture").toLowerCase()}. Add more any time.`);
     setProblems(result.errors.map(error => (error.name ? `${error.name}: ${error.message}` : error.message)));
     if (inputRef.current) inputRef.current.value = "";
   };
-  const slotName = (index: number) => slotLabels[slots[index]] ?? "Large picture";
 
   return (
     <div className="editor-form">
@@ -1045,11 +1111,39 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
         <strong>{media.usage.count} of {media.limits.photos} photos</strong> · {mb(media.usage.bytes)} of {mb(media.limits.totalBytes)} MB
       </p>
       <p className="tiny muted">
-        You can add up to {media.limits.photos} photos, and choose several at once.{" "}
-        {slots.length
-          ? `The first ${slots.length} ${slots.length === 1 ? "photo fills" : "photos fill"} this design's large ${slots.length === 1 ? "picture" : "pictures"}; the rest go in the gallery. Use the arrows to change the order.`
-          : "They appear in the gallery. Use the arrows to change the order."}
+        You can add up to {media.limits.photos} photos, and choose several at once. Photos added with the button below go to the gallery.
+        {slots.length ? " The design's own pictures have their own places, just below." : ""} Use the arrows to change the order.
       </p>
+      {slots.length ? (
+        <section className="photo-places" aria-label="Pictures in this design">
+          <h3>Pictures in this design</h3>
+          <ul>
+            {slots.map(name => {
+              const photo = placed[name];
+              const label = slotLabels[name] ?? "Large picture";
+              return (
+                <li key={name} data-photo-place={name}>
+                  {photo ? <img src={photo.thumb} alt="" width={48} height={48} /> : <span className="photo-place-empty" aria-hidden="true" />}
+                  <span className="photo-place-text">
+                    <strong>{label}</strong>
+                    <small>{photo ? "Your photo" : "Not added yet. The design's own picture is shown."}</small>
+                  </span>
+                  <label className={(!photo && full) || progress ? "button small outline photo-add disabled" : "button small outline photo-add"}>
+                    <input
+                      type="file"
+                      accept="image/*,.heic,.heif"
+                      disabled={(!photo && full) || Boolean(progress)}
+                      onChange={event => { void add(event.target.files, name, photo ? photo.id : ""); event.target.value = ""; }}
+                      aria-label={`${photo ? "Replace" : "Add"} ${label.toLowerCase()}`}
+                    />
+                    {photo ? "Replace" : "Add"}
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
       <div className="photo-add-bar">
         <label className={full || progress ? "button small photo-add disabled" : "button small photo-add"}>
           <input
@@ -1059,9 +1153,9 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
             multiple
             disabled={full || Boolean(progress)}
             onChange={event => void add(event.target.files)}
-            aria-label="Add photos"
+            aria-label="Add photos to the gallery"
           />
-          {progress ? progress : full ? `Photo limit reached (${media.limits.photos})` : snap.photos.length ? "Add more photos" : "Add photos"}
+          {progress ? progress : full ? `Photo limit reached (${media.limits.photos})` : snap.photos.length ? "Add more to the gallery" : "Add to the gallery"}
         </label>
       </div>
       {added ? <p className="tiny photo-added" role="status">{added}</p> : null}
@@ -1077,7 +1171,7 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
           <li key={photo.id}>
             <img src={photo.thumb} alt="" width={72} height={72} />
             <div className="photo-fields">
-              {index < slots.length ? <span className="photo-slot">{slotName(index)}</span> : <span className="photo-slot muted">Gallery</span>}
+              {where.has(photo.id) ? <span className="photo-slot">{slotLabels[where.get(photo.id)!] ?? "Large picture"}</span> : <span className="photo-slot muted">Gallery</span>}
               <input
                 aria-label={`Description of photo ${index + 1}`}
                 placeholder="Describe this photo (for screen readers)"

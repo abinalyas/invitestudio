@@ -468,8 +468,16 @@ export function sampleStories(): Sample[] {
   ]
 }
 
+// The two names are told apart by a sign ("A & B", "A+B", "A × B") or a word ("and", "weds", "wed", "weds to", "marries", a lower-case "x").
+// The same rule as splitNames in packaged-templates.js, which draws the names on the invitation.
+export function splitCoupleNames(names: string): string[] {
+  const clean = (list: string[]) => list.map((part) => part.trim()).filter(Boolean)
+  const parts = clean(names.split(/\s*[&+×]\s*|\s+(?:and|weds?(?:\s+to)?|marries)\s+/i))
+  return parts.length >= 2 ? parts : clean(names.split(/\s+x\s+/))
+}
+
 export function sampleHosts(names: string): Sample[] {
-  const parts = names.split(/\s*(?:&|\band\b|\+)\s*/i).map((part) => part.trim()).filter(Boolean)
+  const parts = splitCoupleNames(names)
   const couple = parts.length > 1 ? `${parts[0]} and ${parts[1]}` : parts[0] || "the couple"
   return [
     { label: "Families", text: `Hosted by the families of ${couple}` },

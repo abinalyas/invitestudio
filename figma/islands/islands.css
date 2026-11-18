@@ -71,7 +71,7 @@
 .visibility-switch input:checked + span::after { transform: translateX(18px); }
 .design-picker { display: grid; gap: 10px; margin-top: 20px; padding: 14px 12px 0; border-top: 1px solid #ded9d0; }
 .design-current { display: grid; gap: 2px; }
-.design-list { display: grid; gap: 8px; max-height: 340px; overflow: auto; padding-right: 4px; }
+.design-list { display: grid; grid-auto-rows: max-content; align-content: start; gap: 8px; max-height: 340px; overflow: auto; padding: 2px 4px 2px 2px; }
 .design-option { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px; border: 2px solid transparent; border-radius: 10px; background: #fff; font: inherit; text-align: left; cursor: pointer; }
 .design-option.selected { border-color: #145c37; }
 .design-option img, .design-thumb-empty { flex: none; width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #f7f1e9; }
@@ -99,8 +99,15 @@
 .event-grip:focus-visible { outline: 2px solid #145c37; outline-offset: -2px; background: #f6f2ea; }
 .event-list.is-dragging, .event-list.is-dragging * { cursor: grabbing; user-select: none; }
 .event-item.dragging { border-color: #145c37; box-shadow: 0 8px 22px rgba(11, 47, 32, .22); position: relative; z-index: 1; }
-.event-toggle { flex: 1; min-width: 0; display: grid; gap: 2px; width: 100%; min-height: 56px; padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
+.event-toggle { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 56px; padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
+.event-toggle:hover, .event-toggle:focus-visible { background: #f6f2ea; }
+.event-toggle:focus-visible { outline: 2px solid #145c37; outline-offset: -2px; }
+.event-toggle-text { display: grid; gap: 2px; min-width: 0; }
 .event-toggle small { font-size: 13px; color: #6b6760; }
+.event-toggle .event-hint { color: #145c37; }
+.event-open { flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: #145c37; white-space: nowrap; }
+.event-open b { font-size: 18px; line-height: 1; font-weight: 700; }
+@media (max-width: 420px) { .event-open { font-size: 12px; } }
 .event-form { display: grid; gap: 14px; padding: 4px 14px 16px; border-top: 1px solid #ded9d0; }
 .event-form label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
 .event-form input, .event-form textarea, .add-event input { min-height: 44px; padding: 10px 12px; border: 1px solid #8a8276; border-radius: 8px; background: #fff; font: inherit; font-weight: 400; }
@@ -866,3 +873,29 @@ table.rsvp-by-event { font-size: 13px; }
   .draft-access p { margin: 2px 0 6px; }
   .draft-access .btn.small { min-height: 40px; }
 }
+
+/* Designs outside the tier that was paid for. */
+.design-option.locked { opacity: .55; cursor: not-allowed; }
+.design-option.locked svg { flex: none; margin-left: auto; color: #6b6760; }
+.design-lock-note { margin: 0 0 8px; line-height: 1.5; }
+
+/* The phone and tablet frames clip the design to the rounded screen. Some designs paint a light gradient (a header fade) past the
+   rounded corners, which showed as grey wedges over the bezel; clipping the screen to its own rounded shape stops that. */
+.device-frame.mobile .editor-site { clip-path: inset(0 round 34px); }
+.device-frame.tablet .editor-site { clip-path: inset(0 round 18px); }
+/* The design's own picture places in the Photos panel (cover, story, venue). */
+.photo-places { margin: 0 0 14px; padding: 12px 14px; border: 1px solid #e6e0d9; border-radius: 14px; background: rgba(255, 255, 255, .6); }
+.photo-places h3 { margin: 0 0 8px; font-size: 16px; font-weight: 700; color: #10281d; }
+.photo-places ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.photo-places li { display: flex; align-items: center; gap: 12px; }
+.photo-places img, .photo-place-empty { flex: none; width: 48px; height: 48px; border-radius: 10px; object-fit: cover; background: #efeae2; border: 1px dashed #b9b2a4; box-sizing: border-box; }
+.photo-places img { border: 0; }
+.photo-place-text { display: grid; flex: 1 1 auto; min-width: 0; line-height: 1.3; }
+.photo-place-text small { color: #5c625e; font-size: 12.5px; }
+/* The last summary row has no line of its own: the "Saved just now" line below already draws one (two lines in a row looked doubled). */
+.setup-summary div:last-child { border-bottom: 0; }
+/* The promise that leads the home page: free to build and preview, pay only when going live. */
+.hero-copy .hero-promise { margin: 14px 0 0; font-size: clamp(18px, 2.4vw, 22px); line-height: 1.3; color: #10281d; }
+.hero-copy .hero-promise strong { font-weight: 700; }
+.hero-copy .hero-sub { margin-top: 8px; }
+@media (max-width: 720px) { .hero-copy .hero-promise { font-size: 17px; } }

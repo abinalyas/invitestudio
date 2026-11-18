@@ -33,7 +33,10 @@
     ".rsvp-card .rsvp-link{display:block;width:100%;margin:8px 0;padding:10px 12px;border:1px dashed #b9ada3;border-radius:8px;font-size:.82rem;word-break:break-all;background:#faf6f1;user-select:all}",
     ".rsvp-card dl{margin:14px 0;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.92rem}",
     ".rsvp-card dt{color:#6b5f58}.rsvp-card dd{margin:0;overflow-wrap:anywhere}",
-    ".rsvp-trap{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}"
+    ".rsvp-trap{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}",
+    // Inside a device preview (phone, tablet or desktop frame) the form covers just that screen, as a sheet from the bottom.
+    ".rsvp-overlay.rsvp-in-device{position:absolute;inset:auto;z-index:20;align-items:flex-end;padding:0;overflow:hidden}",
+    ".rsvp-in-device .rsvp-card{max-width:none;border-radius:16px 16px 0 0;padding:22px 18px 24px}"
   ].join("");
 
   var lastFocus = null, overlay = null;
@@ -72,18 +75,45 @@
     var items = Array.prototype.filter.call(overlay.querySelectorAll("button,input,select,textarea,a[href]"), function (n) { return !n.disabled && n.offsetParent !== null && !n.closest(".rsvp-trap"); });
     if (!items.length) return;
     var first = items[0], last = items[items.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    var root = overlay.getRootNode(), active = (root && root.activeElement) || document.activeElement;
+    if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
   }
 
-  function open(config, slug, existing) {
-    if (!document.getElementById("rsvp-form-css")) { var st = el("style", { id: "rsvp-form-css" }); st.textContent = CSS; document.head.appendChild(st); }
+  // The preview screen the reply button was pressed in, when there is one: the invitation is drawn in a shadow root whose
+  // host is the screen, and the host sits in a positioned frame. Only a screen that scrolls by itself qualifies (when the page
+  // scrolls instead, as on a phone, the whole invitation is as tall as the page and the usual full-window form is better).
+  function deviceMount(path) {
+    for (var i = 0; i < path.length; i++) {
+      var n = path[i];
+      if (!n || n.nodeType !== 11 || !n.host) continue;
+      var host = n.host, parent = host.parentElement;
+      if (!parent || !parent.isConnected) return null;
+      var hs = window.getComputedStyle(host), ps = window.getComputedStyle(parent);
+      var scrolls = hs.overflowY === "auto" || hs.overflowY === "scroll";
+      if (!scrolls || ps.position === "static" || host.offsetHeight < 240) return null;
+      return { host: host, parent: parent, radius: hs.borderRadius };
+    }
+    return null;
+  }
+  function styleRoot(node) { var root = node.getRootNode(); return root && root.nodeType === 11 ? root : document.head; }
+
+  function open(config, slug, existing, mount) {
+    // The page's styles do not reach into a preview's shadow root, so the form's own are added beside it.
+    var home = mount ? styleRoot(mount.parent) : document.head;
+    if (!home.querySelector("#rsvp-form-css")) { var st = el("style", { id: "rsvp-form-css" }); st.textContent = CSS; home.appendChild(st); }
     close();
     var live = Boolean(slug);
     var card = el("div", { class: "rsvp-card", role: "dialog", "aria-modal": "true", "aria-labelledby": "rsvp-title" });
-    overlay = el("div", { class: "rsvp-overlay" }, [card]);
+    overlay = el("div", { class: mount ? "rsvp-overlay rsvp-in-device" : "rsvp-overlay" }, [card]);
     overlay.addEventListener("mousedown", function (e) { if (e.target === overlay) close(); });
-    document.body.appendChild(overlay);
+    if (mount) {
+      var h = mount.host;
+      overlay.style.left = h.offsetLeft + "px"; overlay.style.top = h.offsetTop + "px";
+      overlay.style.width = h.offsetWidth + "px"; overlay.style.height = h.offsetHeight + "px";
+      overlay.style.borderRadius = mount.radius;
+      mount.parent.appendChild(overlay);
+    } else document.body.appendChild(overlay);
     document.addEventListener("keydown", onKey, true);
     form(card, config, slug, existing);
     var focusTarget = card.querySelector("input[type=text]") || card.querySelector("button");
@@ -233,13 +263,14 @@
     if (!config || (config.mode !== "count" && config.mode !== "rsvp")) return;
     config.maxParty = Number.isInteger(config.maxParty) ? config.maxParty : 10;
     var slug = liveSlug(path);
+    var mount = slug ? null : deviceMount(path);
     lastFocus = button;
     var token = slug ? remembered(slug) : "";
     if (slug && token && window.inviteStudioApi) {
       window.inviteStudioApi.getRsvp(slug, token).then(function (res) {
-        open(config, slug, { token: token, reply: res.reply });
-      }, function () { open(config, slug, null); });
-    } else open(config, slug, null);
+        open(config, slug, { token: token, reply: res.reply }, mount);
+      }, function () { open(config, slug, null, mount); });
+    } else open(config, slug, null, mount);
   }
 
   document.addEventListener("click", function (e) {

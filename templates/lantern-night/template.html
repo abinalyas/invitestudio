@@ -55,7 +55,7 @@
     <h2 class="title" data-reveal="soft" style="--rd:.1s">{{edit:copy:story_title}}</h2>
     <p class="intro-line" data-reveal style="--rd:.2s">{{edit:copy:story_intro}}</p>
     <div class="story-grid">
-      <figure class="story-photo" data-reveal="scale"><!--if story_photo--><img src="{{story_photo}}" alt=""><!--else--><!--if editable--><span class="story-ph" data-photo-add>{{copy:story_photo_hint}}</span><!--else--><span class="story-ph" aria-hidden="true"><span class="story-mono">{{ia}}<!--if ib--> <i>&amp;</i> {{ib}}<!--/if--></span></span><!--/if--><!--/if--></figure>
+      <figure class="story-photo" data-reveal="scale"><!--if story_photo--><img src="{{story_photo}}" alt=""><!--else--><!--if editable--><span class="story-ph" data-photo-add="story">{{copy:story_photo_hint}}</span><!--else--><span class="story-ph" aria-hidden="true"><span class="story-mono">{{ia}}<!--if ib--> <i>&amp;</i> {{ib}}<!--/if--></span></span><!--/if--><!--/if--></figure>
       <div class="story-copy" data-reveal style="--rd:.15s">
         <h3>{{edit:copy:story_heading}}</h3>
         <!--if editable--><span data-edit="storyCopy" data-multiline="1" data-raw="{{story_raw}}"><!--/if--><!--each story_paras--><p>{{.}}</p><!--/each--><!--if editable--></span><!--/if-->

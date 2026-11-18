@@ -885,7 +885,7 @@
 .figma-app .visibility-switch input:checked + span::after{ transform: translateX(18px); }
 .figma-app .design-picker{ display: grid; gap: 10px; margin-top: 20px; padding: 14px 12px 0; border-top: 1px solid #ded9d0; }
 .figma-app .design-current{ display: grid; gap: 2px; }
-.figma-app .design-list{ display: grid; gap: 8px; max-height: 340px; overflow: auto; padding-right: 4px; }
+.figma-app .design-list{ display: grid; grid-auto-rows: max-content; align-content: start; gap: 8px; max-height: 340px; overflow: auto; padding: 2px 4px 2px 2px; }
 .figma-app .design-option{ display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px; border: 2px solid transparent; border-radius: 10px; background: #fff; font: inherit; text-align: left; cursor: pointer; }
 .figma-app .design-option.selected{ border-color: #145c37; }
 .figma-app .design-option img, .figma-app .design-thumb-empty{ flex: none; width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #f7f1e9; }
@@ -911,8 +911,15 @@
 .figma-app .event-grip:focus-visible{ outline: 2px solid #145c37; outline-offset: -2px; background: #f6f2ea; }
 .figma-app .event-list.is-dragging, .figma-app .event-list.is-dragging *{ cursor: grabbing; user-select: none; }
 .figma-app .event-item.dragging{ border-color: #145c37; box-shadow: 0 8px 22px rgba(11, 47, 32, .22); position: relative; z-index: 1; }
-.figma-app .event-toggle{ flex: 1; min-width: 0; display: grid; gap: 2px; width: 100%; min-height: 56px; padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
+.figma-app .event-toggle{ flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 56px; padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
+.figma-app .event-toggle:hover, .figma-app .event-toggle:focus-visible{ background: #f6f2ea; }
+.figma-app .event-toggle:focus-visible{ outline: 2px solid #145c37; outline-offset: -2px; }
+.figma-app .event-toggle-text{ display: grid; gap: 2px; min-width: 0; }
 .figma-app .event-toggle small{ font-size: 13px; color: #6b6760; }
+.figma-app .event-toggle .event-hint{ color: #145c37; }
+.figma-app .event-open{ flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: #145c37; white-space: nowrap; }
+.figma-app .event-open b{ font-size: 18px; line-height: 1; font-weight: 700; }
+@media (max-width: 420px){.figma-app .event-open{ font-size: 12px; }}
 .figma-app .event-form{ display: grid; gap: 14px; padding: 4px 14px 16px; border-top: 1px solid #ded9d0; }
 .figma-app .event-form label{ display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
 .figma-app .event-form input, .figma-app .event-form textarea, .figma-app .add-event input{ min-height: 44px; padding: 10px 12px; border: 1px solid #8a8276; border-radius: 8px; background: #fff; font: inherit; font-weight: 400; }
@@ -1491,3 +1498,21 @@
 .figma-app .draft-access-icon{ left: 12px; top: 10px; }
 .figma-app .draft-access p{ margin: 2px 0 6px; }
 .figma-app .draft-access .btn.small{ min-height: 40px; }}
+.figma-app .design-option.locked{ opacity: .55; cursor: not-allowed; }
+.figma-app .design-option.locked svg{ flex: none; margin-left: auto; color: #6b6760; }
+.figma-app .design-lock-note{ margin: 0 0 8px; line-height: 1.5; }
+.figma-app .device-frame.mobile .editor-site{ clip-path: inset(0 round 34px); }
+.figma-app .device-frame.tablet .editor-site{ clip-path: inset(0 round 18px); }
+.figma-app .photo-places{ margin: 0 0 14px; padding: 12px 14px; border: 1px solid #e6e0d9; border-radius: 14px; background: rgba(255, 255, 255, .6); }
+.figma-app .photo-places h3{ margin: 0 0 8px; font-size: 16px; font-weight: 700; color: #10281d; }
+.figma-app .photo-places ul{ display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.figma-app .photo-places li{ display: flex; align-items: center; gap: 12px; }
+.figma-app .photo-places img, .figma-app .photo-place-empty{ flex: none; width: 48px; height: 48px; border-radius: 10px; object-fit: cover; background: #efeae2; border: 1px dashed #b9b2a4; box-sizing: border-box; }
+.figma-app .photo-places img{ border: 0; }
+.figma-app .photo-place-text{ display: grid; flex: 1 1 auto; min-width: 0; line-height: 1.3; }
+.figma-app .photo-place-text small{ color: #5c625e; font-size: 12.5px; }
+.figma-app .setup-summary div:last-child{ border-bottom: 0; }
+.figma-app .hero-copy .hero-promise{ margin: 14px 0 0; font-size: clamp(18px, 2.4vw, 22px); line-height: 1.3; color: #10281d; }
+.figma-app .hero-copy .hero-promise strong{ font-weight: 700; }
+.figma-app .hero-copy .hero-sub{ margin-top: 8px; }
+@media (max-width: 720px){.figma-app .hero-copy .hero-promise{ font-size: 17px; }}

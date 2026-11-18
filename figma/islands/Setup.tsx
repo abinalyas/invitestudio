@@ -10,6 +10,12 @@ import { bridge, SetupFields } from "./bridge";
 import { EventsPanel } from "./Editor";
 import { SampleChips, useBridgeVersion } from "./extras";
 
+// "28 Jan 2027" (the saved value is 2027-01-28).
+const shortDate = (iso: string) => {
+  const date = new Date(`${iso}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+};
+
 const steps = ["Essentials", "Story and details", "Ready"] as const;
 const namesMissing = "Add the couple or celebration names to continue.";
 
@@ -233,7 +239,7 @@ export function SetupPage() {
                 </h3>
                 {snap.events.some((item) => item.id === snap.ceremonyEventId) ? (
                   <p className="setup-note ceremony-note" id="ceremonyNote">
-                    We added your ceremony from the date you entered. Edit or remove it any time.
+                    We added your ceremony from the date you entered. Tap it to add the time and venue, or remove it any time.
                   </p>
                 ) : null}
                 {snap.available ? <EventsPanel snap={snap} /> : null}
@@ -251,7 +257,7 @@ export function SetupPage() {
                   </div>
                   <div>
                     <dt>Date</dt>
-                    <dd>{fields.date || "Not added yet"}</dd>
+                    <dd>{fields.date ? shortDate(fields.date) : "Not added yet"}</dd>
                   </div>
                   <div>
                     <dt>Design</dt>

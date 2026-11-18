@@ -91,7 +91,7 @@ test('the last step says what it does before and inside the Share dialog', () =>
   assert.doesNotMatch(read('index.html'), /onclick="openPublish\(\)">Publish</);
 });
 
-test('one clear creation path: the header starts creating, and the template page offers guided setup or a labelled quick start', () => {
+test('one clear creation path: the header starts creating, and the template page has one button and a plain line about what comes next', () => {
   const home = read('figma/islands/Home.tsx');
   assert.match(home, /<a className="button small" href="\/templates">\s*Start creating/);
   assert.doesNotMatch(home, /Get started/);
@@ -100,8 +100,8 @@ test('one clear creation path: the header starts creating, and the template page
   const detail = read('figma/islands/TemplateDetail.tsx');
   assert.match(detail, /bridge\.startSetup\(template\.backendId\)/);
   assert.match(detail, /Start with this design/);
-  assert.match(detail, /Guided setup takes about a minute/);
-  assert.match(detail, /Quick start: skip setup and open the editor/);
+  assert.match(detail, /Next: your names, date and place\. It takes about a minute/);
+  assert.doesNotMatch(detail, /Quick start|Guided setup|skip setup/i, 'a second path confused new customers');
   // The chosen design is carried into setup (the preview popup's Choose this design too).
   const html = read('index.html');
   assert.match(html, /function startCreate\(cat,chosenId\)/);

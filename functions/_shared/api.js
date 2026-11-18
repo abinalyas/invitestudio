@@ -1,5 +1,6 @@
 import { isLaunchTemplate } from './templates.js';
 import { safePhotoViews } from './media.js';
+import { highestTier, tierFor, tierRank } from './pricing.js';
 
 const encoder = new TextEncoder();
 
@@ -530,6 +531,31 @@ export async function getWedding(env, id) {
   const rows = await db(env, `weddings?${query}`);
   if (!rows?.[0]) throw new ApiError('Wedding draft not found.', 404, 'NOT_FOUND');
   return rows[0];
+}
+
+// The price tier a wedding has paid for ('' when nothing was paid: a draft, early access or complimentary). Once paid, the design
+// can be changed to any design in this tier or a cheaper one, never to a dearer one (otherwise a cheap payment could be used to get
+// a Signature design). Only a wedding that was unlocked by a payment is looked up, so ordinary saves cost no extra query.
+export async function paidTierOf(env, wedding) {
+  if (!wedding || wedding.publish_unlock_reason !== 'paid') return '';
+  const rows = await db(env, `payments?${new URLSearchParams({ wedding_id: `eq.${wedding.id}`, status: 'eq.paid', select: 'metadata' })}`);
+  return highestTier((rows || []).map(row => row?.metadata?.tier));
+}
+
+// The wedding row as the editor needs it: with the paid tier, so it can show which designs are locked.
+export async function withPaidTier(env, wedding) {
+  return { ...wedding, paid_tier: await paidTierOf(env, wedding) };
+}
+
+// Throws when a paid wedding is being moved to a design in a dearer tier than the one it paid for.
+export async function assertDesignAllowed(env, wedding, newTemplateId) {
+  if (!newTemplateId || newTemplateId === wedding.template_id) return;
+  const paid = await paidTierOf(env, wedding);
+  if (paid && tierRank(tierFor(newTemplateId)) > tierRank(paid)) {
+    throw new ApiError('That design is in a higher price tier than the one you paid for. Choose a design in your tier, or talk to us about an upgrade.', 403, 'DESIGN_LOCKED', {
+      templateId: 'This design is not included in what you paid for.'
+    });
+  }
 }
 
 // content.functions is the single event source (see docs/PHASE_0_INTEGRATION_PLAN.md).

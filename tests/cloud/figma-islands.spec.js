@@ -1,7 +1,7 @@
 // Frontend integration tests for the Figma Make islands, against the real cloud stack.
 // Islands render inside open shadow roots; Playwright locators pierce those by default.
 const { test, expect } = require('@playwright/test');
-const { openLatestDraft } = require('../support/setup');
+const { openLatestDraft, quickStart } = require('../support/setup');
 const { Client } = require('pg');
 const { randomUUID } = require('node:crypto');
 
@@ -39,8 +39,8 @@ async function dbQuery(sql, params) {
 async function useTemplate(page, number) {
   await page.goto(`/templates/${number}`);
   await expect(page.getByRole('heading', { name: EXPECTED_TEMPLATES[number].name }).first()).toBeVisible({ timeout: 15000 });
-  // "Quick start" skips the setup steps and opens the editor on this design.
-  await page.getByRole('button', { name: /quick start/i }).click();
+  // Skip the setup steps and open the editor on this design.
+  await quickStart(page, number);
   await expect(page).toHaveURL(new RegExp(`/editor/${number}$`), { timeout: 15000 });
   // The old full editor is gone: the designer is the only editor.
   await expect(page.locator('button', { hasText: /advanced editing/i })).toHaveCount(0);
@@ -110,7 +110,7 @@ test('a new draft keeps the design\'s own pictures: no hero image is saved, and 
   await expect(page.locator('[data-save-state="saved"]')).toBeVisible({ timeout: 20000 });
   await sections(page).getByRole('button', { name: /^Photos/ }).click();
   await expect(page.getByText(/No photos yet/i)).toBeVisible();
-  await expect(page.locator('.editor-controls input[type="file"]')).toHaveCount(1);
+  await expect(page.getByLabel('Add photos to the gallery')).toHaveCount(1); // the gallery's button; the design's own pictures have theirs
   const [row] = await dbQuery(`select preferences->>'heroImageUrl' as url from weddings where title = $1`, [title]);
   expect(row.url).toBeNull();
 });

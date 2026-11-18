@@ -260,13 +260,13 @@ test('verify: a link Razorpay says is paid, for the locked amount, unlocks publi
   const r = await verifyRun(state, paymentId);
   // Confirming the payment raises the wedding's version, and the answer carries the new one, so the page can still publish.
   assert.equal(state.wedding.version, versionBefore + 1);
-  assert.deepEqual(r.body, { unlocked: true, status: 'paid', version: versionBefore + 1 });
+  assert.deepEqual(r.body, { unlocked: true, status: 'paid', paidTier: 'signature', version: versionBefore + 1 });
   const rpc = state.calls.find(c => c.path === '/rest/v1/rpc/mark_payment_paid');
   assert.deepEqual(rpc.body, { p_payment_id: paymentId, p_provider_ref: 'plink_TEST1', p_amount: 299900, p_currency: 'INR', p_provider_payment_id: 'pay_ABC123' });
   assert.ok(state.wedding.publish_unlocked_at);
   // Asking again is harmless and needs no call to Razorpay.
   const before = razorpayCalls(state).length;
-  assert.deepEqual((await verifyRun(state, paymentId)).body, { unlocked: true, status: 'paid', version: versionBefore + 1 });
+  assert.deepEqual((await verifyRun(state, paymentId)).body, { unlocked: true, status: 'paid', paidTier: 'signature', version: versionBefore + 1 });
   assert.equal(razorpayCalls(state).length, before);
 });
 

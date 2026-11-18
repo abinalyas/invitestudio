@@ -133,7 +133,7 @@
   function localPhotos(list) {
     return list.map(photo => ({
       id: photo.id, alt: photo.alt || '', width: photo.width || null, height: photo.height || null,
-      data: photo.full, thumb: photo.thumb
+      data: photo.full, thumb: photo.thumb, slot: photo.slot || ''
     }));
   }
 
@@ -234,7 +234,8 @@
     window.notifyInviteStudioChange?.();
   };
   // Adds photos one at a time (each is resized here first). Returns what was added and what failed, with reasons.
-  window.uploadMediaPhotos = async function uploadMediaPhotos(files, onProgress) {
+  // `slot` is where they go: 'hero', 'story', 'venue' (the design's large pictures) or 'gallery'; empty means no place was asked for.
+  window.uploadMediaPhotos = async function uploadMediaPhotos(files, onProgress, slot = '') {
     const { project, token, api, ready } = mediaContext();
     const result = { added: 0, errors: [] };
     if (!ready) { result.errors.push({ name: '', message: 'Your invitation needs to be saved online before you can add photos.' }); return result; }
@@ -249,6 +250,7 @@
         form.set('full', prepared.full, `full.${ext}`);
         form.set('thumb', prepared.thumb, `thumb.${ext}`);
         form.set('alt', '');
+        if (slot) form.set('slot', slot);
         await api.uploadMedia(project.cloudId, token, form);
         result.added += 1;
       } catch (error) {
@@ -267,7 +269,9 @@
     const before = (project.photos || []).map(item => item.id);
     const index = before.indexOf(oldId);
     if (index < 0) return { added: 0, errors: [{ name: '', message: 'That photo is no longer in your invitation.' }] };
-    const result = await window.uploadMediaPhotos([file], onProgress);
+    // The new picture takes the old one's place, in the design and in the list.
+    const oldSlot = (project.photos || []).find(item => item.id === oldId)?.slot || '';
+    const result = await window.uploadMediaPhotos([file], onProgress, oldSlot);
     if (!result.added) return result;
     const now = (project.photos || []).map(item => item.id);
     const fresh = now.filter(id => !before.includes(id));
@@ -413,12 +417,16 @@
           queueCloudSave(project, 0);
           return;
         }
-        mergeServerWedding(project, result.wedding, true);
-        mergeRecoveredChildren(project, result);
+        const changed = mergeChangedWhatIsShown(project, () => {
+          mergeServerWedding(project, result.wedding, true);
+          mergeRecoveredChildren(project, result);
+        });
         project.cloudStatus = 'saved';
         project.cloudSavedAt = Date.now();
         localSave();
-        render();
+        // Nothing the person can see changed: do not redraw (it would send the editor back to the top).
+        if (!changed && state.page === 'editor' && state.currentId === project.id) paintStatus(project);
+        else render();
       } catch (error) {
         project.cloudStatus = 'error';
         project.cloudError = error.message;
@@ -511,6 +519,7 @@
     project.publicSlug = wedding.slug || project.publicSlug || null;
     project.published = wedding.status === 'published';
     project.publishUnlocked = Boolean(wedding.publish_unlocked_at);
+    if ('paid_tier' in wedding) project.paidTier = wedding.paid_tier || ''; // the price tier that was paid for; designs above it are locked
     project.status = PUBLISH_LABELS[wedding.status] || 'Draft';
     project.updated = wedding.updated_at || 'Just now';
     project.name = wedding.name || project.name;
@@ -701,6 +710,13 @@
         paintStatus(project);
         return;
       }
+      if (error.code === 'DESIGN_LOCKED') {
+        // The paid plan does not include that design: say so, and put the saved design back.
+        if (window.toast) toast(error.message || 'That design is not included in what you paid for.');
+        project.cloudStatus = 'pending';
+        try { await refreshFromCloud(project); } catch { /* the design is put back on the next load */ }
+        return;
+      }
       project.cloudStatus = conflict ? 'conflict' : 'error';
       project.cloudError = error.message;
       localSave();
@@ -778,17 +794,41 @@
     }
   }
 
-  async function hydrateCloudProjects() {
+  // What the editor shows of a draft, as text (not its save bookkeeping). Used to tell whether a refresh from the server changed
+  // anything the person can see: if not, the editor is not drawn again (that would send the page back to the top).
+  function shownOf(project) {
+    try {
+      const events = (project.functions || []).map(({ id, ...rest }) => rest);
+      const photos = (project.photos || []).map(photo => [photo.id, photo.alt || '', photo.slot || '']);
+      return JSON.stringify([project.title, project.date, project.location, project.message, project.story, project.hosts, project.templateId,
+        project.theme || {}, project.sections || [], project.preferences || {}, events, photos,
+        // ...and what the home page card and the My invitations list show of it.
+        project.name, project.status, project.publicSlug || '', Boolean(project.publishUnlocked), project.paidTier || '']);
+    } catch { return ''; }
+  }
+
+  // Merges the server's copy into a draft; true when that changed something the editor shows.
+  function mergeChangedWhatIsShown(project, merge) {
+    const before = shownOf(project);
+    merge();
+    return before === '' || before !== shownOf(project);
+  }
+
+  // Brings every saved invitation up to date with the server, all at once (they used to be fetched one after another, which made
+  // opening the app slow for anyone with several invitations). `skip` leaves one project alone (the one being paid for), and
+  // `redraw: false` does not redraw the screen when done.
+  async function hydrateCloudProjects({ skip = '', redraw = true } = {}) {
     if (!window.inviteStudioApi?.enabled) return;
     // Resume a creation that was interrupted by a reload or a closed tab.
     for (const project of state.projects.filter(item => !item.cloudId && item.createRequestId)) {
       createCloudDraft(project);
     }
-    for (const project of state.projects.filter(item => item.cloudId)) {
+    let anyChanged = false; // did the server's copy change anything a person can see?
+    await Promise.all(state.projects.filter(item => item.cloudId && item.id !== skip).map(async project => {
       const token = tokenFor(project.cloudId);
       if (!token) {
         project.cloudStatus = 'token-missing';
-        continue;
+        return;
       }
       const hasUnsavedLocalChanges = ['pending', 'saving', 'retrying', 'error'].includes(project.cloudStatus);
       if (hasUnsavedLocalChanges) {
@@ -796,30 +836,39 @@
         meta.revision = Math.max(meta.revision, 1);
         project.cloudStatus = 'pending';
         queueCloudSave(project, 0);
-        continue;
+        return;
       }
       try {
         const revisionBefore = metaFor(project).revision;
         const result = await window.inviteStudioApi.getWedding(project.cloudId, token);
         if (metaFor(project).revision !== revisionBefore) {
           // The person edited while this copy was on its way. Their newer text must not be replaced by it.
-          continue;
+          return;
         }
-        mergeServerWedding(project, result.wedding);
+        const changed = mergeChangedWhatIsShown(project, () => mergeServerWedding(project, result.wedding));
+        if (changed) anyChanged = true;
         project.cloudStatus = 'saved';
         paintStatus(project);
       } catch (error) {
         if (error.code === 'EDIT_TOKEN_INVALID') forgetToken(project.cloudId);
         project.cloudStatus = 'error';
         project.cloudError = error.message;
+        anyChanged = true; // the page says so
       }
-    }
+    }));
     localSave();
+    if (!redraw) return;
     // A template's own page (/templates/<n>) shows nothing from the drafts. Drawing it again would throw away what the
     // visitor is doing in its phone preview (for example the opening they have just started) the moment this
     // slower, first-visit request finishes.
     const onTemplatePage = /^\/templates\/\d+\/?$/.test(window.location.pathname);
-    if (!onTemplatePage && (state.page === 'home' || state.page === 'dashboard' || state.page === 'editor')) {
+    // The same goes for the home page, the list and the editor: drawing them again sends the page back to the top, which a person who
+    // has already scrolled down (or is adding an event or a photo) would feel as the page jumping. Redraw only when the copy from
+    // the server changed something they can see.
+    const nothingChanged = !anyChanged && (state.page === 'home' || state.page === 'dashboard' || state.page === 'editor');
+    if (nothingChanged) {
+      paintStatus(typeof current === 'function' ? current() : null);
+    } else if (!onTemplatePage && (state.page === 'home' || state.page === 'dashboard' || state.page === 'editor')) {
       render();
       paintStatus(typeof current === 'function' ? current() : null);
     }
@@ -1078,7 +1127,9 @@
         <div><h3>${designName}</h3><p class="pub-sub">Your selected design</p>
         ${live ? '' : `<button class="btn small pub-ghost" type="button" data-preview-first>${ICON.eye} Preview invitation</button>`}</div>
       </section>`;
-    const benefits = live ? '' : `<section class="pub-benefits"><ul>
+    // Straight after paying, the one thing to do is go live: that card leads, and the sales copy (already paid for) is dropped.
+    const paidReturn = !live && !paying && Boolean(session.paidReturn);
+    const benefits = live || paidReturn ? '' : `<section class="pub-benefits"><ul>
         <li><span>${ICON.pencil}</span><div><strong>Keep editing anytime</strong><p>You can update your invitation even after it is live.</p></div></li>
         ${paying || (session.price && session.price.mode === 'live') ? `<li><span>${ICON.layers}</span><div><strong>One-time payment</strong><p>${priceText ? `Pay ${escapeText(priceText)} once.` : 'Pay once.'} No subscription, ever.</p></div></li>
         <li><span>${ICON.shield}</span><div><strong>Secure and trusted</strong><p>Payments are processed securely by Razorpay.</p></div></li>` : ''}
@@ -1089,7 +1140,7 @@
         ${showOrder ? `<h3 class="pub-card-title">Your order</h3>
         <div class="pub-line"><span>${designName} (live invitation)</span><span>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</span></div>
         <div class="pub-total"><span>${session.price.mode === 'live' ? 'Total payable' : 'Total today'}</span><strong>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</strong></div>
-        <p class="pub-pill">${ICON.bolt} ${session.price.mode === 'live' ? 'One-time payment · No recurring charges' : 'Free during early access'}</p>` : `<h3 class="pub-card-title">${live ? 'Your live page' : 'Ready to go live'}</h3>`}
+        <p class="pub-pill">${ICON.bolt} ${session.price.mode === 'live' ? 'One-time payment · No recurring charges' : 'Free during early access'}</p>` : `<h3 class="pub-card-title">${live ? 'Your live page' : paidReturn ? 'Your invitation is ready' : 'Ready to go live'}</h3>`}
         ${priceNote}${keptBlock}${notSaved}${info}${checkAgain}${error}${success}
         <div class="pub-actions">${submit}
           ${live && !session.changing ? '<button class="btn" type="button" data-share-card>Share card for WhatsApp</button>' : ''}
@@ -1099,21 +1150,22 @@
     const stepsPay = paying || (session.price && session.price.mode === 'live')
       ? `<li><span>${ICON.card}</span><div><strong>Pay once</strong><small>${priceText ? escapeText(priceText) + ' (one-time)' : 'One-time payment'}</small></div></li>`
       : `<li><span>${ICON.card}</span><div><strong>Free for now</strong><small>Early access</small></div></li>`;
-    const steps = live ? '' : `<ol class="pub-steps" aria-label="How it works"><li><span>${ICON.lock}</span><div><strong>Private now</strong><small>Only you can see it</small></div></li><li class="pub-arrow" aria-hidden="true">›</li>${stepsPay}<li class="pub-arrow" aria-hidden="true">›</li><li><span>${ICON.link}</span><div><strong>Get a live link</strong><small>Share with your guests</small></div></li></ol>`;
+    const steps = live || paidReturn ? '' : `<ol class="pub-steps" aria-label="How it works"><li><span>${ICON.lock}</span><div><strong>Private now</strong><small>Only you can see it</small></div></li><li class="pub-arrow" aria-hidden="true">›</li>${stepsPay}<li class="pub-arrow" aria-hidden="true">›</li><li><span>${ICON.link}</span><div><strong>Get a live link</strong><small>Share with your guests</small></div></li></ol>`;
     const lead = live
       ? 'Guests can open your invitation with the link below.'
+      : paidReturn ? 'The last step: make it live to get your web link and share it with your guests.'
       : paying ? 'Your invitation is currently private. Complete your purchase to make it live and share it with your guests.'
       : 'Your invitation is currently private. Make it live to get a link you can share with your guests.';
     renderModal(`<div class="pub-shell">
       <div class="pub-top"><span class="pub-logo">${typeof logoMark === 'string' ? logoMark : ''}<span>InviteStudio</span></span><button class="pub-x" type="button" data-publish-close aria-label="Dismiss">×</button></div>
       <div class="eyebrow">${live ? 'Your live invitation' : 'Share your invitation'}</div>
-      <h2 id="modal-title">${live ? 'Your invitation is live' : 'Your invitation is almost ready.'}</h2>
+      <h2 id="modal-title">${live ? 'Your invitation is live' : paidReturn ? 'Payment received. Thank you!' : 'Your invitation is almost ready.'}</h2>
       <p class="pub-lead">${lead}</p>
-      <p class="pub-status">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>${live ? '' : ', not public yet'}.</p>
+      ${paidReturn ? '' : `<p class="pub-status">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>${live ? '' : ', not public yet'}.</p>`}
       ${steps}
-      <div class="pub-grid">
+      <div class="pub-grid${paidReturn ? ' pub-ready' : ''}">
         <div class="pub-main">${contactBlock}${addressField}${changeWarning}${liveBlock}${explainer}</div>
-        <aside class="pub-side">${designCard}${benefits}${orderCard}</aside>
+        <aside class="pub-side">${paidReturn ? '' : designCard}${benefits}${orderCard}</aside>
       </div>
       <div class="pub-foot"><p>${ICON.help} <span><strong>Questions?</strong> <a href="/contact" target="_blank" rel="noopener">Contact us</a> and we will help.</span></p><button class="btn" type="button" data-publish-close>Close</button></div>
     </div>`);
@@ -1322,7 +1374,11 @@
   }
 
   // Back from the payment page (?payment=<id>): ask the server whether it was paid, and carry on in the publish dialog.
-  async function handlePaymentReturn() {
+  function hidePaymentCover() {
+    document.documentElement.classList.remove('payment-return');
+  }
+
+  async function handlePaymentReturn({ onShown } = {}) {
     const params = new URLSearchParams(window.location.search);
     const paymentId = params.get('payment');
     if (!paymentId) return;
@@ -1340,6 +1396,7 @@
     state.page = 'editor';
     render();
     window.openCloudPublish(project);
+    if (onShown) onShown();
     if (!publishSession) return;
     publishSession.typed = pending.slug || publishSession.typed;
     await confirmPayment(project, paymentId);
@@ -1358,12 +1415,14 @@
         const result = await window.inviteStudioApi.verifyPayment(project.cloudId, tokenFor(project.cloudId), paymentId);
         if (result.unlocked) {
           project.publishUnlocked = true;
+          if (result.paidTier) project.paidTier = result.paidTier;
           // Confirming the payment changed the website's record on the server: keep its version, so "Make it live" is not refused.
           if (Number.isInteger(result.version) && result.version >= Number(project.cloudVersion || 0)) project.cloudVersion = result.version;
           try { window.localStorage.removeItem(PENDING_PAYMENT_KEY); } catch { /* nothing to clear */ }
           session.busy = false;
           session.needsPayment = false;
-          session.info = 'Payment received. Thank you! Choose Make it live to publish.';
+          session.info = 'Payment received. Thank you! Your invitation is ready: choose Make it live to share it with your guests.';
+          session.paidReturn = true;
           localSave();
           paintPublishDialog(project, {});
           return;
@@ -1585,6 +1644,8 @@
       if (cloudProject) rememberDraftReference(cloudProject);
     }
     const privateLink = parsePrivateEditLink();
+    // A refresh on the My invitations address stays on that page (with no drafts on this device it falls back to the home page).
+    if (!privateLink && /^\/my-invitations\/?$/.test(window.location.pathname) && state.projects.length) state.page = 'dashboard';
 
     // Edit on the My invitations page opens the draft and refreshes it from the cloud, as "continue" always did.
     if (typeof originalOpenProject === 'function') {
@@ -1645,7 +1706,16 @@
     if (privateLink) {
       recoverFromPrivateLink(privateLink);
     } else {
-      Promise.resolve(hydrateCloudProjects()).catch(() => null).then(handlePaymentReturn).catch(() => null);
+      if (new URLSearchParams(window.location.search).has('payment')) {
+        // Back from the payment page: carry on with the payment at once (the other invitations are brought up to date afterwards,
+        // not before), and take the "confirming your payment" cover away as soon as the dialog is on the screen.
+        let paying = '';
+        try { paying = JSON.parse(window.localStorage.getItem(PENDING_PAYMENT_KEY) || 'null')?.projectId || ''; } catch { paying = ''; }
+        handlePaymentReturn({ onShown: hidePaymentCover }).catch(() => null).finally(hidePaymentCover);
+        Promise.resolve(hydrateCloudProjects({ skip: paying, redraw: false })).catch(() => null);
+      } else {
+        Promise.resolve(hydrateCloudProjects()).catch(() => null).then(handlePaymentReturn).catch(() => null);
+      }
     }
   };
 })();

@@ -171,7 +171,7 @@ test.describe('photos', () => {
           const form = multipart(request.postDataBuffer(), request.headers()['content-type']);
           const id = `aaaaaaaa-aaaa-4aaa-8aaa-${String(store.length + 1).padStart(12, '0')}`;
           const type = form.full.filename.endsWith('webp') ? 'image/webp' : 'image/jpeg';
-          store.push({ id, type, full: form.full.bytes, thumb: form.thumb.bytes, fullName: form.full.filename, thumbName: form.thumb.filename });
+          store.push({ id, type, full: form.full.bytes, thumb: form.thumb.bytes, fullName: form.full.filename, thumbName: form.thumb.filename, slot: form.slot ? form.slot.bytes.toString() : '' });
           uploads.push(id);
           return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ photo: { id } }) });
         }
@@ -183,7 +183,7 @@ test.describe('photos', () => {
             photos: store.map(item => {
               const ext = item.type === 'image/webp' ? 'webp' : 'jpg';
               const base = `/media/w/11111111-1111-4111-8111-111111111111/${item.id}`;
-              return { id: item.id, alt: '', width: 800, height: 600, full: `${base}-full.${ext}`, thumb: `${base}-thumb.${ext}` };
+              return { id: item.id, alt: '', width: 800, height: 600, full: `${base}-full.${ext}`, thumb: `${base}-thumb.${ext}`, slot: item.slot };
             })
           })
         });
@@ -199,13 +199,14 @@ test.describe('photos', () => {
     const api = await fakePhotoApi(page);
     await openEditor(page, 'minimalist', online);
     // storage is reachable now, so the placeholder opens the picker
-    const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.locator('[data-photo-add]').first().click()]);
+    const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.locator('[data-photo-add=""]').first().click()]);
     const big = png(2400, 1800, [120, 160, 200]);
     await chooser.setFiles([
       { name: 'one.png', mimeType: 'image/png', buffer: big },
       { name: 'two.png', mimeType: 'image/png', buffer: png(1200, 900, [200, 120, 120]) }
     ]);
-    await expect(page.locator('.edit-hint-pill')).toContainText('Added 2 photos: 1 to the cover picture, 1 to the gallery', { timeout: 20000 });
+    await expect(page.locator('.edit-hint-pill')).toContainText('Added 2 photos to the gallery.', { timeout: 20000 });
+    expect(api.store.map(item => item.slot)).toEqual(['gallery', 'gallery']); // they stay in the gallery; the cover is not taken
     // the browser shrank the picture before sending it: far smaller than the original, with a thumbnail alongside
     expect(api.store).toHaveLength(2);
     expect(api.store[0].full.length).toBeGreaterThan(0);
@@ -217,6 +218,56 @@ test.describe('photos', () => {
     await expect.poll(async () => (await snapshot(page)).photos.length).toBe(2);
     // the places to add more photos stay (they used to vanish with the first upload, so the next photo had no obvious way in)
     await expect(page.locator('[data-photo-add]').first()).toBeVisible();
+  });
+
+  test('photos added in the gallery stay in the gallery, and the cover has its own placeholder that fills only the cover', async ({ page }) => {
+    const api = await fakePhotoApi(page);
+    await openEditor(page, 'minimalist', online);
+    const cover = page.locator('[data-photo-add="hero"]');
+    await expect(cover).toBeVisible();
+    await expect(cover).toHaveText('+ Add cover photo');
+    // a gallery photo does not become the cover
+    let [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.locator('[data-photo-add=""]').first().click()]);
+    await chooser.setFiles([{ name: 'gallery.png', mimeType: 'image/png', buffer: png(800, 600, [120, 160, 200]) }]);
+    await expect(page.locator('.edit-hint-pill')).toContainText('Added 1 photo to the gallery.', { timeout: 20000 });
+    await expect(page.locator('[data-photo-add="hero"]')).toBeVisible(); // the cover still offers a placeholder
+    expect(api.store[0].slot).toBe('gallery');
+    // the cover placeholder adds to the cover only
+    [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.locator('[data-photo-add="hero"]').click()]);
+    await chooser.setFiles([{ name: 'cover.png', mimeType: 'image/png', buffer: png(900, 700, [200, 140, 90]) }]);
+    await expect(page.locator('.edit-hint-pill')).toContainText('Added 1 photo to the cover picture.', { timeout: 20000 });
+    expect(api.store[1].slot).toBe('hero');
+    await expect(page.locator('[data-photo-add="hero"]')).toHaveCount(0); // filled now
+    // the cover shows the cover photo (the second upload), not the gallery one
+    const coverSrc = await page.locator('.invitation-canvas img[src*="/media/w/"]').first().getAttribute('src');
+    expect(coverSrc).toContain(api.store[1].id);
+  });
+
+  test('the Photos panel has a place for each of the design\'s pictures, and its Add button fills the gallery only', async ({ page }) => {
+    const api = await fakePhotoApi(page);
+    await openEditor(page, 'minimalist', online);
+    await page.locator('#panel-sections').getByRole('button', { name: /^Photos/ }).click();
+    const places = page.locator('.photo-places');
+    await expect(places).toContainText('Pictures in this design');
+    const cover = places.locator('[data-photo-place="hero"]');
+    await expect(cover).toContainText('Cover picture');
+    await expect(cover).toContainText('Not added yet');
+    // the main button adds to the gallery
+    let [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.getByLabel('Add photos to the gallery').click()]);
+    await chooser.setFiles([{ name: 'g.png', mimeType: 'image/png', buffer: png(800, 600, [120, 160, 200]) }]);
+    await expect(page.getByText(/Added 1 photo to the gallery/)).toBeVisible({ timeout: 20000 });
+    expect(api.store[0].slot).toBe('gallery');
+    await expect(cover).toContainText('Not added yet'); // the cover is still empty
+    // the cover's own button fills the cover
+    [chooser] = await Promise.all([page.waitForEvent('filechooser'), cover.locator('input[type="file"]').evaluate(input => input.click())]);
+    await chooser.setFiles([{ name: 'c.png', mimeType: 'image/png', buffer: png(900, 700, [200, 140, 90]) }]);
+    await expect(page.getByText(/Added 1 photo to the cover picture/)).toBeVisible({ timeout: 20000 });
+    expect(api.store[1].slot).toBe('hero');
+    await expect(cover).toContainText('Your photo');
+    await expect(cover.getByText('Replace')).toBeVisible();
+    // the list names where each photo is
+    const labels = await page.locator('.photo-list .photo-slot').allTextContents();
+    expect(labels.sort()).toEqual(['Cover picture', 'Gallery']);
   });
 
   test('a photo the server refuses is reported by name, and the others are still added', async ({ page }) => {
@@ -485,3 +536,50 @@ test('music: the first tap starts the track, the button turns it off and on, the
   await page.evaluate(() => { history.pushState({}, '', '/'); state.page = 'home'; render(); });
   await expect.poll(() => page.evaluate(() => window.__audio.pauses)).toBeGreaterThan(before);
 });
+
+// The reply form opens inside the device's screen in every preview, not over the whole page.
+test('template page: the Reply form opens inside the phone, covering only its screen', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/18'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  // Let the opening lift so the Reply button is reachable (started by a click, or by itself once that change is in).
+  const start = screen.getByText('Click to start');
+  if (await start.count()) await start.click();
+  await expect.poll(() => screen.evaluate(el => { const n = el.shadowRoot.querySelector('[data-intro]'); return !n || n.hasAttribute('data-done'); }), { timeout: 20000 }).toBe(true);
+  await screen.evaluate(el => el.shadowRoot.querySelector('[data-rsvp-open]').scrollIntoView({ block: 'center' }));
+  await screen.evaluate(el => el.shadowRoot.querySelector('[data-rsvp-open]').click());
+  const overlay = page.locator('.figma-island-host .detail-device .rsvp-overlay');
+  await expect(overlay).toBeVisible();
+  // Nothing was added to the page itself, and the form sits within the phone's screen.
+  expect(await page.locator('body > .rsvp-overlay').count()).toBe(0);
+  const box = await overlay.boundingBox(), phone = await screen.boundingBox();
+  expect(Math.abs(box.x - phone.x)).toBeLessThan(2);
+  expect(Math.abs(box.width - phone.width)).toBeLessThan(2);
+  expect(Math.abs(box.height - phone.height)).toBeLessThan(2);
+  await expect(overlay.getByRole('heading', { name: 'Will you join us?' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(overlay).toHaveCount(0);
+});
+
+// The editor's preview: the Reply form stays inside the phone, tablet or desktop frame it was opened in.
+for (const mode of ['mobile', 'tablet', 'desktop']) {
+  test(`editor: the Reply form opens inside the ${mode} frame`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openEditor(page, 'minimalist');
+    await page.getByRole('button', { name: `${mode} preview` }).click();
+    const site = page.locator('.device-frame .editor-site');
+    await site.evaluate(el => el.shadowRoot.querySelector('[data-rsvp-open]').click());
+    const overlay = page.locator('.device-frame .rsvp-overlay');
+    await expect(overlay).toBeVisible();
+    expect(await page.locator('body > .rsvp-overlay').count()).toBe(0);
+    const box = await overlay.boundingBox(), screen = await site.boundingBox();
+    expect(Math.abs(box.x - screen.x)).toBeLessThan(2);
+    expect(Math.abs(box.width - screen.width)).toBeLessThan(2);
+    expect(Math.abs(box.height - screen.height)).toBeLessThan(2);
+    await page.screenshot({ path: `/tmp/rsvp-${mode}.png` });
+    await page.keyboard.press('Escape');
+    await expect(overlay).toHaveCount(0);
+  });
+}

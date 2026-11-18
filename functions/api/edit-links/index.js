@@ -6,7 +6,8 @@ import {
   optionsResponse,
   readJson,
   requireEditToken,
-  success
+  success,
+  withPaidTier
 } from '../../_shared/api.js';
 
 // Resolves a private edit link. The raw token is sent in the JSON body, never in
@@ -27,7 +28,7 @@ export async function onRequest(context) {
       getWedding(env, access.wedding_id),
       getWeddingChildren(env, access.wedding_id)
     ]);
-    return success(request, env, { wedding, ...children });
+    return success(request, env, { wedding: await withPaidTier(env, wedding), ...children });
   } catch (error) {
     return fail(request, env, error);
   }
