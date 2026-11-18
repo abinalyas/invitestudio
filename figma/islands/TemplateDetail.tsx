@@ -32,7 +32,26 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
     const timer = window.setTimeout(updateCue, 500)
     const node = screenRef.current
     node.addEventListener("intro-done", updateCue)
-    return () => { window.clearTimeout(timer); node.removeEventListener("intro-done", updateCue) }
+
+    // The opening starts by itself once the phone is on screen (the "Click to start" button stays as the fallback, e.g. when
+    // the phone is below the fold on a small screen: it starts when scrolled into view, so the visitor never misses it).
+    let visible = typeof IntersectionObserver === "undefined"
+    let started = false
+    let poll = 0
+    const tryStart = () => {
+      if (started || !visible) return
+      const button = node.shadowRoot?.querySelector<HTMLElement>("[data-intro][data-wait] [data-intro-start]")
+      if (button) { started = true; button.click(); updateCue() }
+    }
+    const observer = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver((entries) => {
+      visible = entries.some((entry) => entry.isIntersecting)
+      tryStart()
+    }, { threshold: 0.3 })
+    observer?.observe(node)
+    // The template loads a moment after the page does, so look again until the opening exists (or give up).
+    let tries = 0
+    poll = window.setInterval(() => { tryStart(); if (started || ++tries > 40) window.clearInterval(poll) }, 250)
+    return () => { window.clearTimeout(timer); window.clearInterval(poll); observer?.disconnect(); node.removeEventListener("intro-done", updateCue) }
   }, [template.backendId])
 
   return (
