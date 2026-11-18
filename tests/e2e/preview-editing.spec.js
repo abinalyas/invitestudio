@@ -401,7 +401,7 @@ test('Under the Same Moon: starts by itself plays the film, it lifts by itself, 
     const video = node && node.querySelector('video');
     return node && { waiting: node.hasAttribute('data-wait'), done: node.hasAttribute('data-done'), locked: getComputedStyle(el).overflow === 'hidden', src: video ? video.getAttribute('src') : null };
   });
-  await expect.poll(intro).toMatchObject({ waiting: false, src: '/templates/under-the-same-moon/assets/intro.mp4' });
+  await expect.poll(intro).toMatchObject({ waiting: false, src: '/templates/under-the-same-moon/assets/intro-tall.mp4' });
   // No button to press: the film ends by itself (about six seconds) and the page is free again.
   await expect.poll(intro, { timeout: 15000 }).toMatchObject({ done: true, locked: false });
   await screen.evaluate(el => el.shadowRoot.querySelector('[data-tpl-section="invitation"]').scrollIntoView());
