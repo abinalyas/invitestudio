@@ -104,7 +104,7 @@ export function describe(page, origin) {
   if (page.kind === 'home') {
     return {
       title: 'InviteStudio — Create a wedding invitation website with RSVP',
-      description: 'Create a beautiful, animated wedding invitation website in minutes. Pick a template, add events and photos, collect RSVPs and share one link. Free to build',
+      description: 'Preview your own wedding invitation free and pay only when you make it live. Animated templates, events, photos, RSVP and one shareable link.',
       canonical: home,
       image,
       type: 'website'
