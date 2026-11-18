@@ -7,12 +7,12 @@ test('setup has three steps, no design chooser, and no Change button', async ({ 
   await page.reload();
   await page.evaluate(() => window.InviteStudioBridge.startSetup('minimalist'));
   await expect(page.locator('#projectTitle')).toBeVisible();
-  await expect(page.locator('.setup-steps li')).toHaveText([/Essentials/, /Story and details/, /Ready/]);
+  await expect(page.locator('.setup-steps li')).toHaveText([/Essentials/, /Events/, /Ready/]);
   await expect(page.locator('.setup-selected')).toContainText('Minimalist');
   await expect(page.getByRole('button', { name: 'Change', exact: true })).toHaveCount(0);
   await page.locator('#projectTitle').fill('Mira & Arun');
   await page.getByRole('button', { name: /^Continue/ }).click();
-  await expect(page.getByRole('heading', { name: /story and details/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /your events/i })).toBeVisible();
   await expect(page.getByText('Choose a design')).toHaveCount(0);
   await expect(page.locator('.setup-template')).toHaveCount(0);
 });

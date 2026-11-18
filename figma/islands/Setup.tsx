@@ -4,10 +4,10 @@
 // The fields live in this screen. Each time a step is finished they are handed to the app
 // (bridge.commitSetup), which creates the draft the first time and keeps it up to date.
 import { useRef, useState } from "react";
-import { Icon, PlaceList, Logo, galleryTemplates, openPickerOnClick, phoneSmall, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
+import { Icon, PlaceList, Logo, galleryTemplates, openPickerOnClick, phoneSmall, sampleWelcomes } from "./shared";
 import { bridge, SetupFields } from "./bridge";
 import { EventsPanel } from "./Editor";
-import { SampleChips, useBridgeVersion } from "./extras";
+import { useBridgeVersion } from "./extras";
 
 // "28 Jan 2027" (the saved value is 2027-01-28).
 const shortDate = (iso: string) => {
@@ -15,7 +15,7 @@ const shortDate = (iso: string) => {
   return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 };
 
-const steps = ["Essentials", "Story and details", "Ready"] as const;
+const steps = ["Essentials", "Events", "Ready"] as const;
 const namesMissing = "Add the couple or celebration names to continue.";
 
 export function SetupPage() {
@@ -190,28 +190,8 @@ export function SetupPage() {
 
             {step === 1 ? (
               <>
-                <h2 id="setup-title">Story and details.</h2>
-                <p className="setup-intro">Everything here is optional. Skip it now and add it in the editor whenever you like.</p>
-                <div className="setup-form">
-                  <label>
-                    Welcome message <span className="optional">(optional, edit it any way you like)</span>
-                    <textarea id="projectMessage" rows={3} value={fields.message} placeholder="A few words for your guests…" onChange={(event) => set({ message: event.target.value })} />
-                  </label>
-                  <SampleChips value={fields.message} samples={sampleWelcomes()} onPick={(text) => set({ message: text })} />
-                  <label>
-                    Your story <span className="optional">(optional)</span>
-                    <textarea id="projectStory" rows={5} value={fields.story} placeholder="Share a little about the people or occasion…" onChange={(event) => set({ story: event.target.value })} />
-                  </label>
-                  <SampleChips value={fields.story} samples={sampleStories()} onPick={(text) => set({ story: text })} />
-                  <label>
-                    Hosts <span className="optional">(optional)</span>
-                    <input id="projectHosts" value={fields.hosts} placeholder="Names to display" onChange={(event) => set({ hosts: event.target.value })} />
-                  </label>
-                  <SampleChips value={fields.hosts} samples={sampleHosts(fields.title)} onPick={(text) => set({ hosts: text })} />
-                </div>
-                <h3 className="setup-subhead">
-                  Events <span className="optional">(optional)</span>
-                </h3>
+                <h2 id="setup-title">Your events.</h2>
+                <p className="setup-intro">Add the days of your celebration, or skip this and add them later. Your welcome message and story can be added in the editor.</p>
                 {snap.events.some((item) => item.id === snap.ceremonyEventId) ? (
                   <p className="setup-note ceremony-note" id="ceremonyNote">
                     We added your ceremony from the date you entered. Tap it to add the time and venue, or remove it any time.

@@ -1,11 +1,11 @@
-// Drives the three-step setup wizard (Essentials, Story and details, Ready)
+// Drives the three-step setup wizard (Essentials, Events, Ready)
 // the way a couple does. Names are required; every later step is optional.
 const { expect } = require('@playwright/test');
 
 async function completeSetupSteps(page) {
   const next = () => page.getByRole('button', { name: /^Continue/ });
-  await next().click(); // Essentials -> Story and details
-  await next().click(); // Story and details -> Ready
+  await next().click(); // Essentials -> Events
+  await next().click(); // Events -> Ready
   const open = page.getByRole('button', { name: /open editor/i });
   // With the API enabled, the Ready step only unlocks once the server confirms the draft.
   await expect(open).toBeEnabled({ timeout: 15000 });

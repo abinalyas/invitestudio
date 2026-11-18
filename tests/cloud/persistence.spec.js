@@ -16,7 +16,7 @@ const CONTENT = {
   story: 'We met on a rainy Tuesday.\nIt was love at first umbrella.',
   hosts: 'Mr & Mrs Rao'
 };
-// The welcome message is pre-filled in setup (and can be edited); story and hosts stay empty unless the person adds them.
+// The welcome message starts pre-filled; story and hosts stay empty unless the person adds them in the editor.
 const BLANK = { message: 'Together with our families, we invite you to celebrate the beginning of our forever.', story: '', hosts: '' };
 const uniq = prefix => `${prefix} ${randomUUID().slice(0, 6)}`;
 const next = page => page.getByRole('button', { name: /^Continue/ });
@@ -28,22 +28,21 @@ async function freshStart(page, template) {
   await page.evaluate(id => startCreate('Wedding', id), template);
 }
 
-// Drives the guided setup. `content` null leaves the optional step untouched.
+// Drives the guided setup, then (when `content` is given) writes the welcome message, story and hosts in the editor, where they live now.
 async function guidedSetup(page, template, title, content = CONTENT) {
   await freshStart(page, template);
   await page.locator('#projectTitle').fill(title);
   await page.locator('#projectDate').fill('2027-01-20');
   await page.locator('#projectLocation').fill('Kochi');
-  await next(page).click();
-  if (content) {
-    await page.locator('#projectMessage').fill(content.message);
-    await page.locator('#projectStory').fill(content.story);
-    await page.locator('#projectHosts').fill(content.hosts);
-  }
+  await next(page).click(); // Events (the story, welcome message and hosts are written in the editor)
   await next(page).click();
   const open = page.getByRole('button', { name: /open editor/i });
   await expect(open).toBeEnabled({ timeout: 20000 });
   await open.click();
+  if (content) {
+    await page.waitForFunction(() => state.page === 'editor');
+    await page.evaluate(c => window.InviteStudioBridge.update({ message: c.message, storyCopy: c.story, hosts: c.hosts }), content);
+  }
 }
 
 const localCopy = (page, title) => page.evaluate(t => {

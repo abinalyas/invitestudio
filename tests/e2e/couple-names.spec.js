@@ -1,20 +1,22 @@
 // "A weds B" (and the other ways of writing two names) is read as two names, the same as "A & B" and "A and B".
 const { test, expect } = require('@playwright/test');
+const { completeSetupSteps } = require('../support/setup');
 
+// The hosts suggestion lives in the editor (setup no longer asks for the hosts).
 async function openStory(page, title) {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await page.evaluate(() => window.InviteStudioBridge.startSetup('minimalist'));
   await page.locator('#projectTitle').fill(title);
-  await page.getByRole('button', { name: /^Continue/ }).click();
-  await expect(page.getByRole('heading', { name: /story and details/i })).toBeVisible();
+  await completeSetupSteps(page);
+  await expect(page.locator('[data-field="hosts"]')).toBeVisible({ timeout: 15000 });
 }
 
 for (const [typed, couple] of [['Anna weds Ben', 'Anna and Ben'], ['Anna and Ben', 'Anna and Ben'], ['Anna & Ben', 'Anna and Ben'], ['Anna marries Ben', 'Anna and Ben'], ['Anna x Ben', 'Anna and Ben']]) {
   test(`"${typed}" gives the hosts suggestion for ${couple}`, async ({ page }) => {
     await openStory(page, typed);
-    const card = page.locator('.sample-chips.has-card').nth(1); // the hosts field
+    const card = page.locator('.sample-chips.has-card').filter({ has: page.locator('.sample-card p', { hasText: 'Hosted by the families' }) });
     await expect(card.locator('.sample-card p')).toContainText(`Hosted by the families of ${couple}`);
   });
 }
