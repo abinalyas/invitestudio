@@ -417,12 +417,16 @@
           queueCloudSave(project, 0);
           return;
         }
-        mergeServerWedding(project, result.wedding, true);
-        mergeRecoveredChildren(project, result);
+        const changed = mergeChangedWhatIsShown(project, () => {
+          mergeServerWedding(project, result.wedding, true);
+          mergeRecoveredChildren(project, result);
+        });
         project.cloudStatus = 'saved';
         project.cloudSavedAt = Date.now();
         localSave();
-        render();
+        // Nothing the person can see changed: do not redraw (it would send the editor back to the top).
+        if (!changed && state.page === 'editor' && state.currentId === project.id) paintStatus(project);
+        else render();
       } catch (error) {
         project.cloudStatus = 'error';
         project.cloudError = error.message;
@@ -790,6 +794,24 @@
     }
   }
 
+  // What the editor shows of a draft, as text (not its save bookkeeping). Used to tell whether a refresh from the server changed
+  // anything the person can see: if not, the editor is not drawn again (that would send the page back to the top).
+  function shownOf(project) {
+    try {
+      const events = (project.functions || []).map(({ id, ...rest }) => rest);
+      const photos = (project.photos || []).map(photo => [photo.id, photo.alt || '', photo.slot || '']);
+      return JSON.stringify([project.title, project.date, project.location, project.message, project.story, project.hosts, project.templateId,
+        project.theme || {}, project.sections || [], project.preferences || {}, events, photos]);
+    } catch { return ''; }
+  }
+
+  // Merges the server's copy into a draft; true when that changed something the editor shows.
+  function mergeChangedWhatIsShown(project, merge) {
+    const before = shownOf(project);
+    merge();
+    return before === '' || before !== shownOf(project);
+  }
+
   // Brings every saved invitation up to date with the server, all at once (they used to be fetched one after another, which made
   // opening the app slow for anyone with several invitations). `skip` leaves one project alone (the one being paid for), and
   // `redraw: false` does not redraw the screen when done.
@@ -799,6 +821,7 @@
     for (const project of state.projects.filter(item => !item.cloudId && item.createRequestId)) {
       createCloudDraft(project);
     }
+    let openDraftChanged = false;
     await Promise.all(state.projects.filter(item => item.cloudId && item.id !== skip).map(async project => {
       const token = tokenFor(project.cloudId);
       if (!token) {
@@ -820,7 +843,8 @@
           // The person edited while this copy was on its way. Their newer text must not be replaced by it.
           return;
         }
-        mergeServerWedding(project, result.wedding);
+        const changed = mergeChangedWhatIsShown(project, () => mergeServerWedding(project, result.wedding));
+        if (changed && project.id === state.currentId) openDraftChanged = true;
         project.cloudStatus = 'saved';
         paintStatus(project);
       } catch (error) {
@@ -835,7 +859,12 @@
     // visitor is doing in its phone preview (for example the opening they have just started) the moment this
     // slower, first-visit request finishes.
     const onTemplatePage = /^\/templates\/\d+\/?$/.test(window.location.pathname);
-    if (!onTemplatePage && (state.page === 'home' || state.page === 'dashboard' || state.page === 'editor')) {
+    // The same goes for the editor: drawing it again sends the page back to the top, which a person who has already scrolled
+    // down and is adding an event or a photo would feel as the page jumping. Redraw only when the copy from the server changed something.
+    const editorUnchanged = state.page === 'editor' && !openDraftChanged;
+    if (editorUnchanged) {
+      paintStatus(typeof current === 'function' ? current() : null);
+    } else if (!onTemplatePage && (state.page === 'home' || state.page === 'dashboard' || state.page === 'editor')) {
       render();
       paintStatus(typeof current === 'function' ? current() : null);
     }
