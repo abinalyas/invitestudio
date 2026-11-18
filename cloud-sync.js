@@ -801,7 +801,9 @@
       const events = (project.functions || []).map(({ id, ...rest }) => rest);
       const photos = (project.photos || []).map(photo => [photo.id, photo.alt || '', photo.slot || '']);
       return JSON.stringify([project.title, project.date, project.location, project.message, project.story, project.hosts, project.templateId,
-        project.theme || {}, project.sections || [], project.preferences || {}, events, photos]);
+        project.theme || {}, project.sections || [], project.preferences || {}, events, photos,
+        // ...and what the home page card and the My invitations list show of it.
+        project.name, project.status, project.publicSlug || '', Boolean(project.publishUnlocked), project.paidTier || '']);
     } catch { return ''; }
   }
 
@@ -821,7 +823,7 @@
     for (const project of state.projects.filter(item => !item.cloudId && item.createRequestId)) {
       createCloudDraft(project);
     }
-    let openDraftChanged = false;
+    let anyChanged = false; // did the server's copy change anything a person can see?
     await Promise.all(state.projects.filter(item => item.cloudId && item.id !== skip).map(async project => {
       const token = tokenFor(project.cloudId);
       if (!token) {
@@ -844,13 +846,14 @@
           return;
         }
         const changed = mergeChangedWhatIsShown(project, () => mergeServerWedding(project, result.wedding));
-        if (changed && project.id === state.currentId) openDraftChanged = true;
+        if (changed) anyChanged = true;
         project.cloudStatus = 'saved';
         paintStatus(project);
       } catch (error) {
         if (error.code === 'EDIT_TOKEN_INVALID') forgetToken(project.cloudId);
         project.cloudStatus = 'error';
         project.cloudError = error.message;
+        anyChanged = true; // the page says so
       }
     }));
     localSave();
@@ -859,10 +862,11 @@
     // visitor is doing in its phone preview (for example the opening they have just started) the moment this
     // slower, first-visit request finishes.
     const onTemplatePage = /^\/templates\/\d+\/?$/.test(window.location.pathname);
-    // The same goes for the editor: drawing it again sends the page back to the top, which a person who has already scrolled
-    // down and is adding an event or a photo would feel as the page jumping. Redraw only when the copy from the server changed something.
-    const editorUnchanged = state.page === 'editor' && !openDraftChanged;
-    if (editorUnchanged) {
+    // The same goes for the home page, the list and the editor: drawing them again sends the page back to the top, which a person who
+    // has already scrolled down (or is adding an event or a photo) would feel as the page jumping. Redraw only when the copy from
+    // the server changed something they can see.
+    const nothingChanged = !anyChanged && (state.page === 'home' || state.page === 'dashboard' || state.page === 'editor');
+    if (nothingChanged) {
       paintStatus(typeof current === 'function' ? current() : null);
     } else if (!onTemplatePage && (state.page === 'home' || state.page === 'dashboard' || state.page === 'editor')) {
       render();
