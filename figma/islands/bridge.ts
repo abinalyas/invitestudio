@@ -211,7 +211,6 @@ export interface InviteStudioBridge {
   openPreview(): void;
   setupDefaults(): { templateId: string };
   commitSetup(fields: SetupFields): boolean;
-  renderDraft(host: HTMLElement, fields: SetupFields, fallbackTitle: string): void;
   setupStatus(): SetupStatus;
   keepLocal(): void;
   finishSetup(): void;
@@ -277,7 +276,6 @@ export const bridge = {
   openPreview: () => host().openPreview(),
   setupDefaults: () => host().setupDefaults(),
   commitSetup: (fields: SetupFields) => host().commitSetup(fields),
-  renderDraft: (element: HTMLElement, fields: SetupFields, fallbackTitle: string) => host().renderDraft(element, fields, fallbackTitle),
   setupStatus: () => host().setupStatus(),
   keepLocal: () => host().keepLocal(),
   finishSetup: () => host().finishSetup(),

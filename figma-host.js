@@ -1200,35 +1200,6 @@
       return saved;
     },
 
-    // The preview while setting up: the typed values on the chosen template, before a draft exists.
-    // Names fall back to the template's example names, so the cover is never empty.
-    renderDraft(host, fields, fallbackTitle) {
-      const base = project() || {};
-      const t = tpl(offeredTemplateIds.includes(fields.templateId) ? fields.templateId : offeredTemplateIds[0]);
-      const title = String(fields.title || '').trim() || fallbackTitle || '';
-      const draft = {
-        ...base,
-        category: 'Wedding',
-        title,
-        name: title,
-        date: fields.date || '',
-        location: fields.location || '',
-        message: fields.message || '',
-        story: fields.story || '',
-        hosts: fields.hosts || '',
-        templateId: t.id,
-        functions: base.functions || [],
-        photos: base.photos || []
-      };
-      const container = invitationShadow(host);
-      container.style.width = '100%';
-      container.style.maxWidth = '100%';
-      withTemplate(host, container, t, () => {
-        container.innerHTML = sitePreview(draft, t, false);
-        if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
-      });
-    },
-
     setupStatus() {
       const p = project();
       return { canFinish: setupCanFinish(p), offer: setupLocalOffer(p), saveLine: setupSaveText(p) };

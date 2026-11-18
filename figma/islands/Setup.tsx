@@ -1,10 +1,9 @@
-// Setup wizard in the redesigned style: three steps, a live phone preview, and the Continue button
-// at the bottom (so on a phone the preview comes first and the person scrolls down to continue).
+// Setup wizard in the redesigned style: three steps and the Continue button, with no live preview (the person
+// should keep their attention on the form; the editor is where they see the invitation take shape).
 //
 // The fields live in this screen. Each time a step is finished they are handed to the app
 // (bridge.commitSetup), which creates the draft the first time and keeps it up to date.
-// The preview is the real invitation renderer, so it is what guests will see.
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Icon, PlaceList, Logo, galleryTemplates, openPickerOnClick, phoneSmall, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
 import { bridge, SetupFields } from "./bridge";
 import { EventsPanel } from "./Editor";
@@ -25,9 +24,6 @@ export function SetupPage() {
   const [step, setStep] = useState(0);
   const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-  const [cue, setCue] = useState(false);
-  // On a phone the live preview is hidden until asked for (it used to sit between the form and Continue).
-  const [previewOpen, setPreviewOpen] = useState(false);
   const [fields, setFields] = useState<SetupFields>(() => {
     const defaults = bridge.setupDefaults();
     const known = galleryTemplates.some((template) => template.backendId === snap.templateId);
@@ -43,30 +39,14 @@ export function SetupPage() {
         }
       : { title: "", date: "", location: "", message: sampleWelcomes()[0].text, story: "", hosts: "", templateId: defaults.templateId };
   });
-  const screenRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
   const template = galleryTemplates.find((item) => item.backendId === fields.templateId) ?? galleryTemplates[0];
   const status = bridge.setupStatus();
-  const showPreview = step < 2;
 
   const set = (patch: Partial<SetupFields>) => {
     setFields((current) => ({ ...current, ...patch }));
     if (patch.title !== undefined) setError("");
   };
-
-  const updateCue = () => {
-    const element = screenRef.current;
-    setCue(Boolean(element) && element!.scrollHeight > element!.clientHeight + 24 && element!.scrollTop < 24);
-  };
-
-  // Draw the preview again whenever a value, the template or the events change.
-  useEffect(() => {
-    if (!showPreview || !screenRef.current) return;
-    bridge.renderDraft(screenRef.current, fields, template.names);
-    updateCue();
-    const timer = window.setTimeout(updateCue, 400);
-    return () => window.clearTimeout(timer);
-  }, [fields, snap, showPreview]);
 
   function go(to: number) {
     if (to > 0 && !fields.title.trim()) {
@@ -160,14 +140,9 @@ export function SetupPage() {
             <small>Your design</small>
             <strong>{template.title}</strong>
           </span>
-          {showPreview ? (
-            <button type="button" className="button outline small setup-preview-toggle" aria-expanded={previewOpen} onClick={() => setPreviewOpen(!previewOpen)}>
-              {previewOpen ? "Hide preview" : "Preview"}
-            </button>
-          ) : null}
         </div>
 
-        <div className={showPreview ? "setup-grid has-preview" : "setup-grid"}>
+        <div className="setup-grid">
           <section className="setup-card" aria-labelledby="setup-title">
             {error ? (
               <p id="setupNameError" className="setup-error" role="alert">
@@ -290,26 +265,6 @@ export function SetupPage() {
               </p>
             ) : null}
           </section>
-
-          {showPreview ? (
-            <aside className={previewOpen ? "setup-preview open" : "setup-preview"} aria-label="Live preview">
-              <div className="setup-preview-top">
-                <span className="section-kicker">Live preview</span>
-                <span>{template.title}</span>
-                <button type="button" className="button outline small setup-preview-close" onClick={() => setPreviewOpen(false)}>
-                  Close preview
-                </button>
-              </div>
-              <div className="setup-device">
-                <div className="setup-screen figma-canvas" ref={screenRef} onScroll={updateCue} />
-                <div className={cue ? "scroll-cue show" : "scroll-cue"} aria-hidden="true">
-                  <span>Scroll</span>
-                  <Icon name="chevron" size={18} />
-                </div>
-              </div>
-              <p className="setup-preview-note">Scroll the phone to see the whole invitation. Your names and details appear as you type.</p>
-            </aside>
-          ) : null}
 
           {actions}
         </div>
