@@ -13,6 +13,9 @@
 /assets/hero/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
   Cross-Origin-Resource-Policy: same-site
+/assets/home/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cross-Origin-Resource-Policy: same-site
 /assets/templates/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
   Cross-Origin-Resource-Policy: same-site
