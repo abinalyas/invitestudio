@@ -105,6 +105,18 @@ function useRetention(snap: EditorSnapshot): RetentionInfo | null {
   return info;
 }
 
+// "28 Jan 2027": the short date on the event cards (the saved value is 2027-01-28).
+const shortDay = (iso: string) => {
+  const date = new Date(`${iso}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+};
+
+// What a closed event card offers: it says what can be added, so it reads as something to open (not a finished summary).
+const detailsHint = (item: { time: string; venue: string }) => {
+  const missing = [item.time ? "" : "time", item.venue ? "" : "venue"].filter(Boolean);
+  return missing.length ? `Add ${missing.join(" and ")}, dress code and directions` : "Add dress code and directions";
+};
+
 const longDay = (iso: string) => {
   const date = new Date(`${iso}T00:00:00`);
   return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
@@ -894,8 +906,12 @@ export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
                 aria-expanded={openId === item.id}
                 onClick={() => setOpenId(openId === item.id ? null : item.id)}
               >
-                <strong>{item.title || "Untitled event"}</strong>
-                <small>{item.visible ? [item.date, item.venue].filter(Boolean).join(" · ") || "Details to add" : "Hidden from guests"}</small>
+                <span className="event-toggle-text">
+                  <strong>{item.title || "Untitled event"}</strong>
+                  <small>{item.visible ? [item.date ? shortDay(item.date) : "", item.venue].filter(Boolean).join(" · ") || "Details to add" : "Hidden from guests"}</small>
+                  {item.visible && openId !== item.id ? <small className="event-hint">{detailsHint(item)}</small> : null}
+                </span>
+                <span className="event-open" aria-hidden="true">{openId === item.id ? "Close" : "Add details"} <b>{openId === item.id ? "⌃" : "›"}</b></span>
               </button>
             </div>
             {openId === item.id ? (
