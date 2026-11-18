@@ -710,10 +710,10 @@ test.describe('guest replies', () => {
   // A draft that is saved online (cloud id and edit token on this device), served by a small stand-in for the server.
   async function savedDraftWithServer(page) {
     const wid = '77777777-7777-4777-8777-777777777777', token = 'r'.repeat(43);
-    const server = { version: 1, message: '', patches: [], dropPatches: false, loseReply: false, getDelay: 0 };
+    const server = { version: 1, message: '', preferences: {}, patches: [], dropPatches: false, loseReply: false, getDelay: 0 };
     const wedding = () => ({
       id: wid, version: server.version, status: 'draft', visibility: 'private', slug: null, name: 'Mira & Arun', category: 'Wedding', template_id: 'minimalist',
-      title: 'Mira & Arun', event_date: '2027-01-20', location: '', message: server.message, story: '', hosts: '', locale: 'English', theme: {}, preferences: {},
+      title: 'Mira & Arun', event_date: '2027-01-20', location: '', message: server.message, story: '', hosts: '', locale: 'English', theme: {}, preferences: server.preferences,
       cultural_preferences: {}, sections: [], intro_settings: {}, animation_settings: {}, content: { functions: [], copy: {}, gallery: {} }, updated_at: '2026-11-09T10:00:00Z'
     });
     await page.route('**/api/**', route => route.abort());
@@ -746,6 +746,7 @@ test.describe('guest replies', () => {
         if (body.version !== server.version) return json({ error: { code: 'VERSION_CONFLICT', message: 'The wedding changed elsewhere. Reload before saving.' } }, 409);
         server.patches.push(body);
         server.message = body.message ?? server.message;
+        server.preferences = body.preferences ?? server.preferences;   // like the real server, keep what was saved and send it back
         server.version += 1;
         if (server.loseReply) return route.abort();              // the server took it; the tab never heard back
         return json({ wedding: wedding() });
