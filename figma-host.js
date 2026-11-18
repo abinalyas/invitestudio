@@ -1286,8 +1286,7 @@
     },
 
     openProjects() {
-      state.page = 'dashboard';
-      history.pushState({}, '', '/');
+      state.page = 'dashboard'; // render() gives the page its own address
       render();
       window.scrollTo(0, 0);
     },
@@ -1387,11 +1386,22 @@
     });
   }());
 
+  // The My invitations page has its own address, so refreshing the browser keeps the person on it (not the home page).
+  window.syncMyInvitationsUrl = function syncMyInvitationsUrl() {
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    try {
+      if (state.page === 'dashboard' && path !== '/my-invitations') history.pushState({}, '', '/my-invitations');
+      else if (state.page !== 'dashboard' && path === '/my-invitations') history.replaceState({}, '', '/');
+    } catch { /* history may be unavailable in an embedded preview */ }
+  };
+
   // Browser back and forward move between routes that the application state tracks.
   window.addEventListener('popstate', () => {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
     if (state.page === 'setup' && path !== '/') state.page = 'home'; // leaving the setup page by going back
-    if (path === '/') {
+    if (path === '/my-invitations') {
+      state.page = Array.isArray(state.projects) && state.projects.length ? 'dashboard' : 'home';
+    } else if (path === '/') {
       if (state.page !== 'home' && state.page !== 'editor' && state.page !== 'preview') state.page = 'home';
     } else if (path === '/templates') {
       state.page = 'home';

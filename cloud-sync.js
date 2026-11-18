@@ -1611,6 +1611,8 @@
       if (cloudProject) rememberDraftReference(cloudProject);
     }
     const privateLink = parsePrivateEditLink();
+    // A refresh on the My invitations address stays on that page (with no drafts on this device it falls back to the home page).
+    if (!privateLink && /^\/my-invitations\/?$/.test(window.location.pathname) && state.projects.length) state.page = 'dashboard';
 
     // Edit on the My invitations page opens the draft and refreshes it from the cloud, as "continue" always did.
     if (typeof originalOpenProject === 'function') {
