@@ -892,3 +892,5 @@ table.rsvp-by-event { font-size: 13px; }
 .photo-places img { border: 0; }
 .photo-place-text { display: grid; flex: 1 1 auto; min-width: 0; line-height: 1.3; }
 .photo-place-text small { color: #5c625e; font-size: 12.5px; }
+/* The last summary row has no line of its own: the "Saved just now" line below already draws one (two lines in a row looked doubled). */
+.setup-summary div:last-child { border-bottom: 0; }
