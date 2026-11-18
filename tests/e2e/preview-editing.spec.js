@@ -549,3 +549,50 @@ test('music: the first tap starts the track, the button turns it off and on, the
   await page.evaluate(() => { history.pushState({}, '', '/'); state.page = 'home'; render(); });
   await expect.poll(() => page.evaluate(() => window.__audio.pauses)).toBeGreaterThan(before);
 });
+
+// The reply form opens inside the device's screen in every preview, not over the whole page.
+test('template page: the Reply form opens inside the phone, covering only its screen', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/18'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  // Let the opening lift so the Reply button is reachable (started by a click, or by itself once that change is in).
+  const start = screen.getByText('Click to start');
+  if (await start.count()) await start.click();
+  await expect.poll(() => screen.evaluate(el => { const n = el.shadowRoot.querySelector('[data-intro]'); return !n || n.hasAttribute('data-done'); }), { timeout: 20000 }).toBe(true);
+  await screen.evaluate(el => el.shadowRoot.querySelector('[data-rsvp-open]').scrollIntoView({ block: 'center' }));
+  await screen.evaluate(el => el.shadowRoot.querySelector('[data-rsvp-open]').click());
+  const overlay = page.locator('.figma-island-host .detail-device .rsvp-overlay');
+  await expect(overlay).toBeVisible();
+  // Nothing was added to the page itself, and the form sits within the phone's screen.
+  expect(await page.locator('body > .rsvp-overlay').count()).toBe(0);
+  const box = await overlay.boundingBox(), phone = await screen.boundingBox();
+  expect(Math.abs(box.x - phone.x)).toBeLessThan(2);
+  expect(Math.abs(box.width - phone.width)).toBeLessThan(2);
+  expect(Math.abs(box.height - phone.height)).toBeLessThan(2);
+  await expect(overlay.getByRole('heading', { name: 'Will you join us?' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(overlay).toHaveCount(0);
+});
+
+// The editor's preview: the Reply form stays inside the phone, tablet or desktop frame it was opened in.
+for (const mode of ['mobile', 'tablet', 'desktop']) {
+  test(`editor: the Reply form opens inside the ${mode} frame`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openEditor(page, 'minimalist');
+    await page.getByRole('button', { name: `${mode} preview` }).click();
+    const site = page.locator('.device-frame .editor-site');
+    await site.evaluate(el => el.shadowRoot.querySelector('[data-rsvp-open]').click());
+    const overlay = page.locator('.device-frame .rsvp-overlay');
+    await expect(overlay).toBeVisible();
+    expect(await page.locator('body > .rsvp-overlay').count()).toBe(0);
+    const box = await overlay.boundingBox(), screen = await site.boundingBox();
+    expect(Math.abs(box.x - screen.x)).toBeLessThan(2);
+    expect(Math.abs(box.width - screen.width)).toBeLessThan(2);
+    expect(Math.abs(box.height - screen.height)).toBeLessThan(2);
+    await page.screenshot({ path: `/tmp/rsvp-${mode}.png` });
+    await page.keyboard.press('Escape');
+    await expect(overlay).toHaveCount(0);
+  });
+}
