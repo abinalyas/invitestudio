@@ -140,13 +140,16 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
             </div>
 
             <div className="detail-block">
-              <h2>Colours</h2>
-              <div className="swatches">
+              <h2>This design’s colours</h2>
+              <div className="swatches" role="img" aria-label="The colour palette of this design">
                 {template.palette.map((colour) => (
-                  <span key={colour} className="swatch" style={{ background: colour }} title={colour} />
+                  <span key={colour} className="swatch" style={{ background: colour }} />
                 ))}
               </div>
-              <p>The colours and fonts are set by the design. You change the content, not the look.</p>
+              <p>
+                Every design has its own colours and fonts, chosen to look good together. They stay as designed, so for a different look, choose another design.{" "}
+                <a href="/templates">Browse all designs</a>
+              </p>
             </div>
 
             <div className="included-panel">
