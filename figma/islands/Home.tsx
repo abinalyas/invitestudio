@@ -187,7 +187,7 @@ export function HomePage() {
 
       <section className="feature-panel shell">
         <div className="panel-intro">
-          <span className="botanical">❧</span>
+          <img className="botanical" src="/assets/home/feature-flowers.webp" alt="" width={165} height={256} loading="lazy" decoding="async" />
           <div>
             <h2>
               Everything you need
