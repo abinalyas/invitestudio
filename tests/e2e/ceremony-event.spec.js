@@ -27,7 +27,7 @@ test('the setup date becomes a Wedding ceremony event with the location as its v
 test('no date means no event', async ({ page }) => {
   await start(page, { date: '' });
   await next(page).click();
-  await expect(page.getByRole('heading', { name: /story and details/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /your events/i })).toBeVisible();
   expect(await events(page)).toHaveLength(0);
   await expect(page.locator('#ceremonyNote')).toHaveCount(0);
 });
