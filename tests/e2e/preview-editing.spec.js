@@ -267,8 +267,8 @@ test.describe('on a phone', () => {
   });
 });
 
-// Bloom Reveal opens with a full-screen watercolor intro. On the template page the phone waits for a click.
-test('template page: the Bloom Reveal phone shows a click hint, and the invitation starts when it is clicked', async ({ page }) => {
+// Bloom Reveal opens with a full-screen watercolor intro. On the template page the phone starts the opening by itself.
+test('template page: the Bloom Reveal phone starts its opening by itself, and it lifts', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   await page.evaluate(() => { history.pushState({}, '', '/templates/18'); state.page = 'home'; render(); });
@@ -278,17 +278,13 @@ test('template page: the Bloom Reveal phone shows a click hint, and the invitati
     const node = el.shadowRoot.querySelector('[data-intro]');
     return node && { waiting: node.hasAttribute('data-wait'), done: node.hasAttribute('data-done'), locked: getComputedStyle(el).overflow === 'hidden' };
   });
-  await expect.poll(intro).toMatchObject({ waiting: true, done: false, locked: true });
-  const hint = screen.getByText('Click to start');
-  await expect(hint).toBeVisible();
-  await hint.click();
   await expect.poll(async () => (await intro()).waiting).toBe(false);
   // The intro lifts by itself, and the phone can scroll again.
   await expect.poll(intro, { timeout: 15000 }).toMatchObject({ done: true, locked: false });
 });
 
 // Velvet Reveal: a video opening with an Open Invitation button, then a gold foil that hides the date.
-test('Velvet Reveal: click to start, the video opening offers its button, opening it lifts it; the foil hides the date until revealed', async ({ page }) => {
+test('Velvet Reveal: starts by itself, the video opening offers its button, opening it lifts it; the foil hides the date until revealed', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   await page.evaluate(() => { history.pushState({}, '', '/templates/19'); state.page = 'home'; render(); });
@@ -299,8 +295,7 @@ test('Velvet Reveal: click to start, the video opening offers its button, openin
     const video = node && node.querySelector('video');
     return node && { waiting: node.hasAttribute('data-wait'), button: node.hasAttribute('data-button'), opening: node.hasAttribute('data-opening'), done: node.hasAttribute('data-done'), locked: getComputedStyle(el).overflow === 'hidden', src: video ? video.getAttribute('src') : null };
   });
-  await expect.poll(intro).toMatchObject({ waiting: true, button: false, done: false, locked: true, src: null });
-  await screen.getByText('Click to start').click();
+  await screen.click({ position: { x: 12, y: 12 } });
   // The phone is portrait, so only the portrait video is fetched.
   await expect.poll(intro).toMatchObject({ waiting: false, src: '/templates/velvet-reveal/assets/opening-tall.mp4' });
   // The button always appears (with the video, or a moment later when it cannot play), and the page stays still until it is pressed.
@@ -320,7 +315,7 @@ test('Velvet Reveal: click to start, the video opening offers its button, openin
 });
 
 // The slow first-visit sync of saved drafts used to redraw the page when it finished, so a visitor who had already started
-// the opening in the template page's phone found it back at "Click to start".
+// the opening in the template page's phone found it back at the start.
 test('template page: the drafts sync finishing late does not reset the phone preview', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.addInitScript(() => {
@@ -336,7 +331,6 @@ test('template page: the drafts sync finishing late does not reset the phone pre
   await page.evaluate(() => { history.pushState({}, '', '/templates/18'); state.page = 'home'; render(); });
   const screen = page.locator('.figma-island-host .detail-screen');
   await expect(screen).toBeVisible();
-  await screen.getByText('Click to start').click();
   const waiting = () => screen.evaluate(el => el.shadowRoot.querySelector('[data-intro]')?.hasAttribute('data-wait'));
   await expect.poll(waiting).toBe(false);
   // Well after the sync has answered, the opening is still the one the visitor started (still playing, or lifted), never back to waiting.
@@ -345,7 +339,7 @@ test('template page: the drafts sync finishing late does not reset the phone pre
 });
 
 // Under the Same Moon: a short timed video opening that lifts by itself (or on Skip), then the date under gold foil.
-test('Under the Same Moon: click to start plays the film, it lifts by itself, and the foil hides the date', async ({ page }) => {
+test('Under the Same Moon: starts by itself plays the film, it lifts by itself, and the foil hides the date', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   await page.evaluate(() => { history.pushState({}, '', '/templates/20'); state.page = 'home'; render(); });
@@ -356,8 +350,6 @@ test('Under the Same Moon: click to start plays the film, it lifts by itself, an
     const video = node && node.querySelector('video');
     return node && { waiting: node.hasAttribute('data-wait'), done: node.hasAttribute('data-done'), locked: getComputedStyle(el).overflow === 'hidden', src: video ? video.getAttribute('src') : null };
   });
-  await expect.poll(intro).toMatchObject({ waiting: true, done: false, locked: true, src: null });
-  await screen.getByText('Click to start').click();
   await expect.poll(intro).toMatchObject({ waiting: false, src: '/templates/under-the-same-moon/assets/intro.mp4' });
   // No button to press: the film ends by itself (about six seconds) and the page is free again.
   await expect.poll(intro, { timeout: 15000 }).toMatchObject({ done: true, locked: false });
@@ -369,7 +361,7 @@ test('Under the Same Moon: click to start plays the film, it lifts by itself, an
 });
 
 // Golden Butterfly: a timed film opening (no button) on the template page, then the countdown.
-test('Golden Butterfly: click to start plays the film, it lifts by itself, and the countdown runs', async ({ page }) => {
+test('Golden Butterfly: starts by itself plays the film, it lifts by itself, and the countdown runs', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   await page.evaluate(() => { history.pushState({}, '', '/templates/21'); state.page = 'home'; render(); });
@@ -380,8 +372,6 @@ test('Golden Butterfly: click to start plays the film, it lifts by itself, and t
     const video = node && node.querySelector('video');
     return node && { waiting: node.hasAttribute('data-wait'), done: node.hasAttribute('data-done'), locked: getComputedStyle(el).overflow === 'hidden', src: video ? video.getAttribute('src') : null };
   });
-  await expect.poll(intro).toMatchObject({ waiting: true, done: false, locked: true, src: null });
-  await screen.getByText('Click to start').click();
   await expect.poll(intro).toMatchObject({ waiting: false, src: '/templates/golden-butterfly/assets/intro.mp4' });
   await expect.poll(intro, { timeout: 20000 }).toMatchObject({ done: true, locked: false });
   const days = await screen.evaluate(el => el.shadowRoot.querySelector('[data-cd="days"]').textContent);
@@ -400,8 +390,6 @@ test('Cherry Blossom: the film lifts by itself, and three taps on the blossoms u
     const video = node && node.querySelector('video');
     return node && { waiting: node.hasAttribute('data-wait'), done: node.hasAttribute('data-done'), src: video ? video.getAttribute('src') : null };
   });
-  await expect.poll(intro).toMatchObject({ waiting: true, done: false, src: null });
-  await screen.getByText('Click to start').click();
   await expect.poll(intro).toMatchObject({ waiting: false, src: '/templates/cherry-blossom/assets/opening.mp4' });
   await expect.poll(intro, { timeout: 20000 }).toMatchObject({ done: true });
   const state = () => screen.evaluate(el => {
@@ -436,8 +424,7 @@ test('Lantern Night: the film opens it and lifts by itself, then loops behind th
     };
   });
   // Nothing downloads while the opening waits; the invitation already knows the height of the phone's screen.
-  await expect.poll(look).toMatchObject({ waiting: true, done: false, src: null, film: null, frame: true });
-  await screen.getByText('Click to start').click();
+  await screen.click({ position: { x: 12, y: 12 } });
   // The phone is portrait, so the tall film plays; the background film waits for the opening to lift.
   await expect.poll(look).toMatchObject({ waiting: false, src: '/templates/lantern-night/assets/film-tall.mp4', film: null });
   await expect.poll(look, { timeout: 15000 }).toMatchObject({ done: true, film: '/templates/lantern-night/assets/film-tall.mp4' });
@@ -467,8 +454,8 @@ test('music: the first tap starts the track, the button turns it off and on, the
   // Before any touch the page is silent and the button says so.
   expect(await toggle()).toMatchObject({ state: 'off', pressed: 'false', label: 'Turn the music on', src: '/assets/music/romantic-piano.mp3' });
   expect(await page.evaluate(() => window.__audio.plays.length)).toBe(0);
-  // The first tap anywhere in the page (here, the opening's own "Click to start") starts the music.
-  await screen.getByText('Click to start').click();
+  // The first tap anywhere in the page (here, a tap on the phone) starts the music.
+  await screen.click({ position: { x: 12, y: 12 } });
   await expect.poll(toggle).toMatchObject({ state: 'on', pressed: 'true', label: 'Turn the music off' });
   expect(await page.evaluate(() => window.__audio.plays)).toEqual(['/assets/music/romantic-piano.mp3']);
   // The button turns it off, and the choice is remembered for this visit only (the template page's sample never stays silent for good).
@@ -478,7 +465,7 @@ test('music: the first tap starts the track, the button turns it off and on, the
   expect(await page.evaluate(() => localStorage.getItem('invitestudio-sound'))).toBeNull();
   // Within the same visit it stays off after a tap, until the music is turned on again.
   await open();
-  await screen.getByText('Click to start').click();
+  await screen.click({ position: { x: 12, y: 12 } });
   await page.waitForTimeout(400);
   expect(await toggle()).toMatchObject({ state: 'off' });
   expect(await page.evaluate(() => window.__audio.plays.length)).toBe(0);
@@ -490,7 +477,7 @@ test('music: the first tap starts the track, the button turns it off and on, the
   await page.evaluate(() => sessionStorage.clear());
   await open();
   const playsBefore = await page.evaluate(() => window.__audio.plays.length);
-  await screen.getByText('Click to start').click();
+  await screen.click({ position: { x: 12, y: 12 } });
   await expect.poll(toggle).toMatchObject({ state: 'on' });
   expect(await page.evaluate(() => window.__audio.plays.length)).toBeGreaterThan(playsBefore);
   // Leaving the page stops it.
