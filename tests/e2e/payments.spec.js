@@ -125,6 +125,13 @@ test('pay, come back, get confirmed by the server, and go live', async ({ page }
   expect(page.url()).not.toContain('payment=');
   await expect(dialog.getByRole('button', { name: 'Make it live' })).toBeEnabled({ timeout: 15000 });
   await expect(dialog.locator('[data-price-note]')).toHaveCount(0);
+  // Straight after paying, going live leads: no sales copy, and the button is in view without scrolling.
+  await expect(dialog.locator('h2')).toHaveText(/payment received/i);
+  await expect(dialog.locator('.pub-benefits')).toHaveCount(0);
+  await expect(dialog.locator('.pub-steps')).toHaveCount(0);
+  const inView = async () => dialog.getByRole('button', { name: 'Make it live' }).evaluate(el => { const r = el.getBoundingClientRect(); return r.top >= 0 && r.bottom <= window.innerHeight; });
+  await page.setViewportSize({ width: 390, height: 780 });
+  await expect.poll(inView, { message: 'on a phone, the button is in view without scrolling' }).toBe(true);
   await dialog.getByRole('button', { name: 'Make it live' }).click();
   await expect(dialog.locator('h2')).toHaveText(/your invitation is live/i, { timeout: 15000 });
   expect(server.publishes.length).toBe(1);

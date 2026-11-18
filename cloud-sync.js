@@ -1123,7 +1123,9 @@
         <div><h3>${designName}</h3><p class="pub-sub">Your selected design</p>
         ${live ? '' : `<button class="btn small pub-ghost" type="button" data-preview-first>${ICON.eye} Preview invitation</button>`}</div>
       </section>`;
-    const benefits = live ? '' : `<section class="pub-benefits"><ul>
+    // Straight after paying, the one thing to do is go live: that card leads, and the sales copy (already paid for) is dropped.
+    const paidReturn = !live && !paying && Boolean(session.paidReturn);
+    const benefits = live || paidReturn ? '' : `<section class="pub-benefits"><ul>
         <li><span>${ICON.pencil}</span><div><strong>Keep editing anytime</strong><p>You can update your invitation even after it is live.</p></div></li>
         ${paying || (session.price && session.price.mode === 'live') ? `<li><span>${ICON.layers}</span><div><strong>One-time payment</strong><p>${priceText ? `Pay ${escapeText(priceText)} once.` : 'Pay once.'} No subscription, ever.</p></div></li>
         <li><span>${ICON.shield}</span><div><strong>Secure and trusted</strong><p>Payments are processed securely by Razorpay.</p></div></li>` : ''}
@@ -1134,7 +1136,7 @@
         ${showOrder ? `<h3 class="pub-card-title">Your order</h3>
         <div class="pub-line"><span>${designName} (live invitation)</span><span>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</span></div>
         <div class="pub-total"><span>${session.price.mode === 'live' ? 'Total payable' : 'Total today'}</span><strong>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</strong></div>
-        <p class="pub-pill">${ICON.bolt} ${session.price.mode === 'live' ? 'One-time payment · No recurring charges' : 'Free during early access'}</p>` : `<h3 class="pub-card-title">${live ? 'Your live page' : 'Ready to go live'}</h3>`}
+        <p class="pub-pill">${ICON.bolt} ${session.price.mode === 'live' ? 'One-time payment · No recurring charges' : 'Free during early access'}</p>` : `<h3 class="pub-card-title">${live ? 'Your live page' : paidReturn ? 'Your invitation is ready' : 'Ready to go live'}</h3>`}
         ${priceNote}${keptBlock}${notSaved}${info}${checkAgain}${error}${success}
         <div class="pub-actions">${submit}
           ${live && !session.changing ? '<button class="btn" type="button" data-share-card>Share card for WhatsApp</button>' : ''}
@@ -1144,21 +1146,22 @@
     const stepsPay = paying || (session.price && session.price.mode === 'live')
       ? `<li><span>${ICON.card}</span><div><strong>Pay once</strong><small>${priceText ? escapeText(priceText) + ' (one-time)' : 'One-time payment'}</small></div></li>`
       : `<li><span>${ICON.card}</span><div><strong>Free for now</strong><small>Early access</small></div></li>`;
-    const steps = live ? '' : `<ol class="pub-steps" aria-label="How it works"><li><span>${ICON.lock}</span><div><strong>Private now</strong><small>Only you can see it</small></div></li><li class="pub-arrow" aria-hidden="true">›</li>${stepsPay}<li class="pub-arrow" aria-hidden="true">›</li><li><span>${ICON.link}</span><div><strong>Get a live link</strong><small>Share with your guests</small></div></li></ol>`;
+    const steps = live || paidReturn ? '' : `<ol class="pub-steps" aria-label="How it works"><li><span>${ICON.lock}</span><div><strong>Private now</strong><small>Only you can see it</small></div></li><li class="pub-arrow" aria-hidden="true">›</li>${stepsPay}<li class="pub-arrow" aria-hidden="true">›</li><li><span>${ICON.link}</span><div><strong>Get a live link</strong><small>Share with your guests</small></div></li></ol>`;
     const lead = live
       ? 'Guests can open your invitation with the link below.'
+      : paidReturn ? 'The last step: make it live to get your web link and share it with your guests.'
       : paying ? 'Your invitation is currently private. Complete your purchase to make it live and share it with your guests.'
       : 'Your invitation is currently private. Make it live to get a link you can share with your guests.';
     renderModal(`<div class="pub-shell">
       <div class="pub-top"><span class="pub-logo">${typeof logoMark === 'string' ? logoMark : ''}<span>InviteStudio</span></span><button class="pub-x" type="button" data-publish-close aria-label="Dismiss">×</button></div>
       <div class="eyebrow">${live ? 'Your live invitation' : 'Share your invitation'}</div>
-      <h2 id="modal-title">${live ? 'Your invitation is live' : 'Your invitation is almost ready.'}</h2>
+      <h2 id="modal-title">${live ? 'Your invitation is live' : paidReturn ? 'Payment received. Thank you!' : 'Your invitation is almost ready.'}</h2>
       <p class="pub-lead">${lead}</p>
-      <p class="pub-status">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>${live ? '' : ', not public yet'}.</p>
+      ${paidReturn ? '' : `<p class="pub-status">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>${live ? '' : ', not public yet'}.</p>`}
       ${steps}
-      <div class="pub-grid">
+      <div class="pub-grid${paidReturn ? ' pub-ready' : ''}">
         <div class="pub-main">${contactBlock}${addressField}${changeWarning}${liveBlock}${explainer}</div>
-        <aside class="pub-side">${designCard}${benefits}${orderCard}</aside>
+        <aside class="pub-side">${paidReturn ? '' : designCard}${benefits}${orderCard}</aside>
       </div>
       <div class="pub-foot"><p>${ICON.help} <span><strong>Questions?</strong> <a href="/contact" target="_blank" rel="noopener">Contact us</a> and we will help.</span></p><button class="btn" type="button" data-publish-close>Close</button></div>
     </div>`);
@@ -1414,7 +1417,8 @@
           try { window.localStorage.removeItem(PENDING_PAYMENT_KEY); } catch { /* nothing to clear */ }
           session.busy = false;
           session.needsPayment = false;
-          session.info = 'Payment received. Thank you! Choose Make it live to publish.';
+          session.info = 'Payment received. Thank you! Your invitation is ready: choose Make it live to share it with your guests.';
+          session.paidReturn = true;
           localSave();
           paintPublishDialog(project, {});
           return;
@@ -1636,6 +1640,8 @@
       if (cloudProject) rememberDraftReference(cloudProject);
     }
     const privateLink = parsePrivateEditLink();
+    // A refresh on the My invitations address stays on that page (with no drafts on this device it falls back to the home page).
+    if (!privateLink && /^\/my-invitations\/?$/.test(window.location.pathname) && state.projects.length) state.page = 'dashboard';
 
     // Edit on the My invitations page opens the draft and refreshes it from the cloud, as "continue" always did.
     if (typeof originalOpenProject === 'function') {
