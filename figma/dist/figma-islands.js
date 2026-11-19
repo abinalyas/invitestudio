@@ -1344,8 +1344,17 @@ Error generating stack: `+i.message+`
 .figma-app .link-button{ min-height: 44px; }
 .figma-app .section-heading a, .figma-app .section-heading.row a{ display: inline-flex; align-items: center; min-height: 44px; }
 .figma-app .template-card .fav, .figma-app button[aria-label$="to favorites"], .figma-app button[aria-label$="from favorites"]{ min-width: 44px; min-height: 44px; }}
+.figma-app .gallery-hero{ min-height: 0; padding: 56px 0 60px; }
+.figma-app .gallery-hero-copy .section-kicker{ margin-bottom: 16px; font-size: 11px; }
+.figma-app .gallery-hero-copy h1{ margin: 0; }
+.figma-app .gallery-hero-copy > p{ margin: 18px auto 0; max-width: 560px; line-height: 1.5; }
+.figma-app .gallery-hero-copy > p.gallery-talk{ margin-top: 12px; font-size: 15px; color: #656b67; }
+@media (max-width: 767px){.figma-app .gallery-hero{ padding: 40px 0 44px; }
+.figma-app .gallery-hero-copy .section-kicker{ margin-bottom: 12px; }
+.figma-app .gallery-hero-copy > p{ margin-top: 14px; }
+.figma-app .gallery-hero-copy > p.gallery-talk{ margin-top: 10px; font-size: 14px; }}
 @media (max-width: 640px){.figma-app .gallery-flower{ display: none; }
-.figma-app .gallery-hero-copy{ padding-inline: 12px; }}
+.figma-app .gallery-hero-copy{ padding-inline: 20px; }}
 @media (pointer: coarse){.figma-app input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), .figma-app select, .figma-app textarea{ font-size: 16px !important; }
 .figma-app .editor-wording summary{ display: flex; align-items: center; min-height: 44px; }}
 .figma-app input::placeholder{ text-overflow: ellipsis; }

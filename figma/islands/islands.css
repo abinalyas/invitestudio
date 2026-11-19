@@ -648,10 +648,23 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
   .template-card .fav, button[aria-label$="to favorites"], button[aria-label$="from favorites"] { min-width: 44px; min-height: 44px; }
 }
 
+/* ---- Template gallery heading: room above and below, and space between the lines (the "Talk to us" line made it too tall for its old fixed height) ---- */
+.gallery-hero { min-height: 0; padding: 56px 0 60px; }
+.gallery-hero-copy .section-kicker { margin-bottom: 16px; font-size: 11px; }
+.gallery-hero-copy h1 { margin: 0; }
+.gallery-hero-copy > p { margin: 18px auto 0; max-width: 560px; line-height: 1.5; }
+.gallery-hero-copy > p.gallery-talk { margin-top: 12px; font-size: 15px; color: #656b67; }
+@media (max-width: 767px) {
+  .gallery-hero { padding: 40px 0 44px; }
+  .gallery-hero-copy .section-kicker { margin-bottom: 12px; }
+  .gallery-hero-copy > p { margin-top: 14px; }
+  .gallery-hero-copy > p.gallery-talk { margin-top: 10px; font-size: 14px; }
+}
+
 /* ---- Template gallery on a phone: the leaf artwork is left out, so it never lies across the heading ---- */
 @media (max-width: 640px) {
   .gallery-flower { display: none; }
-  .gallery-hero-copy { padding-inline: 12px; }
+  .gallery-hero-copy { padding-inline: 20px; }
 }
 
 /* ---- Fields and small controls on a touch screen ---- */
