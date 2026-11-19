@@ -537,6 +537,44 @@ test('music: the first tap starts the track, the button turns it off and on, the
   await expect.poll(() => page.evaluate(() => window.__audio.pauses)).toBeGreaterThan(before);
 });
 
+// Fast taps and phones that do not let a page change the volume (iPhone, iPad) must not leave the button stuck.
+test('music: the button answers every tap, even while the track is still starting or fading, and on phones with a fixed volume', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.addInitScript(() => {
+    window.__audio = { plays: 0 };
+    // Like an iPhone: the volume always reads 1, and play() takes a moment to start.
+    Object.defineProperty(HTMLMediaElement.prototype, 'volume', { get() { return 1; }, set() {}, configurable: true });
+    HTMLMediaElement.prototype.play = function () { window.__audio.plays++; Object.defineProperty(this, 'paused', { value: false, configurable: true }); return new Promise(r => setTimeout(() => { this.dispatchEvent(new Event('playing')); r(); }, 300)); };
+    HTMLMediaElement.prototype.pause = function () { Object.defineProperty(this, 'paused', { value: true, configurable: true }); this.dispatchEvent(new Event('pause')); };
+  });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/18'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  const state = () => screen.evaluate(el => el.shadowRoot.querySelector('[data-sound-toggle]').getAttribute('data-sound'));
+  const button = screen.locator('[data-sound-toggle]');
+  // On, then off before the track has started: it must stay off once play() finishes.
+  await button.click();
+  expect(await state()).toBe('on');
+  await button.click();
+  expect(await state()).toBe('off');
+  await page.waitForTimeout(600);
+  expect(await state()).toBe('off');
+  // On and off again with the volume fixed: the track really stops (the fade cannot wait for a volume that never drops).
+  await button.click();
+  await page.waitForTimeout(600);
+  expect(await state()).toBe('on');
+  await button.click();
+  await page.waitForTimeout(300);
+  expect(await state()).toBe('off');
+  // Off then straight back on: it is on.
+  await button.click();
+  await button.click();
+  await button.click();
+  await page.waitForTimeout(600);
+  expect(await state()).toBe('on');
+});
+
 // The reply form opens inside the device's screen in every preview, not over the whole page.
 test('template page: the Reply form opens inside the phone, covering only its screen', async ({ page }) => {
   test.setTimeout(60000); // waits through the whole opening first
