@@ -181,6 +181,7 @@ export interface InviteStudioBridge {
   setSectionVisible(sectionId: string, visible: boolean): void;
   setCopy(key: string, text: string): void;
   copyPrivateLink(): void;
+  copyPreviewLink(): Promise<boolean>;
   addEvent(title: string): string;
   updateEvent(eventId: string, patch: EventPatch): void;
   removeEvent(eventId: string): void;
@@ -246,6 +247,7 @@ export const bridge = {
   setSectionVisible: (sectionId: string, visible: boolean) => host().setSectionVisible(sectionId, visible),
   setCopy: (key: string, text: string) => host().setCopy(key, text),
   copyPrivateLink: () => host().copyPrivateLink(),
+  copyPreviewLink: () => host().copyPreviewLink(),
   addEvent: (title: string) => host().addEvent(title),
   updateEvent: (eventId: string, patch: EventPatch) => host().updateEvent(eventId, patch),
   removeEvent: (eventId: string) => host().removeEvent(eventId),

@@ -526,6 +526,68 @@ export async function revokeEditTokens(env, weddingId, keepHash = '') {
   return rows?.length || 0;
 }
 
+// Draft preview links (docs/DRAFT_PREVIEW.md). A preview token is stored in edit_tokens with purpose 'preview': it
+// only shows the draft read-only (watermarked, with a banner), and requireEditToken never accepts it because that
+// looks up purpose 'edit' only. The raw token is returned once, when the link is made; only its hash is kept.
+export const PREVIEW_LINK_LIFETIME_DAYS = 30;
+const PREVIEW_LINK_LIFETIME_MS = PREVIEW_LINK_LIFETIME_DAYS * 24 * 60 * 60 * 1000;
+
+export async function issuePreviewToken(env, weddingId) {
+  const previewToken = randomEditToken();
+  const tokenHash = await hashEditToken(previewToken);
+  const expiresAt = new Date(Date.now() + PREVIEW_LINK_LIFETIME_MS).toISOString();
+  await db(env, 'edit_tokens', {
+    method: 'POST',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({
+      wedding_id: weddingId,
+      token_hash: tokenHash,
+      token_hint: `${previewToken.slice(0, 6)}…`,
+      purpose: 'preview',
+      expires_at: expiresAt,
+      metadata: {}
+    })
+  });
+  return { previewToken, previewExpiresAt: expiresAt, tokenHash };
+}
+
+// Turns off every preview link of a wedding (except keepHash, the one just made).
+export async function revokePreviewTokens(env, weddingId, keepHash = '') {
+  const query = new URLSearchParams({
+    select: 'id',
+    wedding_id: `eq.${weddingId}`,
+    purpose: 'eq.preview',
+    revoked_at: 'is.null'
+  });
+  if (keepHash) query.set('token_hash', `not.eq.${keepHash}`);
+  const rows = await db(env, `edit_tokens?${query}`);
+  await Promise.all((rows || []).map(row => db(env, `edit_tokens?id=eq.${row.id}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({ revoked_at: new Date().toISOString() })
+  })));
+  return rows?.length || 0;
+}
+
+// Resolves a preview link to its wedding. A wrong, expired or turned-off link gets the same answer.
+export async function requirePreviewToken(env, token) {
+  if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{32,256}$/.test(token)) {
+    throw new ApiError('This preview link is not valid.', 404, 'PREVIEW_NOT_FOUND');
+  }
+  const query = new URLSearchParams({
+    select: 'id,wedding_id,expires_at',
+    token_hash: `eq.${await hashEditToken(token)}`,
+    purpose: 'eq.preview',
+    revoked_at: 'is.null',
+    limit: '1'
+  });
+  const record = (await db(env, `edit_tokens?${query}`))?.[0];
+  if (!record || new Date(record.expires_at).getTime() <= Date.now()) {
+    throw new ApiError('This preview link is not valid.', 404, 'PREVIEW_NOT_FOUND');
+  }
+  return record;
+}
+
 export async function getWedding(env, id) {
   const query = new URLSearchParams({ select: '*', id: `eq.${id}`, limit: '1' });
   const rows = await db(env, `weddings?${query}`);

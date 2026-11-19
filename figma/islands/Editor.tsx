@@ -732,6 +732,12 @@ function ShareGuide({ snap }: { snap: EditorSnapshot }) {
       <p>
         Right now only you can see your invitation. <strong>Share invitation</strong> makes it live with a web link, and anyone who has
         the link can open it. You can keep editing afterwards, or take it offline any time.
+        {snap.hasPrivateLink ? (
+          <>
+            {" "}Want opinions first?{" "}
+            <button type="button" className="share-guide-preview" onClick={() => void bridge.copyPreviewLink()}>Copy a draft preview link</button>
+          </>
+        ) : null}
       </p>
       <button
         type="button"

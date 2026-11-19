@@ -128,7 +128,10 @@
     card.textContent = "";
     card.appendChild(el("h2", { id: "rsvp-title", text: token ? "Change your reply" : "Will you join us?" }));
     card.appendChild(el("p", { class: "rsvp-sub", text: "Only the couple can see your reply." }));
-    if (!live) card.appendChild(el("p", { class: "rsvp-banner", text: "Preview only. This is how guests will reply. Replies open once your invitation is live." }));
+    // On a draft preview link (/draft) the reader is not the couple, so the note speaks about them.
+    if (!live) card.appendChild(el("p", { class: "rsvp-banner", text: /^\/draft\/?$/.test(location.pathname)
+      ? "Draft preview. This is how guests will reply. Replies open once the couple publishes the invitation."
+      : "Preview only. This is how guests will reply. Replies open once your invitation is live." }));
 
     var name = el("input", { type: "text", id: "rsvp-name", maxlength: "160", autocomplete: "name", required: true, value: reply ? reply.name : "" });
     var nameErr = el("p", { class: "rsvp-error", role: "alert", hidden: true });

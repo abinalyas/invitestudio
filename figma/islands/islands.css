@@ -810,6 +810,8 @@ table.rsvp-by-event { font-size: 13px; }
 .draft-access-icon { position: absolute; left: 18px; top: 16px; color: #3b433e; }
 .draft-access strong { font-size: 17px; }
 .draft-access .btn.small { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 20px; border: 1px solid #cfe0d4; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 700; cursor: pointer; }
+/* The "Copy a draft preview link" link in the share guide (docs/DRAFT_PREVIEW.md). */
+.share-guide-preview { padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--green, #145c37); text-decoration: underline; cursor: pointer; }
 
 /* The header on a phone or tablet: logo on the left, then the action button, and the menu button always at the far right
    (it used to sit in the middle when the other buttons were few). */

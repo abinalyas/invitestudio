@@ -200,6 +200,82 @@
     }
   };
 
+  // ---- Draft preview links (docs/DRAFT_PREVIEW.md). ----
+  // A read-only link to the draft, with a banner and a watermark, for showing family and friends before publishing. The raw
+  // token is returned only when the link is made, so this device keeps it (by draft) to copy the same link again later.
+  const previewStorageKey = 'invitestudio-preview-links';
+  function previewMap() {
+    try { return JSON.parse(localStorage.getItem(previewStorageKey) || '{}') || {}; } catch { return {}; }
+  }
+  function writePreviewMap(map) {
+    try { localStorage.setItem(previewStorageKey, JSON.stringify(map)); } catch { /* the link still works; it is just not remembered */ }
+  }
+  function storedPreview(cloudId) {
+    const entry = cloudId ? previewMap()[cloudId] : null;
+    if (!entry || !editTokenPattern.test(entry.token || '')) return null;
+    // A link within a day of expiring is treated as gone, so a fresh one is made rather than one that dies tomorrow.
+    if (!(new Date(entry.expiresAt).getTime() > Date.now() + 24 * 60 * 60 * 1000)) return null;
+    return entry;
+  }
+  function previewUrl(token) {
+    return `${window.location.origin}/draft#${token}`;
+  }
+  // What the editor shows: whether this draft has a preview link on this device, and until when it works.
+  window.draftPreviewInfo = function draftPreviewInfo(project) {
+    const entry = storedPreview(project?.cloudId);
+    return entry ? { url: previewUrl(entry.token), expiresAt: entry.expiresAt } : null;
+  };
+  window.copyDraftPreviewLink = async function copyDraftPreviewLink() {
+    const project = typeof current === 'function' ? current() : null;
+    const token = project?.cloudId ? tokenFor(project.cloudId) : '';
+    if (!project?.cloudId || !token || !window.inviteStudioApi?.enabled) {
+      toast('A preview link is available once your draft has been saved online.');
+      return false;
+    }
+    // Send any unsaved change first, so the link opens the draft as it is now.
+    flushPendingCloudSaves();
+    let entry = storedPreview(project.cloudId);
+    if (!entry) {
+      try {
+        const result = await window.inviteStudioApi.createPreviewLink(project.cloudId, token);
+        entry = { token: result.previewToken, expiresAt: result.previewExpiresAt };
+        const map = previewMap();
+        map[project.cloudId] = entry;
+        writePreviewMap(map);
+      } catch (error) {
+        toast(error.message ? `The preview link could not be made: ${error.message}` : 'The preview link could not be made. Try again.');
+        return false;
+      }
+      window.notifyInviteStudioChange?.();
+    }
+    const link = previewUrl(entry.token);
+    try {
+      await navigator.clipboard.writeText(link);
+      toast('Preview link copied. Anyone with it can see your draft, marked as a preview.');
+    } catch {
+      window.prompt('Copy your preview link:', link);
+    }
+    return true;
+  };
+  // Turns the link off for everyone who has it. Copying again afterwards makes a new link.
+  window.stopDraftPreviewLink = async function stopDraftPreviewLink() {
+    const project = typeof current === 'function' ? current() : null;
+    const token = project?.cloudId ? tokenFor(project.cloudId) : '';
+    if (!project?.cloudId || !token || !window.inviteStudioApi?.enabled) return false;
+    try {
+      await window.inviteStudioApi.stopPreviewLink(project.cloudId, token);
+    } catch (error) {
+      toast(error.message ? `Sharing could not be stopped: ${error.message}` : 'Sharing could not be stopped. Try again.');
+      return false;
+    }
+    const map = previewMap();
+    delete map[project.cloudId];
+    writePreviewMap(map);
+    toast('Preview link turned off. Nobody can open it now.');
+    window.notifyInviteStudioChange?.();
+    return true;
+  };
+
   // ---- Photos (docs/MEDIA_PLAN.md). The list on the server is the truth; project.photos mirrors it. ----
   function mediaContext() {
     const project = typeof current === 'function' ? current() : null;
@@ -1119,6 +1195,21 @@
           <li><strong>You can change your mind.</strong> Keep editing and choose <em>Update live page</em>, or <em>Take offline</em> any time. The link then stops working.</li>
         </ul></section>`;
 
+    // Draft preview link (docs/DRAFT_PREVIEW.md): the way to show family before going live. Once live it is only shown while a
+    // link is still on, so it can be turned off.
+    const preview = window.draftPreviewInfo(project);
+    const previewBlock = justWentLive || (live && !preview) ? '' : `<section class="pub-card pub-draft-preview" data-draft-preview-share>
+        <h3 class="pub-card-title">${ICON.eye} ${live ? 'Your draft preview link' : 'Not ready yet? Show family first'}</h3>
+        <p class="pub-sub">Send a preview link to get opinions. They see your latest saved draft with a <strong>Draft preview</strong> banner and watermark, and cannot reply. It does not make your invitation live.</p>
+        ${preview ? `<p class="pub-note ok" role="status">Sharing is on. The link works until ${escapeText(new Date(preview.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }))}.</p>` : ''}
+        ${session.confirmStopPreview ? '<p class="pub-note" role="alert">The link will stop working for everyone who has it. You can make a new one any time.</p>' : ''}
+        <div class="pub-row">
+          ${session.confirmStopPreview
+            ? '<button class="btn small" type="button" data-preview-stop-yes>Yes, stop sharing</button><button class="btn small" type="button" data-preview-stop-no>Keep sharing</button>'
+            : `${live ? '' : `<button class="btn small" type="button" data-preview-copy ${session.previewBusy ? 'disabled' : ''}>${ICON.link} ${preview ? 'Copy preview link' : 'Get preview link'}</button>`}${preview ? `<button class="btn small" type="button" data-preview-stop ${session.previewBusy ? 'disabled' : ''}>Stop sharing</button>` : ''}`}
+        </div>
+      </section>`;
+
     // The right-hand column: the chosen design, what is included, and the order with the main button.
     const design = typeof tpl === 'function' ? tpl(project.templateId) : null;
     const designName = escapeText((design && design.name) || project.templateName || 'Your design');
@@ -1164,7 +1255,7 @@
       ${paidReturn ? '' : `<p class="pub-status">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>${live ? '' : ', not public yet'}.</p>`}
       ${steps}
       <div class="pub-grid${paidReturn ? ' pub-ready' : ''}">
-        <div class="pub-main">${contactBlock}${addressField}${changeWarning}${liveBlock}${explainer}</div>
+        <div class="pub-main">${contactBlock}${addressField}${changeWarning}${liveBlock}${explainer}${previewBlock}</div>
         <aside class="pub-side">${paidReturn ? '' : designCard}${benefits}${orderCard}</aside>
       </div>
       <div class="pub-foot"><p>${ICON.help} <span><strong>Questions?</strong> <a href="/contact" target="_blank" rel="noopener">Contact us</a> and we will help.</span></p><button class="btn" type="button" data-publish-close>Close</button></div>
@@ -1196,6 +1287,17 @@
       else { state.page = 'preview'; render(); }
     });
     root.querySelector('[data-unpublish]')?.addEventListener('click', () => unpublishFromDialog(project));
+    const previewStep = async work => {
+      publishSession.previewBusy = true;
+      paintPublishDialog(project, {});
+      try { await work(); } finally {
+        if (publishSession) { publishSession.previewBusy = false; publishSession.confirmStopPreview = false; paintPublishDialog(project, {}); }
+      }
+    };
+    root.querySelector('[data-preview-copy]')?.addEventListener('click', () => previewStep(() => window.copyDraftPreviewLink()));
+    root.querySelector('[data-preview-stop]')?.addEventListener('click', () => { publishSession.confirmStopPreview = true; paintPublishDialog(project, {}); });
+    root.querySelector('[data-preview-stop-no]')?.addEventListener('click', () => { publishSession.confirmStopPreview = false; paintPublishDialog(project, {}); });
+    root.querySelector('[data-preview-stop-yes]')?.addEventListener('click', () => previewStep(() => window.stopDraftPreviewLink()));
     root.querySelector('[data-share-card]')?.addEventListener('click', () => { publishSession = null; if (typeof window.openShareCard === 'function') window.openShareCard(project); });
     root.querySelector('[data-copy-public-link]')?.addEventListener('click', () => copyPublicLink(publicLinkFor(project.publicSlug)));
     root.querySelector('[data-change-address]')?.addEventListener('click', () => {
@@ -1637,6 +1739,13 @@
     if (publicSlug !== null) {
       state.page = 'public';
       window.loadPublicInvitation(publicSlug);
+      return;
+    }
+    // A draft preview link (docs/DRAFT_PREVIEW.md) is read-only in the same way: it never opens the editor or reads drafts.
+    const previewToken = typeof window.parseDraftPreviewToken === 'function' ? window.parseDraftPreviewToken() : null;
+    if (previewToken !== null) {
+      state.page = 'public';
+      window.loadDraftPreview(previewToken);
       return;
     }
     if (!draftReference()) {

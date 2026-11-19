@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   EDIT_TOKEN_LIFETIME_DAYS,
+  PREVIEW_LINK_LIFETIME_DAYS,
+  requirePreviewToken,
   SLUG_MAX_LENGTH,
   json,
   publicWeddingProjection,
@@ -155,4 +157,32 @@ test('public projection carries only how replies work and a valid contact number
   assert.equal(rsvp({ rsvp: 'bogus' }).mode, 'count');
   assert.equal(rsvp(null).mode, 'count');
   assert.equal(JSON.stringify(publicWeddingProjection(privateWedding)).includes('do not publish'), false);
+});
+
+// Draft preview links (docs/DRAFT_PREVIEW.md).
+test('a malformed preview link is refused before any database call, with the same answer as an unknown one', async () => {
+  for (const token of [undefined, '', 'short', 'x'.repeat(300), 'not a token with spaces at all, not one at all']) {
+    await assert.rejects(() => requirePreviewToken({}, token), error => error.code === 'PREVIEW_NOT_FOUND' && error.status === 404);
+  }
+});
+
+test('preview links last 30 days and can never pass as edit links', () => {
+  assert.equal(PREVIEW_LINK_LIFETIME_DAYS, 30);
+  const source = readFileSync(new URL('../../functions/_shared/api.js', import.meta.url), 'utf8');
+  const editCheck = source.slice(source.indexOf('export async function requireEditToken'), source.indexOf('export async function requireEditAccess'));
+  assert.match(editCheck, /purpose: 'eq\.edit'/, 'edit access looks up edit tokens only');
+  const previewCheck = source.slice(source.indexOf('export async function requirePreviewToken'), source.indexOf('export async function getWedding'));
+  assert.match(previewCheck, /purpose: 'eq\.preview'/);
+});
+
+test('the draft preview page marks itself as a draft, never names the couple in its link preview, and is never indexed', () => {
+  const page = readFileSync(new URL('../../functions/draft.js', import.meta.url), 'utf8');
+  assert.match(page, /X-Robots-Tag', 'noindex, nofollow'/);
+  assert.match(page, /Referrer-Policy', 'no-referrer'/);
+  assert.doesNotMatch(page, /db\(|rpc\(/, 'the page never looks up the draft: the token is only in the fragment');
+  const view = readFileSync(new URL('../../public-invitation.js', import.meta.url), 'utf8');
+  assert.match(view, /data-draft-watermark/);
+  assert.match(view, /data-draft-banner/);
+  assert.match(view, /utm_source=draft-preview/);
+  assert.doesNotMatch(view.slice(view.indexOf("view.status === 'ready' && view.preview")), /^[^\n]*data-public-invitation>/, 'a draft is never marked as a live invitation, so replies cannot be sent');
 });
