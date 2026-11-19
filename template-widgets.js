@@ -187,6 +187,9 @@
   // a page start sound before the guest has touched it, so the track starts on the first tap, key press or click anywhere on the
   // page (a tap on the opening's own button counts), and the button shows what is really happening. Turning it off is remembered.
   var SOUND_KEY = "invitestudio-sound", soundButtons = new Set(), soundAudio = null, soundWanted = false, soundTimer = 0, soundResume = false;
+  // soundOn is what the guest asked for (the button shows it at once); soundTurn grows with every on/off, so a slow play() or a fade
+  // started by an earlier tap never overrides a later one.
+  var soundOn = false, soundTurn = 0;
   // The template page's sample (data-sound-demo) always starts with sound on the first tap: a "off" chosen on an earlier visit, or on a
   // guest's own invitation, must not silence every sample for ever. Its choice is remembered for this visit only.
   function soundStore() {
@@ -197,7 +200,7 @@
   function soundOff() { try { var store = soundStore(); return Boolean(store) && store.getItem(SOUND_KEY) === "off"; } catch (e) { return false; } }
   function soundSave(on) { try { var store = soundStore(); if (store) store.setItem(SOUND_KEY, on ? "on" : "off"); } catch (e) { /* asked again next time */ } }
   function soundPaint() {
-    var on = Boolean(soundAudio && !soundAudio.paused);
+    var on = soundOn;
     soundButtons.forEach(function (b) {
       b.setAttribute("data-sound", on ? "on" : "off");
       b.setAttribute("aria-pressed", String(on));
@@ -206,7 +209,7 @@
   }
   function soundSync() {
     soundButtons.forEach(function (b) { if (!b.isConnected) soundButtons.delete(b); });
-    if (!soundButtons.size) { soundWanted = false; if (soundAudio) { try { soundAudio.pause(); } catch (e) { /* stopped already */ } window.clearInterval(soundTimer); } }
+    if (!soundButtons.size) { soundWanted = false; soundOn = false; soundTurn++; if (soundAudio) { try { soundAudio.pause(); } catch (e) { /* stopped already */ } window.clearInterval(soundTimer); } }
     soundPaint();
   }
   function soundFade(to, done) {
@@ -217,6 +220,8 @@
       var v = a.volume, step = 0.04;
       if (Math.abs(v - to) <= step) { a.volume = to; window.clearInterval(soundTimer); if (done) done(); return; }
       a.volume = v < to ? v + step : v - step;
+      // iPhones and iPads do not let a page change the volume (it always reads 1): finish at once instead of waiting for ever.
+      if (a.volume === v) { window.clearInterval(soundTimer); if (done) done(); }
     }, 60);
   }
   function soundPlay() {
@@ -224,23 +229,38 @@
     soundButtons.forEach(function (b) { if (!first && b.isConnected) first = b; });
     if (!first) return;
     var src = first.getAttribute("data-sound-src"), vol = Math.min(1, Math.max(0.05, parseFloat(first.getAttribute("data-sound-volume")) || 0.35));
-    if (!soundAudio) { soundAudio = new Audio(); soundAudio.loop = true; soundAudio.preload = "none"; soundAudio.addEventListener("pause", soundPaint); soundAudio.addEventListener("playing", soundPaint); }
+    if (!soundAudio) {
+      soundAudio = new Audio(); soundAudio.loop = true; soundAudio.preload = "none";
+      // Paused by the browser itself (another app took the sound, headphones unplugged): the button follows.
+      soundAudio.addEventListener("pause", function () { if (!document.hidden && soundOn && !soundAudio.ended && soundAudio.readyState > 0) { soundOn = false; soundTurn++; } soundPaint(); });
+      soundAudio.addEventListener("playing", soundPaint);
+    }
     if (soundAudio.getAttribute("data-src") !== src) { soundAudio.setAttribute("data-src", src); soundAudio.src = src; }
-    if (!soundAudio.paused) return;
-    soundAudio.volume = 0;
-    var attempt = soundAudio.play();
+    var turn = ++soundTurn;
+    soundOn = true; soundPaint();
+    // Still playing (it was fading out after an "off"): fade back up.
+    if (!soundAudio.paused) { soundWanted = true; soundFade(vol); return; }
+    window.clearInterval(soundTimer);
+    try { soundAudio.volume = 0; } catch (e) { /* fixed volume */ }
+    var attempt;
+    try { attempt = soundAudio.play(); } catch (e) { attempt = Promise.reject(e); }
     // If the browser refuses (it wants a different kind of touch), the next gesture tries again.
-    var started = function () { soundWanted = true; soundPaint(); soundFade(vol); };
-    var refused = function () { soundWanted = false; soundPaint(); };
+    var started = function () {
+      if (turn !== soundTurn) { if (!soundOn) { try { soundAudio.pause(); } catch (e) { /* stopped already */ } } return; }
+      soundWanted = true; soundPaint(); soundFade(vol);
+    };
+    var refused = function () { if (turn !== soundTurn) return; soundWanted = false; soundOn = false; soundPaint(); };
     if (attempt && attempt.then) attempt.then(started, refused); else started();
   }
   function soundStop() {
+    var turn = ++soundTurn;
+    soundOn = false; soundPaint();
     if (!soundAudio) return;
-    soundFade(0, function () { try { soundAudio.pause(); } catch (e) { /* stopped already */ } soundPaint(); });
+    soundFade(0, function () { if (turn !== soundTurn) return; try { soundAudio.pause(); } catch (e) { /* stopped already */ } soundPaint(); });
   }
   // The first touch of the page starts the music, unless the guest turned it off before.
   function soundGesture(e) {
-    if (soundWanted || soundOff() || !soundButtons.size) return;
+    if (soundWanted || soundOn || soundOff() || !soundButtons.size) return;
     var path = e.composedPath ? e.composedPath() : [e.target];
     for (var i = 0; i < path.length; i++) { if (path[i] && path[i].nodeType === 1 && path[i].hasAttribute("data-sound-toggle")) return; }
     soundPlay();
@@ -249,10 +269,10 @@
   document.addEventListener("visibilitychange", function () {
     if (!soundAudio) return;
     if (document.hidden) { soundResume = !soundAudio.paused; if (soundResume) soundAudio.pause(); }
-    else if (soundResume) { soundResume = false; soundAudio.play().then(soundPaint, soundPaint); }
+    else if (soundResume) { soundResume = false; if (soundOn) { var p = soundAudio.play(); if (p && p.then) p.then(soundPaint, function () { soundOn = false; soundPaint(); }); } }
   });
   function soundToggle() {
-    if (soundAudio && !soundAudio.paused) { soundSave(false); soundWanted = true; soundStop(); }
+    if (soundOn) { soundSave(false); soundWanted = true; soundStop(); }
     else { soundSave(true); soundWanted = true; soundPlay(); }
   }
 
