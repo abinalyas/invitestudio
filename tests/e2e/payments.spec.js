@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
 
 async function draftWithServer(page, { mode = 'live', country = 'IN', unlocked = false, paidOnReturn = true } = {}) {
   const { pricingFor, regionForCountry } = await import('../../functions/_shared/pricing.js');
-  const server = { version: 1, unlocked, paid: false, checkouts: [], verifies: 0, publishes: [] };
+  const server = { version: 1, unlocked, paid: false, checkouts: [], verifies: 0, publishes: [], publishConflict: false };
   const wedding = () => ({
     id: WID, version: server.version, status: 'draft', visibility: 'private', slug: null, name: 'Mira & Arun', category: 'Wedding', template_id: 'velvet-reveal',
     title: 'Mira & Arun', event_date: '2027-01-20', location: '', message: '', story: '', hosts: '', locale: 'English', theme: {}, preferences: {},
@@ -64,6 +64,7 @@ async function draftWithServer(page, { mode = 'live', country = 'IN', unlocked =
       const body = request.postDataJSON();
       server.publishes.push(body);
       if (mode === 'live' && !server.unlocked) return json({ error: { code: 'PAYMENT_REQUIRED', message: 'Publishing needs a one-time payment.' } }, 402);
+      if (server.publishConflict) return json({ error: { code: 'SLUG_CONFLICT', message: 'That web address is already in use.' } }, 409);
       server.version += 1;
       return json({ wedding: { ...wedding(), status: 'published', visibility: 'public', slug: body.slug } });
     }
@@ -112,30 +113,75 @@ test('payments live: a visitor elsewhere sees their own currency', async ({ page
   await expect(dialog.getByRole('button', { name: 'Pay $59 and continue' })).toBeEnabled();
 });
 
-test('pay, come back, get confirmed by the server, and go live', async ({ page }) => {
+test('pay, come back, get confirmed by the server, and the website goes live by itself', async ({ page }) => {
   const server = await draftWithServer(page);
   const dialog = await openShare(page);
   await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeDisabled({ timeout: 15000 });
   await fillDetails(dialog, { phone: '95678 82568' });
   await dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' }).click();
-  // Sent to the payment page and back; the dialog reopens by itself and confirms the payment with the server.
-  await expect(dialog.locator('[data-payment-info]')).toContainText('Payment received', { timeout: 20000 });
+  // Sent to the payment page and back; the dialog reopens by itself, confirms the payment with the server, and goes live.
+  await expect(dialog.locator('h2')).toHaveText('Payment received. Your website is live!', { timeout: 30000 });
   expect(server.checkouts).toEqual([{ name: 'Mira Nair', email: 'mira@example.com', phone: '95678 82568', marketing: false }], 'only the buyer\'s details are sent, never an amount');
   expect(server.verifies).toBeGreaterThan(0);
   expect(page.url()).not.toContain('payment=');
-  await expect(dialog.getByRole('button', { name: 'Make it live' })).toBeEnabled({ timeout: 15000 });
+  // Nobody was asked to choose "Make it live": it was published once, at the address chosen before paying.
+  expect(server.publishes.length).toBe(1);
+  expect(server.publishes[0].slug).toBe('mira-and-arun');
+  await expect(dialog.getByRole('button', { name: 'Make it live' })).toHaveCount(0);
+  // The link is there, with how to change things later; no sales copy, no order, no "update" button yet.
+  await expect(dialog.locator('.pub-live')).toContainText('/s/mira-and-arun');
+  await expect(dialog.locator('[data-edit-hint]')).toContainText('My invitations');
+  await expect(dialog.locator('[data-edit-hint]')).toContainText('Edit');
+  await expect(dialog.getByRole('button', { name: 'Update live page' })).toHaveCount(0);
   await expect(dialog.locator('[data-price-note]')).toHaveCount(0);
-  // Straight after paying, going live leads: no sales copy, and the button is in view without scrolling.
-  await expect(dialog.locator('h2')).toHaveText(/payment received/i);
   await expect(dialog.locator('.pub-benefits')).toHaveCount(0);
   await expect(dialog.locator('.pub-steps')).toHaveCount(0);
-  const inView = async () => dialog.getByRole('button', { name: 'Make it live' }).evaluate(el => { const r = el.getBoundingClientRect(); return r.top >= 0 && r.bottom <= window.innerHeight; });
-  await page.setViewportSize({ width: 390, height: 780 });
-  await expect.poll(inView, { message: 'on a phone, the button is in view without scrolling' }).toBe(true);
-  await dialog.getByRole('button', { name: 'Make it live' }).click();
-  await expect(dialog.locator('h2')).toHaveText(/your invitation is live/i, { timeout: 15000 });
-  expect(server.publishes.length).toBe(1);
   expect(await page.evaluate(() => localStorage.getItem('invitestudio-pending-payment'))).toBeNull();
+  expect(await page.evaluate(() => current().publishStatus)).toBe('published');
+});
+
+test('on a phone, after paying, the live website screen is one column with the link in view and nothing sideways', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 780 });
+  await draftWithServer(page);
+  const dialog = await openShare(page);
+  await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeDisabled({ timeout: 15000 });
+  await fillDetails(dialog);
+  await dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' }).click();
+  await expect(dialog.locator('h2')).toHaveText('Payment received. Your website is live!', { timeout: 30000 });
+  const columns = await page.locator('.pub-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+  expect(columns).toBe(1);
+  const shell = page.locator('.modal.publish-shell');
+  const sizes = await shell.evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
+  const link = await dialog.locator('.pub-live a').boundingBox();
+  expect(link.x).toBeGreaterThanOrEqual(0);
+  expect(link.x + link.width).toBeLessThanOrEqual(390);
+});
+
+test('after paying, if the chosen address was taken meanwhile, the last step is shown with the reason (one column on a phone), and it can be finished', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const server = await draftWithServer(page);
+  server.publishConflict = true;
+  const dialog = await openShare(page);
+  await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeDisabled({ timeout: 15000 });
+  await fillDetails(dialog);
+  await dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' }).click();
+  await expect(dialog.getByText('That web address is already in use.').first()).toBeVisible({ timeout: 30000 });
+  await expect(dialog.locator('h2')).toHaveText('Payment received. Thank you!');
+  await expect(dialog.getByRole('button', { name: 'Make it live' })).toBeAttached();
+  // The broken layout: two cramped columns on a phone. It is one column.
+  const columns = await page.locator('.pub-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+  expect(columns).toBe(1);
+  const shell = page.locator('.modal.publish-shell');
+  const sizes = await shell.evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
+  // Another address, and it goes live.
+  server.publishConflict = false;
+  await dialog.locator('#publishSlug').fill('mira-and-arun-2027');
+  await expect(dialog.getByRole('button', { name: 'Make it live' })).toBeEnabled({ timeout: 15000 });
+  await dialog.getByRole('button', { name: 'Make it live' }).click();
+  await expect(dialog.locator('h2')).toHaveText('Payment received. Your website is live!', { timeout: 15000 });
+  await expect(dialog.locator('.pub-live')).toContainText('/s/mira-and-arun-2027');
 });
 
 test('back from the payment page but not confirmed yet: the person is told, and can check again', async ({ page }) => {
@@ -149,7 +195,7 @@ test('back from the payment page but not confirmed yet: the person is told, and 
   // The bank catches up; checking again unlocks it.
   server.paid = true;
   await dialog.getByRole('button', { name: 'Check again' }).click();
-  await expect(dialog.locator('[data-payment-info]')).toContainText('Payment received', { timeout: 20000 });
+  await expect(dialog.locator('h2')).toContainText('Payment received', { timeout: 30000 });
 });
 
 test('early access: no payment is asked for, the price that will apply is shown, and Make it live just works', async ({ page }) => {
@@ -293,10 +339,10 @@ test('coming back from the payment page: a cover shows at once and the dialog do
   await fillDetails(dialog);
   const started = Date.now();
   await dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' }).click();
-  await expect(dialog.locator('[data-payment-info]')).toContainText(/Confirming your payment|Payment received/, { timeout: 20000 });
+  await expect(dialog).toContainText(/Confirming your payment|Payment received/, { timeout: 20000 });
   expect(Date.now() - started).toBeLessThan(5000);
   expect(await page.evaluate(() => window.__coverAtStart)).toBe(true);
   await expect(page.locator('html.payment-return')).toHaveCount(0);
-  await expect(dialog.locator('[data-payment-info]')).toContainText('Payment received', { timeout: 20000 });
+  await expect(dialog.locator('h2')).toContainText('Payment received', { timeout: 30000 });
   expect(server.verifies).toBeGreaterThan(0);
 });

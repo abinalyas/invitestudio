@@ -1103,6 +1103,12 @@
     if (notice.error !== undefined) session.error = notice.error;
     if (notice.success !== undefined) session.success = notice.success;
     const live = isLive(project);
+    // Straight after a confirmed payment the website goes live by itself: a short, quiet "working" screen until it does.
+    if (session.goingLive && !live) {
+      renderModal(`<div class="pub-shell"><div class="pub-top"><span class="pub-logo">${typeof logoMark === 'string' ? logoMark : ''}<span>InviteStudio</span></span></div>
+        <div class="pub-working" data-going-live><h2 id="modal-title">Payment received. Thank you!</h2><p class="pub-lead">Making your website live…</p><span class="pub-spin" role="status" aria-label="Please wait"></span></div></div>`);
+      return;
+    }
     const ICON = {
       lock: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
       card: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></svg>',
@@ -1126,7 +1132,7 @@
       ? `<div role="alert" class="pub-warn"><strong>The old address will stop working.</strong><p>Guests who have <span>${escapeText(publicLink)}</span> will see "not available". Share the new link with them.</p><label class="pub-check"><input type="checkbox" data-confirm-change ${session.confirmed ? 'checked' : ''}> <span>I understand the old link will stop working.</span></label></div>`
       : '';
     const error = session.error ? `<p class="pub-note bad" role="alert">${escapeText(session.error)}</p>` : '';
-    const success = session.success ? '<p class="pub-note ok" role="status">Your invitation is live. Share the link below.</p>' : '';
+    const success = session.success && !session.paidLive ? '<p class="pub-note ok" role="status">Your invitation is live. Share the link below.</p>' : '';
     const notSaved = project.cloudStatus !== 'saved'
       ? '<p class="pub-note" role="status">Saving your latest changes. You can go live in a moment.</p>'
       : '';
@@ -1185,7 +1191,7 @@
     // Said before anything is public, in plain words: what happens, what does not, and what can be undone.
     // Straight after going live there is nothing to update yet, so the dialog only shows the link (and Close / Take offline).
     const justWentLive = live && session.success && !session.changing;
-    const explainer = justWentLive ? '' : live
+    const explainer = justWentLive ? (session.paidLive ? '<p class="pub-fine" data-edit-hint>Need to change something? Open <strong>My invitations</strong>, choose <strong>Edit</strong>, then <strong>Update live page</strong>.</p>' : '') : live
       ? '<p class="pub-fine">Changed something? Choose <strong>Update live page</strong>. <strong>Take offline</strong> stops the link.</p>'
       : `<section class="pub-card pub-explain"><h3 class="pub-card-title">What happens next</h3><ul>
           <li><strong>Private until you go live.</strong> Only you can see it now.</li>
@@ -1242,14 +1248,14 @@
       : `<li><span>${ICON.card}</span><div><strong>Free for now</strong><small>Early access</small></div></li>`;
     const steps = live || paidReturn ? '' : `<ol class="pub-steps" aria-label="How it works"><li><span>${ICON.lock}</span><div><strong>Private now</strong><small>Only you can see it</small></div></li><li class="pub-arrow" aria-hidden="true">›</li>${stepsPay}<li class="pub-arrow" aria-hidden="true">›</li><li><span>${ICON.link}</span><div><strong>Get a live link</strong><small>Share with your guests</small></div></li></ol>`;
     const lead = live
-      ? 'Share this link with your guests.'
+      ? (session.paidLive ? 'Share your link with your guests.' : 'Share this link with your guests.')
       : paidReturn ? 'Last step: make it live to get your link.'
       : paying ? 'Pay once to make it live and get your link.'
       : 'Make it live to get a link for your guests.';
     renderModal(`<div class="pub-shell">
       <div class="pub-top"><span class="pub-logo">${typeof logoMark === 'string' ? logoMark : ''}<span>InviteStudio</span></span><button class="pub-x" type="button" data-publish-close aria-label="Dismiss">×</button></div>
       <div class="eyebrow">${live ? 'Your live invitation' : 'Share your invitation'}</div>
-      <h2 id="modal-title">${live ? 'Your invitation is live' : paidReturn ? 'Payment received. Thank you!' : 'Ready to go live?'}</h2>
+      <h2 id="modal-title">${live ? (session.paidLive ? 'Payment received. Your website is live!' : 'Your invitation is live') : paidReturn ? 'Payment received. Thank you!' : 'Ready to go live?'}</h2>
       <p class="pub-lead">${lead}</p>
       ${paidReturn || live || !project.publishStatus || project.publishStatus === 'draft' ? '' : `<p class="pub-status">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>, not public yet.</p>`}
       ${steps}
@@ -1522,10 +1528,10 @@
           try { window.localStorage.removeItem(PENDING_PAYMENT_KEY); } catch { /* nothing to clear */ }
           session.busy = false;
           session.needsPayment = false;
-          session.info = 'Payment received. Thank you! Your invitation is ready: choose Make it live to share it with your guests.';
+          session.info = '';
           session.paidReturn = true;
           localSave();
-          paintPublishDialog(project, {});
+          await goLiveAfterPayment(project);
           return;
         }
       } catch (error) {
@@ -1562,9 +1568,35 @@
     return 'Publishing did not complete. Your draft is safe; try again in a moment.';
   }
 
-  async function publishFromDialog(project) {
+  // Straight after a confirmed payment the website goes live by itself, so nobody has to ask twice. If it cannot (the draft is still
+  // saving, or the chosen address is no longer free), the usual last step is shown instead, with the reason.
+  async function goLiveAfterPayment(project) {
     const session = publishSession;
-    if (!session || !canPublish(project, session)) return;
+    if (!session) return;
+    session.goingLive = true;
+    session.busy = true;
+    session.error = '';
+    paintPublishDialog(project, {});
+    // Edits made just before paying are sent first, so what goes live is what the person saw.
+    flushPendingCloudSaves();
+    for (let waited = 0; project.cloudStatus !== 'saved' && waited < 10000 && publishSession === session; waited += 500) {
+      await new Promise(resolve => window.setTimeout(resolve, 500));
+    }
+    if (publishSession !== session) return;
+    const problem = project.cloudStatus === 'saved' ? slugProblem(session.typed, project.publicSlug) : 'Your latest changes are still saving. Choose Make it live in a moment.';
+    if (problem) {
+      session.busy = false;
+      session.goingLive = false;
+      session.error = problem;
+      paintPublishDialog(project, {});
+      return;
+    }
+    await publishFromDialog(project, { auto: true });
+  }
+
+  async function publishFromDialog(project, { auto = false } = {}) {
+    const session = publishSession;
+    if (!session || (!auto && !canPublish(project, session))) return;
     session.busy = true;
     session.error = '';
     paintPublishDialog(project, {});
@@ -1585,6 +1617,9 @@
       session.changing = false;
       session.confirmed = false;
       session.success = true;
+      session.goingLive = false;
+      // Just paid (gone live by itself, or by the usual last step after a problem): say so.
+      session.paidLive = auto || Boolean(session.paidReturn);
       paintPublishDialog(project, {});
       toast('Your invitation is live.');
     } catch (error) {
@@ -1592,11 +1627,14 @@
       if (error.code === 'PAYMENT_REQUIRED') {
         // The server says this website must be paid for first: the main button now takes the payment.
         session.needsPayment = true;
+        session.goingLive = false;
         session.error = '';
         paintPublishDialog(project, {});
         return;
       }
       session.error = publishErrorMessage(error);
+      // Going live by itself did not work: the usual last step, with the reason.
+      if (auto) { session.goingLive = false; session.paidReturn = true; }
       if (error.code === 'SLUG_CONFLICT') {
         session.availability = { available: false, message: 'That web address is already in use.', suggestions: [] };
         checkAddressSoon(project);
