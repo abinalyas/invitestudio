@@ -128,19 +128,42 @@ test('pay, come back, get confirmed by the server, and the website goes live by 
   expect(server.publishes.length).toBe(1);
   expect(server.publishes[0].slug).toBe('mira-and-arun');
   await expect(dialog.getByRole('button', { name: 'Make it live' })).toHaveCount(0);
-  // The link is there, with how to change things later; no sales copy, no order, no "update" button yet.
+  // Only what is needed now: the link, with Copy link and the WhatsApp card as the two main actions.
   await expect(dialog.locator('.pub-live')).toContainText('/s/mira-and-arun');
+  await expect(dialog.getByRole('button', { name: 'Copy link' })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Share card for WhatsApp' })).toBeVisible();
+  // Changing the address and taking it offline are mentioned, not offered, on this screen; and nothing else crowds it.
+  await expect(dialog.getByRole('button', { name: 'Change web address' })).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: 'Take offline' })).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: 'Update live page' })).toHaveCount(0);
+  await expect(dialog.locator('[data-later-hint]')).toContainText('change your web address');
+  await expect(dialog.locator('[data-later-hint]')).toContainText('take the website offline');
   await expect(dialog.locator('[data-edit-hint]')).toContainText('My invitations');
   await expect(dialog.locator('[data-edit-hint]')).toContainText('Edit');
-  await expect(dialog.getByRole('button', { name: 'Update live page' })).toHaveCount(0);
+  await expect(dialog.locator('.pub-design')).toHaveCount(0);
+  await expect(dialog.getByText('Your order')).toHaveCount(0);
   await expect(dialog.locator('[data-price-note]')).toHaveCount(0);
   await expect(dialog.locator('.pub-benefits')).toHaveCount(0);
   await expect(dialog.locator('.pub-steps')).toHaveCount(0);
+  await expect(dialog.locator('#publishSlug')).toHaveCount(0);
+  // Copy link copies the live address.
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await dialog.getByRole('button', { name: 'Copy link' }).click();
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(`${new URL(page.url()).origin}/s/mira-and-arun`);
+  // The WhatsApp card opens from here.
+  await dialog.getByRole('button', { name: 'Share card for WhatsApp' }).click();
+  await expect(page.locator('#modal-root [data-sc-image], #modal-root [data-sc-locked], #modal-root [data-sc-empty]').first()).toBeVisible({ timeout: 15000 });
   expect(await page.evaluate(() => localStorage.getItem('invitestudio-pending-payment'))).toBeNull();
   expect(await page.evaluate(() => current().publishStatus)).toBe('published');
+  // Later, opening Share invitation again has the full live dialog: change the address, take it offline.
+  await page.evaluate(() => closeModal());
+  const later = await openShareAgain(page);
+  await expect(later.getByRole('heading', { name: 'Your invitation is live' })).toBeVisible();
+  await expect(later.getByRole('button', { name: 'Change web address' })).toBeVisible();
+  await expect(later.getByRole('button', { name: 'Take offline' })).toBeVisible();
 });
 
-test('on a phone, after paying, the live website screen is one column with the link in view and nothing sideways', async ({ page }) => {
+test('on a phone, after paying, the live screen shows the link and both main buttons in view, with nothing sideways', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 780 });
   await draftWithServer(page);
   const dialog = await openShare(page);
@@ -148,14 +171,15 @@ test('on a phone, after paying, the live website screen is one column with the l
   await fillDetails(dialog);
   await dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' }).click();
   await expect(dialog.locator('h2')).toHaveText('Payment received. Your website is live!', { timeout: 30000 });
-  const columns = await page.locator('.pub-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
-  expect(columns).toBe(1);
   const shell = page.locator('.modal.publish-shell');
   const sizes = await shell.evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth }));
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
-  const link = await dialog.locator('.pub-live a').boundingBox();
-  expect(link.x).toBeGreaterThanOrEqual(0);
-  expect(link.x + link.width).toBeLessThanOrEqual(390);
+  for (const target of [dialog.locator('.pub-live a'), dialog.getByRole('button', { name: 'Copy link' }), dialog.getByRole('button', { name: 'Share card for WhatsApp' })]) {
+    const box = await target.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(390);
+    expect(box.y + box.height, 'in view without scrolling').toBeLessThanOrEqual(780);
+  }
 });
 
 test('after paying, if the chosen address was taken meanwhile, the last step is shown with the reason (one column on a phone), and it can be finished', async ({ page }) => {

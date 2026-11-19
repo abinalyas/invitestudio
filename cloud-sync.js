@@ -1109,6 +1109,25 @@
         <div class="pub-working" data-going-live><h2 id="modal-title">Payment received. Thank you!</h2><p class="pub-lead">Making your website live…</p><span class="pub-spin" role="status" aria-label="Please wait"></span></div></div>`);
       return;
     }
+    // Straight after paying, once the website is live: only what is needed now. The link, with Copy link and the WhatsApp card as the two
+    // main actions, and one line about what can be done later. No design card, no order, no address field.
+    if (live && session.success && session.paidLive && !session.changing) {
+      const link = publicLinkFor(project.publicSlug);
+      renderModal(`<div class="pub-shell pub-done">
+        <div class="pub-top"><span class="pub-logo">${typeof logoMark === 'string' ? logoMark : ''}<span>InviteStudio</span></span><button class="pub-x" type="button" data-publish-close aria-label="Dismiss">×</button></div>
+        <div class="eyebrow">Your live invitation</div>
+        <h2 id="modal-title">Payment received. Your website is live!</h2>
+        <p class="pub-lead">Share your link with your guests.</p>
+        <section class="pub-card pub-live pub-done-card"><a class="pub-done-link" href="${escapeText(link)}" target="_blank" rel="noopener">${escapeText(link).replace(/([\/-])/g, '$1<wbr>')}</a>
+          <div class="pub-done-actions"><button class="btn dark" type="button" data-copy-public-link>Copy link</button><button class="btn dark" type="button" data-share-card>Share card for WhatsApp</button></div>
+        </section>
+        <p class="pub-fine" data-edit-hint>Need to change something? Open <strong>My invitations</strong>, choose <strong>Edit</strong>, then <strong>Update live page</strong>.</p>
+        <p class="pub-fine" data-later-hint>Later, <strong>Share invitation</strong> lets you change your web address or take the website offline.</p>
+        <div class="pub-foot"><p><span><strong>Questions?</strong> <a href="/contact" target="_blank" rel="noopener">Contact us</a>.</span></p><button class="btn" type="button" data-publish-close>Close</button></div>
+      </div>`);
+      wirePublishDialog(project);
+      return;
+    }
     const ICON = {
       lock: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
       card: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></svg>',
