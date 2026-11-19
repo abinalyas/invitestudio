@@ -218,7 +218,7 @@ test('early access and unlocked websites are never asked for these details', asy
 test('the dialog is a purchase screen: steps, your details, your link, the design, what is included and the order', async ({ page }) => {
   await draftWithServer(page, { country: 'IN' });
   const dialog = await openShare(page);
-  await expect(dialog.getByRole('heading', { name: 'Your invitation is almost ready.' })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Ready to go live?' })).toBeVisible();
   await expect(dialog.getByRole('list', { name: 'How it works' }).getByRole('listitem').filter({ hasText: /Private now|Pay once|Get a live link/ })).toHaveCount(3);
   await expect(dialog.getByRole('heading', { name: 'Your details' })).toBeVisible();
   await expect(dialog.getByRole('heading', { name: 'Your invitation link' })).toBeVisible();
