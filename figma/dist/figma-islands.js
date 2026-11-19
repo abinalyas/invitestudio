@@ -942,6 +942,9 @@ Error generating stack: `+i.message+`
 .figma-app .confirm-remove p{ margin: 0; }
 .figma-app .confirm-actions{ display: flex; flex-wrap: wrap; gap: 8px; }
 .figma-app .btn.danger{ border-color: #9b5147; background: #9b5147; color: #fff; }
+.figma-app button.btn.small.danger{ display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border: 1px solid #9b5147; border-radius: 999px; background: #9b5147; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+.figma-app button.btn.small.danger:hover{ background: #864339; border-color: #864339; }
+.figma-app button.btn.small.danger:focus-visible{ outline: 2px solid #9b5147; outline-offset: 2px; }
 .figma-app .add-event{ display: grid; gap: 10px; padding-top: 6px; border-top: 1px solid #ded9d0; }
 .figma-app .add-event label{ display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
 .figma-app .add-event button:disabled{ opacity: .5; cursor: not-allowed; }

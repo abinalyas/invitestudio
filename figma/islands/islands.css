@@ -120,6 +120,10 @@
 .confirm-remove p { margin: 0; }
 .confirm-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .btn.danger { border-color: #9b5147; background: #9b5147; color: #fff; }
+/* Same shape as the other small buttons (their rule leaves .danger out so it keeps its red). */
+button.btn.small.danger { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border: 1px solid #9b5147; border-radius: 999px; background: #9b5147; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+button.btn.small.danger:hover { background: #864339; border-color: #864339; }
+button.btn.small.danger:focus-visible { outline: 2px solid #9b5147; outline-offset: 2px; }
 .add-event { display: grid; gap: 10px; padding-top: 6px; border-top: 1px solid #ded9d0; }
 .add-event label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
 .add-event button:disabled { opacity: .5; cursor: not-allowed; }
