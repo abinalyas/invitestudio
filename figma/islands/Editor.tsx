@@ -957,10 +957,13 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
   const [confirming, setConfirming] = useState(false);
   const change = (patch: EventPatch) => bridge.updateEvent(item.id, patch);
 
-  // Only the name is needed. Date, time and venue are what most guests look for; everything else is tucked
-  // away, and opens by itself when it already has something in it.
+  // Only the name is needed. Date, time, venue and the directions link are what most guests look for; everything else is
+  // tucked away, and opens by itself when it already has something in it.
   const endBeforeStart = Boolean(item.time && item.endTime && item.endTime < item.time);
-  const hasMore = Boolean(item.endTime || item.description || item.dressCode || item.directionsUrl || item.parking || item.accommodation || item.accessibility);
+  // Parking, travel and accessibility notes are no longer asked for. An event that already has some keeps showing them, so that
+  // text (which guests still see) can be edited or cleared; the fields stay for as long as this form is open.
+  const [legacyTravel] = useState(() => Boolean(item.parking || item.accommodation || item.accessibility));
+  const hasMore = Boolean(item.endTime || item.description || item.dressCode || legacyTravel);
 
   return (
     <div className="event-form">
@@ -987,6 +990,15 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
         Venue <span className="optional">(optional)</span>
         <input value={item.venue} maxLength={500} onChange={event => change({ venue: event.target.value })} />
       </label>
+      <label>
+        Directions link <span className="optional">(optional)</span>
+        <input
+          type="url"
+          value={item.directionsUrl}
+          placeholder="https://maps.google.com/…"
+          onChange={event => change({ directionsUrl: event.target.value })}
+        />
+      </label>
 
       <details className="event-more" open={hasMore}>
         <summary>More details <span className="optional">(optional, add later if you like)</span></summary>
@@ -1009,30 +1021,23 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
           Dress code
           <input value={item.dressCode} maxLength={180} onChange={event => change({ dressCode: event.target.value })} />
         </label>
-        <fieldset className="travel-fields">
-          <legend>Travel details</legend>
-          <label>
-            Directions link
-            <input
-              type="url"
-              value={item.directionsUrl}
-              placeholder="https://maps.google.com/…"
-              onChange={event => change({ directionsUrl: event.target.value })}
-            />
-          </label>
-          <label>
-            Parking
-            <textarea rows={2} maxLength={4000} value={item.parking} onChange={event => change({ parking: event.target.value })} />
-          </label>
-          <label>
-            Travel and accommodation
-            <textarea rows={2} maxLength={4000} value={item.accommodation} onChange={event => change({ accommodation: event.target.value })} />
-          </label>
-          <label>
-            Accessibility
-            <textarea rows={2} maxLength={4000} value={item.accessibility} onChange={event => change({ accessibility: event.target.value })} />
-          </label>
-        </fieldset>
+        {legacyTravel ? (
+          <fieldset className="travel-fields">
+            <legend>Travel details</legend>
+            <label>
+              Parking
+              <textarea rows={2} maxLength={4000} value={item.parking} onChange={event => change({ parking: event.target.value })} />
+            </label>
+            <label>
+              Travel and accommodation
+              <textarea rows={2} maxLength={4000} value={item.accommodation} onChange={event => change({ accommodation: event.target.value })} />
+            </label>
+            <label>
+              Accessibility
+              <textarea rows={2} maxLength={4000} value={item.accessibility} onChange={event => change({ accessibility: event.target.value })} />
+            </label>
+          </fieldset>
+        ) : null}
       </details>
 
       {confirming ? (

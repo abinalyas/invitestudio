@@ -154,7 +154,7 @@ test('the photos panel shows an honest empty state and an upload control, and th
   await expect(page.locator('.invitation-canvas')).not.toContainText('Photos will be added here');
 });
 
-test('events are added and edited with their own travel details, and persist', async ({ page }) => {
+test('events are added and edited with their own directions link and dress code, and persist', async ({ page }) => {
   await openDesigner(page, 1);
   const eventName = `Sangeet ${randomUUID().slice(0, 4)}`;
   await page.locator('.editor-pages').getByRole('button', { name: /^Events/ }).click();
@@ -162,9 +162,10 @@ test('events are added and edited with their own travel details, and persist', a
   await page.getByRole('button', { name: 'Add event' }).click();
 
   await page.getByLabel(/^Venue \(optional\)/).fill('The Garden Hall');
-  await page.getByText(/^More details/).click();
+  // The directions link sits with the venue, outside "More details".
   await page.getByLabel('Directions link').fill('https://maps.example.com/garden-hall');
-  await page.getByLabel(/^Parking/).fill('Parking behind the hall');
+  await page.getByText(/^More details/).click();
+  await page.getByLabel(/^Dress code/).fill('Smart casual');
   await expect(page.locator('.invitation-canvas')).toContainText(eventName, { timeout: 5000 });
   await expect(page.locator('.invitation-canvas')).toContainText('The Garden Hall', { timeout: 5000 });
   await waitSaved(page);
@@ -173,9 +174,8 @@ test('events are added and edited with their own travel details, and persist', a
   await page.locator('.editor-pages').getByRole('button', { name: /^Events/ }).click();
   await page.locator('.editor-controls').getByRole('button', { name: new RegExp(eventName) }).first().click();
   await expect(page.getByLabel(/^Venue \(optional\)/)).toHaveValue('The Garden Hall', { timeout: 15000 });
-  await page.getByText(/^More details/).click();
   await expect(page.getByLabel('Directions link')).toHaveValue('https://maps.example.com/garden-hall');
-  await expect(page.getByLabel(/^Parking/)).toHaveValue('Parking behind the hall');
+  await expect(page.getByLabel(/^Dress code/)).toHaveValue('Smart casual');
 
   await page.getByLabel('Show this event on the invitation').uncheck();
   await waitSaved(page);
