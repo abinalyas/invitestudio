@@ -133,25 +133,6 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
             </div>
             <p className="detail-path">Next: your names, date and place. It takes about a minute, and you can edit your details afterwards.</p>
 
-            <div className="detail-block">
-              <h2>Opening</h2>
-              <p className="detail-lead">{template.opening.name}</p>
-              <p>{template.opening.text}</p>
-            </div>
-
-            <div className="detail-block">
-              <h2>This design’s colours</h2>
-              <div className="swatches" role="img" aria-label="The colour palette of this design">
-                {template.palette.map((colour) => (
-                  <span key={colour} className="swatch" style={{ background: colour }} />
-                ))}
-              </div>
-              <p>
-                Every design has its own colours and fonts, chosen to look good together. They stay as designed, so for a different look, choose another design.{" "}
-                <a href="/templates">Browse all designs</a>
-              </p>
-            </div>
-
             <div className="included-panel">
               <h2>What you can edit</h2>
               <ul className="check-list">

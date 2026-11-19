@@ -144,3 +144,20 @@ test('gallery: an unknown tier, or prices that did not load, show every design r
   await expect(galleryTitles(page)).toHaveCount(10);
   await expect(page.locator('[data-tier-filter]')).toHaveCount(0);
 });
+
+// The template page keeps to what helps a visitor decide: no "Opening" or colours sections.
+test('template page: no Opening or colours sections, and the way back to all designs stays', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await pricesFor(page, 'IN');
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/16'); state.page = 'home'; render(); });
+  const info = page.locator('.figma-island-host .detail-info');
+  await expect(info).toBeVisible();
+  await expect(info.getByRole('heading', { name: 'What you can edit' })).toBeVisible();
+  await expect(info.getByRole('heading', { name: 'What your guests see' })).toBeVisible();
+  const text = await info.innerText();
+  expect(text).not.toMatch(/\bOpening\b/);
+  expect(text).not.toMatch(/colours/i);
+  await expect(info.locator('.swatches')).toHaveCount(0);
+  await expect(page.locator('.figma-island-host').getByRole('link', { name: 'Templates' }).first()).toBeVisible();
+});
