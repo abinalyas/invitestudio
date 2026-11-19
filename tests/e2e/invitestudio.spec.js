@@ -535,8 +535,8 @@ test.describe('guest replies', () => {
     const { sniffImage, imageSize, MEDIA_LIMITS } = await import('../../functions/_shared/media.js');
     const { calls } = await openSavedDraft(page);
     await expect(page.getByTestId('photo-usage')).toContainText('0 of 12 photos');
-    await expect(page.getByText(/Photos added with the button below go to the gallery/)).toBeVisible();
-    await expect(page.getByText(/The design's own pictures have their own places/)).toBeVisible();
+    await expect(page.getByText(/They go to the gallery; use the arrows to change the order/)).toBeVisible();
+    await expect(page.getByText(/The design's own pictures are just below/)).toBeVisible();
     const big = Buffer.from(await makeImage(page, 'image/png', 3000, 2000), 'base64');
     const portrait = Buffer.from(await makeImage(page, 'image/jpeg', 1200, 1800), 'base64');
     await page.getByLabel('Add photos').setInputFiles([
@@ -702,7 +702,7 @@ test.describe('guest replies', () => {
     await page.waitForTimeout(600);
     await page.getByRole('button', { name: /Share invitation/ }).first().click();
     const note = page.locator('[data-kept-note]');
-    await expect(note).toContainText('Once live, your invitation stays online until 20 September 2027');
+    await expect(note).toContainText('Once live, online until 20 September 2027');
     await expect(note.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/919567882568/);
   });
 
@@ -776,7 +776,7 @@ test.describe('guest replies', () => {
     await expect(dialog.getByText('Current public link')).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Take offline' })).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Update live page' })).toHaveCount(0);
-    await expect(dialog.getByText(/Made changes since going live/)).toHaveCount(0);
+    await expect(dialog.getByText(/Changed something\?/)).toHaveCount(0);
     // Opening it again later is when "update" makes sense.
     await dialog.getByRole('button', { name: 'Close' }).click();
     // The editor then carries a prominent "live" banner whose address is a real link.
@@ -787,7 +787,7 @@ test.describe('guest replies', () => {
     await expect(banner.getByRole('button', { name: 'Copy link' })).toBeVisible();
     await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
     await expect(dialog.getByRole('button', { name: 'Update live page' })).toBeVisible();
-    await expect(dialog.getByText(/Made changes since going live/)).toBeVisible();
+    await expect(dialog.getByText(/Changed something\?/)).toBeVisible();
   });
 
   test('a welcome message typed just before a crash is still there when the draft is reopened', async ({ page }) => {
@@ -862,15 +862,15 @@ test.describe('guest replies', () => {
     // The note above the editor
     const guide = page.locator('.share-guide');
     await expect(guide).toContainText('Right now only you can see your invitation');
-    await expect(guide).toContainText('anyone who has the link can open it');
+    await expect(guide).toContainText('gives it a link anyone can open');
     await expect(guide).not.toContainText('Nothing is public until you do');
     // The dialog
     await page.getByRole('button', { name: /Share invitation/ }).first().click();
     const dialog = page.locator('#modal-title').locator('xpath=ancestor::*[contains(@class,"modal")][1]');
     const text = await dialog.innerText();
-    expect(text).toContain('Right now it is private.');
-    expect(text).toContain('Only you can see your invitation.');
-    expect(text).toContain('Anyone who has the link can open it');
+    expect(text).toContain('Private until you go live.');
+    expect(text).toContain('Only you can see it now.');
+    expect(text).toContain('Anyone with the link can open it');
     expect(text).toContain('Guests can reply from the live invitation.');
     expect(text).not.toContain('Nobody can see your invitation yet');
     expect(text).not.toContain('can’t reply online yet');
@@ -881,7 +881,7 @@ test.describe('guest replies', () => {
     await savedDraftWithServer(page);
     await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toBeVisible();
-    for (const [mode, expected, absent] of [['contact', 'Guests will see your contact details', 'Guests can reply from the live invitation'], ['none', null, 'Replies.']]) {
+    for (const [mode, expected, absent] of [['contact', 'Guests see your contact details', 'Guests can reply from the live invitation'], ['none', null, 'Replies.']]) {
       await page.evaluate(mode => window.InviteStudioBridge.setRsvp(mode), mode);
       await page.getByRole('button', { name: /Share invitation/ }).first().click();
       const dialog = page.locator('#modal-title').locator('xpath=ancestor::*[contains(@class,"modal")][1]');

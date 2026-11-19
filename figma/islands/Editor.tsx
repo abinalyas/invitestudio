@@ -499,10 +499,10 @@ export function EditorPage() {
             </div>
             {designsOpen ? (
               <div className="design-list" role="group" aria-label="Designs" ref={designListRef}>
-                <p className="tiny muted">Your names, dates, story and events stay the same when you change design.</p>
+                <p className="tiny muted">Your details stay the same when you change design.</p>
                 {snap.paidTier && pricing ? (
                   <p className="tiny muted design-lock-note" id="designLockNote">
-                    You paid for the {pricing.tiers.find(tier => tier.id === snap.paidTier)?.name ?? "chosen"} tier. You can switch to any design in it or a cheaper one.{" "}
+                    You paid for the {pricing.tiers.find(tier => tier.id === snap.paidTier)?.name ?? "chosen"} tier: any design in it or cheaper.{" "}
                     <TalkToUs topic="custom" lead="Want a higher tier? Talk to us:" />
                   </p>
                 ) : null}
@@ -531,7 +531,7 @@ export function EditorPage() {
             <div className="draft-access">
               <span className="draft-access-icon"><Icon name="lock" size={22} /></span>
               <strong>Your draft is private</strong>
-              <p>Only you can see it. Anyone with your private link can edit, so keep it to yourself. To open this draft on another device, copy the link there.</p>
+              <p>Only you can see it. Anyone with your private link can edit, so keep it to yourself.</p>
               <button type="button" className="btn small" onClick={() => bridge.copyPrivateLink()}><Icon name="link" size={18} /> Copy private link</button>
             </div>
           ) : null}
@@ -579,7 +579,7 @@ export function EditorPage() {
 
           {active === "home" ? (
             <div className="editor-form">
-              <p className="tiny muted">The first thing guests see: your names, date, place and welcome message. The cover is always shown.</p>
+              <p className="tiny muted">The first thing guests see: names, date, place and welcome message. Always shown.</p>
               <label>
                 Pre-title <span className="optional">(optional)</span>
                 <input value={snap.pretitle} placeholder="e.g. The wedding of" onChange={event => set({ pretitle: event.target.value })} />
@@ -629,7 +629,7 @@ export function EditorPage() {
               </label>
               {snap.photoSlots.includes("hero") ? (
                 <p className="tiny muted cover-photo-note">
-                  Your first photo becomes the cover picture; until then the design's own picture is shown.{" "}
+                  Your first photo becomes the cover picture.{" "}
                   <button type="button" className="link-button" onClick={() => choose("gallery")}>Add photos</button>
                 </p>
               ) : null}
@@ -710,7 +710,7 @@ function ShareGuide({ snap }: { snap: EditorSnapshot }) {
           <strong className="live-title">Your invitation is live</strong>
           <a className="live-link" href={url} target="_blank" rel="noopener noreferrer">{url.replace(/^https?:\/\//, "")}</a>
           <p className="live-hint">
-            Made changes? Open <strong>Share invitation</strong>, then choose <strong>Update live page</strong> to show them on this link.
+            Made changes? Choose <strong>Share invitation</strong>, then <strong>Update live page</strong>.
           </p>
         </div>
         <div className="live-actions">
@@ -730,8 +730,7 @@ function ShareGuide({ snap }: { snap: EditorSnapshot }) {
         <li><span>3</span> Share invitation</li>
       </ol>
       <p>
-        Right now only you can see your invitation. <strong>Share invitation</strong> makes it live with a web link, and anyone who has
-        the link can open it. You can keep editing afterwards, or take it offline any time.
+        Right now only you can see your invitation. <strong>Share invitation</strong> gives it a link anyone can open.
         {snap.hasPrivateLink ? (
           <>
             {" "}Want opinions first?{" "}
@@ -882,8 +881,8 @@ export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
 
   return (
     <div className="editor-form events-panel">
-      <p className="tiny muted">Each event has its own date, venue and travel details. Guests see events in the order shown here.
-        {snap.events.length > 1 ? " Drag the handle on the left to change the order, or focus it and use the up and down arrow keys." : ""}</p>
+      <p className="tiny muted">Guests see events in this order.
+        {snap.events.length > 1 ? " Drag the handle to change it." : ""}</p>
       <p className="visually-hidden" role="status" aria-live="polite">{announce}</p>
       {snap.events.length === 0 ? <p className="empty-state">No events yet. Add the first celebration below.</p> : null}
       <ul className={drag ? "event-list is-dragging" : "event-list"} ref={listRef}>
@@ -1117,8 +1116,8 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
         <strong>{media.usage.count} of {media.limits.photos} photos</strong> · {mb(media.usage.bytes)} of {mb(media.limits.totalBytes)} MB
       </p>
       <p className="tiny muted">
-        You can add up to {media.limits.photos} photos, and choose several at once. Photos added with the button below go to the gallery.
-        {slots.length ? " The design's own pictures have their own places, just below." : ""} Use the arrows to change the order.
+        Add up to {media.limits.photos} photos, several at once. They go to the gallery; use the arrows to change the order.
+        {slots.length ? " The design's own pictures are just below." : ""}
       </p>
       {slots.length ? (
         <section className="photo-places" aria-label="Pictures in this design">
@@ -1231,7 +1230,7 @@ function RsvpPanel({ snap }: { snap: EditorSnapshot }) {
       {online ? (
         <>
           {!snap.published ? (
-            <p className="tiny muted">Guests can reply once your invitation is live. Until then, the Reply button only shows how it will look.</p>
+            <p className="tiny muted">Guests can reply once your invitation is live. Until then the Reply button is a preview.</p>
           ) : null}
           <label className="check-row">
             <input type="checkbox" checked={snap.rsvpOpen} onChange={event => bridge.setRsvpOption("rsvpOpen", event.target.checked)} />
@@ -1248,8 +1247,8 @@ function RsvpPanel({ snap }: { snap: EditorSnapshot }) {
             </label>
           ) : null}
           <p className="tiny muted">
-            Guests give their name, whether they will attend{snap.rsvp === "count" ? ", how many people are coming" : ""}, and any meal or access needs.
-            Only you can see replies. After the date you set, or when you switch replies off, guests see “Replies are closed”
+            Guests give their name, if they will attend{snap.rsvp === "count" ? ", how many are coming" : ""}, and any meal or access needs.
+            Only you can see replies. Once replies close, guests see “Replies are closed”
             {snap.rsvpContact.value ? " and your number" : ""}.
           </p>
         </>
@@ -1278,7 +1277,6 @@ function RsvpPanel({ snap }: { snap: EditorSnapshot }) {
           {badNumber ? <p className="tiny error">Enter a full number with country code, for example +91 98765 43210.</p> : null}
           <p className="tiny muted">
             {contactMode ? "This number is shown on your public invitation" : "This number is shown only when replies are closed"}, so anyone with the link can see it.
-            Use a number you are happy to share.
           </p>
         </>
       ) : null}

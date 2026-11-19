@@ -144,7 +144,7 @@ test('in the Share dialog, the couple gets a preview link, copies it again, and 
   await page.getByRole('button', { name: 'Share invitation' }).click({ timeout: 20000 });
   const card = page.locator('[data-draft-preview-share]');
   await expect(card).toBeVisible();
-  await expect(card).toContainText('Not ready yet? Show family first');
+  await expect(card).toContainText('Not ready? Share a preview');
 
   await card.getByRole('button', { name: 'Get preview link' }).click();
   await expect(card.getByRole('button', { name: 'Copy preview link' })).toBeVisible();
