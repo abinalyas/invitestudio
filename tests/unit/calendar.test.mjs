@@ -1,4 +1,5 @@
-// "Add to calendar" for events (packaged-templates.js calendarFor and the {{calendar}} marker in every design).
+// "Add to calendar" for events: one button per dated event that downloads a calendar file (packaged-templates.js calendarFor and the
+// {{calendar}} marker in every design).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -35,7 +36,7 @@ const unfold = text => text.replace(/\r\n /g, '');
 const lines = text => unfold(text).split('\r\n').filter(Boolean);
 const info = { couple: 'Ava & Ben', where: 'Kochi', invitation: 'https://invitestudio.co/s/ava-and-ben', index: 0 };
 
-test('a timed event: start, the end it was given, and a Google link with the same times', () => {
+test('a timed event: start, the end it was given, its place, its id and the invitation address', () => {
   const r = calendarFor({ id: '11111111-2222-3333-4444-555555555555', title: 'Wedding ceremony', date: '2027-06-19', time: '16:00', endTime: '17:30', venue: 'St. Mary’s Church' }, info);
   const ics = lines(decodeIcs(r));
   assert.ok(ics.includes('DTSTART:20270619T160000'));
@@ -47,12 +48,8 @@ test('a timed event: start, the end it was given, and a Google link with the sam
   assert.ok(ics.includes('URL:https://invitestudio.co/s/ava-and-ben'));
   assert.equal(ics[0], 'BEGIN:VCALENDAR'); assert.equal(ics.at(-1), 'END:VCALENDAR');
   assert.ok(decodeIcs(r).endsWith('\r\n') && !/[^\r]\n/.test(decodeIcs(r)), 'lines end in CRLF');
-  const url = new URL(r.google);
-  assert.equal(url.origin + url.pathname, 'https://calendar.google.com/calendar/render');
-  assert.equal(url.searchParams.get('action'), 'TEMPLATE');
-  assert.equal(url.searchParams.get('text'), 'Wedding ceremony – Ava & Ben');
-  assert.equal(url.searchParams.get('dates'), '20270619T160000/20270619T173000');
-  assert.equal(url.searchParams.get('location'), 'St. Mary’s Church');
+  assert.ok(r.ics.startsWith('data:text/calendar;charset=utf-8,'));
+  assert.equal(r.title, 'Wedding ceremony');
   assert.equal(r.file, 'wedding-ceremony.ics');
 });
 
@@ -61,11 +58,9 @@ test('no end time, or an end that is not after the start, means two hours; no ti
   assert.ok(noEnd.includes('DTEND:20270619T210000'));
   const overnight = calendarFor({ title: 'Sangeet', date: '2027-06-18', time: '22:00', endTime: '01:00' }, info);
   assert.ok(lines(decodeIcs(overnight)).includes('DTEND:20270619T000000'), 'two hours, over midnight');
-  assert.equal(new URL(overnight.google).searchParams.get('dates'), '20270618T220000/20270619T000000');
   const allDay = calendarFor({ title: 'Mehendi', date: '2027-06-18' }, info);
   const ics = lines(decodeIcs(allDay));
   assert.ok(ics.includes('DTSTART;VALUE=DATE:20270618') && ics.includes('DTEND;VALUE=DATE:20270619'));
-  assert.equal(new URL(allDay.google).searchParams.get('dates'), '20270618/20270619');
 });
 
 test('an event with no real date has no calendar entry', () => {
@@ -76,11 +71,11 @@ test('the place falls back to the wedding\'s, and the notes carry the descriptio
   const noVenue = lines(decodeIcs(calendarFor({ title: 'Mehendi', date: '2027-06-18' }, info)));
   assert.ok(noVenue.includes('LOCATION:Kochi'));
   const full = calendarFor({ title: 'Dinner', date: '2027-06-18', time: '20:00', description: 'Please arrive early.', dressCode: 'Smart casual', directionsUrl: 'https://maps.example.com/x' }, info);
-  const description = new URL(full.google).searchParams.get('details');
-  assert.equal(description, 'Please arrive early.\n\nDress code: Smart casual\n\nDirections: https://maps.example.com/x\n\nInvitation: https://invitestudio.co/s/ava-and-ben');
-  // A directions link that is not a web address is left out.
-  const bad = new URL(calendarFor({ title: 'Dinner', date: '2027-06-18', directionsUrl: 'javascript:alert(1)' }, { couple: 'A', index: 0 }).google).searchParams.get('details');
-  assert.equal(bad, null);
+  const description = unfold(decodeIcs(full)).split('\r\n').find(line => line.startsWith('DESCRIPTION:'));
+  assert.equal(description, 'DESCRIPTION:Please arrive early.\\n\\nDress code: Smart casual\\n\\nDirections: https://maps.example.com/x\\n\\nInvitation: https://invitestudio.co/s/ava-and-ben');
+  // A directions link that is not a web address is left out, and with nothing else to say there are no notes at all.
+  const bad = calendarFor({ title: 'Dinner', date: '2027-06-18', directionsUrl: 'javascript:alert(1)' }, { couple: 'A', index: 0 });
+  assert.ok(!decodeIcs(bad).includes('DESCRIPTION') && !decodeIcs(bad).includes('javascript'));
 });
 
 test('text is escaped for a calendar file, long lines are folded without splitting a character, and nothing can add a field', () => {
@@ -102,27 +97,30 @@ const project = {
 
 for (const { manifest, parts, css } of list) {
   const id = manifest.id;
-  test(`${id}: every event with a date gets Add to calendar (Google and a file), and an undated one does not`, () => {
+  test(`${id}: every event with a date gets one Add to calendar button (a file), and an undated one does not`, () => {
     const r = renderer();
     const html = r.renderPackagedTemplate(project, { id, packaged: id }, {});
-    assert.equal((html.match(/<details data-cal>/g) || []).length, 2, 'one for each dated event');
-    assert.equal((html.match(/href="https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE/g) || []).length, 2);
-    assert.equal((html.match(/download="[a-z0-9-]+\.ics"/g) || []).length, 2);
-    assert.equal((html.match(/href="data:text\/calendar;charset=utf-8,BEGIN%3AVCALENDAR/g) || []).length, 2);
-    assert.match(html, />Add to calendar</);
+    assert.equal((html.match(/<div data-cal>/g) || []).length, 2, 'one for each dated event');
+    assert.equal((html.match(/<a href="data:text\/calendar;charset=utf-8,BEGIN%3AVCALENDAR[^"]*" download="[a-z0-9-]+\.ics" aria-label="Add to calendar: [^"]+"><svg [^>]*>.*?<\/svg><span>Add to calendar<\/span><\/a>/g) || []).length, 2);
+    assert.match(html, /aria-label="Add to calendar: Wedding ceremony"/);
+    assert.match(html, /aria-label="Add to calendar: Reception"/);
+    assert.ok(!/calendar\.google\.com|<details data-cal|Google Calendar|Apple, Outlook/.test(html), 'one button, not a menu of calendars');
     const none = r.renderPackagedTemplate({ ...project, functions: [event('Welcome dinner', '')] }, { id, packaged: id }, {});
     assert.ok(!none.includes('data-cal'), 'no date, no button');
     // The design's own sample events have no date either.
     assert.ok(!r.renderPackagedTemplate({ title: 'A & B', category: 'Wedding' }, { id, packaged: id }, { sample: true }).includes('data-cal'));
   });
 
-  test(`${id}: what a couple types cannot break out of the calendar links`, () => {
+  test(`${id}: what a couple types cannot break out of the calendar button or file`, () => {
     const r = renderer();
     const nasty = '"><img src=x onerror=alert(1)><script>alert(2)</script>';
     const html = r.renderPackagedTemplate({ ...project, functions: [event(nasty, '2027-06-19', { time: '16:00', venue: nasty, description: nasty, directionsUrl: 'https://maps.example.com/?q="><b>' })] }, { id, packaged: id }, {});
-    const cal = html.slice(html.indexOf('<details data-cal>'), html.indexOf('</details>') + 10);
-    assert.ok(cal.startsWith('<details data-cal>'), 'the control is drawn');
-    assert.ok(!/<img|<script|onerror=/i.test(cal), 'nothing in the control is live markup');
+    const cal = html.slice(html.indexOf('<div data-cal>'), html.indexOf('</a></div>', html.indexOf('<div data-cal>')) + 10);
+    assert.ok(cal.startsWith('<div data-cal><a href="data:text/calendar'), 'the button is drawn');
+    assert.ok(!/<img|<script/i.test(cal), 'nothing in the button is live markup');
+    const label = cal.match(/aria-label="([^"]*)"/)[1];
+    assert.ok(label.includes('&quot;&gt;&lt;img src=x onerror=alert(1)&gt;&lt;script&gt;'), 'the title is only text inside its attribute');
+    assert.equal((cal.match(/ aria-label=/g) || []).length, 1, 'it did not open another attribute');
     assert.ok(!/href="javascript:/i.test(html));
   });
 
@@ -134,19 +132,18 @@ for (const { manifest, parts, css } of list) {
   });
 }
 
-test('the control is a plain details element: no script, a visible label, and links that open safely', () => {
+test('the button is one plain link: no script, a visible label, a name that says which event, and a download name', () => {
   const html = renderer().renderPackagedTemplate(project, { id: 'minimalist', packaged: 'minimalist' }, {});
-  const one = html.slice(html.indexOf('<details data-cal>'), html.indexOf('</details>') + 10);
-  assert.match(one, /<summary><svg [^>]*aria-hidden="true"[^>]*>.*<\/svg><span>Add to calendar<\/span><\/summary>/);
-  assert.match(one, /<a href="https:\/\/calendar\.google\.com[^"]*" target="_blank" rel="noopener noreferrer">Google Calendar<\/a>/);
-  assert.match(one, /<a href="data:text\/calendar[^"]*" download="wedding-ceremony\.ics">Apple, Outlook and others<\/a>/);
-  assert.ok(!/<script|onclick/i.test(one));
+  const one = html.slice(html.indexOf('<div data-cal>'), html.indexOf('</div>', html.indexOf('<div data-cal>')) + 6);
+  assert.match(one, /^<div data-cal><a href="data:text\/calendar;charset=utf-8,[^"]+" download="wedding-ceremony\.ics" aria-label="Add to calendar: Wedding ceremony"><svg [^>]*aria-hidden="true"[^>]*>.*<\/svg><span>Add to calendar<\/span><\/a><\/div>$/);
+  assert.ok(!/<script|onclick|<button|<details/i.test(one));
 });
 
 test('on a live invitation the calendar entry carries its address', () => {
   const html = renderer({ location: { origin: 'https://invitestudio.co', pathname: '/s/ava-and-ben' } }).renderPackagedTemplate(project, { id: 'minimalist', packaged: 'minimalist' }, {});
-  const google = html.match(/href="(https:\/\/calendar\.google\.com[^"]*)"/)[1].replace(/&amp;/g, '&');
-  assert.match(new URL(google).searchParams.get('details'), /Invitation: https:\/\/invitestudio\.co\/s\/ava-and-ben$/);
+  const ics = decodeURIComponent(html.match(/href="(data:text\/calendar[^"]*)"/)[1].replace(/&amp;/g, '&').replace(/^data:[^,]*,/, ''));
+  assert.ok(unfold(ics).includes('URL:https://invitestudio.co/s/ava-and-ben'));
   const editor = renderer({ location: { origin: 'https://invitestudio.co', pathname: '/' } }).renderPackagedTemplate(project, { id: 'minimalist', packaged: 'minimalist' }, {});
-  assert.ok(!decodeURIComponent(editor).includes('Invitation:'), 'not from the editor or the home page');
+  const editorIcs = decodeURIComponent(editor.match(/href="(data:text\/calendar[^"]*)"/)[1].replace(/&amp;/g, '&').replace(/^data:[^,]*,/, ''));
+  assert.ok(!editorIcs.includes('URL:') && !editorIcs.includes('Invitation:'), 'not from the editor or the home page');
 });

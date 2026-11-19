@@ -27,7 +27,7 @@ async function createPublished(request, { title, slug }) {
   expect(published.status()).toBe(200);
 }
 
-test('a published invitation offers Add to calendar for each dated event, and the file downloads', async ({ page, request }) => {
+test('a published invitation offers one Add to calendar button for each dated event, and the file downloads', async ({ page, request }) => {
   const slug = `cal-${randomUUID().slice(0, 8)}`;
   const title = `Calendar ${slug}`;
   await createPublished(request, { title, slug });
@@ -35,29 +35,20 @@ test('a published invitation offers Add to calendar for each dated event, and th
   await page.goto(`/s/${slug}`);
   const invitation = page.locator('[data-public-invitation]');
   await expect(invitation).toContainText('Wedding ceremony', { timeout: 15000 });
-  // Two of the three events have a date.
-  const controls = invitation.locator('details[data-cal]');
-  await expect(controls).toHaveCount(2);
+  // Two of the three events have a date. One plain button each: no menu, no choice of calendars.
+  const buttons = invitation.getByRole('link', { name: /^Add to calendar/ });
+  await expect(buttons).toHaveCount(2);
+  await expect(invitation.getByText(/Google Calendar|Apple, Outlook/)).toHaveCount(0);
 
-  const first = controls.first();
+  const first = invitation.getByRole('link', { name: 'Add to calendar: Wedding ceremony' });
   await first.scrollIntoViewIfNeeded();
-  await expect(first.getByRole('link', { name: 'Google Calendar' })).toBeHidden();
-  await first.locator('summary').click();
-  await expect(first.getByRole('link', { name: 'Google Calendar' })).toBeVisible();
-  await expect(first.getByRole('link', { name: 'Apple, Outlook and others' })).toBeVisible();
+  await expect(first).toBeVisible();
+  await expect(first).toHaveAttribute('download', 'wedding-ceremony.ics');
+  await expect(invitation.getByRole('link', { name: 'Add to calendar: Reception' })).toBeVisible();
+  await expect(invitation.getByRole('link', { name: /Welcome dinner/ }).filter({ hasText: 'Add to calendar' })).toHaveCount(0);
 
-  const google = new URL(await first.getByRole('link', { name: 'Google Calendar' }).getAttribute('href'));
-  expect(google.origin + google.pathname).toBe('https://calendar.google.com/calendar/render');
-  expect(google.searchParams.get('text')).toBe(`Wedding ceremony – ${title}`);
-  expect(google.searchParams.get('dates')).toBe('20270120T100000/20270120T113000');
-  expect(google.searchParams.get('location')).toBe('The Garden Estate');
-  expect(google.searchParams.get('details')).toContain('Please arrive early.');
-  expect(google.searchParams.get('details')).toContain(`/s/${slug}`);
-  await expect(first.getByRole('link', { name: 'Google Calendar' })).toHaveAttribute('target', '_blank');
-  await expect(first.getByRole('link', { name: 'Google Calendar' })).toHaveAttribute('rel', /noopener/);
-
-  // The file downloads (the page's security rules allow it) and holds the event.
-  const [download] = await Promise.all([page.waitForEvent('download'), first.getByRole('link', { name: 'Apple, Outlook and others' }).click()]);
+  // One tap downloads the file (the page's security rules allow it), and it holds the event.
+  const [download] = await Promise.all([page.waitForEvent('download'), first.click()]);
   expect(download.suggestedFilename()).toBe('wedding-ceremony.ics');
   const ics = fs.readFileSync(await download.path(), 'utf8');
   expect(ics).toContain('BEGIN:VEVENT');
@@ -65,31 +56,29 @@ test('a published invitation offers Add to calendar for each dated event, and th
   expect(ics).toContain('DTEND:20270120T113000');
   expect(ics).toContain(`SUMMARY:Wedding ceremony – ${title}`);
   expect(ics).toContain('LOCATION:The Garden Estate');
+  expect(ics).toContain('Please arrive early.');
   expect(ics).toContain(`URL:${new URL(page.url()).origin}/s/${slug}`);
   expect(ics).toMatch(/\r\nEND:VCALENDAR\r\n$/);
+  // The page stays where it was.
+  expect(new URL(page.url()).pathname).toBe(`/s/${slug}`);
 
-  // The control opens and closes with a tap on its label, and works from the keyboard.
-  await first.locator('summary').click();
-  await expect(first.getByRole('link', { name: 'Google Calendar' })).toBeHidden();
-  await first.locator('summary').focus();
-  await page.keyboard.press('Enter');
-  await expect(first.getByRole('link', { name: 'Google Calendar' })).toBeVisible();
+  // The second event downloads its own file.
+  const [second] = await Promise.all([page.waitForEvent('download'), invitation.getByRole('link', { name: 'Add to calendar: Reception' }).click()]);
+  expect(second.suggestedFilename()).toBe('reception.ics');
+  expect(fs.readFileSync(await second.path(), 'utf8')).toContain('DTSTART:20270120T190000');
 });
 
-test('on a phone the control and its two options fit the screen, with big enough touch targets', async ({ page, request }) => {
+test('on a phone the button fits the screen with a big enough touch target', async ({ page, request }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const slug = `cal-${randomUUID().slice(0, 8)}`;
   await createPublished(request, { title: `Phone ${slug}`, slug });
   await page.goto(`/s/${slug}`);
-  const first = page.locator('[data-public-invitation] details[data-cal]').first();
-  await expect(first).toBeAttached({ timeout: 15000 });
-  await first.scrollIntoViewIfNeeded();
-  await first.locator('summary').click();
-  for (const target of [first.locator('summary'), first.getByRole('link', { name: 'Google Calendar' }), first.getByRole('link', { name: 'Apple, Outlook and others' })]) {
-    const box = await target.boundingBox();
-    expect(box.height).toBeGreaterThanOrEqual(43);
-    expect(box.x).toBeGreaterThanOrEqual(0);
-    expect(box.x + box.width).toBeLessThanOrEqual(390);
-  }
+  const button = page.locator('[data-public-invitation]').getByRole('link', { name: 'Add to calendar: Wedding ceremony' });
+  await expect(button).toBeAttached({ timeout: 15000 });
+  await button.scrollIntoViewIfNeeded();
+  const box = await button.boundingBox();
+  expect(box.height).toBeGreaterThanOrEqual(43);
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(390);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });

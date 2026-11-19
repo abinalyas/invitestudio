@@ -11,7 +11,7 @@
  * Markers:   {{x}} escaped value   {{upper:x}} upper-cased   {{em:x}} escaped, *word* becomes <em>
  *            {{copy:key}} the wording for a key   (prefixes combine: {{upper:copy:key}})
  *            <!--if x-->..<!--else-->..<!--/if-->   <!--each list-->..{{field}} / {{.}}..<!--/each-->
- *            {{calendar}} (inside an event) the "Add to calendar" control; {{icon:name}} a line icon
+ *            {{calendar}} (inside an event) the "Add to calendar" button; {{icon:name}} a line icon
  * Behaviour (countdown, menu, scrolling) lives in template-widgets.js, never in a template.
  * The file works in the browser and in Node (tests), so it avoids the DOM.
  */
@@ -128,9 +128,10 @@
   }
 
   /* ---------- Add to calendar ----------
-   * An event with a date can be added to a guest's calendar: a link to Google Calendar, and a small .ics file (a data link, so it needs
-   * no server and works in the editor preview too) that Apple Calendar, Outlook and most others open. A template places it with
-   * {{calendar}} at the end of an event; it is drawn as a <details> (no script), styled by templates/_shared/calendar.css.
+   * An event with a date can be added to a guest's calendar with one button: it downloads a small .ics file (a data link, so it needs
+   * no server and works in the editor preview too) that Apple Calendar, Outlook, the calendar app on Android and most others open.
+   * A template places it with {{calendar}} at the end of an event; it is one link, so it needs no script, styled by
+   * templates/_shared/calendar.css.
    * Times are "floating": the clock time the couple typed, shown in the guest's own calendar (events carry no time zone yet).
    * No end time (or one that is not after the start) means two hours; no time means an all-day event. */
   var CAL_DEFAULT_MINUTES = 120;
@@ -155,7 +156,7 @@
     out.push(cur);
     return out.join("\r\n");
   }
-  // f: an event of the invitation; info: { couple, where, invitation, index }. Returns { google, ics, file }, or null when the event has no usable date.
+  // f: an event of the invitation; info: { couple, where, invitation, index }. Returns { ics, file, title }, or null when the event has no usable date.
   function calendarFor(f, info) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(f.date || ""));
     if (!m) return null;
@@ -178,8 +179,6 @@
     if (info.invitation) notes.push("Invitation: " + info.invitation);
     var details = notes.join("\n\n");
     var a = calStamp(start, timed), b = calStamp(end, timed);
-    var google = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(summary) + "&dates=" + a + "/" + b +
-      (details ? "&details=" + encodeURIComponent(details) : "") + (where ? "&location=" + encodeURIComponent(where) : "");
     var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//InviteStudio//Invitation//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
       "UID:" + (String(f.id || "").replace(/[^A-Za-z0-9-]/g, "") || "event-" + (info.index || 0)) + "-" + a.slice(0, 8) + "@invitestudio.co",
       "DTSTAMP:" + calStamp(Date.now(), true) + "Z",
@@ -190,15 +189,13 @@
     if (info.invitation) lines.push("URL:" + info.invitation);
     lines.push("END:VEVENT", "END:VCALENDAR");
     var slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "event";
-    return { google: google, ics: "data:text/calendar;charset=utf-8," + encodeURIComponent(lines.map(icsFold).join("\r\n") + "\r\n"), file: slug + ".ics" };
+    return { ics: "data:text/calendar;charset=utf-8," + encodeURIComponent(lines.map(icsFold).join("\r\n") + "\r\n"), file: slug + ".ics", title: title };
   }
   var CAL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4M12 12.5v4M10 14.5h4"/></svg>';
   function calendarHtml(chain) {
-    var google = lookup(chain, "cal_google");
-    if (!google) return "";
-    return '<details data-cal><summary>' + CAL_ICON + '<span>Add to calendar</span></summary><div data-cal-menu>' +
-      '<a href="' + esc(google) + '" target="_blank" rel="noopener noreferrer">Google Calendar</a>' +
-      '<a href="' + esc(lookup(chain, "cal_ics")) + '" download="' + esc(lookup(chain, "cal_file")) + '">Apple, Outlook and others</a></div></details>';
+    var ics = lookup(chain, "cal_ics");
+    if (!ics) return "";
+    return '<div data-cal><a href="' + esc(ics) + '" download="' + esc(lookup(chain, "cal_file")) + '" aria-label="Add to calendar: ' + esc(lookup(chain, "cal_title")) + '">' + CAL_ICON + '<span>Add to calendar</span></a></div>';
   }
 
   function value(expr, chain, ctx) {
@@ -291,7 +288,7 @@
       var end = showTime(f.endTime), start = showTime(f.time);
       var cal = calendarFor(f, { couple: title, where: String(p.location || "").trim(), invitation: invitation, index: index }) || {};
       return {
-        cal_google: cal.google || "", cal_ics: cal.ics || "", cal_file: cal.file || "",
+        cal_ics: cal.ics || "", cal_file: cal.file || "", cal_title: cal.title || "",
         title: f.title, venue: f.venue || "", when: bits.join(" · "),
         event_id: f.id || "", event_title: f.title, event_venue: f.venue || "",
         date_text: d ? d.weekday + ", " + d.long : "", time_text: start ? (end ? start + " – " + end : start) : "",
