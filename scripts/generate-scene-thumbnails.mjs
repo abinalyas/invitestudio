@@ -3,6 +3,8 @@
 // alone, for the template gallery, which overlays the couple's names itself) and assets/templates/<id>-phone.jpg (the cover
 // as a phone shaped picture for the home page strip and the template detail page).
 // Run `npm run thumbs:scenes` after changing a template's design or its catalogue entry.
+// Exception: designs in SUPPLIED_WIDE have a finished picture (names included) made by the designer as their -wide.jpg. It is
+// left alone here; replace the file itself to change it (and keep `fullArt` set for the design in figma/islands/shared.tsx).
 import { createServer } from 'node:http';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, extname, join, normalize } from 'node:path';
@@ -12,6 +14,7 @@ import { readCatalogue } from './template-catalogue.mjs';
 import { loadTemplates } from './build-templates.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const SUPPLIED_WIDE = new Set(['cherry-blossom', 'cinematic', 'golden-butterfly', 'minimalist', 'bloom-reveal', 'under-the-same-moon']);
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
 const sample = {
   title: 'Daniel & Amelia', category: 'Wedding', date: '2027-01-21', location: 'Olare Kopje Camp, Maasai Mara, Kenya',
@@ -58,7 +61,8 @@ for (const t of readCatalogue().templates.filter(t => t.packaged)) {
   await wide.addStyleTag({ content: thumb.wide });
   // The gallery card writes the couple's names over this picture, so the picture carries no words of its own.
   await wide.addStyleTag({ content: 'h1,h2,h3,h4,p,time,address,blockquote,[class*="eyebrow"],[class*="kicker"],[class*="-sub"],[class*="date"],[class*="name"],[class*="amp"],[class*="tagline"]{visibility:hidden!important}' });
-  writeFileSync(join(root, t.image.replace(/\.png$/, '-wide.jpg').replace(/^\//, '')), await wide.screenshot({ type: 'jpeg', quality: 86 }));
+  const wideShot = await wide.screenshot({ type: 'jpeg', quality: 86 });
+  if (!SUPPLIED_WIDE.has(t.packaged)) writeFileSync(join(root, t.image.replace(/\.png$/, '-wide.jpg').replace(/^\//, '')), wideShot);
   await wide.close();
   const card = await browser.newPage({ viewport: { width: 1000, height: 750 } });
   await card.setContent(`<body style="margin:0;width:1000px;height:750px;background:${t.colors[0]};display:grid;place-items:center"><img style="height:640px;border-radius:28px;box-shadow:0 24px 60px #0004" src="data:image/png;base64,${cover}">`);

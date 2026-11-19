@@ -198,9 +198,9 @@ export function TemplatesPage() {
             {visibleTemplates.length > 0 ? (
               <div className="gallery-grid">
                 {visibleTemplates.map((template) => (
-                  <article className="gallery-card" key={template.id}>
+                  <article className={template.fullArt ? "gallery-card is-full-art" : "gallery-card"} key={template.id}>
                     <button
-                      className="gallery-preview"
+                      className={template.fullArt ? "gallery-preview is-full-art" : "gallery-preview"}
                       aria-label={`Open ${template.title}`}
                       onClick={() => {
                         setRecent((current) =>
@@ -212,8 +212,12 @@ export function TemplatesPage() {
                       }}
                     >
                       <img src={template.image} alt="" />
-                      <span className="gallery-image-shade" />
-                      <strong>{template.names.replace(" & ", "\n&\n")}</strong>
+                      {template.fullArt ? null : (
+                        <>
+                          <span className="gallery-image-shade" />
+                          <strong>{template.names.replace(" & ", "\n&\n")}</strong>
+                        </>
+                      )}
                       <span className="gallery-play">
                         <Icon name="play" size={16} />
                       </span>

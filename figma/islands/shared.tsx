@@ -232,6 +232,9 @@ export type GalleryTemplate = {
   opening: { name: string; text: string }
   palette: string[]
   image: string // artwork for the gallery cards
+  // True when that artwork is a finished picture that already shows the names (and any date and place). The gallery card then
+  // draws no names or shade over it, and shows it whole, landscape, on every screen.
+  fullArt?: boolean
   phone: string // the real cover, phone shaped (npm run thumbs:scenes)
 }
 
@@ -283,6 +286,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     },
     palette: ["#faf9f6", "#5c6350", "#292929"],
     image: art("/assets/templates/minimalist-wide.jpg"),
+    fullArt: true,
     phone: art("/assets/templates/minimalist-phone.jpg"),
   },
   {
@@ -298,6 +302,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     },
     palette: ["#171615", "#b59a72", "#f5f0e8"],
     image: art("/assets/templates/cinematic-wide.jpg"),
+    fullArt: true,
     phone: art("/assets/templates/cinematic-phone.jpg"),
   },
   {
@@ -328,6 +333,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     },
     palette: ["#fbf1e3", "#485c48", "#4a403a"],
     image: art("/assets/templates/bloom-reveal-wide.jpg"),
+    fullArt: true,
     phone: art("/assets/templates/bloom-reveal-phone.jpg"),
   },
   {
@@ -358,6 +364,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     },
     palette: ["#090f25", "#c9ae83", "#f7f3ea"],
     image: art("/assets/templates/under-the-same-moon-wide.jpg"),
+    fullArt: true,
     phone: art("/assets/templates/under-the-same-moon-phone.jpg"),
   },
   {
@@ -373,6 +380,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     },
     palette: ["#090806", "#c7a56a", "#f2eadb"],
     image: art("/assets/templates/golden-butterfly-wide.jpg"),
+    fullArt: true,
     phone: art("/assets/templates/golden-butterfly-phone.jpg"),
   },
   {
@@ -388,6 +396,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     },
     palette: ["#fff9f2", "#57433c", "#d68f96"],
     image: art("/assets/templates/cherry-blossom-wide.jpg"),
+    fullArt: true,
     phone: art("/assets/templates/cherry-blossom-phone.jpg"),
   },
   {
