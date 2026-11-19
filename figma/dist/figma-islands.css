@@ -1355,6 +1355,9 @@
 .figma-app .setup-form input[type="date"]{ display: block; width: 100%; }
 .figma-app[data-keyboard] .setup-actions{ position: static; }
 .figma-app[data-keyboard] .mobile-tabs, .figma-app[data-keyboard] .mobile-edit-pill, .figma-app[data-keyboard] .detail-sticky{ display: none; }
+.figma-app .tier-note{ display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 0 0 16px; padding: 10px 14px 10px 16px; border: 1px solid #cfe0d4; border-radius: 12px; background: #eef6f0; color: #2b3a31; font-size: 14px; }
+.figma-app .tier-note button{ min-height: 44px; padding: 0 16px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; cursor: pointer; }
+.figma-app .tier-note button:focus-visible{ outline: 2px solid #145c37; outline-offset: 2px; }
 .figma-app .gallery-preview.is-full-art{ aspect-ratio: 1.37; }
 @media (max-width: 480px){.figma-app .gallery-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .figma-app .gallery-preview{ aspect-ratio: 9 / 14; }

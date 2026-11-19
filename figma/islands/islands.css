@@ -695,6 +695,11 @@ input[type="date"], input[type="time"] { min-width: 0; max-width: 100%; box-sizi
 :host[data-keyboard] .mobile-edit-pill,
 :host[data-keyboard] .detail-sticky { display: none; }
 
+/* The note above the gallery when only one price tier is shown (arriving from a pricing card, or the Price filter). */
+.tier-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 0 0 16px; padding: 10px 14px 10px 16px; border: 1px solid #cfe0d4; border-radius: 12px; background: #eef6f0; color: #2b3a31; font-size: 14px; }
+.tier-note button { min-height: 44px; padding: 0 16px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 600; cursor: pointer; }
+.tier-note button:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }
+
 /* Finished artwork (it already shows the names): shown whole and landscape on every screen, never cropped to a tall tile. */
 .gallery-preview.is-full-art { aspect-ratio: 1.37; }
 

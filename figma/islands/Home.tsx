@@ -278,7 +278,7 @@ export function HomePage() {
                   {designs.length} {designs.length === 1 ? "design" : "designs"}: {designs.slice(0, 3).map((item) => item.title).join(", ")}
                   {designs.length > 3 ? " and more" : ""}
                 </p>
-                <a className={tier.id === "premium" ? "button" : "button outline"} href="/templates">
+                <a className={tier.id === "premium" ? "button" : "button outline"} href={`/templates?tier=${tier.id}`}>
                   See {tier.name} designs
                 </a>
               </article>

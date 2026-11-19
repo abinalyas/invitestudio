@@ -9,6 +9,10 @@ export function TemplatesPage() {
   const [query, setQuery] = useState("")
   const [sort, setSort] = useState("featured")
   const [styles, setStyles] = useState<string[]>([])
+  // The price tier to show (classic, premium or signature). The pricing cards on the home page link here with ?tier=<id>.
+  const [tier, setTier] = useState<string>(() => {
+    try { return new URLSearchParams(window.location.search).get("tier") || "" } catch { return "" }
+  })
   const [favorites, setFavorites] = useState<number[]>([])
   const [recent, setRecent] = useState<number[]>([])
   const [view, setView] = useState<"all" | "favorites" | "recent">("all")
@@ -21,6 +25,21 @@ export function TemplatesPage() {
         ? current.filter((item) => item !== style)
         : [...current, style],
     )
+  }
+
+  // Only a tier the prices know is applied, so a mistyped address or prices that did not load simply show every design.
+  const activeTier = pricing && pricing.tiers.some((item) => item.id === tier) ? tier : ""
+  const activeTierName = activeTier && pricing ? pricing.tiers.find((item) => item.id === activeTier)?.name ?? "" : ""
+  const tierOfTemplate = (backendId: string) => (pricing ? pricing.templates[backendId] || "classic" : "")
+  const chooseTier = (next: string) => {
+    setTier(next)
+    // Keep the address in step, so a refresh or a shared link shows the same designs.
+    try {
+      const url = new URL(window.location.href)
+      if (next) url.searchParams.set("tier", next)
+      else url.searchParams.delete("tier")
+      window.history.replaceState(window.history.state, "", url)
+    } catch { /* the filter still works; the address just is not updated */ }
   }
 
   const toggleFavorite = (id: number) => {
@@ -44,7 +63,8 @@ export function TemplatesPage() {
         view === "all" ||
         (view === "favorites" && favorites.includes(template.id)) ||
         (view === "recent" && recent.includes(template.id))
-      return matchesSearch && matchesStyle && matchesView
+      const matchesTier = !activeTier || tierOfTemplate(template.backendId) === activeTier
+      return matchesSearch && matchesStyle && matchesView && matchesTier
     })
     .sort((a, b) => {
       if (sort === "name") return a.title.localeCompare(b.title)
@@ -111,7 +131,7 @@ export function TemplatesPage() {
             onClick={() => setFiltersOpen(!filtersOpen)}
           >
             <Icon name="edit" size={18} />
-            Filters {styles.length > 0 && `(${styles.length})`}
+            Filters {styles.length + (activeTier ? 1 : 0) > 0 && `(${styles.length + (activeTier ? 1 : 0)})`}
           </button>
           <label className="gallery-sort">
             <span>Sort by</span>
@@ -175,6 +195,26 @@ export function TemplatesPage() {
               ))}
             </div>
 
+            {pricing ? (
+              <div className="filter-group" data-tier-filter>
+                <div className="filter-title">
+                  <strong>Price</strong>
+                  <Icon name="chevron" size={17} />
+                </div>
+                {pricing.tiers.map((item) => (
+                  <label key={item.id} className="filter-check">
+                    <input
+                      type="checkbox"
+                      checked={activeTier === item.id}
+                      onChange={() => chooseTier(activeTier === item.id ? "" : item.id)}
+                    />
+                    <span>{item.name}</span>
+                    <small>{galleryTemplates.filter((template) => tierOfTemplate(template.backendId) === item.id).length}</small>
+                  </label>
+                ))}
+              </div>
+            ) : null}
+
           </aside>
 
           <div className="gallery-results">
@@ -183,18 +223,28 @@ export function TemplatesPage() {
                 {visibleTemplates.length}{" "}
                 {visibleTemplates.length === 1 ? "template" : "templates"}
               </span>
-              {(query || styles.length > 0 || view !== "all") && (
+              {(query || styles.length > 0 || view !== "all" || activeTier) && (
                 <button
                   onClick={() => {
                     setQuery("")
                     setStyles([])
                     setView("all")
+                    chooseTier("")
                   }}
                 >
                   Clear filters
                 </button>
               )}
             </div>
+            {activeTier ? (
+              <div className="tier-note" role="status" data-tier-note>
+                <span>
+                  Showing {visibleTemplates.length} <strong>{activeTierName}</strong>{" "}
+                  {visibleTemplates.length === 1 ? "design" : "designs"}
+                </span>
+                <button type="button" onClick={() => chooseTier("")}>Show all designs</button>
+              </div>
+            ) : null}
             {visibleTemplates.length > 0 ? (
               <div className="gallery-grid">
                 {visibleTemplates.map((template) => (
