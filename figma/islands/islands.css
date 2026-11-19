@@ -695,10 +695,16 @@ input[type="date"], input[type="time"] { min-width: 0; max-width: 100%; box-sizi
 :host[data-keyboard] .mobile-edit-pill,
 :host[data-keyboard] .detail-sticky { display: none; }
 
+/* Finished artwork (it already shows the names): shown whole and landscape on every screen, never cropped to a tall tile. */
+.gallery-preview.is-full-art { aspect-ratio: 1.37; }
+
 /* Templates page on a phone: two designs to a row, tall like the setup step's tiles, instead of one big card. */
 @media (max-width: 480px) {
   .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .gallery-preview { aspect-ratio: 9 / 14; }
+  /* A landscape picture with its names is too small in half a row, so it takes the whole row (the tall tiles fill in around it). */
+  .gallery-grid { grid-auto-flow: row dense; }
+  .gallery-card.is-full-art { grid-column: 1 / -1; }
   .gallery-preview strong { font-size: 19px; }
   .gallery-play { right: 8px; top: 8px; width: 28px; height: 28px; }
   .gallery-card-info { padding: 8px 10px 12px; }
@@ -810,6 +816,8 @@ table.rsvp-by-event { font-size: 13px; }
 .draft-access-icon { position: absolute; left: 18px; top: 16px; color: #3b433e; }
 .draft-access strong { font-size: 17px; }
 .draft-access .btn.small { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 20px; border: 1px solid #cfe0d4; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 700; cursor: pointer; }
+/* The "Copy a draft preview link" link in the share guide (docs/DRAFT_PREVIEW.md). */
+.share-guide-preview { padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--green, #145c37); text-decoration: underline; cursor: pointer; }
 
 /* The header on a phone or tablet: logo on the left, then the action button, and the menu button always at the far right
    (it used to sit in the middle when the other buttons were few). */

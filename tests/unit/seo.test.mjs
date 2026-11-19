@@ -67,7 +67,7 @@ test('structured data never states a price (prices differ by country and are pla
 test('robots.txt blocks private paths, welcomes AI crawlers and names the sitemap', () => {
   const robots = robotsTxt(ORIGIN);
   for (const agent of ['*', 'GPTBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended']) assert.ok(robots.includes(`User-agent: ${agent}\n`), agent);
-  for (const path of ['/api/', '/edit', '/editor/']) assert.ok(robots.includes(`Disallow: ${path}`), path);
+  for (const path of ['/api/', '/edit', '/editor/', '/draft']) assert.ok(robots.includes(`Disallow: ${path}`), path);
   assert.ok(robots.includes(`Sitemap: ${ORIGIN}/sitemap.xml`));
 });
 

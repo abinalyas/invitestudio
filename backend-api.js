@@ -104,6 +104,23 @@
         body: JSON.stringify({ version })
       });
     },
+    // Draft preview links (docs/DRAFT_PREVIEW.md): make a new one (the old one stops working), turn it off, or open a draft by one.
+    createPreviewLink(id, editToken) {
+      return request(`/weddings/${encodeURIComponent(id)}/preview-link`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${editToken}` },
+        body: JSON.stringify({})
+      });
+    },
+    stopPreviewLink(id, editToken) {
+      return request(`/weddings/${encodeURIComponent(id)}/preview-link`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${editToken}` }
+      });
+    },
+    getDraftPreview(previewToken) {
+      return request('/draft-previews', { method: 'POST', body: JSON.stringify({ token: previewToken }) });
+    },
     getPublishedWedding(slug) {
       return request(`/public-weddings/${encodeURIComponent(slug)}`);
     },

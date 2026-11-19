@@ -895,6 +895,11 @@
       if (typeof window.copyPrivateEditLink === 'function') window.copyPrivateEditLink();
     },
 
+    // A read-only, watermarked link to the draft for family and friends. Resolves to whether it worked.
+    copyPreviewLink() {
+      return typeof window.copyDraftPreviewLink === 'function' ? window.copyDraftPreviewLink() : Promise.resolve(false);
+    },
+
     // Wording on a packaged template. An empty text goes back to the template's own wording.
     setCopy(key, text) {
       const p = project();

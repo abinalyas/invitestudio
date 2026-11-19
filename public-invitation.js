@@ -18,6 +18,15 @@
     }
   };
 
+  // A draft preview link: /draft#<token> (docs/DRAFT_PREVIEW.md). null: not a preview route. '' : a preview route with a malformed
+  // token. The token stays in the address bar so the page can be reloaded; it is in the fragment, so it is never sent to a server.
+  window.parseDraftPreviewToken = function parseDraftPreviewToken() {
+    if (!/^\/draft\/?$/.test(window.location.pathname)) return null;
+    let token = window.location.hash.replace(/^#/, '');
+    try { token = decodeURIComponent(token); } catch { token = ''; }
+    return /^[A-Za-z0-9_-]{32,256}$/.test(token) ? token : '';
+  };
+
   // Maps the public projection onto the project shape the invitation renderer uses.
   function projectFromPublic(wedding, photos) {
     const content = wedding.content && typeof wedding.content === 'object' ? wedding.content : {};
@@ -76,14 +85,84 @@
     render();
   };
 
+  window.loadDraftPreview = async function loadDraftPreview(token) {
+    state.publicInvitation = { status: 'loading', preview: true, token, data: null };
+    render();
+    if (!token || !window.inviteStudioApi) {
+      state.publicInvitation = { status: 'not-found', preview: true, token, data: null };
+      render();
+      return;
+    }
+    try {
+      const data = await window.inviteStudioApi.getDraftPreview(token);
+      const project = projectFromPublic(data.wedding, data.photos);
+      const design = typeof tpl === 'function' ? tpl(project.templateId) : null;
+      if (design && window.InviteTemplates) await window.InviteTemplates.need(design);
+      state.publicInvitation = { status: 'ready', preview: true, token, data };
+    } catch (error) {
+      state.publicInvitation = { status: error.status === 404 ? 'not-found' : error.status === 410 ? 'ended' : 'error', preview: true, token, data: null };
+    }
+    render();
+  };
+
+  // What someone opening a draft preview sees around the invitation: a banner that says it is not the final invitation (and
+  // invites them to make their own), and a watermark across the whole page, so a draft is never used as the real website.
+  const PREVIEW_CTA = '/?utm_source=draft-preview&utm_medium=banner&utm_campaign=share-draft';
+  function watermarkImage() {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="260" viewBox="0 0 420 260">'
+      + '<g transform="rotate(-24 210 130)" font-family="Helvetica,Arial,sans-serif" font-weight="700" fill="#3a2a22" fill-opacity=".11" stroke="#fff" stroke-opacity=".16" stroke-width="1">'
+      + '<text x="210" y="122" text-anchor="middle" font-size="30" letter-spacing="6">DRAFT PREVIEW</text>'
+      + '<text x="210" y="156" text-anchor="middle" font-size="15" letter-spacing="4">MADE WITH INVITESTUDIO</text>'
+      + '</g></svg>';
+    // Dark letters with a faint light outline, so the mark shows on light and dark sections alike.
+    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  }
+  function previewChrome(view) {
+    const live = view.data && view.data.preview && view.data.preview.liveSlug;
+    const note = live
+      ? `<strong>This is an old draft.</strong> <span class="dp-long">The invitation is live now:</span> <a class="dp-live" href="/s/${esc(live)}">open the invitation</a>`
+      : '<strong>Not the final invitation.</strong> <span class="dp-long">Details may still change, and replies open once it is published.</span>';
+    const css = `<style>
+.dp-banner{position:sticky;top:0;z-index:2147482000;display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;justify-content:space-between;padding:10px max(16px,3vw);background:#1d2a22;color:#f4efe8;font:400 14px/1.4 "DM Sans",system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.dp-banner a{color:inherit}
+.dp-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 320px}
+.dp-tag{flex:none;padding:4px 10px;border-radius:999px;background:#e9c46a;color:#1d2a22;font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.dp-text{margin:0}
+.dp-live{font-weight:700;text-decoration:underline;text-underline-offset:2px}
+.dp-cta{flex:none;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-radius:999px;background:#fff;color:#14261c!important;font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap}
+.dp-cta:hover{background:#f3faf5}
+.dp-cta:focus-visible,.dp-live:focus-visible{outline:2px solid #e9c46a;outline-offset:2px}
+.dp-brand{font-weight:400;color:#46584d}
+.dp-watermark{position:fixed;inset:0;z-index:2147481000;pointer-events:none;background-image:${watermarkImage()};background-size:420px 260px;background-repeat:repeat}
+@media print{.dp-watermark{position:absolute}}
+@media(max-width:640px){.dp-banner{padding:8px 12px;font-size:13px}.dp-long{display:none}.dp-brand{display:none}.dp-cta{min-height:36px;padding:0 12px;font-size:12.5px}.dp-left{flex-basis:auto}}
+</style>`;
+    return css
+      + `<div class="dp-banner" role="region" aria-label="Draft preview" data-draft-banner><div class="dp-left"><span class="dp-tag">Draft preview</span><p class="dp-text">${note}</p></div>`
+      + `<a class="dp-cta" href="${PREVIEW_CTA}" data-draft-cta><span class="dp-brand">Made with InviteStudio ·</span> Create your own, free</a></div>`
+      + '<div class="dp-watermark" aria-hidden="true" data-draft-watermark></div>';
+  }
+
   window.publicPageHtml = function publicPageHtml() {
     const view = state.publicInvitation || { status: 'loading' };
     const header = '<header class="pv-top topbar"><a class="brand pv-logo" href="/" aria-label="InviteStudio home"><span class="pv-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>InviteStudio</span></a></header>';
     const centred = inner => `<main class="pv-centred">${inner}</main>`;
     let body;
-    if (view.status === 'ready') {
+    if (view.status === 'ready' && view.preview) {
+      const project = projectFromPublic(view.data.wedding, view.data.photos);
+      project.status = 'Draft';
+      project.published = false;
+      // Not marked data-public-invitation: the reply form stays in its "preview only" mode and sends nothing.
+      return previewChrome(view) + `<div class="published-page" data-draft-preview>${sitePreview(project, tpl(project.templateId), true)}</div>`;
+    } else if (view.status === 'ready') {
       const project = projectFromPublic(view.data.wedding, view.data.photos);
       body = `<div class="published-page" data-public-invitation>${sitePreview(project, tpl(project.templateId), true)}</div>`;
+    } else if (view.preview && view.status === 'loading') {
+      body = centred('<p class="muted">Loading preview…</p>');
+    } else if (view.preview && view.status === 'error') {
+      body = centred('<h1 class="pv-h1">We could not load this preview.</h1><p class="muted">Check your connection and try again.</p><button class="pv-btn primary" onclick="loadDraftPreview(state.publicInvitation.token)">Try again</button>');
+    } else if (view.preview) {
+      body = centred(`<h1 class="pv-h1">This preview link is not working.</h1><p class="muted">It may have expired, or the couple may have stopped sharing it. Ask them for a new link.</p><p class="muted" style="margin-top:22px">Planning a celebration of your own? Build and preview your invitation for free.</p><a class="pv-btn primary" href="${PREVIEW_CTA}">Create your own invitation</a>`);
     } else if (view.status === 'loading') {
       body = centred('<p class="muted">Loading invitation…</p>');
     } else if (view.status === 'error') {

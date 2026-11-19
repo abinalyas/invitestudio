@@ -1355,8 +1355,11 @@
 .figma-app .setup-form input[type="date"]{ display: block; width: 100%; }
 .figma-app[data-keyboard] .setup-actions{ position: static; }
 .figma-app[data-keyboard] .mobile-tabs, .figma-app[data-keyboard] .mobile-edit-pill, .figma-app[data-keyboard] .detail-sticky{ display: none; }
+.figma-app .gallery-preview.is-full-art{ aspect-ratio: 1.37; }
 @media (max-width: 480px){.figma-app .gallery-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .figma-app .gallery-preview{ aspect-ratio: 9 / 14; }
+.figma-app .gallery-grid{ grid-auto-flow: row dense; }
+.figma-app .gallery-card.is-full-art{ grid-column: 1 / -1; }
 .figma-app .gallery-preview strong{ font-size: 19px; }
 .figma-app .gallery-play{ right: 8px; top: 8px; width: 28px; height: 28px; }
 .figma-app .gallery-card-info{ padding: 8px 10px 12px; }
@@ -1451,6 +1454,7 @@
 .figma-app .draft-access-icon{ position: absolute; left: 18px; top: 16px; color: #3b433e; }
 .figma-app .draft-access strong{ font-size: 17px; }
 .figma-app .draft-access .btn.small{ display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 20px; border: 1px solid #cfe0d4; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-weight: 700; cursor: pointer; }
+.figma-app .share-guide-preview{ padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--green, #145c37); text-decoration: underline; cursor: pointer; }
 @media (max-width: 980px){.figma-app .site-header .logo{ order: 1; }
 .figma-app .site-header .header-actions{ order: 2; margin-left: auto; }
 .figma-app .site-header .menu-button{ order: 3; margin-left: 6px; }

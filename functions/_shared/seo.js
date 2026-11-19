@@ -270,8 +270,8 @@ const AI_CRAWLERS = Object.freeze([
   'Google-Extended', 'Applebot', 'Applebot-Extended', 'Bingbot', 'DuckAssistBot', 'CCBot', 'Amazonbot', 'Meta-ExternalAgent'
 ]);
 
-// Paths that are private or not pages: the API, owner edit links, the designer, and the media proxy.
-const DISALLOWED = Object.freeze(['/api/', '/edit', '/edit/', '/editor/', '/media/']);
+// Paths that are private or not pages: the API, owner edit links, draft previews, the designer, and the media proxy.
+const DISALLOWED = Object.freeze(['/api/', '/edit', '/edit/', '/editor/', '/media/', '/draft']);
 
 export function robotsTxt(origin, { blockAll = false } = {}) {
   if (blockAll) return 'User-agent: *\nDisallow: /\n';
