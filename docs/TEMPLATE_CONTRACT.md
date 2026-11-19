@@ -253,6 +253,7 @@ templates/<id>/
 | `menu` | Header navigation generated from the sections that are shown. Mobile menu toggle. |
 | `reveal` | Scroll reveals, off for reduced motion. One motion language for every template (`templates/_shared/motion.css`): `data-reveal` (rise), `fade`, `scale`, `soft` (blur-in, for headings and names), `left`/`right`, `draw` (rules), `curtain` (pictures). Stagger a group with `--rd` in .08 to .12s steps. Mark looping decoration `data-ambient` so reduced motion stops it. On the template page (`showcase`) the opening plays in full; in the editor what is already on screen stays still. |
 | `icon` | `{{icon:name}}` draws the platform's line icons (arrows, chevron, menu, pin, clock, calendar, asterisk, sparkle, sparkle-line, heart, blossom, moon, dot). Never Unicode arrows or stars: they differ per phone and some become colour emoji. |
+| `calendar` | `{{calendar}}` draws "Add to calendar" under an event (see section 15.13). **Every design puts it once, at the end of each event inside `<!--each events-->`.** It draws nothing for an event with no date. |
 | `sample photos` | The template page (`showcase`) fills photo spots with sample photographs (`example.photoSet`, else the shared set in `packaged-templates.js`). Never in the editor, the setup steps or a published page. Empty tiles outside the editor are designed cards with the couple's initials (`templates/_shared/photo.css`). |
 | `map` | A "Get directions" link by default. An embedded map is **not allowed by the site's security policy today** (frames are blocked). Options: keep link-only, or add click-to-load embedding with a policy change. Decision needed. |
 | `rsvp` | One form for all templates, styled by the template. Fields follow the product decision: name, attending, number of guests (limit set by the couple), dietary note, message. Not open until the RSVP phase. |
@@ -328,6 +329,18 @@ Run automatically for every template, in CI, on its `sample.json` and on edge ca
 4. **Minimalist**, then **cinematic**.
 5. **Fairy tale.**
 6. Later: time zone choice, and couple-visible layout variants if ever wanted.
+
+### 15.13 Add to calendar (platform, every packaged template)
+
+Guests can add each event to their own calendar.
+
+- **A design writes one token**, `{{calendar}}`, at the end of each event inside `<!--each events-->` (inside the text block when the event is a row with a dot or number, as in Minimalist). `tests/unit/calendar.test.mjs` fails a design that leaves it out or repeats it.
+- **The platform draws it** (`packaged-templates.js`, `calendarFor` and `calendarHtml`): a `<details>` with the label "Add to calendar" that opens two links, **Google Calendar** (a calendar.google.com link, new tab) and **Apple, Outlook and others** (a small `.ics` file as a `data:` link with a `download` name, so it needs no server and works in the editor preview too). It needs no script, so it also works with scripts off.
+- **Styles are shared** (`templates/_shared/calendar.css`, added to every design by `scripts/build-templates.mjs`). Attribute selectors only, every colour is the design's own text colour (so light and dark designs both work), and the controls are at least 44px tall. A design can place it with one rule, as Cinematic does for its grid (`.timeline-row [data-cal]{grid-column:2/-1}`).
+- **What goes in the entry.** Title "Event title – the couple's names"; place = the event's venue, else the wedding's place; notes = the event description, dress code, directions link and (on a live invitation only) the invitation's address. Descriptions are cut at 600 characters.
+- **Times.** An event needs a real date; with no date there is no button. No time = an all-day event. No end time, or one that is not after the start = two hours. Times are *floating* (the clock time the couple typed, shown in the guest's own calendar), because events carry no time zone yet. A guest in another time zone sees the same clock time, not the converted one: adding a time zone to events is the fix.
+- **Safe by construction.** Everything the couple types is escaped for HTML, for the file (commas, semicolons, new lines, 75-byte line folding) and for the Google link; a directions link that is not http(s) is left out. The same event keeps the same id in the file, so adding it twice updates the entry.
+- **Not yet**: the retired trial designs and the older built-in designs in `index.html` do not show it.
 
 ## 14. Open points
 

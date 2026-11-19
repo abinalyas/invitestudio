@@ -1,0 +1,13 @@
+/* The "Add to calendar" control every packaged template can show under an event ({{calendar}}, drawn by packaged-templates.js).
+ * It is a <details>, so it opens and closes with no script. Attribute selectors only, and every colour comes from the design's own text
+ * colour, so it suits light and dark designs alike. A design can place it with one rule (see Cinematic's grid). */
+[data-cal]{display:block;margin:14px 0 0;text-align:inherit;font:inherit;letter-spacing:normal;text-transform:none}
+[data-cal]>summary{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;box-sizing:border-box;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 45%,transparent);border-radius:999px;color:inherit;font:inherit;font-size:.8rem;font-weight:600;letter-spacing:.02em;line-height:1;text-transform:none;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}
+[data-cal]>summary::-webkit-details-marker{display:none}
+[data-cal]>summary::marker{content:""}
+[data-cal]>summary:hover,[data-cal][open]>summary{background:color-mix(in srgb,currentColor 12%,transparent)}
+[data-cal]>summary:focus-visible,[data-cal-menu] a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+[data-cal]>summary svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+[data-cal-menu]{margin:10px 0 0;text-align:inherit}
+[data-cal-menu] a{display:inline-flex;align-items:center;min-height:44px;margin:0 8px 8px 0;padding:0 16px;box-sizing:border-box;border:0;border-radius:999px;background:color-mix(in srgb,currentColor 12%,transparent);color:inherit;font:inherit;font-size:.8rem;font-weight:600;letter-spacing:.02em;line-height:1.2;text-decoration:none;text-transform:none}
+[data-cal-menu] a:hover{background:color-mix(in srgb,currentColor 22%,transparent)}
