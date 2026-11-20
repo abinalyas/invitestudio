@@ -1,4 +1,4 @@
-// The WhatsApp share card (share-card.js): a picture and a ready message for live invitations on Premium and Signature designs.
+// The WhatsApp share card (share-card.js): a picture and a ready message for live invitations on every design.
 const { test, expect } = require('@playwright/test');
 
 const project = {
@@ -10,13 +10,9 @@ const project = {
   ]
 };
 
-async function stubTier(page, tier) {
-  await page.route('**/api/pricing', route => route.fulfill({ json: { templates: { 'lantern-night': tier } } }));
-}
 const openCard = page => page.evaluate(p => { window.openShareCard(p); }, project);
 
-test('a Premium or Signature design gets a card with the picture and a message the couple can change', async ({ page }) => {
-  await stubTier(page, 'signature');
+test('a design gets a card with the picture and a message the couple can change', async ({ page }) => {
   await page.goto('/');
   await openCard(page);
   const modal = page.locator('#modal-root');
@@ -33,16 +29,16 @@ test('a Premium or Signature design gets a card with the picture and a message t
   await expect(modal.locator('[data-sc-download]')).toBeEnabled({ timeout: 15000 });
 });
 
-test('a Classic design is told the card comes with Premium and Signature', async ({ page }) => {
-  await stubTier(page, 'classic');
+test('a Classic design gets a card too, with its own artwork', async ({ page }) => {
   await page.goto('/');
-  await openCard(page);
-  await expect(page.locator('#modal-root [data-sc-locked]')).toContainText('Premium');
-  await expect(page.locator('#modal-root [data-sc-image]')).toHaveCount(0);
+  await page.evaluate(p => { window.openShareCard({ ...p, templateId: 'minimalist' }); }, project);
+  const modal = page.locator('#modal-root');
+  await expect(modal.locator('[data-sc-image]')).toBeVisible({ timeout: 15000 });
+  expect(await modal.locator('[data-sc-image]').evaluate(img => [img.naturalWidth, img.naturalHeight])).toEqual([1086, 1448]);
+  await expect(modal.locator('[data-sc-locked]')).toHaveCount(0);
 });
 
 test('with no event details yet, the dialog asks for them', async ({ page }) => {
-  await stubTier(page, 'premium');
   await page.goto('/');
   await page.evaluate(p => { window.openShareCard({ ...p, date: '', location: '', functions: [] }); }, project);
   await expect(page.locator('#modal-root [data-sc-empty]')).toBeVisible();

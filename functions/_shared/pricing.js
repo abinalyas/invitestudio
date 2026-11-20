@@ -18,7 +18,7 @@ export const TIERS = Object.freeze([
       'Choose any Classic design',
       'Edit anytime, even after you publish',
       'Switch to any other Classic design',
-      'Shareable link, guest RSVP and live countdown'
+      'Shareable link, WhatsApp card, guest RSVP and countdown'
     ]
   },
   {
@@ -29,7 +29,7 @@ export const TIERS = Object.freeze([
       'Choose any Premium or Classic design',
       'Edit anytime, even after you publish',
       'Switch designs within Premium and Classic',
-      'Shareable link, guest RSVP and live countdown'
+      'Shareable link, WhatsApp card, guest RSVP and countdown'
     ]
   },
   {

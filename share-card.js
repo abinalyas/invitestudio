@@ -1,7 +1,7 @@
 /* © 2026 InviteStudio. All rights reserved. Licensed only for use in an invitation built and hosted on InviteStudio (see /terms).
  *
  * The share card: a picture of the invitation (each design has its own card layout; others get a generic 4:5 card) with the event, names, date and place on the design's artwork, and a ready-written message
- * for WhatsApp, like the cards couples send by hand. Included with Premium and Signature designs.
+ * for WhatsApp, like the cards couples send by hand. Included with every design (Classic, Premium and Signature).
  *
  *   InviteShareCard.events(project)               the events a card can be made for
  *   InviteShareCard.message(opts)                 the message text (names, event, url)
@@ -582,13 +582,6 @@
   /* ---- the dialog ---- */
   function esc(value) { return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
-  function tierOf(project) {
-    return fetch('/api/pricing', { headers: { Accept: 'application/json' } })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (data) { return (data && data.templates && data.templates[project.templateId]) || 'classic'; })
-      .catch(function () { return 'classic'; });
-  }
-
   function open(project, extra) {
     if (!project || typeof renderModal !== 'function') return;
     extra = extra || {};
@@ -608,17 +601,11 @@
     }
 
     shell('<p class="muted" role="status">Getting your card ready…</p>');
-    tierOf(project).then(function (tier) {
-      if (tier === 'classic') {
-        shell('<p data-sc-locked>The share card, a picture of your invitation with a ready-written message, is included with <strong>Premium</strong> and <strong>Signature</strong> designs. Your invitation link works the same on every design.</p>');
-        return;
-      }
-      if (!list.length) {
-        shell('<p data-sc-empty>Add the date and place of an event in the editor first, then your card will be ready here.</p>');
-        return;
-      }
+    if (!list.length) {
+      shell('<p data-sc-empty>Add the date and place of an event in the editor first, then your card will be ready here.</p>');
+    } else {
       render();
-    });
+    }
 
     function render() {
       var event = list[state.index];
