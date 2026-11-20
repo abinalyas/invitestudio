@@ -110,7 +110,7 @@ export function TemplatesPage() {
         <div className="gallery-shell gallery-hero-copy">
           <span className="section-kicker">Template gallery</span>
           <h1>Find the perfect invitation</h1>
-          <p>Wedding invitations you can make your own.</p>
+          <p>Try any design free. You pay only when you publish.</p>
           <p className="gallery-talk"><TalkToUs topic="custom" lead="Want a design made just for you? Talk to us:" /></p>
         </div>
       </section>
@@ -298,7 +298,7 @@ export function TemplatesPage() {
                         const tier = tierOf(pricing, template.backendId)
                         return tier ? (
                           <p className="gallery-price">
-                            {tier.name} <strong>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}</strong>
+                            {tier.name} <strong>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}</strong> to publish
                           </p>
                         ) : null
                       })()}

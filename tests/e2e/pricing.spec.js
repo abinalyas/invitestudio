@@ -161,3 +161,14 @@ test('template page: no Opening or colours sections, and the way back to all des
   await expect(info.locator('.swatches')).toHaveCount(0);
   await expect(page.locator('.figma-island-host').getByRole('link', { name: 'Templates' }).first()).toBeVisible();
 });
+
+test('the gallery says trying a design is free and each price is for publishing, so nobody thinks they pay before starting', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await pricesFor(page, 'IN');
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates'); state.page = 'home'; render(); });
+  await expect(page.locator('.gallery-hero-copy')).toContainText('Try any design free. You pay only when you publish.', { timeout: 15000 });
+  const price = page.locator('.gallery-card .gallery-price').first();
+  await expect(price).toContainText('to publish');
+  await expect(price).toContainText('₹');
+});
