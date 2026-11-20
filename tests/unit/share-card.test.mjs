@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { existsSync } from 'node:fs';
+import { TEMPLATE_TIERS } from '../../functions/_shared/pricing.js';
 const card = createRequire(import.meta.url)('../../share-card.js');
 
 const project = {
@@ -48,4 +50,37 @@ test('message without an event title or url still reads well', () => {
   const text = card.message({ names: 'A & B', event: { date: '2026-11-28' } });
   assert.match(text, /Please join us as we celebrate A & B/);
   assert.doesNotMatch(text, /undefined|See the full invitation/);
+});
+
+test('splitNames reads two names, and keeps anything else whole', () => {
+  assert.deepEqual(card.splitNames('Palash & Amruta'), { a: 'Palash', b: 'Amruta' });
+  assert.deepEqual(card.splitNames('Anna and Rohit'), { a: 'Anna', b: 'Rohit' });
+  assert.deepEqual(card.splitNames('Arjun+Meera'), { a: 'Arjun', b: 'Meera' });
+  assert.deepEqual(card.splitNames('The Sharma Wedding'), { a: 'The Sharma Wedding', b: '' });
+  assert.deepEqual(card.splitNames(''), { a: '', b: '' });
+  assert.equal(card.initials({ a: 'Daniel', b: 'Amelia' }), 'D/A');
+  assert.equal(card.initials({ a: 'meera', b: '' }), 'M');
+});
+
+test('cardData: the couple\'s words as the card shows them', () => {
+  const d = card.cardData('Daniel & Amelia', { title: 'Reception', date: '2026-11-28', time: '19:30', venue: ' Govindmani  Lawns ' });
+  assert.equal(d.title, 'Reception');
+  assert.equal(d.wedding, false);
+  assert.equal(d.when.one, 'Saturday, 28 November 2026 \u00B7 7:30 PM');
+  assert.deepEqual(d.when.two, ['28 November 2026', 'Saturday \u00B7 7:30 PM']);
+  assert.equal(d.venue, 'Govindmani Lawns');
+  const bare = card.cardData('A & B', { date: '', venue: '' });
+  assert.equal(bare.title, 'Wedding');
+  assert.equal(bare.wedding, true);
+  assert.equal(bare.when, null);
+  assert.equal(card.cardData('A & B', { date: '2026-02-30' }).when, null);
+});
+
+test('every design that is offered has its own card, with its artwork on disk', () => {
+  for (const id of Object.keys(TEMPLATE_TIERS)) {
+    assert.ok(card.cards[id], `${id} has a card layout`);
+    assert.equal(card.cardArt(id), `/assets/share-cards/${id}.webp`);
+    assert.ok(existsSync(new URL(`../../assets/share-cards/${id}.webp`, import.meta.url)), `${id} artwork exists`);
+  }
+  assert.equal(card.cardArt('some-new-design'), '', 'a design without a card falls back to the generic one');
 });

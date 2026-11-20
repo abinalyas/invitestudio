@@ -13,34 +13,34 @@ export const TIERS = Object.freeze([
   {
     id: 'classic',
     name: 'Classic',
-    tagline: 'A beautifully designed invitation, ready to share.',
+    tagline: 'Elegant, timeless designs, ready to share.',
     features: [
-      'Your names, date, story, photos and events',
-      'A shareable link and guest replies (RSVP)',
-      'Gentle motion and a live countdown',
-      'Kept online until 2 months after your event'
+      'Choose any Classic design',
+      'Edit anytime, even after you publish',
+      'Switch to any other Classic design',
+      'Shareable link, WhatsApp card, guest RSVP and countdown'
     ]
   },
   {
     id: 'premium',
     name: 'Premium',
-    tagline: 'Designs that open with motion and music.',
+    tagline: 'Richer designs with more detail and motion.',
     features: [
-      'Everything in Classic',
-      'Animated opening and scroll reveals',
-      'Background music with an on/off button',
-      'Richer artwork and layouts'
+      'Choose any Premium or Classic design',
+      'Edit anytime, even after you publish',
+      'Switch designs within Premium and Classic',
+      'Shareable link, WhatsApp card, guest RSVP and countdown'
     ]
   },
   {
     id: 'signature',
     name: 'Signature',
-    tagline: 'Our most cinematic designs, with a film to open them.',
+    tagline: 'Our most luxurious, cinematic designs.',
     features: [
-      'Everything in Premium',
-      'A short film opening your guests see first',
-      'Interactive touches, such as a date to scratch or tap open',
-      'Our most detailed artwork'
+      'Choose any design in every collection',
+      'Edit anytime, even after you publish',
+      'Switch to any design, no extra payment',
+      'Priority support'
     ]
   }
 ]);

@@ -48,7 +48,8 @@ export const FAQ = Object.freeze([
   ['Do I need any technical skills to create a wedding website?', 'No. Pick a template, add your names, date and event details, and publish in a few simple steps.'],
   ['Can I collect RSVPs from my guests?', 'Yes. Guests reply from your invitation with their name, whether they are coming and how many. You see every reply in your editor and can download them as a spreadsheet, or switch replies off and ask guests to contact you instead.'],
   ['Can I customise the design and content?', 'Yes. You can change colours, fonts, photos, event details and page sections. Each template keeps its own curated look.'],
-  ['How much does a wedding invitation website on InviteStudio cost?', 'Building and previewing is free. You pay once, when you publish, and the price depends on the design you choose and where you are. There is no subscription.'],
+  ['What is free on InviteStudio, and when do I pay?', 'Building and previewing your wedding invitation is free, as often as you like. You pay once, only when you publish and share it. The price depends on the design you choose and where you are, and there is no subscription.'],
+  ['Can I change my wedding invitation design later?', 'Yes, anytime, even after you publish. You can switch to any design in your plan or a lower one at no extra cost, and your details stay the same.'],
   ['Can I use my own domain?', 'Not yet. Every invitation gets its own InviteStudio link to share with your guests.']
 ]);
 

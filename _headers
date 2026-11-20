@@ -22,6 +22,9 @@
 /assets/samples/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
   Cross-Origin-Resource-Policy: same-site
+/assets/share-cards/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cross-Origin-Resource-Policy: same-site
 
 # The designs' artwork, fonts and animations are for InviteStudio pages only: other sites cannot embed them in a browser
 # (Cross-Origin-Resource-Policy, set above and below), and the full production files are kept out of image search. The
