@@ -1,6 +1,6 @@
 // Home screen from the Figma Make export (App.tsx lines 1054-1476).
 import { useState } from "react";
-import { Icon, IconName, Logo, faqs, templates, galleryTemplates } from "./shared";
+import { Icon, IconName, Logo, faqs, templates, galleryTemplates, testimonials } from "./shared";
 import { formatMoney, usePricing } from "./pricing";
 import { bridge } from "./bridge";
 import { CustomDesignCard, MyProjectsLink, RecoveryBanner, StartCreatingLink, TalkToUs } from "./extras";
@@ -95,41 +95,80 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="benefit-strip" id="features">
-        <div className="shell benefit-grid">
+      <section className="section shell how" id="how">
+        <div className="section-heading centered">
+          <span className="section-kicker">Simple by design</span>
+          <h2>How it works</h2>
+          <p>From first look to shared link in four steps. You only pay at step 4.</p>
+        </div>
+        <div className="steps four">
           {[
-            [
-              "sparkle",
-              "Beautiful templates",
-              "Thoughtfully designed for every wedding style",
-            ],
-            [
-              "edit",
-              "Make it yours",
-              "Easily customise text, colours, photos and more",
-            ],
-            [
-              "people",
-              "Guest information",
-              "Event times, venues, directions and travel details for your guests",
-            ],
-            [
-              "device",
-              "Share instantly",
-              "Send your invitation with a simple link",
-            ],
-          ].map(([icon, title, text]) => (
+            ["calendar", "1", "Choose a design", "Browse our collections and pick the one that feels like you", "Free"],
+            ["edit", "2", "Add your details", "Your names, date, events, photos and story", "Free"],
+            ["eye", "3", "Preview it", "See exactly what guests will see, as often as you like", "Free"],
+            ["send", "4", "Publish and share", "Pay once, get your link and send it on WhatsApp, text or email", "One-time payment"],
+          ].map(([icon, number, title, text, tag], index) => (
             <article key={title}>
-              <span className="benefit-icon">
-                <Icon name={icon as IconName} />
+              <span className="step-icon">
+                <Icon name={icon as IconName} size={30} />
               </span>
+              <strong className="number">{number}</strong>
               <div>
                 <h3>{title}</h3>
                 <p>{text}</p>
+                <span className={index === 3 ? "step-tag paid" : "step-tag"}>{tag}</span>
               </div>
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="section shell what" id="features">
+        <div className="section-heading centered">
+          <span className="section-kicker">A complete digital invitation</span>
+          <h2>Everything you need for your big day</h2>
+          <p>All the essentials in one place, on every plan.</p>
+        </div>
+        <div className="what-grid">
+          {[
+            [
+              "calendar",
+              "Your digital invitation",
+              "A beautiful, personalised wedding website for your day.",
+              ["Names and date", "Events and venues", "Countdown"],
+            ],
+            [
+              "send",
+              "Share with one link",
+              "Send your invitation to everyone you love, in seconds.",
+              ["WhatsApp", "Text and email", "Works on any phone"],
+            ],
+            [
+              "people",
+              "Guests and memories",
+              "Know who is coming and share your story with them.",
+              ["Guest RSVP", "Your story and photos", "Travel details"],
+            ],
+          ].map(([icon, title, text, chips]) => (
+            <article key={title as string}>
+              <span className="what-icon">
+                <Icon name={icon as IconName} size={26} />
+              </span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+              <ul>
+                {(chips as string[]).map((chip) => (
+                  <li key={chip}>{chip}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+        <ul className="what-assure">
+          <li><Icon name="edit" size={18} /> Edit anytime</li>
+          <li><Icon name="device" size={18} /> Looks great on any device</li>
+          <li><Icon name="cloud" size={18} /> No hosting or setup needed</li>
+        </ul>
       </section>
 
       <section className="section shell templates" id="templates">
@@ -146,110 +185,24 @@ export function HomePage() {
         <TemplateStrip />
       </section>
 
-      <section className="section shell how" id="how">
-        <div className="section-heading centered">
-          <span className="section-kicker">Simple by design</span>
-          <h2>How it works</h2>
-          <p>Create your wedding website in three simple steps.</p>
-        </div>
-        <div className="steps">
-          {[
-            ["calendar", "1", "Choose a template", "Pick a design you love"],
-            [
-              "edit",
-              "2",
-              "Customise",
-              "Add your details, events, photos and more",
-            ],
-            [
-              "send",
-              "3",
-              "Share",
-              "Get a link and invite your guests instantly",
-            ],
-          ].map(([icon, number, title, text], index) => (
-            <article key={title}>
-              <span className="step-icon">
-                <Icon name={icon as IconName} size={32} />
-              </span>
-              <strong className="number">{number}</strong>
-              <div>
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </div>
-              {index < 2 && <span className="step-arrow">→</span>}
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="feature-panel shell">
-        <div className="panel-intro">
-          <img className="botanical" src="/assets/home/feature-flowers.webp" alt="" width={165} height={256} loading="lazy" decoding="async" />
-          <div>
-            <h2>
-              Everything you need
-              <br />
-              for your big day
-            </h2>
-            <p>
-              A simple yet powerful way to share your wedding with the people
-              you love.
-            </p>
-          </div>
-        </div>
-        <div className="feature-list">
-          {[
-            [
-              "calendar",
-              "Event details",
-              "Share all your wedding events in one place",
-            ],
-            [
-              "people",
-              "Travel & event details",
-              "Directions, parking and stays for each event",
-            ],
-            [
-              "heart",
-              "Your story",
-              "Tell your story through your favourite moments",
-            ],
-            [
-              "link",
-              "Your own link",
-              "A clean, shareable link for your wedding",
-            ],
-            [
-              "device",
-              "Mobile friendly",
-              "A beautiful experience on any device",
-            ],
-            [
-              "sparkle",
-              "Beautiful animations",
-              "Subtle, elegant animations that feel special",
-            ],
-          ].map(([icon, title, text]) => (
-            <article key={title}>
-              <Icon name={icon as IconName} />
-              <div>
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
       <section className="section shell pricing" id="pricing">
         <div className="section-heading row">
           <div>
-            <span className="section-kicker">One price for each design</span>
-            <h2>Simple, transparent pricing</h2>
+            <span className="section-kicker">Choose your collection</span>
+            <h2>Find the perfect design for your big day</h2>
             <p>
-              Build and preview your invitation for free. You pay once, when you publish, and the price depends on the design you choose.
+              Same tools in every plan. The plan decides which designs you can choose from.
             </p>
+          </div>
+        </div>
+        <div className="free-paid">
+          <div>
+            <strong><Icon name="check" size={16} /> Free</strong>
+            <span>Build, edit and preview your invitation, as often as you like.</span>
+          </div>
+          <div>
+            <strong><Icon name="lock" size={16} /> Pay once, to publish</strong>
+            <span>One payment, no subscription. The price is shown before you pay.</span>
           </div>
         </div>
         <div className="plans">
@@ -294,6 +247,40 @@ export function HomePage() {
         )}
       </section>
 
+      <section className="shell switch-strip">
+        <span className="switch-icon">
+          <Icon name="swap" size={26} />
+        </span>
+        <div>
+          <h2>Edit anytime. Switch designs whenever you want.</h2>
+          <p>
+            Even after you publish. Change your mind about the look? Move to any design in your plan or a lower one, at no extra cost, and all your details come with you.
+          </p>
+        </div>
+      </section>
+
+      {testimonials.length > 0 && (
+        <section className="section shell testimonials">
+          <div className="section-heading centered">
+            <span className="section-kicker">From couples we have made websites for</span>
+            <h2>What couples are saying</h2>
+          </div>
+          <div className="testimonial-grid">
+            {testimonials.map((item) => (
+              <figure key={item.names}>
+                {item.photo ? <img src={item.photo} alt="" width={64} height={64} loading="lazy" decoding="async" /> : null}
+                <blockquote>“{item.quote}”</blockquote>
+                <figcaption>
+                  {item.names}
+                  {item.link ? (
+                    <a href={item.link} target="_blank" rel="noopener noreferrer"> See their invitation</a>
+                  ) : null}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="section shell faq">
         <div className="section-heading row">

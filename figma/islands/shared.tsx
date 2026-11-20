@@ -189,14 +189,24 @@ export const faqs = [
     "Yes. You can update colours, fonts, photos, event details, and page sections.",
   ],
   [
-    "How much does it cost?",
-    "Building and previewing your invitation is free. You pay once, when you publish, and the price depends on the design you choose and where you are. See Pricing above; the price is shown before you pay, and there is no subscription.",
+    "What is free, and when do I pay?",
+    "Building and previewing your invitation is free, as often as you like. You pay once, only when you publish and share it. The price depends on the design you choose and where you are, it is shown before you pay, and there is no subscription.",
+  ],
+  [
+    "Can I change my design later?",
+    "Yes, anytime, even after you publish. You can switch to any design in your plan or in a lower one at no extra cost, and your details stay the same. A design in a higher plan needs an upgrade.",
   ],
   [
     "Can I use my own domain?",
     "Not yet. Every invitation gets its own InviteStudio link that you can share with your guests.",
   ],
 ]
+
+// Real couples' words for the home page. Add an entry only with the couple's permission, and use their real names and photo.
+// While the list is empty the home page shows no testimonials section. photo is a path like "/assets/home/testimonials/name.webp";
+// link is the couple's live invitation, so a visitor can see the proof.
+export type Testimonial = { quote: string; names: string; photo?: string; link?: string }
+export const testimonials: Testimonial[] = []
 
 // A date or time field opens its picker wherever it is clicked, not only on the small calendar icon at its edge (Chrome and Edge
 // open the picker from the icon only). Keyboard use is unchanged: tabbing into the field does not open it, and the day, month and
