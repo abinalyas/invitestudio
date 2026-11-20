@@ -9,7 +9,7 @@ async function stubPrices(page) {
   await page.route('**/api/pricing**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...pricingFor('in'), country: 'IN', mode: 'early-access' }) }));
 }
 
-for (const [name, width, height] of [['phone', 390, 844], ['tablet', 820, 1100], ['laptop', 1280, 800], ['wide', 1500, 900]]) {
+for (const [name, width, height] of [['phone', 390, 844], ['tablet', 820, 1100], ['laptop', 1280, 800], ['wide', 1500, 900], ['xl', 1920, 1000]]) {
   test(`${name} (${width}px): illustrations load and the page does not scroll sideways`, async ({ page }) => {
     await page.setViewportSize({ width, height });
     await stubPrices(page);

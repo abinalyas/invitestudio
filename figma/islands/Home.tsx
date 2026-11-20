@@ -187,9 +187,9 @@ export function HomePage() {
       </section>
 
       <section className="section shell templates" id="templates">
-        <Art name="eucalyptus" className="deco deco-edge-l deco-tpl" />
         <div className="section-heading row">
           <div>
+            <Art name="eucalyptus" className="deco deco-edge-l deco-tpl" />
             <span className="section-kicker">Curated designs</span>
             <h2>Explore beautiful templates</h2>
             <p>Start from a design, preview it, then make it yours.</p>
@@ -202,9 +202,9 @@ export function HomePage() {
       </section>
 
       <section className="section shell pricing" id="pricing">
-        <Art name="flowers-b" className="deco deco-corner-r deco-pricing" />
-        <Art name="petal-2" className="deco deco-petal deco-pricing-petal" />
         <div className="section-heading row">
+          <Art name="flowers-b" className="deco deco-corner-r deco-pricing" />
+          <Art name="petal-2" className="deco deco-petal deco-pricing-petal" />
           <div>
             <span className="section-kicker">Choose your collection</span>
             <h2>Find the perfect design for your big day</h2>
@@ -358,7 +358,6 @@ export function HomePage() {
       </section>
 
       <footer className="footer shell" id="footer">
-        <Art name="eucalyptus" className="deco footer-deco" />
         <div className="footer-grid">
           <div className="footer-brand">
             <Logo />
@@ -409,6 +408,7 @@ export function HomePage() {
           </nav>
         </div>
         <div className="footer-bottom">
+          <Art name="eucalyptus" className="deco footer-deco" />
           <p className="footer-copy">© {new Date().getFullYear()} InviteStudio. The templates and designs on this site are protected by copyright.</p>
         </div>
       </footer>

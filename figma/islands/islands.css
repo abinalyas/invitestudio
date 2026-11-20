@@ -973,17 +973,19 @@ table.rsvp-by-event { font-size: 13px; }
 .home-page .how, .home-page .templates, .home-page .pricing, .home-page .what { position: relative; }
 .deco { position: absolute; z-index: 0; pointer-events: none; user-select: none; height: auto; display: none; }
 .deco-petal { opacity: .9; }
+/* Each decoration belongs to the block it sits beside, so it stays next to it at any screen width. */
+.home-page .pricing .section-heading, .home-page .templates .section-heading > div { position: relative; }
 @media (min-width: 900px) {
   .deco-corner-r, .deco-petal { display: block; }
-  .deco-pricing { top: -34px; right: -6px; width: 180px; }
-  .deco-pricing-petal { top: 130px; right: 190px; width: 40px; transform: rotate(24deg); }
+  .deco-pricing { top: -30px; right: 0; width: 150px; }
+  .deco-pricing-petal { top: 74px; right: 134px; width: 36px; transform: rotate(24deg); }
   .deco-how-petal { top: 46px; right: 21%; width: 40px; transform: rotate(-18deg); }
 }
-@media (min-width: 1360px) {
+@media (min-width: 1420px) {
   .deco-edge-l, .deco-edge-r { display: block; }
   .deco-how-l { top: 150px; left: -150px; width: 150px; transform: rotate(-8deg); }
   .deco-how-r { top: 150px; right: -125px; width: 112px; }
-  .deco-tpl { top: 6px; left: -150px; width: 150px; }
+  .deco-tpl { top: -4px; left: -128px; width: 112px; }
 }
 
 /* How it works: the four illustrated steps, joined by dotted arrows. */
@@ -1026,8 +1028,8 @@ table.rsvp-by-event { font-size: 13px; }
 .cta-art-r { right: -22px; }
 
 /* Footer sprig. */
-.footer { position: relative; }
-.footer-deco { right: 0; bottom: 8px; width: 150px; opacity: .85; }
+.footer-bottom { position: relative; }
+.footer-deco { right: 0; top: 8px; width: 96px; opacity: .9; }
 @media (min-width: 1100px) { .footer-deco { display: block; } }
 
 @media (max-width: 1100px) {
