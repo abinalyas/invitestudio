@@ -179,3 +179,5 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var
 @container (max-width:800px){.site-header{height:64px}.menu-toggle{display:block}.nav{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:flex-start;gap:18px;padding:22px 7cqw 26px;background:rgba(255,249,242,.98);border-bottom:1px solid rgba(200,173,134,.3)}.nav[data-open]{display:flex}.story-layout{grid-template-columns:1fr;gap:34px}.story-art{width:min(420px,100%);margin:0 auto}.story-copy{text-align:center}.paras p{margin-left:auto;margin-right:auto}.flow-event{grid-template-columns:1fr;gap:12px;text-align:center}}
 @container (max-width:640px){.hero{min-height:clamp(700px,175cqw,880px)}.hero-branch{width:min(60cqw,300px)}.timer{gap:12px}.timer div{min-width:52px}.timer i{display:none}.story-foot{flex-direction:column;gap:8px}.fine-line{display:none}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}.intro{display:none}}
+/* the couple's own event details: sans in the muted tone of the time line */
+.flow-copy [data-details]{font:400 .9rem/1.6 var(--sans);color:var(--muted)}

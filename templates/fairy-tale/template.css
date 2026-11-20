@@ -115,3 +115,5 @@ figure{margin:0}
 .rsvp-link{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .rsvp-open{display:inline-block;margin:16px auto 0;padding:13px 34px;border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:opacity .2s}
 .rsvp-open:hover,.rsvp-open:focus-visible{opacity:.7}
+/* the couple's own event details: the design's paragraph voice (as .event-venue) */
+.event [data-details]{font:400 1.2rem/1.5 var(--serif);color:#5f4e4a;margin:16px 0 0}
