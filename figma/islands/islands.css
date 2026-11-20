@@ -425,7 +425,8 @@ button.btn.small:not(.danger) { display: inline-flex; align-items: center; justi
 
 /* Template page: the real design in a phone beside the details. On a wide screen the phone stays in view while the
    details scroll; on a phone-sized screen it comes first. */
-.detail-device { position: relative; box-sizing: border-box; width: min(372px, 100%); height: min(760px, calc(100vh / var(--z, 1) - 215px)); min-height: 540px; padding: 12px; border-radius: 46px; background: #1d1f1c; box-shadow: 0 22px 44px -18px rgba(62, 16, 22, .32), 0 0 0 1px rgba(43, 35, 32, .06); }
+/* The phone's height follows the window, and its width follows its height, so it is always phone-shaped (about 9:19, not a squat box). */
+.detail-device { --dh: max(580px, min(800px, calc(100vh / var(--z, 1) - 215px))); position: relative; box-sizing: border-box; width: calc(var(--dh) / 2.05); height: var(--dh); min-height: 0; padding: 12px; border-radius: 46px; background: #1d1f1c; box-shadow: 0 22px 44px -18px rgba(62, 16, 22, .32), 0 0 0 1px rgba(43, 35, 32, .06); }
 .detail-device::before { content: ""; position: absolute; z-index: 2; left: 50%; top: 20px; width: 92px; height: 26px; margin-left: -46px; border-radius: 999px; background: #1d1f1c; }
 .detail-screen { height: 100%; overflow-x: hidden; overflow-y: auto; border-radius: 34px; background: #fffaf4; overscroll-behavior: contain; scrollbar-width: none; }
 .detail-screen::-webkit-scrollbar { display: none; }
