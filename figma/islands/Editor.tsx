@@ -8,7 +8,7 @@
 //   scrolls the preview to it. Both stay in step.
 // - Only supported content is editable here. Palette, typography and layout belong to
 //   the template. Photos stay disabled until persistent photo storage exists.
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { usePricing } from "./pricing";
 import { Icon, IconName, PlaceList, Logo, openPickerOnClick, sampleHosts, sampleStories, sampleWelcomes } from "./shared";
 import { bridge, Device, EditorFields, EditorSnapshot, EventItem, EventPatch, PhotoItem, RetentionInfo, RsvpData } from "./bridge";
@@ -412,8 +412,12 @@ export function EditorPage() {
   const failed = snap.saveState === "error";
   const conflict = snap.saveState === "conflict";
 
+  // On a phone, the floating "Edit ..." button sits above the tab bar. The preview's message (the black "Added 1 photo..." line) must sit
+  // above that button, or the two are drawn on top of each other. The message reads this offset (it cannot look the button up itself:
+  // the button lives in this editor's shadow tree).
+  const editPillShown = mobileTab === "preview" && picked;
   return (
-    <main className="editor-page">
+    <main className="editor-page" style={editPillShown ? ({ "--hint-bottom": "160px" } as CSSProperties) : undefined}>
       <header className="editor-header">
         <div className="editor-brand">
           <Logo />

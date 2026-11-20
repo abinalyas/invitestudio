@@ -371,8 +371,8 @@
       const touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
       container.append(pillElement(`${touch ? 'Tap' : 'Click'} any outlined text to edit it`, 'tip'));
     }
-    // Above the phone's tab bar, and above its floating Edit button when that is showing.
-    container.style.setProperty('--hint-bottom', document.querySelector('.mobile-edit-pill') ? '156px' : '84px');
+    // Its height above the phone's tab bar is --hint-bottom (84px, set in the CSS above); the editor raises it above its floating
+    // Edit button while that is showing. (Looking the button up here does not work: it lives in the editor's shadow tree.)
   }
   function setNotice(container, text, kind = 'info', ms = 7000, action = null) {
     const notice = { text, kind, until: Date.now() + ms, action };
