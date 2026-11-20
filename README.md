@@ -84,6 +84,7 @@ Every offered design is a packaged template (`templates/<id>/`, see `docs/TEMPLA
 
 - Catalogue thumbnails are rendered from the real renderer: `npm run thumbs:scenes`.
 - After adding a design, run `npm run gen:templates` and run a migration that inserts its id into `public.templates` in Supabase (for example `supabase/migrations/202611160001_lantern_night_template.sql`). Until that row exists, creating a draft on the design fails with "this design is not set up on the server yet".
+- Taken off the shelf: Modern Heritage is no longer offered (not in the gallery, home page, setup or sitemap, and the database row is switched off by `supabase/migrations/202611200001_retire_modern_heritage.sql`, so no new draft can use it). Unlike the retired trial designs it stays in the server's allow-list, in the catalogue entry in `index.html` and in `templates/modern-heritage/`, so invitations that already use it keep showing and can still be published. To bring it back, restore its entry in `offeredTemplateIds` (`index.html`), `galleryTemplates` (`figma/islands/shared.tsx`), the seo list, its price tier, and set `is_active` back to true.
 - Retired designs: Savanna Sunset, Palmera Beach, Curtain Call and Lunaria (the scene renderer) and Blue Hydrangea were trial designs and were removed. `supabase/migrations/202611160002_retire_trial_templates.sql` switches them off in the database. An invitation that still uses one shows "This design is no longer available" and keeps its details.
 
 ## Important limitations

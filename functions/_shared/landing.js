@@ -10,7 +10,7 @@ export const LANDING = Object.freeze([
     description: 'Build a wedding invitation website with your story, events, photos and RSVP. Pick an animated template, preview it free and share one link with guests.',
     h1: 'A wedding invitation website, made in minutes',
     lead: 'Put everything your guests need on one beautiful page: who is getting married, when and where, the schedule, photos and a way to reply. InviteStudio gives you a designed, animated wedding invitation website to fill in, not a blank page to design.',
-    picks: [13, 14, 15],
+    picks: [14, 15, 16],
     sections: [
       { h2: 'What goes on your wedding invitation website', p: ['Your names and date, a short story, the events of the day with times and venues, travel details, a photo gallery and a way for guests to reply. Each template arranges these in its own style, so you choose a look and add your details.'], list: ['Names, date and a live countdown (on templates that have one)', 'A schedule of events, with venues and times', 'Photos of the two of you', 'Guest replies (RSVP) collected for you'] },
       { h2: 'Why a website instead of only a printed card', p: ['A website can change after you send it. If a time moves or a venue is added, you update the page and every guest sees the latest. It also holds the details a card has no room for, such as travel and a full schedule, and guests can answer from their phone without posting anything back.'] },
@@ -48,7 +48,7 @@ export const LANDING = Object.freeze([
     description: 'Collect wedding RSVPs on your invitation itself: guests give their name, whether they are coming and how many. See every reply and download a spreadsheet.',
     h1: 'An online wedding invitation with RSVP built in',
     lead: 'Guests reply on the invitation itself, so you do not chase answers across chats and emails. Every reply appears in one list in your editor.',
-    picks: [18, 13, 14],
+    picks: [18, 14, 15],
     sections: [
       { h2: 'What guests are asked', p: ['The reply form is short on purpose, so people actually fill it in.'], list: ['Their name', 'Whether they are coming or not', 'How many people are coming (you set the maximum)', 'Any meal or access needs', 'An optional message for you'] },
       { h2: 'What you get', p: ['All replies are listed in your editor as they arrive. Download them as a spreadsheet to plan catering and seating. If you would rather not take replies on the page, you can switch RSVP off and ask guests to contact you instead.'] },

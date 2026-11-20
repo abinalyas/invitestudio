@@ -87,9 +87,9 @@ test('the RSVP choice is made in the editor, and setup no longer asks for it', a
   await page.evaluate(() => { localStorage.clear(); startCreate('Wedding'); });
   await expect(page.locator('#projectTitle')).toBeVisible({ timeout: 15000 });
   await expect(page.locator('#prefRsvp')).toHaveCount(0);
-  await page.goto('/templates/13');
-  await quickStart(page, 13);
-  await expect(page).toHaveURL(/\/editor\/13$/, { timeout: 15000 });
+  await page.goto('/templates/14');
+  await quickStart(page, 14);
+  await expect(page).toHaveURL(/\/editor\/14$/, { timeout: 15000 });
   await page.locator('.editor-pages').getByRole('button', { name: /^RSVP/ }).click();
   await expect(page.getByLabel('How guests reply')).toBeVisible({ timeout: 15000 });
 });

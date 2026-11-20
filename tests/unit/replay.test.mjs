@@ -73,7 +73,7 @@ async function visit(path, { env = ENV, country = 'IN' } = {}) {
 }
 
 test('middleware: marketing pages offer the recording script only where allowed, with the wider policy only there', async () => {
-  for (const path of ['/', '/templates', '/templates/13']) {
+  for (const path of ['/', '/templates', '/templates/14']) {
     const allowed = await visit(path, { country: 'IN' });
     assert.match(allowed.appended, /<meta name="invitestudio-replay" content="abc123xyz9">/, path);
     assert.match(allowed.csp, /script-src[^;]*https:\/\/\*\.clarity\.ms/, path);

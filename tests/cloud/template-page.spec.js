@@ -2,7 +2,7 @@
 const { test, expect } = require('@playwright/test');
 
 test('the template page has one clear next step and no "quick start" second path', async ({ page }) => {
-  await page.goto('/templates/13');
+  await page.goto('/templates/14');
   await expect(page.getByRole('button', { name: 'Start with this design' })).toBeVisible({ timeout: 15000 });
   await expect(page.getByText('Next: your names, date and place. It takes about a minute, and you can edit your details afterwards.')).toBeVisible();
   await expect(page.getByRole('button', { name: /quick start/i })).toHaveCount(0);
