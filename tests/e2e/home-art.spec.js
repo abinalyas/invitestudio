@@ -43,3 +43,26 @@ for (const [name, width, height] of [['phone', 390, 844], ['tablet', 820, 1100],
     }
   });
 }
+
+// The template gallery's banner has flower sprays either side of the title (it had drawn shapes before).
+const shell = fs.readFileSync(path.join(__dirname, '../../index.html'), 'utf8');
+for (const [name, width, height] of [['gallery-phone', 390, 844], ['gallery-tablet', 820, 1100], ['gallery-wide', 1500, 900], ['gallery-xl', 1920, 1000]]) {
+  test(`${name} (${width}px): the banner shows two flower sprays that load, behind the text`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await page.route(url => url.pathname === '/templates', route => route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: shell }));
+    await page.goto('/templates');
+    await expect(page.locator('.gallery-hero h1')).toHaveText('Find the perfect invitation', { timeout: 15000 });
+    await page.waitForTimeout(600);
+    const arts = page.locator('.gallery-hero .gallery-art');
+    await expect(arts).toHaveCount(2);
+    for (const i of [0, 1]) {
+      expect(await arts.nth(i).evaluate(img => [img.complete, img.naturalWidth > 0, getComputedStyle(img).pointerEvents, img.getAttribute('alt'), img.getAttribute('aria-hidden')])).toEqual([true, true, 'none', '', 'true']);
+    }
+    expect(await page.locator('.gallery-hero .gallery-flower').count()).toBe(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    if (process.env.HOME_SHOTS) {
+      fs.mkdirSync(process.env.HOME_SHOTS, { recursive: true });
+      await page.locator('.gallery-hero').screenshot({ path: path.join(process.env.HOME_SHOTS, `${name}.png`) });
+    }
+  });
+}

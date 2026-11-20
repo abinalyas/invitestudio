@@ -1049,3 +1049,11 @@ table.rsvp-by-event { font-size: 13px; }
   .cta-art-r { right: -26px; }
   .switch-art { width: 80px; }
 }
+
+/* Templates page banner: flower sprays from the asset pack either side of the title. */
+.gallery-hero::after { display: none; }
+.gallery-art { position: absolute; z-index: 1; height: auto; pointer-events: none; user-select: none; }
+.gallery-art-l { left: -16px; top: -12px; width: 230px; }
+.gallery-art-r { right: -16px; bottom: -20px; width: 240px; transform: scaleX(-1) rotate(180deg); }
+@media (max-width: 900px) { .gallery-art-l { width: 118px; left: -22px; top: -14px; } .gallery-art-r { width: 140px; } }
+@media (max-width: 560px) { .gallery-art-l { width: 104px; left: -22px; top: -8px; } .gallery-art-r { width: 104px; right: -22px; bottom: -14px; } }

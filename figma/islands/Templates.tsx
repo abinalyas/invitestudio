@@ -1,6 +1,6 @@
 // Templates browse screen from the Figma Make export (App.tsx lines 789-1053).
 import { useState } from "react";
-import { Icon, IconName, Logo, galleryTemplates, styleOptions } from "./shared";
+import { Art, Icon, IconName, Logo, galleryTemplates, styleOptions } from "./shared";
 import { bridge } from "./bridge";
 import { formatMoney, tierOf, usePricing } from "./pricing";
 import { CustomDesignCard, MyProjectsLink, TalkToUs } from "./extras";
@@ -95,18 +95,8 @@ export function TemplatesPage() {
       </header>
 
       <section className="gallery-hero">
-        <div className="gallery-flower gallery-flower-left">
-          <i />
-          <i />
-          <i />
-          <i />
-        </div>
-        <div className="gallery-flower gallery-flower-right">
-          <i />
-          <i />
-          <i />
-          <i />
-        </div>
+        <Art name="flowers-a" className="gallery-art gallery-art-l" />
+        <Art name="flowers-b" className="gallery-art gallery-art-r" />
         <div className="gallery-shell gallery-hero-copy">
           <span className="section-kicker">Template gallery</span>
           <h1>Find the perfect invitation</h1>

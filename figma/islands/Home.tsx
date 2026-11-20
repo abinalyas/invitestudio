@@ -1,23 +1,10 @@
 // Home screen from the Figma Make export (App.tsx lines 1054-1476).
 import { useState } from "react";
-import { Icon, Logo, faqs, templates, galleryTemplates, testimonials } from "./shared";
+import { Art, Icon, Logo, faqs, templates, galleryTemplates, testimonials } from "./shared";
 import { formatMoney, usePricing } from "./pricing";
 import { bridge } from "./bridge";
 import { CustomDesignCard, MyProjectsLink, RecoveryBanner, StartCreatingLink, TalkToUs } from "./extras";
 import { TemplateStrip } from "./TemplateStrip";
-// Illustrations from the asset pack (assets/home/art). Decorative ones have empty alt text; sizes are the files' own, so the page does not jump while they load.
-const ART = "/assets/home/art/"
-const ART_SIZE: Record<string, [number, number]> = {
-  "flowers-a": [338, 275], "flowers-b": [364, 290], gypsophila: [236, 215], eucalyptus: [225, 103], arch: [304, 321], "gold-swoosh": [402, 118],
-  "petal-1": [104, 66], "petal-2": [99, 69],
-  "icon-laptop": [144, 138], "icon-notebook": [150, 140], "icon-eye": [141, 144], "icon-plane": [136, 136], "icon-link": [140, 136],
-  "icon-people": [146, 125], "icon-phone": [148, 131], "icon-layers": [139, 127], "icon-shield": [137, 127],
-}
-function Art({ name, className }: { name: string; className: string }) {
-  const [width, height] = ART_SIZE[name]
-  return <img className={className} src={`${ART}${name}.webp`} alt="" width={width} height={height} loading="lazy" decoding="async" aria-hidden="true" />
-}
-
 export function HomePage() {
   // The Instagram address is set once in site-config.js (social.instagram); with none set, no social icon is shown.
   const instagramUrl = ((window as unknown as { INVITESTUDIO_SITE?: { social?: { instagram?: string } } }).INVITESTUDIO_SITE?.social?.instagram || "").trim()
