@@ -81,7 +81,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .curtain-r{right:0;--from:35%;-webkit-mask-image:linear-gradient(270deg,#000 50%,transparent);mask-image:linear-gradient(270deg,#000 50%,transparent)}
 .dust{position:absolute;inset:0;z-index:-1;pointer-events:none}
 .dust span{position:absolute;bottom:-10px;border-radius:50%;background:var(--accent2);opacity:0;animation:dust linear infinite}
-.arch{position:absolute;left:50%;bottom:0;z-index:-1;width:min(94cqw,520px);aspect-ratio:460/560;translate:-50% 0;stroke:var(--accent);stroke-width:1.2}
+.arch{position:absolute;left:50%;top:0;bottom:0;z-index:-1;width:min(94cqw,520px);height:100%;translate:-50% 0;overflow:hidden;stroke:var(--accent);stroke-width:1.2}
 .arch path{stroke-dasharray:1;stroke-dashoffset:0;opacity:.7;animation:draw 2.8s var(--ease) .3s both}
 .arch path.in{opacity:.35;animation-delay:.7s}
 .hero-body{position:relative;width:min(44rem,100%)}
@@ -175,7 +175,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 .footer-row{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:clamp(40px,6cqw,72px) -6cqw 0;padding:16px 6cqw;border-top:1px solid var(--line);font:400 .6rem/1.6 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 .footer-row button:hover,.footer-row button:focus-visible{color:var(--accent)}
 
-@container (max-width:760px){.hero{min-height:clamp(660px,160cqw,860px)}.hero-body{margin-top:12cqw}.hero-eyebrow{font-size:.68rem;letter-spacing:.24em}}
+@container (max-width:760px){.hero{min-height:clamp(660px,160cqw,860px)}.hero-eyebrow{font-size:.68rem;letter-spacing:.24em}}
 @container (max-width:800px){.site-header{height:64px}.menu-toggle{display:block}.nav{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:flex-start;gap:6px;padding:20px 6cqw 24px;background:rgba(8,21,15,.98);border-bottom:1px solid var(--line)}.nav[data-open]{display:flex}}
 @container (max-width:520px){.footer-row{flex-direction:column;gap:10px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}.intro{display:none}}
