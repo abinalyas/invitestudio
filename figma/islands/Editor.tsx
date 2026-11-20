@@ -26,6 +26,9 @@ const mobileTabs: Array<{ key: MobileTab; label: string; icon: IconName }> = [
 function isPhone(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
 }
+// On a phone the invitation is a preview; an event's other details (time, venue, dress code...) are filled in on the Edit view. When an
+// event is added or tapped in the preview, the preview asks the editor to open that event's form there.
+type EventRequest = { id: string; rename: boolean; n: number };
 type SectionItem = { key: SectionKey; label: string; icon: IconName; sectionId?: string };
 
 const sections: SectionItem[] = [
@@ -285,6 +288,7 @@ export function EditorPage() {
   });
 
   const [picked, setPicked] = useState(false);
+  const [eventRequest, setEventRequest] = useState<EventRequest | null>(null);
   const [namesNeeded, setNamesNeeded] = useState(false);
   const namesRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -386,6 +390,21 @@ export function EditorPage() {
       }
     }
   }
+
+  // The preview asks for an event's form (it was just added there, or tapped): show it on the Edit view with that event open.
+  useEffect(() => {
+    let count = 0;
+    const open = (event: Event) => {
+      const detail = (event as CustomEvent<{ id?: string; rename?: boolean }>).detail;
+      if (!detail || !detail.id) return;
+      setActive("functions");
+      setPicked(false);
+      if (isPhone()) setMobileTab("edit");
+      setEventRequest({ id: detail.id, rename: Boolean(detail.rename), n: ++count });
+    };
+    window.addEventListener("invitestudio:open-event", open);
+    return () => window.removeEventListener("invitestudio:open-event", open);
+  }, []);
 
   // The couple's replies live in the RSVP panel: this opens it from anywhere (on a phone, on the Edit tab).
   function openReplies() {
@@ -661,7 +680,7 @@ export function EditorPage() {
             </div>
           ) : null}
 
-          {active === "functions" ? <EventsPanel snap={snap} /> : null}
+          {active === "functions" ? <EventsPanel snap={snap} request={eventRequest} /> : null}
           {active === "gallery" ? <GalleryPanel snap={snap} /> : null}
           {active === "rsvp" ? <RsvpPanel snap={snap} /> : null}
           <ExampleNote snap={snap} section={active} />
@@ -802,7 +821,7 @@ function WordingPanel({ snap, section }: { snap: EditorSnapshot; section: Sectio
 
 // Events carry their own travel details: directions, parking, stays and access.
 // Structured per event so broader travel information can be added later.
-export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
+export function EventsPanel({ snap, request = null }: { snap: EditorSnapshot; request?: EventRequest | null }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const trimmed = name.trim();
@@ -818,6 +837,25 @@ export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
   const focusGrip = useRef<string | null>(null);
   const stopDrag = useRef<(() => void) | null>(null);
   useEffect(() => () => stopDrag.current?.(), []);
+  // An event asked for by the preview: open its form and bring it into view (the effect below does the scrolling).
+  const handled = useRef(0);
+  useEffect(() => {
+    if (!request || handled.current === request.n) return;
+    handled.current = request.n;
+    justAdded.current = request.id;
+    setOpenId(request.id);
+  });
+  // A new custom event arrives named "New event": put the cursor in its name, selected, so typing replaces it.
+  const renamed = useRef(0);
+  useEffect(() => {
+    if (!request || !request.rename || renamed.current === request.n || openId !== request.id) return;
+    const row = [...(listRef.current?.querySelectorAll<HTMLElement>("[data-event-id]") ?? [])].find(el => el.dataset.eventId === request.id);
+    const input = row?.querySelector<HTMLInputElement>("input[type=text], input:not([type])");
+    if (!input) return;
+    renamed.current = request.n;
+    input.focus({ preventScroll: true });
+    input.select();
+  });
   useEffect(() => {
     const id = justAdded.current;
     if (!id) return;

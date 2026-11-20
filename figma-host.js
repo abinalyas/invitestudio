@@ -619,9 +619,16 @@
     wrap.append(menu);
     button.setAttribute('aria-expanded', 'true');
   }
+  // On a phone the invitation is only a preview: an event's time, venue, dress code and the rest are filled in on the Edit view, which
+  // people do not think to open. So an event that is added, or tapped, in the preview opens its form there (the editor listens).
+  function phoneLayout() { return Boolean(window.matchMedia && window.matchMedia('(max-width: 767px)').matches); }
+  function openEventForm(id, rename) {
+    window.dispatchEvent(new CustomEvent('invitestudio:open-event', { detail: { id, rename: Boolean(rename) } }));
+  }
   function addEventFromPreview(container, title, rename) {
     const id = bridge.addEvent(title);
     if (!id) return;
+    if (phoneLayout()) { openEventForm(id, rename); return; }
     // The preview redraws after the save: wait for the new event, bring it into view, and (custom) start renaming it.
     let tries = 0;
     const find = () => {
@@ -701,7 +708,11 @@
       if (picture && showPhotoBar(container, picture)) return;
       hidePhotoBar(container);
       const el = fieldOf(event);
-      if (el) startEditing(el);
+      if (el) {
+        // On a phone, tapping an event's name or venue opens the whole event (not just that one line) on the Edit view.
+        if (/^event:/.test(el.dataset.edit || '') && el.dataset.id && phoneLayout()) { openEventForm(el.dataset.id, false); return; }
+        startEditing(el);
+      }
     });
     // The event bar follows the pointer or focus; it stays while the pointer is on it.
     container.addEventListener('mouseover', event => {
