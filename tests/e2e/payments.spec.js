@@ -13,9 +13,9 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
-async function draftWithServer(page, { mode = 'live', country = 'IN', unlocked = false, paidOnReturn = true } = {}) {
+async function draftWithServer(page, { mode = 'live', country = 'IN', unlocked = false, paidOnReturn = true, promoReply = null } = {}) {
   const { pricingFor, regionForCountry } = await import('../../functions/_shared/pricing.js');
-  const server = { version: 1, unlocked, paid: false, checkouts: [], verifies: 0, publishes: [], publishConflict: false };
+  const server = { version: 1, unlocked, paid: false, checkouts: [], verifies: 0, publishes: [], publishConflict: false, promos: [], promoReply };
   const wedding = () => ({
     id: WID, version: server.version, status: 'draft', visibility: 'private', slug: null, name: 'Mira & Arun', category: 'Wedding', template_id: 'velvet-reveal',
     title: 'Mira & Arun', event_date: '2027-01-20', location: '', message: '', story: '', hosts: '', locale: 'English', theme: {}, preferences: {},
@@ -54,6 +54,13 @@ async function draftWithServer(page, { mode = 'live', country = 'IN', unlocked =
     if (url.pathname === `/api/weddings/${WID}/checkout` && method === 'POST') {
       server.checkouts.push(request.postDataJSON());
       return json({ paymentId: PAYMENT, url: 'https://rzp.io/i/test1', amountMinor: 299900, currency: 'INR', tier: 'signature', region: 'in' });
+    }
+    if (url.pathname === `/api/weddings/${WID}/promo` && method === 'POST') {
+      server.promos.push(request.postDataJSON());
+      if (server.promoReply) return json({ error: { code: server.promoReply, message: 'Server wording the page must not show.' } }, server.promoReply === 'PROMO_TOO_MANY' ? 429 : server.promoReply === 'PAYMENTS_NOT_LIVE' ? 409 : 422);
+      server.unlocked = true;
+      server.version += 1;
+      return json({ unlocked: true, already: false, version: server.version });
     }
     if (url.pathname === `/api/weddings/${WID}/payments/${PAYMENT}/verify` && method === 'POST') {
       server.verifies++;
@@ -370,4 +377,72 @@ test('coming back from the payment page: a cover shows at once and the dialog do
   await expect(page.locator('html.payment-return')).toHaveCount(0);
   await expect(dialog.locator('h2')).toContainText('Payment received', { timeout: 30000 });
   expect(server.verifies).toBeGreaterThan(0);
+});
+
+// ---- A promo code instead of a payment (functions/_shared/promo.js). The server decides; the page only shows its answer. ----
+
+test('promo: a good code takes the payment step away, and the website goes live without a checkout', async ({ page }) => {
+  const server = await draftWithServer(page);
+  const dialog = await openShare(page);
+  await expect(dialog.getByRole('button', { name: /^Pay / })).toBeDisabled({ timeout: 15000 });
+  await dialog.getByText('Have a promo code?').click();
+  await dialog.getByLabel('Promo code').fill('is-abcd-efgh-2345');
+  await dialog.getByRole('button', { name: 'Apply' }).click();
+  await expect(dialog.locator('[data-payment-info]')).toContainText('Promo code applied');
+  expect(server.promos).toEqual([{ code: 'is-abcd-efgh-2345' }]);
+  // No name and email to give, no price, no payment: the main button just makes it live.
+  await expect(dialog.locator('[data-buyer-contact]')).toHaveCount(0);
+  await expect(dialog.locator('[data-promo]')).toHaveCount(0);
+  await expect(dialog.locator('[data-price-note]')).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: /^Pay / })).toHaveCount(0);
+  await dialog.getByRole('button', { name: 'Make it live' }).click();
+  await expect(dialog.getByText('Your invitation is live').first()).toBeVisible({ timeout: 15000 });
+  expect(server.checkouts).toHaveLength(0);
+  expect(server.publishes).toHaveLength(1);
+});
+
+test('promo: pressing Enter in the box applies the code too', async ({ page }) => {
+  const server = await draftWithServer(page);
+  const dialog = await openShare(page);
+  await dialog.getByText('Have a promo code?').click();
+  await dialog.getByLabel('Promo code').fill('IS-ABCD-EFGH-2345');
+  await dialog.getByLabel('Promo code').press('Enter');
+  await expect(dialog.locator('[data-payment-info]')).toContainText('Promo code applied');
+  expect(server.promos).toHaveLength(1);
+});
+
+for (const [reply, wording] of [
+  ['PROMO_INVALID', 'That promo code is not valid'],
+  ['PROMO_EXPIRED', 'This promo code has expired'],
+  ['PROMO_USED_UP', 'This promo code has already been used'],
+  ['PROMO_TOO_MANY', 'Too many wrong codes']
+]) {
+  test(`promo: ${reply} says why, keeps the box open and keeps the payment step`, async ({ page }) => {
+    await draftWithServer(page, { promoReply: reply });
+    const dialog = await openShare(page);
+    await dialog.getByText('Have a promo code?').click();
+    await dialog.getByLabel('Promo code').fill('IS-ABCD-EFGH-2345');
+    await dialog.getByRole('button', { name: 'Apply' }).click();
+    await expect(dialog.locator('#promo-status')).toContainText(wording);
+    await expect(dialog.locator('#promo-status')).not.toContainText('Server wording');
+    await expect(dialog.getByLabel('Promo code')).toHaveValue('IS-ABCD-EFGH-2345');
+    await expect(dialog.locator('[data-buyer-contact]')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /^Pay / })).toBeVisible();
+  });
+}
+
+test('promo: an empty box asks for a code and sends nothing', async ({ page }) => {
+  const server = await draftWithServer(page);
+  const dialog = await openShare(page);
+  await dialog.getByText('Have a promo code?').click();
+  await dialog.getByRole('button', { name: 'Apply' }).click();
+  await expect(dialog.locator('#promo-status')).toContainText('Enter your promo code');
+  expect(server.promos).toHaveLength(0);
+});
+
+test('promo: while payments are not open there is no promo box at all', async ({ page }) => {
+  await draftWithServer(page, { mode: 'early-access' });
+  const dialog = await openShare(page);
+  await expect(dialog.getByRole('button', { name: 'Make it live' })).toBeVisible({ timeout: 15000 });
+  await expect(dialog.locator('[data-promo]')).toHaveCount(0);
 });

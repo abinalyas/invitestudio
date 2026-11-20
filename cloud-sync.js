@@ -1047,6 +1047,10 @@
       price: null,             // { text, tierName, mode } from /api/pricing, for the pay step
       needsPayment: false,     // the server asked for the one-time payment (402)
       contact: contactOf(project), // the buyer's name, email, optional phone and reminders tick, asked for before paying
+      promoCode: '',           // what is typed in the promo code box
+      promoOpen: false,        // the "Have a promo code?" box is open
+      promoBusy: false,
+      promoError: '',
       success: false
     };
   }
@@ -1180,6 +1184,17 @@
         <p id="contact-status" class="pub-sub bad" aria-live="polite">${escapeText(contactProblem(session.contact))}</p>
       </fieldset>` : '';
 
+    // A promo code, instead of paying (only while the page is asking for a payment).
+    const promoBlock = paying ? `<details class="pub-promo" data-promo ${session.promoOpen || session.promoError ? 'open' : ''}>
+        <summary>Have a promo code?</summary>
+        <div class="pub-promo-row">
+          <label for="promoCode" class="sr-only">Promo code</label>
+          <input id="promoCode" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="IS-XXXX-XXXX-XXXX" value="${escapeText(session.promoCode)}" ${session.promoBusy ? 'disabled' : ''}>
+          <button class="btn small" type="button" data-promo-apply ${session.promoBusy ? 'disabled' : ''}>${session.promoBusy ? 'Checking…' : 'Apply'}</button>
+        </div>
+        <p id="promo-status" class="pub-sub bad" role="alert" aria-live="polite">${escapeText(session.promoError)}</p>
+      </details>` : '';
+
     // Your invitation link.
     const status = slugStatusText(project, session);
     const suggestions = session.availability && !session.availability.available && session.availability.suggestions?.length
@@ -1279,7 +1294,7 @@
       ${paidReturn || live || !project.publishStatus || project.publishStatus === 'draft' ? '' : `<p class="pub-status">Status: <strong>${escapeText(publishStatusLabel(project))}</strong>, not public yet.</p>`}
       ${steps}
       <div class="pub-grid${paidReturn ? ' pub-ready' : ''}">
-        <div class="pub-main">${contactBlock}${addressField}${changeWarning}${liveBlock}${explainer}${previewBlock}</div>
+        <div class="pub-main">${contactBlock}${promoBlock}${addressField}${changeWarning}${liveBlock}${explainer}${previewBlock}</div>
         <aside class="pub-side">${paidReturn ? '' : designCard}${benefits}${orderCard}</aside>
       </div>
       <div class="pub-foot"><p>${ICON.help} <span><strong>Questions?</strong> <a href="/contact" target="_blank" rel="noopener">Contact us</a>.</span></p><button class="btn" type="button" data-publish-close>Close</button></div>
@@ -1349,6 +1364,11 @@
         updateDialogWithoutRepaint(project);
       });
     });
+    const promo = root.querySelector('#promoCode');
+    promo?.addEventListener('input', () => { publishSession.promoCode = promo.value; });
+    promo?.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); redeemPromo(project); } });
+    root.querySelector('[data-promo]')?.addEventListener('toggle', event => { if (publishSession) publishSession.promoOpen = event.target.open; });
+    root.querySelector('[data-promo-apply]')?.addEventListener('click', () => redeemPromo(project));
     const marketing = root.querySelector('#buyerMarketing');
     marketing?.addEventListener('change', () => { publishSession.contact.marketing = marketing.checked; rememberContact(project); });
     const input = root.querySelector('#publishSlug');
@@ -1457,6 +1477,44 @@
   function needsPayment(project, session) {
     if (isLive(project) || project.publishUnlocked) return false;
     return Boolean(session.needsPayment || (session.price && session.price.mode === 'live'));
+  }
+
+  // A promo code instead of a payment. The server checks the code and unlocks the website; the page believes only its answer.
+  async function redeemPromo(project) {
+    const session = publishSession;
+    if (!session || session.promoBusy) return;
+    const code = String(session.promoCode || '').trim();
+    session.promoOpen = true;
+    if (!code) { session.promoError = 'Enter your promo code.'; paintPublishDialog(project, {}); return; }
+    if (!project.cloudId || !tokenFor(project.cloudId)) { session.promoError = 'Your draft is still saving. Try again in a moment.'; paintPublishDialog(project, {}); return; }
+    session.promoBusy = true;
+    session.promoError = '';
+    paintPublishDialog(project, {});
+    try {
+      const result = await window.inviteStudioApi.redeemPromoCode(project.cloudId, tokenFor(project.cloudId), code);
+      project.publishUnlocked = true;
+      // Unlocking changed the website's record on the server: keep its version, so "Make it live" is not refused.
+      if (Number.isInteger(result.version) && result.version >= Number(project.cloudVersion || 0)) project.cloudVersion = result.version;
+      session.promoBusy = false;
+      session.needsPayment = false;
+      session.promoCode = '';
+      session.promoError = '';
+      session.error = '';
+      session.info = 'Promo code applied. There is nothing to pay: choose Make it live.';
+      localSave();
+    } catch (error) {
+      session.promoBusy = false;
+      const messages = {
+        PROMO_INVALID: 'That promo code is not valid. Check it and try again.',
+        PROMO_EXPIRED: 'This promo code has expired.',
+        PROMO_USED_UP: 'This promo code has already been used.',
+        PROMO_TOO_MANY: 'Too many wrong codes. Please wait an hour, or contact us.',
+        PAYMENTS_NOT_LIVE: 'Publishing is free right now, so you do not need a code. Choose Make it live.'
+      };
+      if (error.code === 'PAYMENTS_NOT_LIVE') { session.needsPayment = false; if (session.price) session.price.mode = 'early-access'; }
+      session.promoError = messages[error.code] || 'We could not check that code. Try again in a moment.';
+    }
+    paintPublishDialog(project, {});
   }
 
   async function startPayment(project) {
