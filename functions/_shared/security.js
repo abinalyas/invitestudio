@@ -10,7 +10,7 @@ export const CONTENT_SECURITY_POLICY = [
   "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  "img-src 'self' data: https://images.unsplash.com",
+  "img-src 'self' data: blob: https://images.unsplash.com",
   "media-src 'self' data:",
   "connect-src 'self'",
   "frame-ancestors 'none'",
