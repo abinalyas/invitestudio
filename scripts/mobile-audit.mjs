@@ -240,6 +240,7 @@ function scenarios() {
   for (const t of TEMPLATES) S(`template-page ${t.title}`, page => openHome(page, `/templates/${t.id}`), 'start with this design');
   S('guide wedding-invitation-website', page => openHome(page, '/wedding-invitation-website'));
   S('policy refund-policy', page => openHome(page, '/refund-policy'));
+  S('policy delivery-policy', page => openHome(page, '/delivery-policy'));
   S('policy contact', page => openHome(page, '/contact'));
   const stepNames = { 1: 'essentials', 2: 'template', 3: 'story', 4: 'ready' };
   for (const step of [1, 2, 3, 4]) {

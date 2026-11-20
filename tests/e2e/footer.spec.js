@@ -13,7 +13,7 @@ test('the footer is structured: three labelled link columns, every link in the r
   expect(columns.map(c => c.label)).toEqual(['Product', 'Guides', 'Company']);
   expect(columns[0].links).toEqual([['Templates', '/templates'], ['How it works', '#how'], ['Pricing', '#pricing'], ['FAQs', '#faq-list']]);
   expect(columns[1].links.map(l => l[1])).toEqual(['/wedding-invitation-website', '/digital-wedding-invitation', '/online-wedding-invitation-with-rsvp', '/animated-wedding-invitation', '/whatsapp-wedding-invitation']);
-  expect(columns[2].links).toEqual([['Contact', '/contact'], ['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Privacy', '/privacy']]);
+  expect(columns[2].links).toEqual([['Contact', '/contact'], ['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Delivery policy', '/delivery-policy'], ['Privacy', '/privacy']]);
   // Each column is a navigation landmark named by its heading.
   for (const name of ['Product', 'Guides', 'Company']) await expect(footer(page).getByRole('navigation', { name })).toBeVisible();
   await expect(footer(page).locator('.footer-copy')).toContainText('protected by copyright');

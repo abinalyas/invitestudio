@@ -390,6 +390,7 @@ export function HomePage() {
               <li><a href="/contact">Contact</a></li>
               <li><a href="/terms">Terms</a></li>
               <li><a href="/refund-policy">Refund policy</a></li>
+              <li><a href="/delivery-policy">Delivery policy</a></li>
               <li><a href="/privacy">Privacy</a></li>
             </ul>
           </nav>
