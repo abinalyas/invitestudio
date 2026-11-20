@@ -87,6 +87,23 @@ export function TalkToUs({ topic, address, lead }: { topic: "extend" | "restore"
   );
 }
 
+// A card that says plainly: a design made just for you is possible, and here is how to ask. It is on the gallery, a design's
+// page and the home page, where people look for it; the buttons open WhatsApp or an email that already says what it is about.
+export function CustomDesignCard({ className = "" }: { className?: string }) {
+  const links = bridge.contactLinks("custom");
+  if (!links.whatsapp && !links.email) return null;
+  return (
+    <section className={`custom-card ${className}`.trim()} aria-label="A design made just for you" data-custom-card>
+      <h2>Want something made just for you?</h2>
+      <p>Tell us your idea. We design a custom invitation and tell you the price before you decide.</p>
+      <div className="custom-card-actions">
+        {links.whatsapp ? <a className="button" href={links.whatsapp} target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a> : null}
+        {links.email ? <a className="button outline" href={links.email}>Email us</a> : null}
+      </div>
+    </section>
+  );
+}
+
 // "Start from an example". While the field is empty, the first example is shown in full in a card with a "Use this" button, and the
 // chips switch which example the card shows. Once the field has text, the chips offer other wording that replaces it (the couple can
 // always edit it afterwards). Nothing is saved until the couple taps "Use this" or a chip on a filled field.

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Icon, IconName, Logo, galleryTemplates, styleOptions } from "./shared";
 import { bridge } from "./bridge";
 import { formatMoney, tierOf, usePricing } from "./pricing";
-import { MyProjectsLink, TalkToUs } from "./extras";
+import { CustomDesignCard, MyProjectsLink, TalkToUs } from "./extras";
 export function TemplatesPage() {
   const { data: pricing } = usePricing()
   const [query, setQuery] = useState("")
@@ -313,6 +313,7 @@ export function TemplatesPage() {
                 <p>Try a different search or clear your filters.</p>
               </div>
             )}
+            <CustomDesignCard />
           </div>
         </div>
       </section>

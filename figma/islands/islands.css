@@ -901,3 +901,12 @@ table.rsvp-by-event { font-size: 13px; }
 .hero-copy .hero-promise strong { font-weight: 700; }
 .hero-copy .hero-sub { margin-top: 8px; }
 @media (max-width: 720px) { .hero-copy .hero-promise { font-size: 17px; } }
+
+/* "Want something made just for you?": a clear card with real buttons, on the gallery, a design's page and the home page. */
+.custom-card { box-sizing: border-box; margin: 28px 0 0; padding: 22px 22px 24px; border: 1px solid #cfe0d4; border-radius: 18px; background: #eef6f0; color: #1f2b24; text-align: left; }
+.custom-card.shell { margin: 40px auto 0; }
+.custom-card h2 { margin: 0 0 6px; font-family: "Playfair Display", Georgia, serif; font-size: 22px; line-height: 1.2; color: #12331f; }
+.custom-card p { margin: 0 0 16px; font-size: 15px; line-height: 1.5; color: #3b433e; }
+.custom-card-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.custom-card-actions .button { flex: 1 1 200px; min-height: 48px; justify-content: center; text-align: center; }
+.gallery-grid + .custom-card, .empty-gallery + .custom-card { margin-top: 32px; }

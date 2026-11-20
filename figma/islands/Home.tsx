@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Icon, IconName, Logo, faqs, templates, galleryTemplates } from "./shared";
 import { formatMoney, usePricing } from "./pricing";
 import { bridge } from "./bridge";
-import { MyProjectsLink, RecoveryBanner, StartCreatingLink, TalkToUs } from "./extras";
+import { CustomDesignCard, MyProjectsLink, RecoveryBanner, StartCreatingLink, TalkToUs } from "./extras";
 import { TemplateStrip } from "./TemplateStrip";
 export function HomePage() {
   // The Instagram address is set once in site-config.js (social.instagram); with none set, no social icon is shown.
@@ -324,6 +324,8 @@ export function HomePage() {
           ))}
         </div>
       </section>
+
+      <CustomDesignCard className="shell" />
 
       <section className="cta shell" id="cta">
         <div className="cta-leaves left" />
