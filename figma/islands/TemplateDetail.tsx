@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Icon, Logo, editableItems, galleryTemplates, guestSections } from "./shared";
 import { bridge } from "./bridge"
-import { MyProjectsLink } from "./extras"
+import { CustomDesignCard, MyProjectsLink } from "./extras"
 import { formatMoney, tierOf, usePricing } from "./pricing";
 export function TemplateDetailPage({ templateId }: { templateId: number }) {
   const template =
@@ -132,6 +132,8 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
               </button>
             </div>
             <p className="detail-path">Next: your names, date and place. It takes about a minute, and you can edit your details afterwards.</p>
+
+            <CustomDesignCard />
 
             <div className="included-panel">
               <h2>What you can edit</h2>
