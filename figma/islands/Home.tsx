@@ -1,6 +1,6 @@
 // Home screen from the Figma Make export (App.tsx lines 1054-1476).
 import { useState } from "react";
-import { Icon, IconName, Logo, faqs, templates, galleryTemplates, testimonials } from "./shared";
+import { Art, Icon, Logo, faqs, templates, galleryTemplates, testimonials } from "./shared";
 import { formatMoney, usePricing } from "./pricing";
 import { bridge } from "./bridge";
 import { CustomDesignCard, MyProjectsLink, RecoveryBanner, StartCreatingLink, TalkToUs } from "./extras";
@@ -96,6 +96,9 @@ export function HomePage() {
       </section>
 
       <section className="section shell how" id="how">
+        <Art name="flowers-a" className="deco deco-edge-l deco-how-l" />
+        <Art name="gypsophila" className="deco deco-edge-r deco-how-r" />
+        <Art name="petal-1" className="deco deco-petal deco-how-petal" />
         <div className="section-heading centered">
           <span className="section-kicker">Simple by design</span>
           <h2>How it works</h2>
@@ -103,14 +106,14 @@ export function HomePage() {
         </div>
         <div className="steps four">
           {[
-            ["calendar", "1", "Choose a design", "Browse our collections and pick the one that feels like you", "Free"],
-            ["edit", "2", "Add your details", "Your names, date, events, photos and story", "Free"],
+            ["laptop", "1", "Choose a design", "Browse our collections and pick the one that feels like you", "Free"],
+            ["notebook", "2", "Add your details", "Your names, date, events, photos and story", "Free"],
             ["eye", "3", "Preview it", "See exactly what guests will see, as often as you like", "Free"],
-            ["send", "4", "Publish and share", "Pay once, get your link and send it on WhatsApp, text or email", "One-time payment"],
+            ["plane", "4", "Publish and share", "Pay once, get your link and send it on WhatsApp, text or email", "One-time payment"],
           ].map(([icon, number, title, text, tag], index) => (
             <article key={title}>
               <span className="step-icon">
-                <Icon name={icon as IconName} size={30} />
+                <Art name={`icon-${icon}`} className="step-art" />
               </span>
               <strong className="number">{number}</strong>
               <div>
@@ -118,6 +121,7 @@ export function HomePage() {
                 <p>{text}</p>
                 <span className={index === 3 ? "step-tag paid" : "step-tag"}>{tag}</span>
               </div>
+              {index < 3 && <span className="step-link" aria-hidden="true" />}
             </article>
           ))}
         </div>
@@ -132,13 +136,13 @@ export function HomePage() {
         <div className="what-grid">
           {[
             [
-              "calendar",
+              "laptop",
               "Your digital invitation",
               "A beautiful, personalised wedding website for your day.",
               ["Names and date", "Events and venues", "Countdown"],
             ],
             [
-              "send",
+              "link",
               "Share with one link",
               "Send your invitation to everyone you love, in seconds.",
               ["WhatsApp", "Text and email", "Works on any phone"],
@@ -151,9 +155,7 @@ export function HomePage() {
             ],
           ].map(([icon, title, text, chips]) => (
             <article key={title as string}>
-              <span className="what-icon">
-                <Icon name={icon as IconName} size={26} />
-              </span>
+              <Art name={`icon-${icon}`} className="what-art" />
               <h3>{title}</h3>
               <p>{text}</p>
               <ul>
@@ -165,15 +167,16 @@ export function HomePage() {
           ))}
         </div>
         <ul className="what-assure">
-          <li><Icon name="edit" size={18} /> Edit anytime</li>
-          <li><Icon name="device" size={18} /> Looks great on any device</li>
-          <li><Icon name="cloud" size={18} /> No hosting or setup needed</li>
+          <li><Art name="icon-notebook" className="assure-art" /> Edit anytime</li>
+          <li><Art name="icon-phone" className="assure-art" /> Looks great on any device</li>
+          <li><span className="assure-blob"><Icon name="cloud" size={22} /></span> No hosting or setup needed</li>
         </ul>
       </section>
 
       <section className="section shell templates" id="templates">
         <div className="section-heading row">
           <div>
+            <Art name="eucalyptus" className="deco deco-edge-l deco-tpl" />
             <span className="section-kicker">Curated designs</span>
             <h2>Explore beautiful templates</h2>
             <p>Start from a design, preview it, then make it yours.</p>
@@ -187,6 +190,8 @@ export function HomePage() {
 
       <section className="section shell pricing" id="pricing">
         <div className="section-heading row">
+          <Art name="flowers-b" className="deco deco-corner-r deco-pricing" />
+          <Art name="petal-2" className="deco deco-petal deco-pricing-petal" />
           <div>
             <span className="section-kicker">Choose your collection</span>
             <h2>Find the perfect design for your big day</h2>
@@ -197,12 +202,18 @@ export function HomePage() {
         </div>
         <div className="free-paid">
           <div>
-            <strong><Icon name="check" size={16} /> Free</strong>
-            <span>Build, edit and preview your invitation, as often as you like.</span>
+            <Art name="icon-eye" className="fp-art" />
+            <p>
+              <strong>Free</strong>
+              <span>Build, edit and preview your invitation, as often as you like.</span>
+            </p>
           </div>
           <div>
-            <strong><Icon name="lock" size={16} /> Pay once, to publish</strong>
-            <span>One payment, no subscription. The price is shown before you pay.</span>
+            <Art name="icon-shield" className="fp-art" />
+            <p>
+              <strong>Pay once, to publish</strong>
+              <span>One payment, no subscription. The price is shown before you pay.</span>
+            </p>
           </div>
         </div>
         <div className="plans">
@@ -248,9 +259,8 @@ export function HomePage() {
       </section>
 
       <section className="shell switch-strip">
-        <span className="switch-icon">
-          <Icon name="swap" size={26} />
-        </span>
+        <Art name="icon-layers" className="switch-art" />
+        <Art name="gold-swoosh" className="switch-swoosh" />
         <div>
           <h2>Edit anytime. Switch designs whenever you want.</h2>
           <p>
@@ -283,40 +293,45 @@ export function HomePage() {
       )}
 
       <section className="section shell faq">
-        <div className="section-heading row">
-          <div>
-            <span className="section-kicker">Questions, answered</span>
-            <h2>Frequently asked questions</h2>
-            <p>Have a question? We’re here to help.</p>
-          </div>
-          <a href="#faq-list">
-            View all FAQs <Icon name="arrow" size={18} />
-          </a>
-        </div>
-        <div className="faq-grid" id="faq-list">
-          {faqs.map(([question, answer], index) => (
-            <div
-              className={openFaq === index ? "faq-item open" : "faq-item"}
-              key={question}
-            >
-              <button
-                onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                aria-expanded={openFaq === index}
-              >
-                {question}
-                <span>{openFaq === index ? "−" : "+"}</span>
-              </button>
-              <p>{answer}</p>
+        <div className="faq-layout">
+          <Art name="arch" className="faq-art" />
+          <div className="faq-main">
+          <div className="section-heading row">
+            <div>
+              <span className="section-kicker">Questions, answered</span>
+              <h2>Frequently asked questions</h2>
+              <p>Have a question? We’re here to help.</p>
             </div>
-          ))}
+            <a href="#faq-list">
+              View all FAQs <Icon name="arrow" size={18} />
+            </a>
+          </div>
+          <div className="faq-grid" id="faq-list">
+            {faqs.map(([question, answer], index) => (
+              <div
+                className={openFaq === index ? "faq-item open" : "faq-item"}
+                key={question}
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                  aria-expanded={openFaq === index}
+                >
+                  {question}
+                  <span>{openFaq === index ? "−" : "+"}</span>
+                </button>
+                <p>{answer}</p>
+              </div>
+            ))}
+          </div>
+          </div>
         </div>
       </section>
 
       <CustomDesignCard className="shell" />
 
       <section className="cta shell" id="cta">
-        <div className="cta-leaves left" />
-        <div className="cta-leaves right" />
+        <Art name="flowers-a" className="cta-art cta-art-l" />
+        <Art name="flowers-b" className="cta-art cta-art-r" />
         <div>
           <h2>Ready to create your wedding website?</h2>
           <p>
@@ -380,6 +395,7 @@ export function HomePage() {
           </nav>
         </div>
         <div className="footer-bottom">
+          <Art name="eucalyptus" className="deco footer-deco" />
           <p className="footer-copy">© {new Date().getFullYear()} InviteStudio. The templates and designs on this site are protected by copyright.</p>
         </div>
       </footer>
