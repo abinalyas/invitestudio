@@ -620,3 +620,36 @@ test('in the editor an empty cover, story or venue picture offers its own add bu
   const published = ctx.renderPackagedTemplate({ ...sampleOf('minimalist'), photos: [] }, { packaged: 'minimalist' }, { sample: false });
   assert.equal(published.includes('data-photo-add'), false);
 });
+
+// Everything a couple fills in about an event or the hosts must reach the page, in every design, in the editor preview and on the published page.
+for (const { manifest: t } of list) {
+  test(`${t.id}: every detail of an event is shown (time range, description, dress code, notes), and the hosts line`, () => {
+    const { renderPackagedTemplate } = renderer();
+    const event = { id: 'e1', title: 'Sangeet Night', visible: true, date: '2027-03-14', time: '18:30', endTime: '22:30', venue: 'Puthencruz Hall',
+      description: 'Bring your dancing shoes.\nSnacks from 6.', dressCode: 'Pastel colours', parking: 'Use the north gate', accommodation: 'Rooms at the Grand', accessibility: 'Step-free entrance',
+      directionsUrl: 'https://maps.google.com/?q=Puthencruz' };
+    const project = { title: 'Asha & Ravi', date: '2027-03-14', location: 'Kochi', hosts: 'With our families', functions: [event] };
+    for (const opts of [undefined, { sample: true, editable: true }]) {
+      const out = stripped(renderPackagedTemplate(project, { packaged: t.id }, opts));
+      const where = `${t.id} ${opts ? 'editor' : 'published'}`;
+      assert.match(out, /6:30 PM\s*(–|&ndash;)\s*10:30 PM/, `${where}: start and end time`);
+      assert.match(out, /Bring your dancing shoes\.<br>Snacks from 6\./, `${where}: description, line breaks kept`);
+      for (const text of ['Pastel colours', 'Use the north gate', 'Rooms at the Grand', 'Step-free entrance', 'Puthencruz Hall', 'q=Puthencruz']) assert.ok(out.includes(text), `${where}: ${text}`);
+      for (const label of ['Dress code', 'Parking', 'Travel and stays', 'Access']) assert.ok(out.includes(`<b>${label}</b>`), `${where}: label ${label}`);
+      assert.ok(out.toUpperCase().includes('WITH OUR FAMILIES'), `${where}: the hosts line (some designs print it in capitals)`);
+    }
+  });
+  test(`${t.id}: an event with no description or notes draws no empty details block, and typed text is escaped`, () => {
+    const { renderPackagedTemplate } = renderer();
+    const plain = stripped(renderPackagedTemplate({ title: 'Asha & Ravi', date: '2027-03-14', functions: [{ id: 'e1', title: 'Ceremony', visible: true, date: '2027-03-14' }] }, { packaged: t.id }));
+    assert.ok(!plain.includes('data-details'), `${t.id}: no empty block`);
+    const risky = stripped(renderPackagedTemplate({ title: 'Asha & Ravi', date: '2027-03-14', functions: [{ id: 'e1', title: 'Ceremony', visible: true, date: '2027-03-14', description: '<img src=x onerror=alert(1)>', dressCode: '"><script>1</script>' }] }, { packaged: t.id }));
+    assert.ok(!/<img src=x|<script>1/.test(risky), `${t.id}: markup typed into details is escaped`);
+    assert.ok(risky.includes('&lt;img src=x'), `${t.id}: ...and shown as text`);
+  });
+  test(`${t.id}: the design puts {{details}} once in each event, just before the calendar button`, () => {
+    const source = readFileSync(join(root, 'templates', t.id, 'template.html'), 'utf8');
+    assert.equal(source.split('{{details}}').length - 1, 1, 'one {{details}}');
+    assert.ok(source.includes('{{details}}{{calendar}}') || /\{\{details\}\}\s*\{\{calendar\}\}/.test(source), '{{details}} comes right before {{calendar}}');
+  });
+}

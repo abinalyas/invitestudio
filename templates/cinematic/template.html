@@ -22,6 +22,7 @@
     <div class="hero-rule" data-reveal="draw" style="--rd:1.4s"></div>
     <p class="hero-date" data-reveal style="--rd:1.5s">{{upper:edit:date_long}}</p>
     <!--if has_venue--><p class="hero-place" data-reveal style="--rd:1.6s">{{upper:edit:venue}}<!--if place--><br>{{upper:edit:place}}<!--/if--></p><!--/if-->
+    <!--if hosts_line--><p class="hero-place" data-reveal style="--rd:1.7s">{{upper:edit:hosts_line}}</p><!--/if-->
   </div>
   <!--if welcome--><button class="scroll-cue" data-reveal="fade" style="--rd:2s" type="button" data-scroll-to="invitation"><span>{{upper:copy:scroll_cue}}</span><i></i></button><!--/if-->
 </section>
@@ -77,7 +78,7 @@
 <section class="celebration section-light" data-tpl-section="schedule" data-section="functions">
   <div class="section-top" data-reveal><p class="eyebrow">{{upper:edit:copy:schedule_eyebrow}}</p><h2>{{em:edit:copy:schedule_title}}</h2><p class="section-intro">{{edit:copy:schedule_intro}}</p></div>
   <div class="timeline" style="--n:{{events_count}}">
-    <!--each events--><div class="timeline-row" data-reveal><span>{{n}}</span><h3>{{edit:event_title}}</h3><p><!--if venue-->{{edit:event_venue}}<!--/if--></p><!--if when--><small>{{upper:when}}</small><!--/if-->{{calendar}}</div><!--/each-->
+    <!--each events--><div class="timeline-row" data-reveal><span>{{n}}</span><h3>{{edit:event_title}}</h3><p><!--if venue-->{{edit:event_venue}}<!--/if--></p><!--if when--><small>{{upper:when}}</small><!--/if-->{{details}}{{calendar}}</div><!--/each-->
   </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
 </section>
 
