@@ -9,7 +9,7 @@ const DB_URL = 'postgres://postgres@127.0.0.1:54329/invitestudio';
 
 // The tests below pick a design by position (1 to 7); these are the current designs, by their number in the address.
 const DESIGNS = {
-  1: { number: 13, name: 'Modern Heritage' },
+  1: { number: 14, name: 'Minimalist' }, // Modern Heritage used to be here; it is no longer offered
   2: { number: 14, name: 'Minimalist' },
   3: { number: 15, name: 'Cinematic' },
   4: { number: 16, name: 'Fairy Tale' },
@@ -98,14 +98,14 @@ test('changing design keeps every detail that was entered', async ({ page }) => 
   await page.getByLabel('Your story').fill('We met on a train.');
   await waitSaved(page);
   const [before] = await dbQuery('select template_id from weddings where title = $1', [title]);
-  expect(before.template_id).toBe('modern-heritage');
+  expect(before.template_id).toBe('minimalist');
 
   await page.getByRole('button', { name: 'Change design' }).click();
   await page.locator('.design-option').nth(4).click();
   await waitSaved(page);
 
   const [after] = await dbQuery('select template_id, location from weddings where title = $1', [title]);
-  expect(after.template_id).not.toBe('modern-heritage');
+  expect(after.template_id).not.toBe('minimalist');
   expect(after.location).toBe('Kochi, Kerala');
   await expect(page.locator('.invitation-canvas')).toContainText(title);
 
@@ -141,7 +141,7 @@ test('the hosts line appears on the invitation, and no unused button label is of
   // the Wording panel), so only the hosts line is checked here.
   await openDesigner(page, 1);
   await page.getByLabel(/^Hosts \(optional\)/).fill('With the families of Meera and Arjun');
-  await expect(page.locator('.invitation-canvas')).toContainText('With the families of Meera and Arjun', { timeout: 5000 });
+  await expect(page.locator('.invitation-canvas')).toContainText(/with the families of meera and arjun/i, { timeout: 5000 }); // Minimalist sets this line in capitals
   await expect(page.getByLabel(/button label/i)).toHaveCount(0);
 });
 

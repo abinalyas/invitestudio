@@ -300,7 +300,7 @@ test.describe('guest replies', () => {
     await page.locator('#projectTitle').fill('Mira & Arun');
     await page.locator('#projectDate').fill('2027-01-20');
     await completeSetupSteps(page);
-    await page.getByRole('button', { name: /^RSVP/ }).click();
+    await page.locator('.editor-pages').getByRole('button', { name: /^RSVP/ }).click();
     await expect(page.getByLabel('Accepting replies')).toBeChecked();
     await page.getByLabel('Most people in one reply').fill('6');
     await page.locator('[data-rsvp-open]').first().click();
@@ -331,7 +331,7 @@ test.describe('guest replies', () => {
       window.loadRsvpReplies = async () => ({ replies: window.__replies.slice(), totals: totals() });
       window.deleteRsvpReply = async id => { window.__replies = window.__replies.filter(r => r.id !== id); };
     });
-    await page.getByRole('button', { name: /^RSVP/ }).click();
+    await page.locator('.editor-pages').getByRole('button', { name: /^RSVP/ }).click();
     await expect(page.getByText('Meera Nair')).toBeVisible();
     await expect(page.locator('.rsvp-cards')).toContainText('4');
     await expect(page.locator('table.rsvp-by-event')).toContainText('Reception');
@@ -448,7 +448,7 @@ test.describe('guest replies', () => {
     });
     await page.reload();
     await openLatestDraft(page);
-    await page.getByRole('button', { name: /^RSVP/ }).click();
+    await page.locator('.editor-pages').getByRole('button', { name: /^RSVP/ }).click();
     await expect(page.getByText('Meera Nair')).toBeVisible();
     await expect(page.locator('.rsvp-cards')).toContainText('3people');
     expect(seen.auth[0]).toBe(`Bearer ${token}`);

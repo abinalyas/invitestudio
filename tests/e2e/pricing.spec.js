@@ -82,7 +82,7 @@ test('home: each tier\'s "See designs" button opens the gallery with only that t
   await pricesFor(page, 'IN');
   await serveAppAtTemplates(page);
   await page.goto('/');
-  const expected = { classic: ['Modern Heritage', 'Minimalist'], premium: ['Cinematic', 'Fairy Tale', 'Bloom Reveal'], signature: ['Velvet Reveal', 'Under the Same Moon', 'Golden Butterfly', 'Cherry Blossom', 'Lantern Night'] };
+  const expected = { classic: ['Minimalist'], premium: ['Cinematic', 'Fairy Tale', 'Bloom Reveal'], signature: ['Velvet Reveal', 'Under the Same Moon', 'Golden Butterfly', 'Cherry Blossom', 'Lantern Night'] };
   const buttons = plans(page).locator('a[href^="/templates"]');
   await expect(buttons).toHaveCount(3);
   for (const [index, tier] of ['classic', 'premium', 'signature'].entries()) {
@@ -114,13 +114,13 @@ test('gallery: the Price filter changes the designs, clears, and keeps the addre
   await expect(galleryTitles(page)).toHaveCount(5);
   await expect(page).toHaveURL(/\/templates\?tier=signature$/);
   await filter.getByText('Signature').click();
-  await expect(galleryTitles(page)).toHaveCount(10);
+  await expect(galleryTitles(page)).toHaveCount(9);
   await expect(page).toHaveURL(/\/templates$/);
   // "Show all designs" in the note clears it too.
   await page.goto('/templates?tier=classic');
-  await expect(galleryTitles(page)).toHaveCount(2);
+  await expect(galleryTitles(page)).toHaveCount(1);
   await page.getByRole('button', { name: 'Show all designs' }).click();
-  await expect(galleryTitles(page)).toHaveCount(10);
+  await expect(galleryTitles(page)).toHaveCount(9);
   await expect(page).toHaveURL(/\/templates$/);
   await expect(page.locator('[data-tier-note]')).toHaveCount(0);
   // On a narrow screen the results line shows, and its Clear filters clears the tier as well.
@@ -128,7 +128,7 @@ test('gallery: the Price filter changes the designs, clears, and keeps the addre
   await page.goto('/templates?tier=premium');
   await expect(galleryTitles(page)).toHaveCount(3);
   await page.getByRole('button', { name: 'Clear filters' }).click();
-  await expect(galleryTitles(page)).toHaveCount(10);
+  await expect(galleryTitles(page)).toHaveCount(9);
 });
 
 test('gallery: an unknown tier, or prices that did not load, show every design rather than an empty page', async ({ page }) => {
@@ -136,12 +136,12 @@ test('gallery: an unknown tier, or prices that did not load, show every design r
   await pricesFor(page, 'IN');
   await serveAppAtTemplates(page);
   await page.goto('/templates?tier=platinum');
-  await expect(galleryTitles(page)).toHaveCount(10);
+  await expect(galleryTitles(page)).toHaveCount(9);
   await expect(page.locator('[data-tier-note]')).toHaveCount(0);
   await page.unroute('**/api/pricing**');
   await pricesFor(page, 'IN', { fail: true });
   await page.goto('/templates?tier=premium');
-  await expect(galleryTitles(page)).toHaveCount(10);
+  await expect(galleryTitles(page)).toHaveCount(9);
   await expect(page.locator('[data-tier-filter]')).toHaveCount(0);
 });
 
