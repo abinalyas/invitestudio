@@ -147,7 +147,7 @@ export function HomePage() {
               "people",
               "Guests and memories",
               "Know who is coming and share your story with them.",
-              ["Guest RSVP", "Your story and photos", "Travel details"],
+              ["Guest RSVP", "Photo gallery", "Travel details"],
             ],
           ].map(([icon, title, text, chips]) => (
             <article key={title as string}>

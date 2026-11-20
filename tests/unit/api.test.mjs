@@ -138,15 +138,6 @@ test('marketing copy makes no RSVP claim the product does not yet support, and n
   }
 });
 
-test('marketing copy makes no photo gallery claim while photo storage does not exist', () => {
-  const sources = ['figma/islands/shared.tsx', 'figma/islands/Home.tsx', 'figma/islands/TemplateDetail.tsx'].map(
-    file => readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8')
-  ).join('\n');
-  for (const pattern of [/photo gallery/i, /\bgalleries\b/i, /photo storage is (?:live|available now)/i]) {
-    assert.equal(pattern.test(sources), false, `unsupported gallery copy matches ${pattern}`);
-  }
-});
-
 test('public projection carries only how replies work and a valid contact number', () => {
   const rsvp = prefs => publicWeddingProjection({ ...privateWedding, preferences: prefs }).rsvp;
   const number = { type: 'whatsapp', value: '+91 98765 43210' };

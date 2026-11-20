@@ -206,7 +206,12 @@ export const faqs = [
 // While the list is empty the home page shows no testimonials section. photo is a path like "/assets/home/testimonials/name.webp";
 // link is the couple's live invitation, so a visitor can see the proof.
 export type Testimonial = { quote: string; names: string; photo?: string; link?: string }
-export const testimonials: Testimonial[] = []
+// DUMMY PLACEHOLDERS for design review. Replace them with real, permitted quotes before launch (see the comment above).
+export const testimonials: Testimonial[] = [
+  { quote: "Beautiful designs, and so easy to customise. We had our invitation ready in one evening.", names: "Priya & Arjun" },
+  { quote: "Our guests loved it. The RSVP replies landed in one place and we never had to chase anyone.", names: "Anjali & Rahul" },
+  { quote: "Simple, elegant and perfect for our big day. We changed the design twice before publishing.", names: "Meera & Abin" },
+]
 
 // A date or time field opens its picker wherever it is clicked, not only on the small calendar icon at its edge (Chrome and Edge
 // open the picker from the icon only). Keyboard use is unchanged: tabbing into the field does not open it, and the day, month and
