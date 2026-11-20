@@ -1061,7 +1061,7 @@ table.rsvp-by-event { font-size: 13px; }
 /* Phone polish from the mobile usability pass: every control a thumb has to hit is at least 44px, the save pill stays on one line,
    and the onboarding card is one short note instead of a block that pushes the invitation off the screen. */
 @media (max-width: 767px) {
-  .save-status { white-space: nowrap; }
+  .save-status.save-saved { white-space: nowrap; }
   .save-status .save-when { display: none; }
   .editor-header-actions .editor-action.editor-replies { min-height: 44px; }
   .editor-header-actions .editor-publish { min-height: 44px; }
