@@ -1619,3 +1619,13 @@
 .figma-app .gallery-art-r{ width: 140px; }}
 @media (max-width: 560px){.figma-app .gallery-art-l{ width: 104px; left: -22px; top: -8px; }
 .figma-app .gallery-art-r{ width: 104px; right: -22px; bottom: -14px; }}
+@media (max-width: 767px){.figma-app .save-status{ white-space: nowrap; }
+.figma-app .save-status .save-when{ display: none; }
+.figma-app .editor-header-actions .editor-action.editor-replies{ min-height: 44px; }
+.figma-app .editor-header-actions .editor-publish{ min-height: 44px; }
+.figma-app .share-guide .share-steps{ display: none; }
+.figma-app .share-guide-close{ min-height: 44px; padding: 0 20px; }
+.figma-app .photo-actions{ gap: 8px; }
+.figma-app .photo-actions button:not(.link-button){ width: 44px; height: 44px; }
+.figma-app .photo-actions .link-button, .figma-app .editor-controls .link-button{ display: inline-flex; align-items: center; min-height: 44px; padding-inline: 8px; }
+.figma-app .footer-talk a{ display: inline-flex; align-items: center; min-height: 44px; }}
