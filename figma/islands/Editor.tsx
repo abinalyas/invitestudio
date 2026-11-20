@@ -46,6 +46,13 @@ const previewSectionToKey: Record<string, SectionKey> = {
   rsvp: "rsvp"
 };
 
+// "Saved just now ✓" is the same words for everyone; on a phone the time part is hidden by CSS so the pill stays on one line.
+function SaveLabel({ text }: { text: string }) {
+  const match = /^(Saved)( .+?)( ✓)$/.exec(text);
+  if (!match) return <span>{text}</span>;
+  return <span>{match[1]}<span className="save-when">{match[2]}</span>{match[3]}</span>;
+}
+
 function saveText(snap: EditorSnapshot): string {
   switch (snap.saveState) {
     case "offline": return "Offline — changes kept on this device";
@@ -433,7 +440,7 @@ export function EditorPage() {
         <div className="editor-header-actions">
           <div className={`save-status save-${snap.saveState}`} role="status" aria-live="polite" data-save-state={snap.saveState}>
             <Icon name="cloud" size={18} />
-            <span>{saveText(snap)}</span>
+            <SaveLabel text={saveText(snap)} />
             {failed ? <button type="button" onClick={() => bridge.retrySave()}>Retry</button> : null}
             {conflict ? <button type="button" onClick={() => window.location.reload()}>Reload</button> : null}
           </div>
@@ -1057,6 +1064,8 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
 
 const slotLabels: Record<string, string> = { hero: "Cover picture", story: "Story picture", venue: "Venue picture" };
 const mb = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1);
+// What has been used so far: a few small photos are under 0.1 MB, which "0.0 MB" made look like nothing was stored.
+const usedSize = (bytes: number) => (bytes <= 0 ? "0 MB" : bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${mb(bytes)} MB`);
 
 const mediaOffNotes: Record<string, string> = {
   NOT_SAVED_ONLINE: "Photos need your invitation to be saved online. Open it with your private link, or wait until it finishes saving.",
@@ -1118,7 +1127,7 @@ function GalleryPanel({ snap }: { snap: EditorSnapshot }) {
   return (
     <div className="editor-form">
       <p className="photo-usage" data-testid="photo-usage">
-        <strong>{media.usage.count} of {media.limits.photos} photos</strong> · {mb(media.usage.bytes)} of {mb(media.limits.totalBytes)} MB
+        <strong>{media.usage.count} of {media.limits.photos} photos</strong> · {usedSize(media.usage.bytes)} of {mb(media.limits.totalBytes)} MB
       </p>
       <p className="tiny muted">
         Add up to {media.limits.photos} photos, several at once. They go to the gallery; use the arrows to change the order.

@@ -1173,7 +1173,7 @@
     const contactBlock = paying ? `<fieldset class="pub-card" data-buyer-contact>
         <legend class="sr-only">Your details</legend>
         <h3 class="pub-card-title">Your details</h3>
-        <p class="pub-sub">For your receipt, and to recover your private link. Razorpay is pre-filled with them.</p>
+        <p class="pub-sub">For your receipt, and to recover your private link. We’ll fill them in on the payment page for you.</p>
         <label for="buyerName">Your name <b class="req" aria-hidden="true">*</b></label>
         <span class="pub-field">${ICON.user}<input id="buyerName" type="text" autocomplete="name" maxlength="120" placeholder="Enter your full name" value="${escapeText(session.contact.name)}"></span>
         <label for="buyerEmail">Email address <b class="req" aria-hidden="true">*</b></label>
