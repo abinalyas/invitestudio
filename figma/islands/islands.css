@@ -718,7 +718,6 @@ input[type="date"], input[type="time"] { min-width: 0; max-width: 100%; box-sizi
 /* "My projects" in the header (only shown when a draft exists) */
 .my-projects-link { white-space: nowrap; }
 @media (max-width: 480px) { .header-actions { gap: 8px; } .my-projects-link { min-height: 44px; padding-inline: 12px; font-size: 12px; } }
-@media (max-width: 400px) { .header-actions:has(.my-projects-link) > a.button { display: none; } }
 
 /* RSVP panel and the replies dashboard: same look as the rest of the editor (serif titles, rounded cards, pill buttons). */
 .rsvp-replies { margin: 0 0 6px; padding: 16px; border: 1px solid #e6e0d9; border-radius: 18px; background: #fffdf9; }

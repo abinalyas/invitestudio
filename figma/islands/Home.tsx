@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Icon, IconName, Logo, faqs, templates, galleryTemplates } from "./shared";
 import { formatMoney, usePricing } from "./pricing";
 import { bridge } from "./bridge";
-import { MyProjectsLink, RecoveryBanner, TalkToUs } from "./extras";
+import { MyProjectsLink, RecoveryBanner, StartCreatingLink, TalkToUs } from "./extras";
 import { TemplateStrip } from "./TemplateStrip";
 export function HomePage() {
   // The Instagram address is set once in site-config.js (social.instagram); with none set, no social icon is shown.
@@ -40,9 +40,7 @@ export function HomePage() {
           </nav>
           <div className="header-actions">
             <MyProjectsLink />
-            <a className="button small" href="/templates">
-              Start creating
-            </a>
+            <StartCreatingLink />
           </div>
         </header>
 

@@ -41,6 +41,18 @@ export function MyProjectsLink() {
   );
 }
 
+// "Start creating" in the header, for people with no invitation yet. Someone who already has one sees "My invitations"
+// instead, and the big button in the hero does the starting.
+export function StartCreatingLink() {
+  useBridgeVersion();
+  if (bridge.hasProjects()) return null;
+  return (
+    <a className="button small" href="/templates">
+      Start creating
+    </a>
+  );
+}
+
 // Occasion choices from the existing catalogue. Choosing one starts the existing
 // setup flow for that celebration type.
 export function OccasionStrip() {
