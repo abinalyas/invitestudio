@@ -1,0 +1,8 @@
+/* What the couple wrote about an event, drawn under it by {{details}} (packaged-templates.js): the description, then labelled notes
+ * (dress code and so on). Attribute selectors only, and the text takes the design's own font, size and colour, so it suits every
+ * design; a design can place it with one rule. Long words and links in the couple's text wrap instead of widening the card. */
+[data-details]{display:block;margin:14px 0 0;text-align:inherit;font:inherit;font-size:.95em;line-height:1.55;letter-spacing:normal;text-transform:none;overflow-wrap:anywhere}
+[data-details] p{margin:0;font:inherit;letter-spacing:inherit;text-transform:none}
+[data-details] p+p{margin-top:8px}
+[data-details] b{font-weight:600;letter-spacing:.02em}
+[data-details] b::after{content:":"}

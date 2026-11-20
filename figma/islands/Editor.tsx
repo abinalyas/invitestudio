@@ -806,10 +806,25 @@ export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
   // While an event is being dragged, the list shows the order it would land in; the change is saved when it is dropped.
   const [drag, setDrag] = useState<{ id: string; order: string[] } | null>(null);
   const [announce, setAnnounce] = useState("");
+  // The event that was just added: it is brought into view and briefly highlighted, so on a phone (where the new event opens above the
+  // buttons that were tapped, out of sight) it is clear that something was added.
+  const justAdded = useRef<string | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const focusGrip = useRef<string | null>(null);
   const stopDrag = useRef<(() => void) | null>(null);
   useEffect(() => () => stopDrag.current?.(), []);
+  useEffect(() => {
+    const id = justAdded.current;
+    if (!id) return;
+    const row = [...(listRef.current?.querySelectorAll<HTMLElement>("[data-event-id]") ?? [])].find(el => el.dataset.eventId === id);
+    if (!row) return; // the list has not drawn it yet: this runs again after the next draw
+    justAdded.current = null;
+    const calm = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    row.scrollIntoView({ block: "start", behavior: calm ? "auto" : "smooth" });
+    setFlash(id);
+    window.setTimeout(() => setFlash(null), 2400); // no cleanup: this effect runs after every draw, and a cleanup would cancel the timer
+  });
   useEffect(() => {
     // Keep keyboard focus on the handle that was just used, after the list re-orders.
     const id = focusGrip.current;
@@ -875,6 +890,8 @@ export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
 
   function quickAdd(title: string) {
     const id = bridge.addEvent(title);
+    justAdded.current = id;
+    setAnnounce(`${title} added to your events.`);
     setOpenId(id);
   }
 
@@ -882,6 +899,8 @@ export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
     event.preventDefault();
     if (!trimmed) return;
     const id = bridge.addEvent(trimmed);
+    justAdded.current = id;
+    setAnnounce(`${trimmed} added to your events.`);
     setName("");
     setOpenId(id);
   }
@@ -894,7 +913,7 @@ export function EventsPanel({ snap }: { snap: EditorSnapshot }) {
       {snap.events.length === 0 ? <p className="empty-state">No events yet. Add the first celebration below.</p> : null}
       <ul className={drag ? "event-list is-dragging" : "event-list"} ref={listRef}>
         {shown.map((item, index) => (
-          <li key={item.id} className={drag?.id === item.id ? "event-item dragging" : "event-item"} data-event-id={item.id}>
+          <li key={item.id} className={drag?.id === item.id ? "event-item dragging" : flash === item.id ? "event-item just-added" : "event-item"} data-event-id={item.id}>
             <div className="event-row">
               {snap.events.length > 1 ? (
                 <button

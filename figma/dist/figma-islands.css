@@ -910,6 +910,10 @@
 .figma-app .event-grip:hover{ background: #f6f2ea; color: #0b2f20; }
 .figma-app .event-grip:focus-visible{ outline: 2px solid #145c37; outline-offset: -2px; background: #f6f2ea; }
 .figma-app .event-list.is-dragging, .figma-app .event-list.is-dragging *{ cursor: grabbing; user-select: none; }
+.figma-app .event-item{ scroll-margin-top: 88px; }
+.figma-app .event-item.just-added{ border-color: #145c37; animation: event-added 2.4s ease-out; }
+@keyframes event-added{ 0%, 55% { box-shadow: 0 0 0 4px rgba(20, 92, 55, .28); background: #f1f7f2; } 100% { box-shadow: 0 0 0 0 rgba(20, 92, 55, 0); background: #fff; } }
+@media (prefers-reduced-motion: reduce){.figma-app .event-item.just-added{ animation: none; box-shadow: 0 0 0 3px rgba(20, 92, 55, .28); }}
 .figma-app .event-item.dragging{ border-color: #145c37; box-shadow: 0 8px 22px rgba(11, 47, 32, .22); position: relative; z-index: 1; }
 .figma-app .event-toggle{ flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 56px; padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #0b2f20; text-align: left; cursor: pointer; }
 .figma-app .event-toggle:hover, .figma-app .event-toggle:focus-visible{ background: #f6f2ea; }

@@ -11,7 +11,8 @@
  * Markers:   {{x}} escaped value   {{upper:x}} upper-cased   {{em:x}} escaped, *word* becomes <em>
  *            {{copy:key}} the wording for a key   (prefixes combine: {{upper:copy:key}})
  *            <!--if x-->..<!--else-->..<!--/if-->   <!--each list-->..{{field}} / {{.}}..<!--/each-->
- *            {{calendar}} (inside an event) the "Add to calendar" button; {{icon:name}} a line icon
+ *            {{calendar}} (inside an event) the "Add to calendar" button; {{details}} (inside an event) its description and notes;
+ *            {{icon:name}} a line icon
  * Behaviour (countdown, menu, scrolling) lives in template-widgets.js, never in a template.
  * The file works in the browser and in Node (tests), so it avoids the DOM.
  */
@@ -198,10 +199,23 @@
     return '<div data-cal><a href="' + esc(ics) + '" download="' + esc(lookup(chain, "cal_file")) + '" aria-label="Add to calendar: ' + esc(lookup(chain, "cal_title")) + '">' + CAL_ICON + '<span>Add to calendar</span></a></div>';
   }
 
+  // {{details}} (inside an event): the description and the labelled notes the couple wrote for it. One block, styled by
+  // templates/_shared/details.css from the design's own text, so every design shows all of an event's details the same way.
+  function detailsHtml(chain) {
+    var line = function (key) { return esc(lookup(chain, key)).replace(/\r?\n/g, "<br>"); };
+    var rows = [];
+    if (lookup(chain, "event_description")) rows.push('<p data-desc>' + line("event_description") + '</p>');
+    [["event_dress", "Dress code"], ["event_parking", "Parking"], ["event_stay", "Travel and stays"], ["event_access", "Access"]].forEach(function (pair) {
+      if (lookup(chain, pair[0])) rows.push('<p data-note><b>' + pair[1] + '</b> ' + line(pair[0]) + '</p>');
+    });
+    return rows.length ? '<div data-details>' + rows.join("") + '</div>' : "";
+  }
+
   function value(expr, chain, ctx) {
     var ops = expr.split(":"), mods = [], out, field = null, base, extra = "";
     if (ops[0] === "icon") return icon(ops[1]);
     if (expr === "calendar") return calendarHtml(chain);
+    if (expr === "details") return detailsHtml(chain);
     while (ops.length && (ops[0] === "upper" || ops[0] === "em")) mods.push(ops.shift());
     // {{edit:key}} (or {{upper:edit:key}}): the same value as {{key}}, marked for in-place editing. The editor
     // gets the plain value in data-raw, so an uppercased line is edited as typed, not in capitals.
@@ -284,15 +298,20 @@
     var invitation = "";
     try { var here = root.location; if (here && /^\/s\/[a-z0-9-]+\/?$/.test(here.pathname || "")) invitation = here.origin + here.pathname.replace(/\/$/, ""); } catch (e) { invitation = ""; }
     var events = fns.map(function (f, index) {
-      var d = parseDate(f.date), bits = [d ? d.short : "", showTime(f.time)].filter(Boolean);
       var end = showTime(f.endTime), start = showTime(f.time);
+      // Start, and the end when there is one ("6:30 PM – 10:30 PM"): everything a design shows of the time, so an end time is never left out.
+      var range = start ? (end ? start + " \u2013 " + end : start) : "";
+      var d = parseDate(f.date), bits = [d ? d.short : "", range].filter(Boolean);
       var cal = calendarFor(f, { couple: title, where: String(p.location || "").trim(), invitation: invitation, index: index }) || {};
       return {
         cal_ics: cal.ics || "", cal_file: cal.file || "", cal_title: cal.title || "",
         title: f.title, venue: f.venue || "", when: bits.join(" · "),
         event_id: f.id || "", event_title: f.title, event_venue: f.venue || "",
-        date_text: d ? d.weekday + ", " + d.long : "", time_text: start ? (end ? start + " – " + end : start) : "",
-        map: safeHttp(f.directionsUrl)
+        date_text: d ? d.weekday + ", " + d.long : "", time_text: range,
+        map: safeHttp(f.directionsUrl),
+        // What the couple wrote about the event, drawn by {{details}} (description first, then the labelled notes).
+        event_description: String(f.description || "").trim(), event_dress: String(f.dressCode || "").trim(),
+        event_parking: String(f.parking || "").trim(), event_stay: String(f.accommodation || "").trim(), event_access: String(f.accessibility || "").trim()
       };
     });
     var numbered = function (list) { return list.map(function (e, i) { e.n = String(i + 1).padStart(2, "0"); return e; }); };
@@ -301,7 +320,7 @@
     var story = String(p.story || "").trim();
     var example = (sample && pkg.manifest.example) || null;
     if (example && !story) story = example.story || "";
-    if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", event_id: "", event_title: e.title, event_venue: e.venue || "", when: "", date_text: "", time_text: "", map: "" }; });
+    if (example && !events.length) events = (example.events || []).map(function (e) { return { title: e.title, venue: e.venue || "", event_id: "", event_title: e.title, event_venue: e.venue || "", when: "", date_text: "", time_text: "", map: "", event_description: "", event_dress: "", event_parking: "", event_stay: "", event_access: "" }; });
     events = numbered(events);
     var photos = (Array.isArray(p.photos) ? p.photos : []).map(function (ph) { return ph && { src: safePhoto(ph.data), thumb: safePhoto(ph.thumb), alt: ph.alt || "", slot: ph.slot || "" }; }).filter(function (ph) { return ph && ph.src; });
     // The template page (opts.showcase) shows a design at its best: its sample photographs fill the photo spots (manifest
@@ -384,7 +403,7 @@
   // time, so point to the schedule (or the first time when the template has no such wording) instead of
   // showing one event's time as if it were the day's.
   function timeText(fns, timed, copy) {
-    if (fns.length <= 1) return (fns[0] && showTime(fns[0].time)) || copy("time_pending");
+    if (fns.length <= 1) return (fns[0] && fns[0].time && (fns[0].endTime ? showTime(fns[0].time) + " \u2013 " + showTime(fns[0].endTime) : showTime(fns[0].time))) || copy("time_pending");
     if (!timed) return copy("time_pending");
     return copy("time_multi") || showTime(timed.time);
   }

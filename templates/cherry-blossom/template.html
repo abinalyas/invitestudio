@@ -39,6 +39,7 @@
     <!--else-->
     <p class="hero-date plain">{{edit:date_long}}</p>
     <!--/if-->
+    <!--if hosts_line--><p class="hero-copy">{{edit:hosts_line}}</p><!--/if-->
     <p class="hero-copy">{{edit:closing_note}}</p>
     <!--if events--><button class="text-link" type="button" data-scroll-to="details">{{upper:copy:hero_link}} {{icon:arrow-down}}</button><!--/if-->
   </div>
@@ -80,7 +81,7 @@
         <!--if venue--><p class="venue-name">{{edit:event_venue}}</p><!--/if-->
         <p class="event-time"><!--if time_text-->{{time_text}}<!--else-->{{copy:time_unknown}}<!--/if--></p>
         <!--if map--><a class="outline" href="{{map}}" target="_blank" rel="noopener noreferrer">{{copy:directions}} {{icon:arrow-up-right}}</a><!--/if-->
-      {{calendar}}
+      {{details}}{{calendar}}
       </div>
     </article><!--/each-->
   </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->

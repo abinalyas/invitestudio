@@ -95,7 +95,7 @@ h1 i,.opening-note h2 i,.story h2 i,.section-top h2 i,.celebration h2 i,.venue-c
 .timeline-row h3{font:400 2rem var(--serif);margin:0;overflow-wrap:anywhere}
 .timeline-row p{font-size:.78rem;color:var(--brown);margin:0}
 .timeline-row small{grid-column:3;font-size:.52rem;letter-spacing:.16em;color:var(--gold-dark);font-weight:500}
-.timeline-row [data-cal]{grid-column:2/-1;margin-top:0}
+.timeline-row [data-cal]{grid-column:2/-1;margin-top:0}.timeline-row [data-details]{grid-column:2/-1;margin-top:4px}
 .final-scene{min-height:620px;position:relative;display:grid;place-items:center;text-align:center;overflow:hidden}
 .final-photo{filter:brightness(.55)}
 .final-backdrop{background:radial-gradient(ellipse at 50% 45%,#3b332d,#171615 75%)}
@@ -120,7 +120,7 @@ h1 i,.opening-note h2 i,.story h2 i,.section-top h2 i,.celebration h2 i,.venue-c
 .wide-scene{height:420px}.wide-overlay{left:7cqw;right:7cqw;bottom:12%}.wide-overlay h2{font-size:3.8rem}
 .section-dark{padding:85px 6cqw}.section-top{margin-bottom:45px}.gallery{grid-template-columns:1fr 1fr;gap:10px}.gallery figcaption{font-size:.46rem;left:12px;bottom:12px}
 .date-scene{min-height:520px}.date-content h2{font-size:3rem;margin-bottom:45px}.countdown{gap:9px}.countdown>div{min-width:51px}.countdown strong{font-size:2.5rem}.countdown span{font-size:.44rem}.countdown>i{height:32px}
-.section-light{padding:85px 7cqw}.timeline-row{grid-template-columns:28px 1fr;gap:10px;padding:24px 0}.timeline-row h3{font-size:1.65rem}.timeline-row p,.timeline-row small,.timeline-row [data-cal]{grid-column:2}
+.section-light{padding:85px 7cqw}.timeline-row{grid-template-columns:28px 1fr;gap:10px;padding:24px 0}.timeline-row h3{font-size:1.65rem}.timeline-row p,.timeline-row small,.timeline-row [data-cal],.timeline-row [data-details]{grid-column:2}
 .venue-copy{padding:75px 7cqw}.final-scene{min-height:600px}.final-copy h2{font-size:3.8rem}}
 /* motion: the cover opens like a film (letterbox bars part, the picture slowly pushes in), grain over the dark scenes,
  * a breathing scroll cue, and pictures that drift as the guest reads */
