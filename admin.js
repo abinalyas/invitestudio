@@ -278,6 +278,76 @@
     return wrap;
   }
 
+  // Promo codes: a code unlocks publishing without a payment (so the paid path can be tried, or a friend given a free publish).
+  // Codes are made here, long and random; each can be limited to a number of uses and a number of days, and switched off.
+  function promoSection() {
+    var wrap = el('div', {});
+    var note = el('input', { type: 'text', maxlength: '120', placeholder: 'What is it for? (for example: tester Priya)', 'aria-label': 'What the code is for' });
+    var uses = el('input', { type: 'number', min: '1', max: '10000', value: '1', 'aria-label': 'Number of uses', class: 'num' });
+    var days = el('input', { type: 'number', min: '1', max: '365', placeholder: 'days', 'aria-label': 'Valid for this many days (optional)', class: 'num' });
+    var make = el('button', { type: 'button', class: 'dark', text: 'Make a code' });
+    var status = el('p', { class: 'small muted', role: 'status', 'aria-live': 'polite' });
+    var list = el('div', {});
+    wrap.appendChild(el('div', { class: 'tools' }, [note, el('label', { class: 'small muted', text: 'Uses ' }, uses), el('label', { class: 'small muted', text: 'Valid for ' }, days), make]));
+    wrap.appendChild(status);
+    wrap.appendChild(list);
+
+    function call(options) {
+      return fetch('/api/admin/promo-codes', Object.assign({ headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, credentials: 'same-origin' }, options))
+        .then(function (response) { return response.json().catch(function () { return null; }).then(function (b) { return { status: response.status, body: b }; }); });
+    }
+    function state(row) {
+      if (!row.active) return 'switched off';
+      if (row.expires_at && new Date(row.expires_at) <= new Date()) return 'expired';
+      if (row.used_count >= row.max_uses) return 'used up';
+      return 'active';
+    }
+    function paint(codes) {
+      clear(list);
+      if (!codes.length) { list.appendChild(el('p', { class: 'muted small', text: 'No codes yet.' })); return; }
+      list.appendChild(table(['Code', 'For', 'Used', 'Valid until', 'Status', ''], codes.map(function (row) {
+        var copy = el('button', { type: 'button', class: 'chip', text: 'Copy' });
+        copy.addEventListener('click', function () {
+          (navigator.clipboard ? navigator.clipboard.writeText(row.code) : Promise.reject()).then(function () { copy.textContent = 'Copied'; }, function () { copy.textContent = 'Select and copy'; });
+        });
+        var toggle = el('button', { type: 'button', class: 'chip', text: row.active ? 'Switch off' : 'Switch on' });
+        toggle.addEventListener('click', function () {
+          toggle.disabled = true;
+          call({ method: 'POST', body: JSON.stringify({ code: row.code, active: !row.active }) }).then(load, load);
+        });
+        var s = state(row);
+        return el('tr', {}, [
+          el('td', {}, el('code', { text: row.code })),
+          el('td', { text: row.note || '—' }),
+          el('td', { text: number(row.used_count) + ' of ' + number(row.max_uses) }),
+          el('td', { text: row.expires_at ? day(row.expires_at) : 'no end date' }),
+          el('td', {}, el('span', { class: 'badge ' + (s === 'active' ? 'live' : s === 'switched off' ? 'private' : 'offline'), text: s })),
+          el('td', {}, [copy, ' ', toggle])
+        ]);
+      })));
+    }
+    function load() {
+      call({ method: 'GET' }).then(function (result) {
+        if (result.status === 200 && result.body && Array.isArray(result.body.codes)) return paint(result.body.codes);
+        clear(list);
+        list.appendChild(el('p', { class: 'error small', text: result.status === 502 ? 'Promo codes are not available yet. Run the promo codes migration in Supabase (docs/PRICING_PLAN.md).' : 'Could not load the codes.' }));
+      }, function () { clear(list); list.appendChild(el('p', { class: 'error small', text: 'Could not load the codes.' })); });
+    }
+    make.addEventListener('click', function () {
+      make.disabled = true; status.className = 'small muted'; status.textContent = 'Making the code…';
+      call({ method: 'POST', body: JSON.stringify({ note: note.value, maxUses: uses.value, days: days.value }) }).then(function (result) {
+        make.disabled = false;
+        if (result.status === 201 && result.body && result.body.code) {
+          status.textContent = 'New code: ' + result.body.code.code + '. Copy it from the list below and send it to whoever should have it.';
+          note.value = ''; return load();
+        }
+        status.className = 'small error'; status.textContent = (result.body && result.body.error && result.body.error.message) || 'Could not make the code.';
+      }, function () { make.disabled = false; status.className = 'small error'; status.textContent = 'Could not make the code.'; });
+    });
+    load();
+    return wrap;
+  }
+
   function chart() {
     var max = Math.max.apply(null, data.daily.map(function (d) { return Math.max(d.created, d.live); }).concat([1]));
     var bars = el('div', { class: 'bars', role: 'img', 'aria-label': 'Websites created and made live each day for 30 days' });
@@ -317,6 +387,8 @@
     main.appendChild(table(['Design', 'Websites', 'Live', 'Paid'], data.byDesign.map(function (d) {
       return el('tr', {}, [el('td', { text: d.name }), el('td', { text: number(d.sites) }), el('td', { text: number(d.live) }), el('td', { text: number(d.paid) })]);
     })));
+    main.appendChild(el('h2', { text: 'Promo codes' }));
+    main.appendChild(promoSection());
     main.appendChild(el('h2', { text: 'Websites' }));
     main.appendChild(sitesSection());
     main.appendChild(el('p', { class: 'small muted', text: 'Guest replies are only counted here. Guests’ names and details are not shown. Updated ' + ago(data.asOf) + '.' }));

@@ -64,7 +64,7 @@ site entirely, and works well on phones (UPI apps). Switching to the pop-up late
 
 ### Switching it on (nothing is charged until step 6)
 
-1. Apply `supabase/migrations/202611130001_razorpay_payments.sql` in Supabase. **This must happen before step 6**: without the new
+1. Apply `supabase/migrations/202611130001_razorpay_payments.sql` in Supabase (and `202611200002_promo_codes.sql` for promo codes). **This must happen before step 6**: without the new
    column every website would look locked.
 2. In Razorpay, use **Test mode** first. Generate API keys (Settings, API Keys).
 3. In Cloudflare Pages, set these as **secrets** (a preview environment can be live with test keys while production is not):
@@ -96,6 +96,42 @@ site entirely, and works well on phones (UPI apps). Switching to the pop-up late
   international; comparing it with the region is possible later.
 - **Refund handling beyond marking the payment**; refunds are issued from the Razorpay dashboard.
 - **A paid-extension flow** for keeping a website online longer (`docs/RETENTION_PLAN.md`).
+
+## Promo codes (built)
+
+A promo code unlocks publishing for one website **without a payment**, so the paid path can be tried end to end (and a friend or tester given a
+free publish) without taking money.
+
+- **Making codes.** On the admin page (`/admin`), under "Promo codes": a note (who it is for), a number of uses (default 1) and an optional number
+  of days. Codes are always generated (`IS-XXXX-XXXX-XXXX`, about 59 bits of randomness), never typed in, so they cannot be guessed. Each can be
+  switched off and on. Run `supabase/migrations/202611200002_promo_codes.sql` in the Supabase SQL Editor first.
+- **Using one.** While the page is asking for a payment, the publish dialog shows "Have a promo code?". A good code unlocks the website, the payment
+  step disappears and the main button becomes "Make it live". The browser believes only the server's answer.
+- **What it does in the data.** The website is unlocked as `complimentary` (an unlock reason that already existed), a row in `promo_redemptions`
+  records which website used which code, and nothing is written to `payments`, so it never counts as revenue. A complimentary website is not
+  tier-locked: it can switch to any design.
+- **Rules (all in one database function, `redeem_promo_code`, tested for real in `tests/db/promo.test.mjs`).** One use per website; a code with
+  several uses stops when they are spent; expired or switched-off codes do nothing; a website that is already unlocked spends nothing; ten wrong
+  guesses in an hour lock further tries for that website. The browser roles can read nothing and redeem nothing.
+- **While payments are not live** publishing is free anyway, so the box is not shown and the route refuses (`PAYMENTS_NOT_LIVE`) without spending a code.
+- **Not built:** percentage or amount discounts (a code is all-or-nothing), per-tier codes, and codes typed in by hand.
+
+## Going live (making the payment real)
+
+The payment code is finished and tested; what is left is account and settings work that only the owner can do:
+
+1. In Supabase, run `202611130001_razorpay_payments.sql`, then `202611200002_promo_codes.sql`.
+2. In Razorpay, finish activating the account, then (in **Test mode** first) create API keys and a webhook to
+   `https://<your-site>/api/payments/razorpay-webhook` for `payment_link.paid` and `refund.processed`. Enable international payments if prices
+   are charged in other currencies.
+3. In Cloudflare Pages, set the secrets `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` and `PUBLIC_ORIGIN`, and the setting
+   `PAYMENTS_MODE=live`. Do this on a **preview** environment with the test keys first.
+4. On that preview, make a promo code in `/admin`, and try both paths: a real test-mode payment with Razorpay's test card/UPI, and the promo code.
+   Check the amounts, the receipt email, the unlock, and a refund from the Razorpay dashboard.
+5. Put the **live** keys and `PAYMENTS_MODE=live` on production. Setting `PAYMENTS_MODE` to anything else switches payments off again at once
+   (websites already unlocked stay unlocked).
+6. Before announcing: confirm the prices in `functions/_shared/pricing.js` (they are marked as placeholders), the GST/tax decision, and that the
+   Terms, Refund policy and Privacy pages are final.
 
 ## Things the code cannot decide
 

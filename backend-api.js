@@ -84,6 +84,14 @@
         body: JSON.stringify(body)
       });
     },
+    // A promo code instead of a payment: the server checks it and unlocks publishing, or says why not. Nothing here is believed.
+    redeemPromoCode(id, editToken, code) {
+      return request(`/weddings/${encodeURIComponent(id)}/promo`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${editToken}` },
+        body: JSON.stringify({ code })
+      });
+    },
     // Asks the server whether a payment is done (the server asks the payment service; nothing here is believed).
     verifyPayment(id, editToken, paymentId) {
       return request(`/weddings/${encodeURIComponent(id)}/payments/${encodeURIComponent(paymentId)}/verify`, {

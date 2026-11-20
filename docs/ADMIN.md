@@ -62,6 +62,12 @@ reminders** (off by default). They are:
 **Run `supabase/migrations/202611160005_customer_contacts.sql` BEFORE this is deployed** (it only adds things). Until it exists, the
 payment step cannot save the details and will fail.
 
+## Promo codes
+
+The "Promo codes" panel makes codes that unlock publishing without a payment (docs/PRICING_PLAN.md, "Promo codes"). Type who it is for, how many
+times it may be used and, if you like, how many days it lasts, then "Make a code". Copy it from the list and send it to whoever should have it;
+"Switch off" stops it at once. Needs `supabase/migrations/202611200002_promo_codes.sql`.
+
 ## Finding people who need help
 
 - **Progress** column: whether the story is written, how many events and photos, how long the website has been idle, and how
