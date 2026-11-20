@@ -1181,7 +1181,7 @@ Error generating stack: `+i.message+`
 .figma-app .recovery-access{ margin-top: 4px; font-size: 13px; line-height: 1.5; max-width: 60ch; }
 .figma-app .detail-path{ margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: #4a4640; }
 .figma-app .link-button{ padding: 0; border: 0; background: none; font: inherit; color: var(--green, #145c37); text-decoration: underline; cursor: pointer; }
-.figma-app .detail-device{ position: relative; box-sizing: border-box; width: min(372px, 100%); height: min(760px, calc(100vh / var(--z, 1) - 215px)); min-height: 540px; padding: 12px; border-radius: 46px; background: #1d1f1c; box-shadow: 0 22px 44px -18px rgba(62, 16, 22, .32), 0 0 0 1px rgba(43, 35, 32, .06); }
+.figma-app .detail-device{ --dh: max(580px, min(800px, calc(100vh / var(--z, 1) - 215px))); position: relative; box-sizing: border-box; width: calc(var(--dh) / 2.05); height: var(--dh); min-height: 0; padding: 12px; border-radius: 46px; background: #1d1f1c; box-shadow: 0 22px 44px -18px rgba(62, 16, 22, .32), 0 0 0 1px rgba(43, 35, 32, .06); }
 .figma-app .detail-device::before{ content: ""; position: absolute; z-index: 2; left: 50%; top: 20px; width: 92px; height: 26px; margin-left: -46px; border-radius: 999px; background: #1d1f1c; }
 .figma-app .detail-screen{ height: 100%; overflow-x: hidden; overflow-y: auto; border-radius: 34px; background: #fffaf4; overscroll-behavior: contain; scrollbar-width: none; }
 .figma-app .detail-screen::-webkit-scrollbar{ display: none; }
