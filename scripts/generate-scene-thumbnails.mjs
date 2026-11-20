@@ -14,7 +14,7 @@ import { readCatalogue } from './template-catalogue.mjs';
 import { loadTemplates } from './build-templates.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SUPPLIED_WIDE = new Set(['cherry-blossom', 'cinematic', 'golden-butterfly', 'minimalist', 'bloom-reveal', 'under-the-same-moon']);
+const SUPPLIED_WIDE = new Set(['cherry-blossom', 'cinematic', 'golden-butterfly', 'minimalist', 'bloom-reveal', 'under-the-same-moon', 'fairy-tale', 'lantern-night']);
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
 const sample = {
   title: 'Daniel & Amelia', category: 'Wedding', date: '2027-01-21', location: 'Olare Kopje Camp, Maasai Mara, Kenya',

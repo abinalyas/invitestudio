@@ -303,6 +303,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     },
     palette: ["#fff9f4", "#855b6c", "#59494a"],
     image: art("/assets/templates/fairy-tale-wide.jpg"),
+    fullArt: true,
     phone: art("/assets/templates/fairy-tale-phone.jpg"),
   },
   {
@@ -397,6 +398,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     },
     palette: ["#17172d", "#ffe1ad", "#c69b62"],
     image: art("/assets/templates/lantern-night-wide.jpg"),
+    fullArt: true,
     phone: art("/assets/templates/lantern-night-phone.jpg"),
   },
 ]
