@@ -22,7 +22,7 @@ test('a Premium or Signature design gets a card with the picture and a message t
   const modal = page.locator('#modal-root');
   await expect(modal.locator('[data-sc-image]')).toBeVisible({ timeout: 15000 });
   const size = await modal.locator('[data-sc-image]').evaluate(img => [img.naturalWidth, img.naturalHeight]);
-  expect(size).toEqual([1080, 1350]);
+  expect(size).toEqual([1086, 1448]); // lantern-night has its own card design
   const text = modal.locator('[data-sc-text]');
   await expect(text).toHaveValue(/the Reception of Palash & Amruta/);
   await expect(text).toHaveValue(/See the full invitation: http:\/\/[\w.]+:\d+\/s\/palash-amruta/);
