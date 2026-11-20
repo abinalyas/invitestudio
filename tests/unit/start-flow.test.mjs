@@ -93,7 +93,8 @@ test('the last step says what it does before and inside the Share dialog', () =>
 
 test('one clear creation path: the header starts creating, and the template page has one button and a plain line about what comes next', () => {
   const home = read('figma/islands/Home.tsx');
-  assert.match(home, /<a className="button small" href="\/templates">\s*Start creating/);
+  assert.match(home, /<StartCreatingLink \/>/);
+  assert.match(read('figma/islands/extras.tsx'), /if \(bridge\.hasProjects\(\)\) return null;\s*return \(\s*<a className="button small" href="\/templates">\s*Start creating/); // only for people with no invitation yet
   assert.doesNotMatch(home, /Get started/);
   assert.match(home, /<a className="button outline" href="#how">\s*See how it works/); // not a second link to the same place
   for (const page of ['figma/islands/Templates.tsx', 'figma/islands/TemplateDetail.tsx']) assert.doesNotMatch(read(page), /Get started/);

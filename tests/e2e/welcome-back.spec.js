@@ -62,3 +62,18 @@ test('deleting from the list talks about the invitation', async ({ page }) => {
   await expect(dialog).toContainText('Delete “Delete Me”?');
   await expect(dialog.locator('.eyebrow')).not.toContainText('website');
 });
+
+test('the header offers "Start creating" only to people with no invitation; returning people see "My invitations" and the hero button starts a new one', async ({ page }) => {
+  await page.setViewportSize({ width: 411, height: 850 });
+  await page.goto('/');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  const header = page.locator('.site-header .header-actions');
+  await expect(header.getByRole('link', { name: 'Start creating' })).toBeVisible({ timeout: 15000 });
+  await expect(header.getByRole('button', { name: 'My invitations' })).toHaveCount(0);
+
+  await withSavedDraft(page);
+  await expect(header.getByRole('button', { name: 'My invitations' })).toBeVisible({ timeout: 15000 });
+  await expect(header.getByRole('link', { name: 'Start creating' })).toHaveCount(0);
+  await expect(page.locator('.hero-buttons').getByRole('link', { name: /Start your invitation/ })).toBeVisible();
+});
