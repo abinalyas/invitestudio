@@ -24,12 +24,14 @@ async function openEditor(page, project = {}) {
 const option = (page, name) => page.getByRole('group', { name: 'Designs' }).getByRole('button', { name: new RegExp(`^${name}`) });
 
 test('after paying for Classic, Premium and Signature designs are locked and Classic ones can be chosen', async ({ page }) => {
-  await openEditor(page, { paidTier: 'classic', publishUnlocked: true });
+  await openEditor(page, { templateId: 'cinematic', paidTier: 'classic', publishUnlocked: true });
   await expect(page.locator('#designLockNote')).toContainText('You paid for the Classic tier');
-  for (const locked of ['Cinematic', 'Fairy Tale', 'Velvet Reveal', 'Golden Butterfly']) await expect(option(page, locked)).toBeDisabled();
-  await expect(option(page, 'Modern Heritage')).toBeEnabled();
-  await option(page, 'Modern Heritage').click();
-  await expect.poll(() => page.evaluate(() => state.projects[0].templateId)).toBe('modern-heritage');
+  for (const locked of ['Fairy Tale', 'Velvet Reveal', 'Golden Butterfly']) await expect(option(page, locked)).toBeDisabled();
+  await expect(option(page, 'Minimalist')).toBeEnabled();
+  await option(page, 'Minimalist').click();
+  await expect.poll(() => page.evaluate(() => state.projects[0].templateId)).toBe('minimalist');
+  // Modern Heritage is no longer offered to choose.
+  await expect(option(page, 'Modern Heritage')).toHaveCount(0);
 });
 
 test('after paying for Premium, Signature designs stay locked and Classic and Premium ones are open', async ({ page }) => {

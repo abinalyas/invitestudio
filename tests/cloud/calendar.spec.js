@@ -8,7 +8,7 @@ async function createPublished(request, { title, slug }) {
   const created = await request.post('/api/weddings', {
     headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `cal-${randomUUID()}` },
     data: {
-      templateId: 'modern-heritage',
+      templateId: 'minimalist',
       title,
       date: '2027-01-20',
       location: 'Kochi',

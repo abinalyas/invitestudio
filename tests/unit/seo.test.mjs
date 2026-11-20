@@ -38,7 +38,7 @@ test('the home page preloads its hero picture, and no other page does', () => {
 test('only the public marketing pages are described', () => {
   assert.equal(pageFor('/').kind, 'home');
   assert.equal(pageFor('/templates/').kind, 'templates');
-  assert.equal(pageFor('/templates/13').kind, 'detail');
+  assert.equal(pageFor('/templates/14').kind, 'detail');
   for (const path of ['/templates/9', '/templates/17', '/templates/999', '/editor/9', '/edit/abc', '/s/slug', '/api/pricing', '/templates/dist/bloom-reveal.js']) assert.equal(pageFor(path), null, path);
 });
 
@@ -60,7 +60,7 @@ test('every page has a distinct title and description, a canonical address, and 
 });
 
 test('structured data never states a price (prices differ by country and are placeholders)', () => {
-  const all = ['/', '/templates', '/templates/13'].map(p => headTags(pageFor(p), ORIGIN).html + staticContent(pageFor(p), ORIGIN)).join('') + LANDING.map(l => landingDocument(pageFor(`/${l.slug}`), ORIGIN)).join('');
+  const all = ['/', '/templates', '/templates/14'].map(p => headTags(pageFor(p), ORIGIN).html + staticContent(pageFor(p), ORIGIN)).join('') + LANDING.map(l => landingDocument(pageFor(`/${l.slug}`), ORIGIN)).join('');
   assert.ok(!/["'>][^<"']*[₹$£€]\s?\d|"price"|priceCurrency/i.test(all));
 });
 

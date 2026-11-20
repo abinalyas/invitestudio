@@ -9,7 +9,6 @@ const DB_URL = 'postgres://postgres@127.0.0.1:54329/invitestudio';
 
 // Design number (the address /templates/<number>) -> expected backend template id (figma/islands/shared.tsx).
 const EXPECTED_TEMPLATES = {
-  13: { backend: 'modern-heritage', name: 'Modern Heritage' },
   14: { backend: 'minimalist', name: 'Minimalist' },
   15: { backend: 'cinematic', name: 'Cinematic' },
   16: { backend: 'fairy-tale', name: 'Fairy Tale' },
@@ -20,7 +19,7 @@ const EXPECTED_TEMPLATES = {
   22: { backend: 'cherry-blossom', name: 'Cherry Blossom' },
   23: { backend: 'lantern-night', name: 'Lantern Night' }
 };
-const FIRST = 13;
+const FIRST = 14;
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
@@ -77,7 +76,7 @@ test('each Figma design maps to its backend template when a website is created',
 });
 
 test('editor fields save to the cloud draft and the save status follows', async ({ page }) => {
-  await useTemplate(page, 13);
+  await useTemplate(page, 14);
   const title = `Fields ${randomUUID().slice(0, 6)}`;
   await page.getByLabel('Couple or celebration names').fill(title);
   await page.getByLabel(/^Location \(optional\)/).fill('Kochi, Kerala');

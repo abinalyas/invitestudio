@@ -259,21 +259,6 @@ export const phoneSmall = (path: string) => path.replace(/-phone\.jpg(\?.*)?$/, 
 
 export const galleryTemplates: GalleryTemplate[] = [
   {
-    id: 13,
-    backendId: "modern-heritage",
-    title: "Modern Heritage",
-    names: "Daniel & Amelia",
-    tagline: "Ivory paper, deep green and gold botanical details, with a live countdown to the day.",
-    tags: ["Classic", "Heritage"],
-    opening: {
-      name: "Countdown",
-      text: "The cover shows your crest and a live countdown to your date. Guests scroll through your story, details and schedule.",
-    },
-    palette: ["#f4eedf", "#a58b62", "#34493a"],
-    image: art("/assets/templates/modern-heritage-wide.jpg"),
-    phone: art("/assets/templates/modern-heritage-phone.jpg"),
-  },
-  {
     id: 14,
     backendId: "minimalist",
     title: "Minimalist",

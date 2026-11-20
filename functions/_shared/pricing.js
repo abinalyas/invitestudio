@@ -47,7 +47,6 @@ export const TIERS = Object.freeze([
 
 // Which tier each design is in. A design not listed here is Classic, so a new design can never be free by accident.
 export const TEMPLATE_TIERS = Object.freeze({
-  'modern-heritage': 'classic',
   'minimalist': 'classic',
   'cinematic': 'premium',
   'fairy-tale': 'premium',
