@@ -77,9 +77,9 @@ export function loadTemplates() {
     const manifest = JSON.parse(readFileSync(join(base, 'manifest.json'), 'utf8'));
     const parts = splitParts(readFileSync(join(base, 'template.html'), 'utf8'));
     // Every template gets the platform's motion language first (templates/_shared/motion.css, so a design can override it), then
-    // its own styles, then the sound button (sound.css), touch-target rules (touch.css), line icons (icons.css) and designed empty photo tiles (photo.css).
+    // its own styles, then the sound button (sound.css), touch-target rules (touch.css), line icons (icons.css), designed empty photo tiles (photo.css) and the Add to calendar control (calendar.css).
     const sharedFile = name => readFileSync(join(dir, '_shared', name), 'utf8');
-    const shared = ['sound.css', 'touch.css', 'icons.css', 'photo.css'].map(sharedFile).join('\n');
+    const shared = ['sound.css', 'touch.css', 'icons.css', 'photo.css', 'calendar.css'].map(sharedFile).join('\n');
     const css = scopeCss(sharedFile('motion.css') + '\n' + readFileSync(join(base, 'template.css'), 'utf8') + '\n' + shared, manifest.root, manifest.prefix);
     for (const name of Object.keys(parts)) parts[name] = prefixClasses(parts[name], manifest.prefix);
     return { manifest, parts, css };

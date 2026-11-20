@@ -11,6 +11,7 @@
  * Markers:   {{x}} escaped value   {{upper:x}} upper-cased   {{em:x}} escaped, *word* becomes <em>
  *            {{copy:key}} the wording for a key   (prefixes combine: {{upper:copy:key}})
  *            <!--if x-->..<!--else-->..<!--/if-->   <!--each list-->..{{field}} / {{.}}..<!--/each-->
+ *            {{calendar}} (inside an event) the "Add to calendar" button; {{icon:name}} a line icon
  * Behaviour (countdown, menu, scrolling) lives in template-widgets.js, never in a template.
  * The file works in the browser and in Node (tests), so it avoids the DOM.
  */
@@ -126,9 +127,81 @@
     return ICONS[name] ? '<svg data-icon="' + name + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + ICONS[name] + "</svg>" : "";
   }
 
+  /* ---------- Add to calendar ----------
+   * An event with a date can be added to a guest's calendar with one button: it downloads a small .ics file (a data link, so it needs
+   * no server and works in the editor preview too) that Apple Calendar, Outlook, the calendar app on Android and most others open.
+   * A template places it with {{calendar}} at the end of an event; it is one link, so it needs no script, styled by
+   * templates/_shared/calendar.css.
+   * Times are "floating": the clock time the couple typed, shown in the guest's own calendar (events carry no time zone yet).
+   * No end time (or one that is not after the start) means two hours; no time means an all-day event. */
+  var CAL_DEFAULT_MINUTES = 120;
+  function calPad(n) { return String(n).padStart(2, "0"); }
+  function calStamp(ms, timed) {
+    var d = new Date(ms), day = d.getUTCFullYear() + calPad(d.getUTCMonth() + 1) + calPad(d.getUTCDate());
+    return timed ? day + "T" + calPad(d.getUTCHours()) + calPad(d.getUTCMinutes()) + "00" : day;
+  }
+  function calTime(v) {
+    var m = /^(\d{1,2}):(\d{2})/.exec(String(v || ""));
+    return m && +m[1] < 24 && +m[2] < 60 ? { h: +m[1], m: +m[2] } : null;
+  }
+  function icsText(s) { return String(s == null ? "" : s).replace(/\r\n?/g, "\n").replace(/[\\;,]/g, function (c) { return "\\" + c; }).replace(/\n/g, "\\n"); }
+  // Lines are folded at 75 bytes (RFC 5545), never in the middle of a character.
+  function icsFold(line) {
+    var out = [], cur = "", bytes = 0, limit = 75;
+    Array.from(line).forEach(function (ch) {
+      var n = unescape(encodeURIComponent(ch)).length;
+      if (bytes + n > limit) { out.push(cur); cur = " "; bytes = 1; limit = 75; }
+      cur += ch; bytes += n;
+    });
+    out.push(cur);
+    return out.join("\r\n");
+  }
+  // f: an event of the invitation; info: { couple, where, invitation, index }. Returns { ics, file, title }, or null when the event has no usable date.
+  function calendarFor(f, info) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(f.date || ""));
+    if (!m) return null;
+    var y = +m[1], mo = +m[2], d = +m[3], check = new Date(Date.UTC(y, mo - 1, d));
+    if (check.getUTCFullYear() !== y || check.getUTCMonth() !== mo - 1 || check.getUTCDate() !== d) return null;
+    var st = calTime(f.time), timed = Boolean(st), start, end;
+    if (timed) {
+      start = Date.UTC(y, mo - 1, d, st.h, st.m);
+      var et = calTime(f.endTime);
+      end = et && Date.UTC(y, mo - 1, d, et.h, et.m) > start ? Date.UTC(y, mo - 1, d, et.h, et.m) : start + CAL_DEFAULT_MINUTES * 6e4;
+    } else { start = Date.UTC(y, mo - 1, d); end = start + 864e5; }
+    var title = String(f.title || "").trim(), couple = String(info.couple || "").trim();
+    var summary = couple && couple !== title ? title + " \u2013 " + couple : title;
+    var where = String(f.venue || "").trim() || String(info.where || "").trim();
+    var maps = safeHttp(f.directionsUrl);
+    var notes = [];
+    if (String(f.description || "").trim()) notes.push(String(f.description).trim().slice(0, 600));
+    if (String(f.dressCode || "").trim()) notes.push("Dress code: " + String(f.dressCode).trim().slice(0, 180));
+    if (maps) notes.push("Directions: " + maps);
+    if (info.invitation) notes.push("Invitation: " + info.invitation);
+    var details = notes.join("\n\n");
+    var a = calStamp(start, timed), b = calStamp(end, timed);
+    var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//InviteStudio//Invitation//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
+      "UID:" + (String(f.id || "").replace(/[^A-Za-z0-9-]/g, "") || "event-" + (info.index || 0)) + "-" + a.slice(0, 8) + "@invitestudio.co",
+      "DTSTAMP:" + calStamp(Date.now(), true) + "Z",
+      timed ? "DTSTART:" + a : "DTSTART;VALUE=DATE:" + a, timed ? "DTEND:" + b : "DTEND;VALUE=DATE:" + b,
+      "SUMMARY:" + icsText(summary)];
+    if (where) lines.push("LOCATION:" + icsText(where));
+    if (details) lines.push("DESCRIPTION:" + icsText(details));
+    if (info.invitation) lines.push("URL:" + info.invitation);
+    lines.push("END:VEVENT", "END:VCALENDAR");
+    var slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "event";
+    return { ics: "data:text/calendar;charset=utf-8," + encodeURIComponent(lines.map(icsFold).join("\r\n") + "\r\n"), file: slug + ".ics", title: title };
+  }
+  var CAL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4M12 12.5v4M10 14.5h4"/></svg>';
+  function calendarHtml(chain) {
+    var ics = lookup(chain, "cal_ics");
+    if (!ics) return "";
+    return '<div data-cal><a href="' + esc(ics) + '" download="' + esc(lookup(chain, "cal_file")) + '" aria-label="Add to calendar: ' + esc(lookup(chain, "cal_title")) + '">' + CAL_ICON + '<span>Add to calendar</span></a></div>';
+  }
+
   function value(expr, chain, ctx) {
     var ops = expr.split(":"), mods = [], out, field = null, base, extra = "";
     if (ops[0] === "icon") return icon(ops[1]);
+    if (expr === "calendar") return calendarHtml(chain);
     while (ops.length && (ops[0] === "upper" || ops[0] === "em")) mods.push(ops.shift());
     // {{edit:key}} (or {{upper:edit:key}}): the same value as {{key}}, marked for in-place editing. The editor
     // gets the plain value in data-raw, so an uppercased line is edited as typed, not in capitals.
@@ -207,10 +280,15 @@
     var date = parseDate(p.date);
     var loc = String(p.location || "").split(","), venue = loc[0].trim(), place = loc.slice(1).join(",").trim();
     var fns = (Array.isArray(p.functions) ? p.functions : []).filter(function (f) { return f && f.visible !== false && (f.title || "").trim(); });
-    var events = fns.map(function (f) {
+    // On a live invitation the calendar entry carries its address, so a guest can open it from the entry.
+    var invitation = "";
+    try { var here = root.location; if (here && /^\/s\/[a-z0-9-]+\/?$/.test(here.pathname || "")) invitation = here.origin + here.pathname.replace(/\/$/, ""); } catch (e) { invitation = ""; }
+    var events = fns.map(function (f, index) {
       var d = parseDate(f.date), bits = [d ? d.short : "", showTime(f.time)].filter(Boolean);
       var end = showTime(f.endTime), start = showTime(f.time);
+      var cal = calendarFor(f, { couple: title, where: String(p.location || "").trim(), invitation: invitation, index: index }) || {};
       return {
+        cal_ics: cal.ics || "", cal_file: cal.file || "", cal_title: cal.title || "",
         title: f.title, venue: f.venue || "", when: bits.join(" · "),
         event_id: f.id || "", event_title: f.title, event_venue: f.venue || "",
         date_text: d ? d.weekday + ", " + d.long : "", time_text: start ? (end ? start + " – " + end : start) : "",
@@ -360,5 +438,5 @@
   root.renderPackagedTemplate = render;
   root.isPackagedTemplate = function (t) { return Boolean(t && t.packaged && template(t.packaged)); };
   root.packagedTemplateManifest = function (id) { var p = template(id); return p ? p.manifest : null; };
-  if (typeof module !== "undefined" && module.exports) module.exports = { render: render, derive: derive, esc: esc };
+  if (typeof module !== "undefined" && module.exports) module.exports = { render: render, derive: derive, esc: esc, calendarFor: calendarFor };
 })(typeof globalThis !== "undefined" ? globalThis : this);

@@ -175,6 +175,7 @@ test('on a phone, after paying, the live screen shows the link and both main but
   const sizes = await shell.evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth }));
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
   for (const target of [dialog.locator('.pub-live a'), dialog.getByRole('button', { name: 'Copy link' }), dialog.getByRole('button', { name: 'Share card for WhatsApp' })]) {
+    await expect(target).toBeVisible({ timeout: 15000 }); // the heading can show a moment before the rest of the screen is drawn
     const box = await target.boundingBox();
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(390);

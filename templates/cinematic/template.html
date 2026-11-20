@@ -77,7 +77,7 @@
 <section class="celebration section-light" data-tpl-section="schedule" data-section="functions">
   <div class="section-top" data-reveal><p class="eyebrow">{{upper:edit:copy:schedule_eyebrow}}</p><h2>{{em:edit:copy:schedule_title}}</h2><p class="section-intro">{{edit:copy:schedule_intro}}</p></div>
   <div class="timeline" style="--n:{{events_count}}">
-    <!--each events--><div class="timeline-row" data-reveal><span>{{n}}</span><h3>{{edit:event_title}}</h3><p><!--if venue-->{{edit:event_venue}}<!--/if--></p><!--if when--><small>{{upper:when}}</small><!--/if--></div><!--/each-->
+    <!--each events--><div class="timeline-row" data-reveal><span>{{n}}</span><h3>{{edit:event_title}}</h3><p><!--if venue-->{{edit:event_venue}}<!--/if--></p><!--if when--><small>{{upper:when}}</small><!--/if-->{{calendar}}</div><!--/each-->
   </div><!--if editable--><div data-add-wrap><button type="button" data-add-event aria-expanded="false">+ Add an event</button></div><!--/if-->
 </section>
 

@@ -1303,7 +1303,7 @@
 .figma-app .phone-switcher button{ width: auto; min-width: 0; height: 44px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: #3b433e; font: 600 14px/1 inherit; cursor: pointer; }
 .figma-app .phone-switcher button.active{ background: #145c37; color: #fff; box-shadow: none; }
 .figma-app .phone-preview-tools .button{ flex: 0 0 auto; min-height: 44px; padding-inline: 14px; white-space: nowrap; }
-.figma-app .device-frame .editor-site{ overflow-x: hidden; }}
+.figma-app .device-frame .editor-site{ overflow-x: clip; overflow-y: visible; overscroll-behavior: auto; }}
 @media (max-width: 640px){.figma-app .site-header{ position: relative; z-index: 10; }
 .figma-app .hero-deco{ pointer-events: none; }
 .figma-app .hero-deco .deco-floral-right{ transform: translate(34px, -24px) scale(.78); transform-origin: top right; }

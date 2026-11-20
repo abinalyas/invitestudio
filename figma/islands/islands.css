@@ -607,7 +607,9 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
   .phone-switcher button.active { background: #145c37; color: #fff; box-shadow: none; }
   .phone-preview-tools .button { flex: 0 0 auto; min-height: 44px; padding-inline: 14px; white-space: nowrap; }
   /* A tablet or desktop preview is wider than the screen: it is scaled down, so it must not be clipped or scroll sideways. */
-  .device-frame .editor-site { overflow-x: hidden; }
+  /* clip, not hidden: "hidden" turns the other axis into a scroller, and with overscroll-behavior: contain that scroller swallowed
+     every swipe on the preview, so the phone page could not be scrolled by touching the invitation. */
+  .device-frame .editor-site { overflow-x: clip; overflow-y: visible; overscroll-behavior: auto; }
 }
 
 /* ---- Home page hero on a phone: the picture is in view sooner, the buttons are right-sized, and the leaves stay behind the header ---- */
