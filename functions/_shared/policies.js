@@ -1,4 +1,4 @@
-// The policy pages: terms, refund policy, privacy and contact. They are linked from every footer and from the payment dialog, because
+// The policy pages: terms, refund policy, delivery policy, privacy and contact. They are linked from every footer and from the payment dialog, because
 // a payment provider and customers expect to find them before paying (docs/PRICING_PLAN.md, "Things the code cannot decide").
 //
 // Written from what the product does today (docs/PRICING_PLAN.md, docs/RETENTION_PLAN.md, docs/RSVP_PLAN.md). Two kinds of line are
@@ -63,6 +63,27 @@ export const POLICIES = Object.freeze([
       { h2: 'How to ask', p: ['Contact us on the Contact page with the email or phone number you paid with, and the date of payment. We reply as soon as we can.'] },
       { h2: 'How long it takes', p: ['We refund to the same payment method you used, through Razorpay. After we approve a refund it usually reaches you within 5 to 10 business days, depending on your bank or card issuer.'] },
       { h2: 'Prices and currency', p: ['You are refunded the amount you paid, in the currency you paid in. Your bank may apply its own exchange rate or fees, which we cannot refund.'] }
+    ]
+  },
+  {
+    slug: 'delivery-policy',
+    title: 'Delivery policy — InviteStudio',
+    description: 'How and when your InviteStudio invitation is delivered: a digital service, online as soon as you publish. Nothing is shipped.',
+    h1: 'Delivery policy',
+    updated: '20 November 2026',
+    sections: [
+      { h2: 'What we deliver', p: ['InviteStudio is a digital service. We do not sell or ship physical goods, so nothing is posted or couriered to you and no delivery address is needed. What you receive is your published wedding invitation website, online.'] },
+      { h2: 'When you get it', p: ['You can build and preview your invitation for free. Once your payment is confirmed you can make it live straight away, and your invitation is available at its own InviteStudio link as soon as you publish.', 'Confirming a payment usually takes under a minute. A bank is sometimes slower: the page keeps checking and you can press Check again. If you have paid and still cannot publish, contact us and we will sort it out.'] },
+      { h2: 'What you receive', list: [
+        'A public link to your invitation, to share on WhatsApp, text or email.',
+        'Your private editing link, so you can change your invitation whenever you like.',
+        'Guest replies (RSVPs), collected in your editor and available to download as a spreadsheet.',
+        'A share card picture with a ready-written message for WhatsApp.'
+      ] },
+      { h2: 'Where it is available', p: ['Your invitation is delivered online, so it can be opened anywhere with an internet connection. There are no shipping charges.'] },
+      { h2: 'How long it stays online', p: ['A published invitation stays online at least until 2 months after your last event date. The Terms of use give the full details.'] },
+      { h2: 'Custom designs', p: ['A custom design is agreed with you one to one, including its price and when it will be ready, before you pay. Ask on the Contact page.'] },
+      { h2: 'If something goes wrong', p: ['If your invitation is not delivered as described, we put it right or refund you. See the Refund policy, or contact us on the Contact page.'] }
     ]
   },
   {

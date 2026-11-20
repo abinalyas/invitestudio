@@ -1,7 +1,7 @@
 // The footers on the guide and policy pages (server-rendered), on the real server: same columns and type scale as the home page footer.
 const { test, expect } = require('@playwright/test');
 
-const PAGES = ['/whatsapp-wedding-invitation', '/digital-wedding-invitation', '/privacy', '/terms', '/refund-policy', '/contact'];
+const PAGES = ['/whatsapp-wedding-invitation', '/digital-wedding-invitation', '/privacy', '/terms', '/refund-policy', '/delivery-policy', '/contact'];
 const footer = page => page.locator('footer.site-footer');
 
 test('every guide and policy page has the three labelled columns, with the right links', async ({ page }) => {
@@ -12,7 +12,7 @@ test('every guide and policy page has the three labelled columns, with the right
     expect(columns.map(c => c.label), path).toEqual(['Product', 'Guides', 'Company']);
     expect(columns[0].links.map(l => l[1])).toEqual(['/templates', '/#how', '/#pricing', '/#faq-list']);
     expect(columns[1].links.map(l => l[0])).toEqual(['Wedding invitation website', 'Digital wedding invitation', 'Invitation with RSVP', 'Animated invitations', 'Share on WhatsApp']);
-    expect(columns[2].links).toEqual([['Contact', '/contact'], ['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Privacy', '/privacy']]);
+    expect(columns[2].links).toEqual([['Contact', '/contact'], ['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Delivery policy', '/delivery-policy'], ['Privacy', '/privacy']]);
     await expect(footer(page).getByRole('link', { name: 'InviteStudio on Instagram' })).toHaveAttribute('href', /instagram\.com/);
     await expect(footer(page).locator('.footer-talk').getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/\d+\?text=/);
     await expect(footer(page).locator('.footer-talk').getByRole('link', { name: 'Email' })).toHaveAttribute('href', /^mailto:/);

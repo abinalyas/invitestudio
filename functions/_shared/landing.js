@@ -109,7 +109,7 @@ export function copyright(year = new Date().getFullYear()) {
   return `© ${year} InviteStudio. The templates and designs on this site are protected by copyright.`;
 }
 
-export const POLICY_LINKS = Object.freeze([['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Privacy', '/privacy'], ['Contact', '/contact']]);
+export const POLICY_LINKS = Object.freeze([['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Delivery policy', '/delivery-policy'], ['Privacy', '/privacy'], ['Contact', '/contact']]);
 
 const CSS = `
 @font-face{font-family:"Playfair Display";font-weight:400 900;font-style:normal;font-display:swap;src:url("/assets/scene-fonts/playfair-display-latin-variable.woff2") format("woff2")}
@@ -167,7 +167,7 @@ const FOOTER_GUIDES = Object.freeze([
   ['Wedding invitation website', '/wedding-invitation-website'], ['Digital wedding invitation', '/digital-wedding-invitation'],
   ['Invitation with RSVP', '/online-wedding-invitation-with-rsvp'], ['Animated invitations', '/animated-wedding-invitation'], ['Share on WhatsApp', '/whatsapp-wedding-invitation']
 ]);
-const FOOTER_COMPANY = Object.freeze([['Contact', '/contact'], ['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Privacy', '/privacy']]);
+const FOOTER_COMPANY = Object.freeze([['Contact', '/contact'], ['Terms', '/terms'], ['Refund policy', '/refund-policy'], ['Delivery policy', '/delivery-policy'], ['Privacy', '/privacy']]);
 export const FOOTER_LINKS = Object.freeze({ product: FOOTER_PRODUCT, guides: FOOTER_GUIDES, company: FOOTER_COMPANY });
 const TALK = { subject: 'Something unique for my celebration', text: 'Hello, I would like to talk about a design made just for us.' };   // the same message as contact-links.js, topic "custom"
 

@@ -11,9 +11,9 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const read = file => readFileSync(join(root, file), 'utf8');
 const ORIGIN = 'https://example.test';
 
-test('the four policy pages exist and are the pages every footer links to', () => {
+test('the five policy pages exist and are the pages every footer links to', () => {
   assert.deepEqual(POLICIES.map(p => `/${p.slug}`).sort(), POLICY_LINKS.map(([, path]) => path).sort());
-  assert.deepEqual(POLICY_LINKS.map(([, path]) => path).sort(), ['/contact', '/privacy', '/refund-policy', '/terms']);
+  assert.deepEqual(POLICY_LINKS.map(([, path]) => path).sort(), ['/contact', '/delivery-policy', '/privacy', '/refund-policy', '/terms']);
 });
 
 test('each policy page has a title, a description, one h1, a canonical address, and is in the sitemap', () => {
@@ -63,6 +63,15 @@ test('the policy pages show no price and promise nothing the product does not do
     assert.ok(!/[₹$£€]\s?\d/.test(doc), `${policy.slug} shows a price`);
     assert.ok(!/auto-?renew|monthly|recurring|per month/i.test(doc), `${policy.slug} describes recurring charges`);
   }
+});
+
+test('the delivery policy says it is a digital service, shows its own date, and the shared date stays on the other pages', () => {
+  const doc = policyDocument(pageFor('/delivery-policy'), ORIGIN);
+  assert.ok(doc.includes('do not sell or ship physical goods'));
+  assert.ok(doc.includes('Last updated: 20 November 2026'));
+  assert.ok(policyDocument(pageFor('/terms'), ORIGIN).includes(`Last updated: ${UPDATED}`));
+  // What it promises must be true of the product: the card, the replies and the private link exist.
+  for (const claim of ['public link', 'private editing link', 'spreadsheet', 'share card']) assert.ok(doc.toLowerCase().includes(claim), claim);
 });
 
 test('every footer and the payment dialog link to the policies', () => {

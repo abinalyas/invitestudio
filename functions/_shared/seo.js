@@ -326,5 +326,5 @@ export function landingDocument(page, origin, { replay = '' } = {}) {
 // The full HTML document for a policy page (terms, refund policy, privacy, contact).
 export function policyDocument(page, origin, options = {}) {
   const { title, html } = headTags(page, origin);
-  return renderPolicy(page.policy, origin, { head: html, title, updated: UPDATED, contact: CONTACT, business: BUSINESS, social: SOCIAL });
+  return renderPolicy(page.policy, origin, { head: html, title, updated: page.policy.updated || UPDATED, contact: CONTACT, business: BUSINESS, social: SOCIAL });
 }
