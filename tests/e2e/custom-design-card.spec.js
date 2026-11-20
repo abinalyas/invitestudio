@@ -12,7 +12,7 @@ async function expectCard(page) {
   await expect(card).toHaveCount(1);
   await card.scrollIntoViewIfNeeded();
   await expect(card).toContainText('Want something made just for you?');
-  const whatsapp = card.getByRole('link', { name: 'Message us on WhatsApp' });
+  const whatsapp = card.getByRole('link', { name: 'Chat on WhatsApp' });
   await expect(whatsapp).toBeVisible();
   await expect(whatsapp).toHaveAttribute('href', /^https:\/\/wa\.me\/\d{7,15}\?text=.*design%20made%20just%20for%20us/);
   await expect(whatsapp).toHaveAttribute('target', '_blank');

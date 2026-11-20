@@ -97,7 +97,7 @@ export function CustomDesignCard({ className = "" }: { className?: string }) {
       <h2>Want something made just for you?</h2>
       <p>Tell us your idea. We design a custom invitation and tell you the price before you decide.</p>
       <div className="custom-card-actions">
-        {links.whatsapp ? <a className="button" href={links.whatsapp} target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a> : null}
+        {links.whatsapp ? <a className="button" href={links.whatsapp} target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a> : null}
         {links.email ? <a className="button outline" href={links.email}>Email us</a> : null}
       </div>
     </section>
