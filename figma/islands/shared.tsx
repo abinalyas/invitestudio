@@ -335,6 +335,7 @@ export const galleryTemplates: GalleryTemplate[] = [
     },
     palette: ["#0b2119", "#d6b77a", "#f6f0e5"],
     image: art("/assets/templates/velvet-reveal-wide.jpg"),
+    fullArt: true,
     phone: art("/assets/templates/velvet-reveal-phone.jpg"),
   },
   {
