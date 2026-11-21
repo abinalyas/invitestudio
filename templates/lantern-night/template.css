@@ -25,7 +25,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-l
 [data-tpl-section]{scroll-margin-top:70px}
 button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 
-@keyframes rise{0%{bottom:-130px;transform:translateX(0) rotate(-4deg);opacity:0}10%{opacity:.88}50%{transform:translateX(28px) rotate(3deg);opacity:.82}90%{opacity:.72}100%{bottom:112%;transform:translateX(-14px) rotate(-3deg);opacity:0}}
+@keyframes rise{0%{transform:translate3d(0,0,0) rotate(-4deg);opacity:0}10%{opacity:.88}50%{transform:translate3d(28px,calc(var(--frame-h,760px) * -.48),0) rotate(3deg);opacity:.82}90%{opacity:.72}100%{transform:translate3d(-14px,calc(var(--frame-h,760px) * -1.12),0) rotate(-3deg);opacity:0}}
 @keyframes flicker{0%{opacity:.45;transform:scale(.82)}35%{opacity:1;transform:scale(1.13)}62%{opacity:.65;transform:scale(.92)}100%{opacity:.95;transform:scale(1.08)}}
 @keyframes cue{50%{transform:translateY(6px)}}
 @keyframes glow{from{opacity:.45}to{opacity:1}}
@@ -72,7 +72,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
 .hero[data-still] *,.hero[data-still]:before{animation:none!important}
 .intro:not([data-done])~.hero *{animation-play-state:paused}
 .lanterns{position:absolute;inset:76px 0 0;z-index:1;overflow:hidden;pointer-events:none}
-.lanterns span{position:absolute;bottom:-130px;width:var(--w,34px);height:var(--h,52px);border-radius:46% 46% 38% 38% / 22% 22% 18% 18%;background:linear-gradient(90deg,#8e4c35 0%,#d98a4d 16%,#ffe2a0 48%,#e99a54 78%,#85432f 100%);border:1px solid rgba(255,224,176,.72);box-shadow:0 0 14px 3px rgba(255,169,87,.38),0 0 42px rgba(255,158,80,.18),inset 0 0 15px rgba(255,239,193,.48);opacity:0;animation:rise var(--dur,28s) linear var(--delay,0s) infinite}
+.lanterns span{position:absolute;bottom:-130px;width:var(--w,34px);height:var(--h,52px);border-radius:46% 46% 38% 38% / 22% 22% 18% 18%;background:linear-gradient(90deg,#8e4c35 0%,#d98a4d 16%,#ffe2a0 48%,#e99a54 78%,#85432f 100%);border:1px solid rgba(255,224,176,.72);box-shadow:0 0 14px 3px rgba(255,169,87,.38),0 0 42px rgba(255,158,80,.18),inset 0 0 15px rgba(255,239,193,.48);opacity:0;will-change:transform,opacity;animation:rise var(--dur,28s) linear var(--delay,0s) infinite}
 .lanterns span:before{content:"";position:absolute;left:10%;right:10%;top:5%;height:2px;border-radius:50%;background:rgba(255,240,207,.82);box-shadow:0 2px 5px rgba(255,224,170,.35)}
 .lanterns span:after{content:"";position:absolute;left:20%;right:20%;bottom:-4px;height:5px;border:1px solid rgba(255,225,172,.72);border-top:0;border-radius:0 0 50% 50%}
 .lanterns i{position:absolute;left:35%;right:35%;bottom:5px;height:11px;border-radius:50%;background:#fff1bd;filter:blur(5px);box-shadow:0 0 14px 5px rgba(255,181,91,.9);animation:flicker 1.7s ease-in-out infinite alternate}

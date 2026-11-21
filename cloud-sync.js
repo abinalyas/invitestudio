@@ -298,6 +298,43 @@
     window.InviteRetentionLast = result && result.available ? { ...result, projectId: project.id } : null;
     return result;
   };
+  // My invitations: when each invitation (draft or published) stops being online. One quiet fetch per card, kept for a few
+  // minutes; the cards repaint when the dates arrive. Drafts show an estimate ("Once live ...") until they are published.
+  const keptByProject = {};
+  let keptLoading = false;
+  window.dashKeptLine = function dashKeptLine(project) {
+    const info = (keptByProject[project.id] || {}).info;
+    if (!info) return '';
+    const live = typeof isLiveProject === 'function' ? isLiveProject(project) : false;
+    const fmt = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    if (info.closed || info.stage === 'hidden') {
+      return info.deleteOn ? `<p class="dash-kept" data-tone="closed" data-kept>Offline. Can be restored until <strong>${escapeText(fmt(info.deleteOn))}</strong></p>` : '';
+    }
+    const date = live ? info.endsOn : (info.endsOn || info.estimatedEndsOn);
+    if (!date) return '';
+    const soon = live && typeof info.daysLeft === 'number' && info.daysLeft <= (info.warnDays || 14);
+    const lead = live ? 'Online until' : 'Once live, online until';
+    return `<p class="dash-kept" data-tone="${soon ? 'soon' : 'ok'}" data-kept>${lead} <strong>${escapeText(fmt(date))}</strong>${soon ? ` (${Math.max(0, info.daysLeft)} day${info.daysLeft === 1 ? '' : 's'} left)` : ''}</p>`;
+  };
+  async function loadDashboardRetention() {
+    const api = window.inviteStudioApi;
+    if (keptLoading || !api?.enabled || typeof state === 'undefined') return;
+    const stale = state.projects.filter(p => p.cloudId && tokenFor(p.cloudId) && !(Date.now() - ((keptByProject[p.id] || {}).at || 0) < 5 * 60 * 1000));
+    if (!stale.length) return;
+    keptLoading = true;
+    let changed = false;
+    await Promise.all(stale.map(async project => {
+      try {
+        const result = await api.getRetention(project.cloudId, tokenFor(project.cloudId));
+        keptByProject[project.id] = { at: Date.now(), info: result && result.available ? result : null };
+        if (result && result.available) changed = true;
+      } catch (error) {
+        keptByProject[project.id] = { at: Date.now(), info: null };
+      }
+    }));
+    keptLoading = false;
+    if (changed && state.page === 'dashboard') window.render();
+  }
   window.loadMedia = async function loadMedia() {
     const { project, token, api, ready } = mediaContext();
     if (!project) return;
@@ -1892,6 +1929,7 @@
 
     window.render = function cloudAwareRender() {
       originalRender();
+      if (state.page === 'dashboard') void loadDashboardRetention();
       const project = typeof current === 'function' ? current() : null;
       paintStatus(project);
       decorateRecoveryUi(project);
