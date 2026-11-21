@@ -1216,14 +1216,14 @@
     const primary = live ? (session.changing ? 'Change address and update' : 'Update live page') : paying ? (priceText ? `Pay ${priceText} and continue` : 'Pay and continue') : 'Make it live';
     const priceNote = live || project.publishUnlocked || !session.price ? ''
       : session.price.mode === 'live'
-        ? `<p class="pub-fine" data-price-note><strong>One-time price: ${escapeText(session.price.text)}</strong> (${escapeText(session.price.tierName)} plan). Switch designs within your plan anytime, even after publishing. Razorpay shows the payment methods available to you. By paying you agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a> and <a href="/refund-policy" target="_blank" rel="noopener">Refund policy</a>.</p>`
+        ? `<p class="pub-fine" data-price-note>By paying you agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a> and <a href="/refund-policy" target="_blank" rel="noopener">Refund policy</a>.</p>`
         : `<p class="pub-fine" data-price-note><strong>Free during early access.</strong> Later price: ${escapeText(session.price.text)} (${escapeText(session.price.tierName)} plan), paid once.</p>`;
 
     // Your details (asked for before paying).
     const contactBlock = paying ? `<fieldset class="pub-card" data-buyer-contact>
         <legend class="sr-only">Your details</legend>
         <h3 class="pub-card-title">Your details</h3>
-        <p class="pub-sub">For your receipt, and to recover your private link. We’ll fill them in on the payment page for you.</p>
+        <p class="pub-sub">For your receipt and to recover your private link.</p>
         <label for="buyerName">Your name <b class="req" aria-hidden="true">*</b></label>
         <span class="pub-field">${ICON.user}<input id="buyerName" type="text" autocomplete="name" maxlength="120" placeholder="Enter your full name" value="${escapeText(session.contact.name)}"></span>
         <label for="buyerEmail">Email address <b class="req" aria-hidden="true">*</b></label>
@@ -1254,7 +1254,6 @@
       ? ''
       : `<section class="pub-card">
          <h3 class="pub-card-title">Your invitation link</h3>
-         <p class="pub-sub">Pick an easy-to-remember web address.</p>
          <label class="sr-only" for="publishSlug">Web address</label>
          <div class="pub-slug"><span class="pub-prefix">${escapeText(window.location.origin)}/s/</span><input id="publishSlug" type="text" value="${escapeText(session.typed)}" maxlength="60" autocomplete="off" spellcheck="false" aria-describedby="slug-status"></div>
          <p id="slug-status" aria-live="polite" class="pub-status-pill" data-tone="${status.tone}">${escapeText(status.text)}</p>${suggestions}
@@ -1265,31 +1264,30 @@
     const keptDate = kept ? (kept.draft ? (kept.estimatedEndsOn || '') : (kept.endsOn || kept.estimatedEndsOn)) : '';
     const keptBefore = kept ? Boolean(kept.endsBeforeEvent || kept.estimateBeforeEvent) : false;
     const keptLinks = window.InviteContact ? window.InviteContact.links('extend', live ? publicLinkFor(project.publicSlug) : '') : null;
-    const keptBlock = keptDate
-      ? `<p class="pub-fine${keptBefore ? ' bad' : ''}" data-kept-note>${live ? 'Online until' : 'Once live, online until'} <strong>${escapeText(new Date(keptDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }))}</strong>.${keptBefore ? ' That is before your event.' : ''} Need longer? ${keptLinks && keptLinks.whatsapp ? `<a href="${escapeText(keptLinks.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}${keptLinks && keptLinks.whatsapp && keptLinks.email ? ' · ' : ''}${keptLinks && keptLinks.email ? `<a href="${escapeText(keptLinks.email)}">Email</a>` : ''}</p>`
+    const keptDay = keptDate ? escapeText(new Date(keptDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })) : '';
+    const keptContact = keptLinks && (keptLinks.whatsapp || keptLinks.email)
+      ? ` Need longer? ${keptLinks.whatsapp ? `<a href="${escapeText(keptLinks.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}${keptLinks.whatsapp && keptLinks.email ? ' · ' : ''}${keptLinks.email ? `<a href="${escapeText(keptLinks.email)}">Email</a>` : ''}`
       : '';
-    // What guests can do about replies, from the couple's own RSVP choice (kept true to what the invitation does).
-    const rsvpMode = project.preferences?.rsvp || 'count';
-    const repliesLine = rsvpMode === 'none' ? ''
-      : rsvpMode === 'contact' ? '<li><strong>Replies.</strong> Guests see your contact details.</li>'
-      : '<li><strong>Replies.</strong> Guests can reply from the live invitation. You see them under <em>Replies</em>.</li>';
-    // Said before anything is public, in plain words: what happens, what does not, and what can be undone.
+    // Before paying, the date is one quiet line; the way to ask for longer is offered only when the date falls before the event.
+    const keptBlock = keptDate
+      ? `<p class="pub-fine${keptBefore ? ' bad' : ''}" data-kept-note>${live ? 'Online until' : 'Once live, online until'} <strong>${keptDay}</strong>.${keptBefore ? ' That is before your event.' : ''}${live || keptBefore ? keptContact : ''}</p>`
+      : '';
+    // Once live: how changes go live. Before going live the dialog stays short, because it is the page that asks for payment.
     // Straight after going live there is nothing to update yet, so the dialog only shows the link (and Close / Take offline).
     const justWentLive = live && session.success && !session.changing;
     const explainer = justWentLive ? (session.paidLive ? '<p class="pub-fine" data-edit-hint>Need to change something? Open <strong>My invitations</strong>, choose <strong>Edit</strong>, then <strong>Update live page</strong>.</p>' : '') : live
       ? '<p class="pub-fine">Changed something? Choose <strong>Update live page</strong>. <strong>Take offline</strong> stops the link.</p>'
-      : `<section class="pub-card pub-explain"><h3 class="pub-card-title">What happens next</h3><ul>
-          <li><strong>Private until you go live.</strong> Only you can see it now.</li>
-          <li><strong>Going live gives it a web link.</strong> Anyone with the link can open it.</li>
-          ${repliesLine}
-          <li><strong>You can change your mind.</strong> Update it or take it offline any time.</li>
-        </ul></section>`;
+      : '';
 
     // Draft preview link (docs/DRAFT_PREVIEW.md): the way to show family before going live. Once live it is only shown while a
     // link is still on, so it can be turned off.
     const preview = window.draftPreviewInfo(project);
-    const previewBlock = justWentLive || (live && !preview) ? '' : `<section class="pub-card pub-draft-preview" data-draft-preview-share>
-        <h3 class="pub-card-title">${ICON.eye} ${live ? 'Your draft preview link' : 'Not ready? Share a preview'}</h3>
+    const slimPreview = !live && !preview && !session.confirmStopPreview;
+    const previewBlock = justWentLive || (live && !preview) ? '' : slimPreview ? `<div class="pub-slim" data-draft-preview-share>
+        <span>${ICON.eye} Not ready? Friends can see a draft preview.</span>
+        <button class="btn small" type="button" data-preview-copy ${session.previewBusy ? 'disabled' : ''}>${ICON.link} Get preview link</button>
+      </div>` : `<section class="pub-card pub-draft-preview" data-draft-preview-share>
+        <h3 class="pub-card-title">${ICON.eye} Your draft preview link</h3>
         <p class="pub-sub">Friends see your latest draft, marked <strong>Draft preview</strong>. They cannot reply.</p>
         ${preview ? `<p class="pub-note ok" role="status">Sharing is on until ${escapeText(new Date(preview.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }))}.</p>` : ''}
         ${session.confirmStopPreview ? '<p class="pub-note" role="alert">Everyone with the link loses access. You can make a new one.</p>' : ''}
@@ -1310,28 +1308,20 @@
       </section>`;
     // Straight after paying, the one thing to do is go live: that card leads, and the sales copy (already paid for) is dropped.
     const paidReturn = !live && !paying && Boolean(session.paidReturn);
-    const benefits = live || paidReturn ? '' : `<section class="pub-benefits"><ul>
-        <li><span>${ICON.pencil}</span><div><strong>Keep editing anytime</strong><p>Update it even after it is live.</p></div></li>
-        ${paying || (session.price && session.price.mode === 'live') ? `<li><span>${ICON.layers}</span><div><strong>One-time payment</strong><p>${priceText ? `Pay ${escapeText(priceText)} once.` : 'Pay once.'} No subscription.</p></div></li>
-        <li><span>${ICON.shield}</span><div><strong>Secure and trusted</strong><p>Paid securely through Razorpay.</p></div></li>` : ''}
-      </ul></section>`;
     const submit = justWentLive ? '' : `<button class="btn dark pub-primary" type="button" data-publish-submit ${canPublish(project, session) ? '' : 'disabled'}>${paying && !session.busy ? ICON.card + ' ' : ''}${session.busy ? (paying || session.info ? 'Please wait…' : 'Going live…') : primary}</button>`;
     const showOrder = !live && !project.publishUnlocked && session.price;
     const orderCard = `<section class="pub-card pub-order">
         ${showOrder ? `<h3 class="pub-card-title">Your order</h3>
-        <div class="pub-line"><span>${escapeText(session.price.tierName)} publishing plan</span><span>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</span></div>
-        <div class="pub-total"><span>${session.price.mode === 'live' ? 'Total payable' : 'Total today'}</span><strong>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</strong></div>
-        <p class="pub-pill">${ICON.bolt} ${session.price.mode === 'live' ? 'One-time payment · No recurring charges' : 'Free during early access'}</p>` : `<h3 class="pub-card-title">${live ? 'Your live page' : paidReturn ? 'Your invitation is ready' : 'Ready to go live'}</h3>`}
+        <div class="pub-line"><span>${escapeText(session.price.tierName)} publishing plan</span><span>${session.price.mode === 'live' ? 'One-time' : 'Early access'}</span></div>
+        <div class="pub-total"><span>${session.price.mode === 'live' ? 'Total payable' : 'Total today'}</span><strong>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</strong></div>` : `<h3 class="pub-card-title">${live ? 'Your live page' : paidReturn ? 'Your invitation is ready' : 'Ready to go live'}</h3>`}
         ${priceNote}${keptBlock}${notSaved}${info}${checkAgain}${error}${success}
         <div class="pub-actions">${submit}
+          ${showOrder && session.price.mode === 'live' ? `<p class="pub-trust">${ICON.shield} Secure payment with Razorpay. No subscription.</p>` : ''}
           ${live && !session.changing ? '<button class="btn" type="button" data-share-card>Share card for WhatsApp</button>' : ''}
           ${live ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}
         </div>
       </section>`;
-    const stepsPay = paying || (session.price && session.price.mode === 'live')
-      ? `<li><span>${ICON.card}</span><div><strong>Pay once</strong><small>${priceText ? escapeText(priceText) + ' (one-time)' : 'One-time payment'}</small></div></li>`
-      : `<li><span>${ICON.card}</span><div><strong>Free for now</strong><small>Early access</small></div></li>`;
-    const steps = live || paidReturn ? '' : `<ol class="pub-steps" aria-label="How it works"><li><span>${ICON.lock}</span><div><strong>Private now</strong><small>Only you can see it</small></div></li><li class="pub-arrow" aria-hidden="true">›</li>${stepsPay}<li class="pub-arrow" aria-hidden="true">›</li><li><span>${ICON.link}</span><div><strong>Get a live link</strong><small>Share with your guests</small></div></li></ol>`;
+    const steps = '';
     const lead = live
       ? (session.paidLive ? 'Share your link with your guests.' : 'Share this link with your guests.')
       : paidReturn ? 'Last step: make it live to get your link.'
@@ -1346,7 +1336,7 @@
       ${steps}
       <div class="pub-grid${paidReturn ? ' pub-ready' : ''}">
         <div class="pub-main">${contactBlock}${promoBlock}${addressField}${changeWarning}${liveBlock}${explainer}${previewBlock}</div>
-        <aside class="pub-side">${paidReturn ? '' : designCard}${benefits}${orderCard}</aside>
+        <aside class="pub-side">${paidReturn ? '' : designCard}${orderCard}</aside>
       </div>
       <div class="pub-foot"><p>${ICON.help} <span><strong>Questions?</strong> <a href="/contact" target="_blank" rel="noopener">Contact us</a>.</span></p><button class="btn" type="button" data-publish-close>Close</button></div>
     </div>`);
