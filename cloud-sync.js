@@ -699,6 +699,15 @@
     if (typeof window.paintSetupStatus === 'function') window.paintSetupStatus();
     // Figma islands subscribe to save status; tell them whenever it may have changed.
     if (typeof window.notifyInviteStudioChange === 'function') window.notifyInviteStudioChange();
+    if (project && publishSession?.projectId === project.id) {
+      const note = document.querySelector('#modal-root [data-publish-save-status]');
+      const submit = document.querySelector('#modal-root [data-publish-submit]');
+      if (note) {
+        note.hidden = project.cloudStatus === 'saved';
+        note.textContent = note.hidden ? '' : window.cloudSaveLabel(project);
+      }
+      if (submit) submit.disabled = !canPublish(project, publishSession);
+    }
     const status = document.querySelector('.status');
     if (!status || !project || typeof window.cloudSaveLabel !== 'function') return;
     status.setAttribute('aria-label', window.cloudSaveLabel(project));
@@ -1214,9 +1223,8 @@
       : '';
     const error = session.error ? `<p class="pub-note bad" role="alert">${escapeText(session.error)}</p>` : '';
     const success = session.success && !session.paidLive ? '<p class="pub-note ok" role="status">Your invitation is live. Share the link below.</p>' : '';
-    const notSaved = project.cloudStatus !== 'saved'
-      ? '<p class="pub-note" role="status">Saving your latest changes. You can go live in a moment.</p>'
-      : '';
+    const saved = project.cloudStatus === 'saved';
+    const saveStatus = `<p class="pub-note" role="status" data-publish-save-status ${saved ? 'hidden' : ''}>${saved ? '' : escapeText(window.cloudSaveLabel(project))}</p>`;
     const info = session.info ? `<p class="pub-note ok" role="status" data-payment-info>${escapeText(session.info)}</p>` : '';
     const checkAgain = session.checkAgain ? '<button class="btn small" type="button" data-check-payment>Check again</button>' : '';
     const paying = needsPayment(project, session);
@@ -1254,16 +1262,14 @@
 
     // Your invitation link.
     const status = slugStatusText(project, session);
-    const suggestions = session.availability && !session.availability.available && session.availability.suggestions?.length
-      ? `<div class="pub-suggest" role="group" aria-label="Available alternatives"><span>Suggested alternatives</span><div>${session.availability.suggestions.map(sug => `<button class="pub-chip" type="button" data-use-suggestion="${escapeText(sug)}">${escapeText(sug)}</button>`).join('')}</div></div>`
-      : '';
     const addressField = live && !session.changing
       ? ''
       : `<section class="pub-card">
          <h3 class="pub-card-title">Your invitation link</h3>
          <label class="sr-only" for="publishSlug">Web address</label>
          <div class="pub-slug"><span class="pub-prefix">${escapeText(window.location.origin)}/s/</span><input id="publishSlug" type="text" value="${escapeText(session.typed)}" maxlength="60" autocomplete="off" spellcheck="false" aria-describedby="slug-status"></div>
-         <p id="slug-status" aria-live="polite" class="pub-status-pill" data-tone="${status.tone}">${escapeText(status.text)}</p>${suggestions}
+         <p id="slug-status" aria-live="polite" class="pub-status-pill" data-tone="${status.tone}">${escapeText(status.text)}</p>
+         <div class="pub-suggest" role="group" aria-label="Available alternatives" data-address-suggestions hidden><span>Suggested alternatives</span><div></div></div>
        </section>`;
     // How long the invitation stays online: the closing date, or an estimate before it is live (docs/RETENTION_PLAN.md).
     const kept = window.InviteRetentionLast && window.InviteRetentionLast.projectId === project.id ? window.InviteRetentionLast : null;
@@ -1321,7 +1327,7 @@
         ${showOrder ? `<h3 class="pub-card-title">Your order</h3>
         <div class="pub-line"><span>${escapeText(session.price.tierName)} publishing plan</span><span>${session.price.mode === 'live' ? 'One-time' : 'Early access'}</span></div>
         <div class="pub-total"><span>${session.price.mode === 'live' ? 'Total payable' : 'Total today'}</span><strong>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</strong></div>` : `<h3 class="pub-card-title">${live ? 'Your live page' : paidReturn ? 'Your invitation is ready' : 'Ready to go live'}</h3>`}
-        ${priceNote}${keptBlock}${notSaved}${info}${checkAgain}${error}${success}
+        ${priceNote}${keptBlock}${saveStatus}${info}${checkAgain}${error}${success}
         <div class="pub-actions">${submit}
           ${showOrder && session.price.mode === 'live' ? `<p class="pub-trust">${ICON.shield} Secure payment with Razorpay. No subscription.</p>` : ''}
           ${live && !session.changing ? '<button class="btn" type="button" data-share-card>Share card for WhatsApp</button>' : ''}
@@ -1348,6 +1354,7 @@
       <div class="pub-foot"><p>${ICON.help} <span><strong>Questions?</strong> <a href="/contact" target="_blank" rel="noopener">Contact us</a>.</span></p><button class="btn" type="button" data-publish-close>Close</button></div>
     </div>`);
     wirePublishDialog(project);
+    updateAddressSuggestions(document.querySelector('#modal-root'), session);
     ensureAddressChecked(project);
     loadPublishPrice(project);
   }
@@ -1398,12 +1405,6 @@
       publishSession.confirmed = event.target.checked;
       paintPublishDialog(project, {});
     });
-    root.querySelectorAll('[data-use-suggestion]').forEach(button => button.addEventListener('click', () => {
-      publishSession.typed = button.getAttribute('data-use-suggestion');
-      publishSession.availability = null;
-      paintPublishDialog(project, {});
-      checkAddressSoon(project);
-    }));
     [['#buyerName', 'name'], ['#buyerEmail', 'email'], ['#buyerPhone', 'phone']].forEach(([selector, key]) => {
       const field = root.querySelector(selector);
       field?.addEventListener('input', () => {
@@ -1419,6 +1420,13 @@
     root.querySelector('[data-promo]')?.addEventListener('toggle', event => { if (publishSession) publishSession.promoOpen = event.target.open; });
     root.querySelector('[data-promo-apply]')?.addEventListener('click', () => redeemPromo(project));
     const input = root.querySelector('#publishSlug');
+    root.querySelector('[data-address-suggestions]')?.addEventListener('click', event => {
+      const button = event.target.closest('[data-use-suggestion]');
+      if (!button) return;
+      input.value = button.dataset.useSuggestion;
+      input.focus();
+      input.dispatchEvent(new Event('input'));
+    });
     input?.addEventListener('input', () => {
       publishSession.typed = input.value.trim().toLowerCase();
       publishSession.availability = null;
@@ -1442,7 +1450,17 @@
     if (contactLine) contactLine.textContent = contactHint(publishSession);
     const button = root?.querySelector('[data-publish-submit]');
     if (button) button.disabled = !canPublish(project, publishSession);
-    root?.querySelectorAll('[data-use-suggestion]').forEach(element => element.remove());
+    updateAddressSuggestions(root, publishSession);
+  }
+
+  function updateAddressSuggestions(root, session) {
+    const group = root?.querySelector('[data-address-suggestions]');
+    if (!group) return;
+    const suggestions = session.availability?.available === false ? session.availability.suggestions || [] : [];
+    const buttons = group.querySelector('div');
+    const markup = suggestions.map(slug => `<button class="pub-chip" type="button" data-use-suggestion="${escapeText(slug)}">${escapeText(slug)}</button>`).join('');
+    if (buttons.innerHTML !== markup) buttons.innerHTML = markup;
+    group.hidden = !suggestions.length;
   }
 
   function checkAddressSoon(project) {
@@ -1473,7 +1491,7 @@
         }
       } finally {
         if (publishSession === session) session.checking = false;
-        if (publishSession === session && session.typed === typed) paintPublishDialog(project, {});
+        if (publishSession === session && session.typed === typed) updateDialogWithoutRepaint(project);
       }
     }, 350);
   }
@@ -1517,7 +1535,7 @@
       session.price = false;
     }
     session.priceLoading = false;
-    if (publishSession === session) paintPublishDialog(project, {});
+    if (publishSession === session && !isLive(project) && !session.goingLive) paintPublishDialog(project, {});
   }
 
   // Whether this dialog's main button takes a payment: the server has said so, or payments are live and this website is not unlocked.

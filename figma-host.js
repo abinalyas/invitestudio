@@ -256,17 +256,24 @@
   }
 
   // Draws `draw()` once the design is available. Designs load on demand, so a screen that is switched quickly keeps only its latest request.
-  function withTemplate(host, container, t, draw) {
+  function withTemplate(host, container, t, draw, poster) {
     const loader = window.InviteTemplates;
     const token = (container.__drawToken = (container.__drawToken || 0) + 1);
     const run = () => { if (container.__drawToken !== token) return; useTemplateCss(host, t); draw(); };
     if (!loader || loader.ready(t)) { run(); return; }
     container.innerHTML = '<div class="tpl-loading" role="status">Loading design…</div>';
+    if (poster) {
+      const preview = document.createElement('img');
+      preview.src = poster;
+      preview.alt = '';
+      preview.className = 'tpl-loading-poster';
+      container.firstElementChild.prepend(preview);
+    }
     loader.need(t).then(run, () => {
       if (container.__drawToken !== token) return;
       container.innerHTML = '<div class="tpl-loading" role="alert">We could not load this design. <button class="pv-btn small" type="button" data-retry-design>Try again</button></div>';
       const button = container.querySelector('[data-retry-design]');
-      if (button) button.addEventListener('click', () => withTemplate(host, container, t, draw));
+      if (button) button.addEventListener('click', () => withTemplate(host, container, t, draw, poster));
     });
   }
 
@@ -1175,7 +1182,7 @@
 
     // The real template with example content, in the existing preview dialog.
     // The whole design with example names and content, for the template page's phone preview. Nothing is saved.
-    renderTemplateDemo(host, backendTemplateId) {
+    renderTemplateDemo(host, backendTemplateId, poster) {
       const t = tpl(offeredTemplateIds.includes(backendTemplateId) ? backendTemplateId : offeredTemplateIds[0]);
       const container = invitationShadow(host);
       container.style.width = '100%';
@@ -1184,7 +1191,7 @@
       withTemplate(host, container, t, () => {
         container.innerHTML = sitePreview(templateDemoProject(t), t, false, { intro: 'wait', sound: true, showcase: true });
         if (window.hydratePackagedTemplates) window.hydratePackagedTemplates(container);
-      });
+      }, poster);
     },
 
     // ---- Setup wizard (figma/islands/Setup.tsx) ----

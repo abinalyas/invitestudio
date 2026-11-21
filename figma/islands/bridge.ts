@@ -196,6 +196,7 @@ export interface InviteStudioBridge {
   contactLinks(topic: "extend" | "restore" | "custom" | "general", address?: string): ContactLinks;
   mediaLoad(): Promise<void>;
   mediaUpload(files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void, slot?: string): Promise<UploadResult>;
+  mediaReplace(id: string, file: File, onProgress?: (progress: { index: number; total: number; name: string }) => void): Promise<UploadResult>;
   mediaAlt(id: string, alt: string): Promise<void>;
   mediaMove(id: string, delta: number): Promise<void>;
   mediaRemove(id: string): Promise<void>;
@@ -218,7 +219,7 @@ export interface InviteStudioBridge {
   setupStatus(): SetupStatus;
   keepLocal(): void;
   finishSetup(): void;
-  renderTemplateDemo(host: HTMLElement, backendTemplateId: string): void;
+  renderTemplateDemo(host: HTMLElement, backendTemplateId: string, poster?: string): void;
   openPublish(): void;
   openShareCard(): void;
   openLegacyTemplates(): void;
@@ -262,6 +263,7 @@ export const bridge = {
   contactLinks: (topic: "extend" | "restore" | "custom" | "general", address?: string) => host().contactLinks(topic, address),
   mediaLoad: () => host().mediaLoad(),
   mediaUpload: (files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void, slot?: string) => host().mediaUpload(files, onProgress, slot),
+  mediaReplace: (id: string, file: File, onProgress?: (progress: { index: number; total: number; name: string }) => void) => host().mediaReplace(id, file, onProgress),
   mediaAlt: (id: string, alt: string) => host().mediaAlt(id, alt),
   mediaMove: (id: string, delta: number) => host().mediaMove(id, delta),
   mediaRemove: (id: string) => host().mediaRemove(id),
@@ -284,7 +286,7 @@ export const bridge = {
   setupStatus: () => host().setupStatus(),
   keepLocal: () => host().keepLocal(),
   finishSetup: () => host().finishSetup(),
-  renderTemplateDemo: (element: HTMLElement, backendTemplateId: string) => host().renderTemplateDemo(element, backendTemplateId),
+  renderTemplateDemo: (element: HTMLElement, backendTemplateId: string, poster?: string) => host().renderTemplateDemo(element, backendTemplateId, poster),
   openPublish: () => host().openPublish(),
   openShareCard: () => host().openShareCard(),
   openLegacyTemplates: () => host().openLegacyTemplates(),

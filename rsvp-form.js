@@ -39,7 +39,7 @@
     ".rsvp-in-device .rsvp-card{max-width:none;border-radius:16px 16px 0 0;padding:22px 18px 24px}"
   ].join("");
 
-  var lastFocus = null, overlay = null;
+  var lastFocus = null, overlay = null, replyTimer = 0, openRequest = 0;
 
   function el(tag, attrs, children) {
     var node = document.createElement(tag);
@@ -76,7 +76,7 @@
     if (!items.length) return;
     var first = items[0], last = items[items.length - 1];
     var root = overlay.getRootNode(), active = (root && root.activeElement) || document.activeElement;
-    if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+    if (e.shiftKey && (active === first || active === overlay.querySelector("#rsvp-title"))) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
   }
 
@@ -116,8 +116,7 @@
     } else document.body.appendChild(overlay);
     document.addEventListener("keydown", onKey, true);
     form(card, config, slug, existing);
-    var focusTarget = card.querySelector("input[type=text]") || card.querySelector("button");
-    if (focusTarget) focusTarget.focus();
+    card.querySelector("#rsvp-title").focus({ preventScroll: true });
     return live;
   }
 
@@ -126,7 +125,7 @@
     var reply = existing ? existing.reply : null;
     var live = Boolean(slug), events = config.events || [], counted = config.mode === "count";
     card.textContent = "";
-    card.appendChild(el("h2", { id: "rsvp-title", text: token ? "Change your reply" : "Will you join us?" }));
+    card.appendChild(el("h2", { id: "rsvp-title", tabindex: "-1", text: token ? "Change your reply" : "Will you join us?" }));
     card.appendChild(el("p", { class: "rsvp-sub", text: "Only the couple can see your reply." }));
     // On a draft preview link (/draft) the reader is not the couple, so the note speaks about them.
     if (!live) card.appendChild(el("p", { class: "rsvp-banner", text: /^\/draft\/?$/.test(location.pathname)
@@ -261,18 +260,19 @@
     done.focus();
   }
 
-  function begin(button, path) {
+  function begin(button, path, replyToken) {
     var config; try { config = JSON.parse(button.getAttribute("data-rsvp-config") || "{}"); } catch (e) { return; }
     if (!config || (config.mode !== "count" && config.mode !== "rsvp")) return;
     config.maxParty = Number.isInteger(config.maxParty) ? config.maxParty : 10;
     var slug = liveSlug(path);
     var mount = slug ? null : deviceMount(path);
     lastFocus = button;
-    var token = slug ? remembered(slug) : "";
+    var token = slug ? (replyToken || remembered(slug)) : "";
+    var request = ++openRequest;
     if (slug && token && window.inviteStudioApi) {
       window.inviteStudioApi.getRsvp(slug, token).then(function (res) {
-        open(config, slug, { token: token, reply: res.reply }, mount);
-      }, function () { open(config, slug, null, mount); });
+        if (request === openRequest) open(config, slug, { token: token, reply: res.reply }, mount);
+      }, function () { if (request === openRequest) open(config, slug, null, mount); });
     } else open(config, slug, null, mount);
   }
 
@@ -285,15 +285,26 @@
   });
 
   // A guest arriving by their private link: remember it, take it out of the address bar, and open their reply.
-  var linkMatch = /^#reply=([A-Za-z0-9_-]{43})$/.exec(location.hash || "");
-  var linkSlug = /^\/s\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/.exec(location.pathname);
-  if (linkMatch && linkSlug) {
+  function openReplyLink() {
+    var linkMatch = /^#reply=([A-Za-z0-9_-]{43})$/.exec(location.hash || "");
+    var linkSlug = /^\/s\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/.exec(location.pathname);
+    if (!linkMatch || !linkSlug) return;
+    window.clearInterval(replyTimer);
     remember(linkSlug[1], linkMatch[1]);
-    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* keep the fragment */ }
-    var tries = 0, timer = window.setInterval(function () {
-      var button = document.querySelector("[data-public-invitation] [data-rsvp-open]");
-      if (button) { window.clearInterval(timer); begin(button, [button, document.querySelector("[data-public-invitation]")]); }
-      else if (++tries > 40) window.clearInterval(timer);
+    try { history.replaceState(history.state, "", location.pathname + location.search); } catch (e) { /* keep the fragment */ }
+    function tryOpen() {
+      var invitation = document.querySelector("[data-public-invitation]");
+      var button = invitation && invitation.querySelector("[data-rsvp-open]");
+      if (!button) return false;
+      begin(button, [button, invitation], linkMatch[1]);
+      return true;
+    }
+    if (tryOpen()) return;
+    var tries = 0;
+    replyTimer = window.setInterval(function () {
+      if (tryOpen() || ++tries > 40) window.clearInterval(replyTimer);
     }, 400);
   }
+  window.addEventListener("hashchange", openReplyLink);
+  openReplyLink();
 })();

@@ -258,6 +258,12 @@ test('a payment id in the address that matches nothing on this device is not tru
 
 test('the details form: the email must look right, the phone is optional, there is no reminders tick, and what was typed is kept', async ({ page }) => {
   const server = await draftWithServer(page, { paidOnReturn: false });
+  let finishAddressCheck;
+  const addressCheck = new Promise(resolve => { finishAddressCheck = resolve; });
+  await page.route('**/slug-availability?*', async route => {
+    await addressCheck;
+    await route.fallback();
+  });
   const dialog = await openShare(page);
   const pay = dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' });
   await expect(pay).toBeDisabled({ timeout: 15000 });
@@ -270,6 +276,9 @@ test('the details form: the email must look right, the phone is optional, there 
   await expect(dialog.locator('#contact-status')).toHaveText('Enter your name.', { timeout: 2000 });   // once started, it stays
   await dialog.getByLabel('Your name').fill('Mira Nair');
   await expect(dialog.locator('#contact-status')).toHaveText('Enter a valid email address.');
+  finishAddressCheck();
+  await expect(dialog.locator('#slug-status')).toHaveText('This address is available.');
+  await expect(dialog.getByLabel('Your name')).toBeFocused();
   await dialog.getByLabel('Email').fill('mira@example');
   await expect(pay).toBeDisabled();
   await dialog.getByLabel('Email').fill('mira@example.com');

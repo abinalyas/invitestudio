@@ -81,11 +81,26 @@ test('create, edit, save, publish, share, edit after publishing, and take offlin
   expect(guestHtml).not.toMatch(/invitestudio-edit-tokens/);
   await guest.close();
 
-  // 7. Edit after publishing: the public page keeps its address and shows the change.
+  // 7. Open Share while the edit is saving. The same dialog should become usable once the save returns.
+  await page.locator('#modal-root').getByRole('button', { name: 'Dismiss' }).click();
+  const weddingId = (await savedStatus(page, title)).cloudId;
+  let releaseSave;
+  const waitForRelease = new Promise(resolve => { releaseSave = resolve; });
+  await page.route(`**/api/weddings/${weddingId}`, async route => {
+    if (route.request().method() === 'PATCH') await waitForRelease;
+    await route.continue();
+  });
   await page.evaluate(() => {
     current().title = current().title + ' (updated)';
     save();
+    openPublish();
   });
+  const update = page.getByRole('button', { name: 'Update live page' });
+  await expect(update).toBeDisabled();
+  releaseSave();
+  await expect(update).toBeEnabled({ timeout: 15000 });
+  await expect(page.locator('[data-publish-save-status]')).toBeHidden();
+  await update.click();
   const updatedTitle = `${title} (updated)`;
   await expect.poll(async () => (await savedStatus(page, updatedTitle))?.cloudStatus, { timeout: 20000 }).toBe('saved');
   const { Client } = require('pg');
@@ -103,7 +118,6 @@ test('create, edit, save, publish, share, edit after publishing, and take offlin
   await after.close();
 
   // 8. Take the invitation offline: the public address stops working.
-  await page.evaluate(() => openPublish());
   await page.getByRole('button', { name: 'Take offline' }).click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Take offline' }).click();
   await expect(page.locator('#modal-root')).toContainText(/Publish your invitation|Share your invitation/i, { timeout: 15000 });

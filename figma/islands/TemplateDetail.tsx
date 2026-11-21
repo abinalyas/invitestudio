@@ -1,7 +1,7 @@
 // Template detail screen. Everything shown comes from galleryTemplates in shared.tsx, so the page
 // only claims what the template and the editor really do.
 import { useEffect, useRef, useState } from "react";
-import { Icon, Logo, editableItems, galleryTemplates, guestSections } from "./shared";
+import { Icon, Logo, editableItems, galleryTemplates, guestSections, phoneSmall } from "./shared";
 import { bridge } from "./bridge"
 import { CustomDesignCard, MyProjectsLink } from "./extras"
 import { formatMoney, tierOf, usePricing } from "./pricing";
@@ -26,7 +26,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
   // The real template, with example names and content, inside the phone. It stays beside the details.
   useEffect(() => {
     if (!screenRef.current) return
-    bridge.renderTemplateDemo(screenRef.current, template.backendId)
+    bridge.renderTemplateDemo(screenRef.current, template.backendId, phoneSmall(template.phone))
     screenRef.current.scrollTop = 0
     updateCue()
     const timer = window.setTimeout(updateCue, 500)
@@ -52,7 +52,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
     let tries = 0
     poll = window.setInterval(() => { tryStart(); if (started || ++tries > 40) window.clearInterval(poll) }, 250)
     return () => { window.clearTimeout(timer); window.clearInterval(poll); observer?.disconnect(); node.removeEventListener("intro-done", updateCue) }
-  }, [template.backendId])
+  }, [template.backendId, template.phone])
 
   return (
     <main className="detail-page">
@@ -163,7 +163,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
       <div className="detail-sticky">
         <span>
           <strong>{template.title}</strong>
-          {tier && pricing ? <small>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)} · one-time</small> : <small>Free to try</small>}
+          {tier && pricing ? <small>{tier.name} plan · {pricing.mode === "early-access" ? "Free during early access" : `${formatMoney(tier.amountMinor, pricing.currency, pricing.locale)} one-time`}</small> : <small>Free to try</small>}
         </span>
         <button className="button" type="button" onClick={() => bridge.startSetup(template.backendId)}>
           Start with this design

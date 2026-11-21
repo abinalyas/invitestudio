@@ -3,11 +3,11 @@
 const { test, expect } = require('@playwright/test');
 const { randomUUID } = require('node:crypto');
 
-async function createPublished(request, { title, slug }) {
+async function createPublished(request, { title, slug, templateId = 'eternal' }) {
   const created = await request.post('/api/weddings', {
     headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `page-${randomUUID()}` },
     data: {
-      templateId: 'eternal',
+      templateId,
       title,
       date: '2027-01-20',
       location: 'Kochi',
@@ -45,6 +45,38 @@ test('a published invitation renders read-only, without tokens or hidden events'
   // Editing and preview-only controls do not belong on the public page.
   await expect(page.locator('.editor-panel')).toHaveCount(0);
   await expect(page.getByText(/preview only/i)).toHaveCount(0);
+});
+
+test('a guest can open a reply link in the invitation tab and from a fresh browser', async ({ page, request, browser }) => {
+  const slug = `reply-${randomUUID().slice(0, 8)}`;
+  await createPublished(request, { title: 'Daniel & Amelia', slug, templateId: 'bloom-reveal' });
+  const response = await request.post(`/api/public-weddings/${slug}/rsvp`, {
+    data: { name: 'Test Guest', attending: true, party: 1 }
+  });
+  expect(response.status()).toBe(201);
+  const { changeToken } = await response.json();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(`/s/${slug}`);
+  const reply = page.locator('[data-public-invitation] [data-rsvp-open]');
+  await reply.click();
+  await expect(page.getByRole('heading', { name: 'Will you join us?' })).toBeFocused();
+  await page.getByRole('button', { name: 'Cancel' }).click();
+
+  await page.evaluate(token => { location.hash = `reply=${token}`; }, changeToken);
+  await expect(page.getByRole('heading', { name: 'Change your reply' })).toBeFocused();
+  await expect(page.getByLabel('Your name')).toHaveValue('Test Guest');
+  await expect.poll(() => new URL(page.url()).hash).toBe('');
+
+  const fresh = await browser.newPage({ reducedMotion: 'reduce' });
+  const freshUrl = new URL(page.url());
+  freshUrl.hash = `reply=${changeToken}`;
+  await fresh.goto(freshUrl.href);
+  await expect(fresh.getByRole('heading', { name: 'Change your reply' })).toBeFocused();
+  await expect(fresh.getByLabel('Your name')).toHaveValue('Test Guest');
+  await expect.poll(() => new URL(fresh.url()).hash).toBe('');
+  await fresh.close();
 });
 
 test('an invitation that does not exist shows a clear not-available message', async ({ page }) => {
