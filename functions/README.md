@@ -151,6 +151,9 @@ Configure these as Cloudflare Pages environment variables/secrets:
 - `RETENTION_SWEEP_TOKEN` — an encrypted secret (at least 32 random characters) that protects the cleanup address
   `POST /api/internal/retention-sweep`. Until it is set, that address does nothing. At this step it only **reports** (a dry
   run); see `docs/RETENTION_PLAN.md`.
+  The same secret protects `POST /api/internal/retention-delete-drafts`, which deletes idle drafts but only when the
+  database switch `retention_settings.draft_deletion_enabled` is on (it starts off) and the body confirms it. Add the secret
+  to GitHub repository secrets too, together with `RETENTION_SWEEP_URL` (the site address), for the daily workflow.
 - `MEDIA_PUBLIC_URL` — optional. An `https://` media address connected to the bucket (for example
   `https://media.example.com`). When unset, photos are served from this site's own `/media/` address. When set, add the
   address to `img-src` in `_headers` and `functions/_shared/security.js` as well.

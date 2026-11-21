@@ -1,0 +1,62 @@
+name: InviteStudio daily cleanup
+
+# Runs the cleanup described in docs/RETENTION_PLAN.md once a day (Cloudflare Pages cannot run scheduled code itself).
+#   1. the report: what would be hidden or deleted (changes nothing);
+#   2. idle drafts: deletes never-published drafts past their end date plus the grace period, but ONLY if
+#      retention_settings.draft_deletion_enabled has been switched on in the database (it starts off). With it off this
+#      step reports and deletes nothing. A run that would delete more than the safety brake allows stops and warns.
+# It needs two repository secrets: RETENTION_SWEEP_TOKEN (the same value as in Cloudflare) and RETENTION_SWEEP_URL (the
+# site address, for example https://invitestudio.example.com, with no trailing slash). Without them it skips quietly.
+# Run it by hand from the Actions tab (Run workflow) to see the report straight away.
+
+on:
+  schedule:
+    - cron: '47 21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: retention-sweep
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Report, then delete idle drafts (if switched on)
+        env:
+          TOKEN: ${{ secrets.RETENTION_SWEEP_TOKEN }}
+          SITE: ${{ secrets.RETENTION_SWEEP_URL }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$SITE" ]; then
+            echo "::notice::RETENTION_SWEEP_TOKEN or RETENTION_SWEEP_URL is not set; skipping the cleanup."
+            exit 0
+          fi
+          SITE="${SITE%/}"
+
+          echo "== Report (changes nothing) =="
+          curl -sS --fail-with-body -X POST "$SITE/api/internal/retention-sweep" \
+            -H "Authorization: Bearer $TOKEN" -o report.json || { cat report.json; exit 1; }
+          jq '{asOf, totals, drafts: .totals.drafts}' report.json
+
+          echo "== Idle drafts =="
+          curl -sS --fail-with-body -X POST "$SITE/api/internal/retention-delete-drafts" \
+            -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+            -d '{"confirm":"delete-idle-drafts"}' -o drafts.json || { cat drafts.json; exit 1; }
+          jq '{enabled, braked, asOf, eligible, deleted, skipped, errors, mediaFailed}' drafts.json
+
+          if [ "$(jq -r '.enabled' drafts.json)" != "true" ]; then
+            echo "::notice::Draft deletion is switched off (retention_settings.draft_deletion_enabled). Nothing was deleted."
+          fi
+          if [ "$(jq -r '.braked' drafts.json)" = "true" ]; then
+            echo "::warning::Safety brake: $(jq -r '.wouldDelete' drafts.json) drafts were due, more than the limit of $(jq -r '.brakeLimit' drafts.json). Nothing was deleted. Check the report, then raise brake_limit or delete by hand."
+          fi
+          if [ "$(jq -r '.mediaFailed | length' drafts.json)" != "0" ]; then
+            echo "::warning::Photos could not be removed for: $(jq -r '.mediaFailed | join(", ")' drafts.json). The drafts are deleted; remove w/<id>/ from the media bucket."
+          fi
+          if [ "$(jq -r '.errors' drafts.json)" != "0" ]; then
+            echo "::warning::$(jq -r '.errors' drafts.json) drafts could not be processed. See the Cloudflare logs."
+          fi
