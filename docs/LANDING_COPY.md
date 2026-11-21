@@ -118,6 +118,6 @@ Keep the existing questions and add:
 - **Social proof:** see below.
 - **"See a live example" button:** needs a published demo invitation first.
 
-## Launch blocker: placeholder testimonials
+## Placeholder testimonials: kept by decision
 
-`figma/islands/shared.tsx` still holds three **dummy testimonials** (Priya & Arjun, Anjali & Rahul, Meera & Abin), marked "DUMMY PLACEHOLDERS ... replace before launch". They currently render on the home page. Remove them, or replace them with real quotes with written permission, before announcing. An empty list hides the section.
+`figma/islands/shared.tsx` holds three dummy testimonials (Priya & Arjun, Anjali & Rahul, Meera & Abin), marked "DUMMY PLACEHOLDERS ... replace before launch". The product owner decided to proceed with them as they are. They are still not real quotes, so the section says "From couples we have made websites for", which is not true of them. Replace them with real, permitted quotes as soon as we have any; an empty list hides the section.
