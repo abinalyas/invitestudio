@@ -130,6 +130,9 @@ export interface RetentionInfo {
   estimatedEndsOn?: string | null;
   estimateBeforeEvent?: boolean;
   closed?: boolean;
+  /** A website that was never published: it ends after a stretch with no changes (draftIdleDays), and a change moves it out. */
+  draft?: boolean;
+  draftIdleDays?: number;
 }
 
 export interface ContactLinks {

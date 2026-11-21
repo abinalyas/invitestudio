@@ -665,6 +665,34 @@ test.describe('guest replies', () => {
     await expect(page.locator('[data-retention="before-event"]')).toContainText('before your event on 20 July 2027');
   });
 
+  const draftInfo = over => keepInfo({ draft: true, draftIdleDays: 30, warnDays: 7, source: 'draft_idle', endsOn: '2027-02-09', deleteOn: '2027-02-23', daysLeft: 39, endsBeforeEvent: false, ...over });
+
+  test('retention: a draft far from its removal date gets one quiet line saying drafts are removed after 30 days', async ({ page }) => {
+    await openSavedDraft(page, { retention: draftInfo({}) });
+    const notice = page.locator('[data-retention="draft-quiet"]');
+    await expect(notice).toContainText('Drafts are removed after 30 days without a change');
+    await expect(notice).toContainText('kept until 9 February 2027');
+  });
+
+  test('retention: in the last 7 days a draft is warned that it will be removed, and told a change keeps it', async ({ page }) => {
+    await openSavedDraft(page, { retention: draftInfo({ daysLeft: 5 }) });
+    const notice = page.locator('[data-retention="draft-soon"]');
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText('This draft will be removed on 9 February 2027');
+    await expect(notice).toContainText('in 5 days');
+    await expect(notice).toContainText('Make any change to keep it');
+    await expect(page.locator('[data-retention="soon"]')).toHaveCount(0);
+  });
+
+  test('retention: an expired draft says when it is deleted for good and that a change keeps it', async ({ page }) => {
+    await openSavedDraft(page, { retention: draftInfo({ stage: 'hidden', daysLeft: -3 }) });
+    const notice = page.locator('[data-retention="draft-expired"]');
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText('This draft expired on 9 February 2027');
+    await expect(notice).toContainText('deleted for good on 23 February 2027');
+    await expect(page.locator('[data-retention="closed"]')).toHaveCount(0);
+  });
+
   test('retention: before the migration is run, or without a clock, there is no notice and no error', async ({ page }) => {
     await openSavedDraft(page, { retention: { available: false } });
     await page.waitForTimeout(800);

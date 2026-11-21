@@ -30,6 +30,7 @@ const endsOn = async id => iso((await client.query(`select wedding_ends_on(w) as
 test('migrations apply from scratch and the settings start with the decided numbers', async () => {
   const s = (await client.query('select * from retention_settings')).rows[0];
   assert.deepEqual([s.no_date_months, s.grace_days, s.warn_days, s.slug_hold_months], [4, 14, 14, 6]);
+  assert.deepEqual([s.draft_idle_days, s.draft_warn_days], [30, 7], 'drafts: removed after 30 days without a change, warned 7 days before');
   const t = (await client.query(`select retention_months, max_months_from_publish, tier from templates where id = 'eternal'`)).rows[0];
   assert.deepEqual([t.retention_months, t.max_months_from_publish, t.tier], [2, 8, 'standard']);
 });
@@ -60,13 +61,46 @@ test('a badly written date in an event is ignored, not an error', async () => {
   assert.equal(await endsOn(id), '2027-08-15');
 });
 
-test('no event date: 4 months after the last change; with a date but never published: no clock', async () => {
-  const id = await add({ updated: '2027-01-10' });
-  assert.equal(await endsOn(id), '2027-05-10');
+test('published with no event date: 4 months after the last change', async () => {
   const published = await add({ status: 'published', published: '2027-01-01', updated: '2027-01-20' });
   assert.equal(await endsOn(published), '2027-05-20');
-  const dated = await add({ date: '2027-06-15' });
-  assert.equal(await endsOn(dated), null);
+});
+
+test('a draft that was never published ends 30 days after its last change, with or without an event date', async () => {
+  const noDate = await add({ updated: '2027-01-10' });
+  assert.equal(await endsOn(noDate), '2027-02-09');
+  const dated = await add({ date: '2027-06-15', updated: '2027-01-10' });
+  assert.equal(await endsOn(dated), '2027-02-09', 'an event date does not keep an unpublished draft alive');
+  const kept = await add({ updated: '2027-01-10', keepUntil: '2028-01-01' });
+  assert.equal(await endsOn(kept), '2028-01-01', 'keep_until still wins');
+});
+
+test('a change moves a draft\'s end date out; a date the couple was shown is never brought forward', async () => {
+  const id = await add({ updated: '2027-01-10' });
+  assert.equal((await shown(id, '2027-01-12')).endsOn, '2027-02-09');
+  const touch = day => client.query(`alter table weddings disable trigger weddings_set_updated_at`)
+    .then(() => client.query(`update weddings set updated_at = $2 where id = $1`, [id, `${day}T10:00:00Z`]))
+    .then(() => client.query(`alter table weddings enable trigger weddings_set_updated_at`));
+  await touch('2027-01-25');
+  assert.equal(await endsOn(id), '2027-02-24', 'edited later, so it ends later');
+  assert.equal((await shown(id, '2027-01-26')).endsOn, '2027-02-24', 'and that is the date the couple is now shown');
+  await touch('2027-01-10');
+  assert.equal(await endsOn(id), '2027-02-24', 'the later date was shown, so it is not brought forward');
+});
+
+test('publishing a draft switches it to the published rule', async () => {
+  const id = await add({ date: '2027-06-15', updated: '2027-01-10' });
+  assert.equal((await shown(id, '2027-01-12')).draft, true);
+  await client.query(`update weddings set status = 'published', visibility = 'public', published_at = '2027-02-01T10:00:00Z' where id = $1`, [id]);
+  const r = await shown(id, '2027-02-02');
+  assert.deepEqual([r.draft, r.endsOn, r.source], [false, '2027-08-15', 'event']);
+});
+
+test('the draft numbers are settings: changing the idle days changes new drafts', async () => {
+  await client.query('update retention_settings set draft_idle_days = 10');
+  try {
+    assert.equal(await endsOn(await add({ updated: '2027-01-10' })), '2027-01-20');
+  } finally { await client.query('update retention_settings set draft_idle_days = 30'); }
 });
 
 test('keep_until always wins, earlier or later; the floor is never undercut', async () => {
@@ -109,24 +143,30 @@ test('the preview reports stages and counts, and changes nothing', async () => {
   const hidden = await add({ date: '2027-06-15', status: 'published', published: '2027-04-01' });
   const gone = await add({ date: '2027-01-15', status: 'published', published: '2026-12-01' });         // ends 2027-03-15
   const wasHidden = await add({ date: '2027-01-15', status: 'unpublished', published: '2026-12-01' });
-  const none = await add({ date: '2027-06-15' });
+  const none = await add({ date: '2027-06-15', updated: '2027-03-01' });                              // a draft: ends 2027-03-31
   const before = (await client.query('select id, version, status, updated_at from weddings order by id')).rows;
 
   const result = async (today, limit = 200) => (await client.query('select retention_preview($1::date, $2) as r', [today, limit])).rows[0].r;
   const early = await result('2027-03-20');
   assert.equal(early.totals.websites, 5);
-  assert.deepEqual([early.totals.noClock, early.totals.hidden, early.totals.deleteDue], [1, 2, 0], 'two ended on 15 March, inside the grace period');
+  assert.deepEqual([early.totals.noClock, early.totals.hidden, early.totals.deleteDue], [0, 2, 0], 'two ended on 15 March, inside the grace period');
+  assert.equal(early.totals.keep, 3, 'the two websites still running, and the draft still inside its 30 days');
   assert.equal(early.totals.wouldHide, 1, 'only the one still public would be closed');
   assert.equal(early.totals.wouldDelete, 0);
 
   const late = await result('2027-04-05');
   assert.equal(late.totals.deleteDue, 2, 'grace over (15 March + 14 days)');
   assert.equal(late.totals.wouldDelete, 2);
-  assert.equal(late.due.length, 2);
-  assert.deepEqual(Object.keys(late.due[0]).sort(), ['deleteOn', 'endsOn', 'id', 'stage', 'wouldDelete', 'wouldHide']);
+  assert.equal(late.due.length, 3, 'the two ended websites and the draft that ended on 31 March');
+  assert.deepEqual(Object.keys(late.due[0]).sort(), ['deleteOn', 'draft', 'endsOn', 'id', 'stage', 'wouldDelete', 'wouldHide']);
   assert.equal(JSON.stringify(late).includes('Test'), false, 'no titles or names');
   assert.equal((await result('2027-04-05', 1)).due.length, 1, 'the list is limited, the totals are not');
   assert.equal((await result('2027-04-05', 1)).totals.deleteDue, 2);
+
+  const draftsWarn = await result('2027-03-26');
+  assert.deepEqual(draftsWarn.totals.drafts, { total: 1, endingWithinWarning: 1, inGrace: 0, wouldDelete: 0 }, 'the draft is inside its 7-day warning');
+  assert.deepEqual(late.totals.drafts, { total: 1, endingWithinWarning: 0, inGrace: 1, wouldDelete: 0 }, 'ended 31 March: inside the 14-day grace');
+  assert.deepEqual((await result('2027-04-20')).totals.drafts, { total: 1, endingWithinWarning: 0, inGrace: 0, wouldDelete: 1 });
 
   const warning = await result('2027-08-10');
   assert.equal(warning.totals.endingWithinWarning, 2, 'the two that end on 15 August are inside the 14-day warning');
@@ -185,16 +225,17 @@ test('the editor is told when the website ends, how long is left, and why', asyn
   assert.deepEqual([e.endsOn, e.source, e.endsBeforeEvent, e.lastEventDate], ['2027-04-15', 'cap', true, '2027-06-15']);
 
   const noDate = await add({ updated: '2027-01-10' });
-  assert.deepEqual([(await shown(noDate)).source, (await shown(noDate)).endsOn], ['no_date', '2027-05-10']);
+  assert.deepEqual([(await shown(noDate)).source, (await shown(noDate)).endsOn], ['draft_idle', '2027-02-09']);
+  assert.equal((await shown(noDate)).estimatedEndsOn, '2027-05-01', 'published today, with no event date, it would stay online 4 months');
 
   const extended = await add({ date: '2027-06-15', status: 'published', published: '2027-04-01', keepUntil: '2029-01-01' });
   assert.deepEqual([(await shown(extended)).source, (await shown(extended)).endsOn], ['keep_until', '2029-01-01']);
 
-  const draft = await add({ date: '2027-06-15' });
+  const draft = await add({ date: '2027-06-15', updated: '2027-01-10' });
   const d = await shown(draft);
-  assert.deepEqual([d.hasClock, d.endsOn, d.stage, d.daysLeft], [false, null, 'no_clock', null]);
+  assert.deepEqual([d.hasClock, d.endsOn, d.stage, d.daysLeft, d.draft, d.warnDays, d.endsBeforeEvent], [true, '2027-02-09', 'keep', 39, true, 7, false], 'a draft has its own 30-day clock and 7-day warning');
   assert.deepEqual([d.estimatedEndsOn, d.estimateBeforeEvent], ['2027-08-15', false], 'an estimate for the publish screen: 2 months after the event');
-  const farAhead = await shown(await add({ date: '2027-12-15' }), '2027-01-01');
+  const farAhead = await shown(await add({ date: '2027-12-15', updated: '2027-01-10' }), '2027-01-01');
   assert.deepEqual([farAhead.estimatedEndsOn, farAhead.estimateBeforeEvent], ['2027-09-01', true], 'published today it would close before an event this far away');
   assert.equal((await shown(normal, '2027-08-05')).estimatedEndsOn, null, 'a published website has no estimate');
   assert.equal(await shown('00000000-0000-4000-8000-000000000000'), null, 'an unknown website gives nothing');

@@ -143,6 +143,51 @@ function RetentionNotice({ snap }: { snap: EditorSnapshot }) {
   };
   const canDownload = snap.rsvp === "count" || snap.rsvp === "rsvp";
 
+  // A draft that was never published is removed after a stretch with no changes. Any change moves the date out, so the
+  // notices say so; once it has been published none of this applies.
+  if (info.draft) {
+    if (info.stage === "hidden" || info.stage === "delete_due") {
+      return (
+        <div className="retention-notice alert" role="alert" data-retention="draft-expired">
+          <p>
+            <strong>This draft expired on {longDay(info.endsOn ?? "")}.</strong>{" "}
+            It is deleted for good on {longDay(info.deleteOn ?? "")}. Make any change to keep it, or publish it.
+          </p>
+        </div>
+      );
+    }
+    if (info.stage === "keep" && info.endsOn) {
+      const days = info.daysLeft ?? 0;
+      if (days <= (info.warnDays ?? 7)) {
+        return (
+          <div className="retention-notice warn" role="status" data-retention="draft-soon">
+            <p>
+              <strong>This draft will be removed on {longDay(info.endsOn)}</strong> ({days <= 0 ? "today" : `in ${days} ${days === 1 ? "day" : "days"}`}) if it is not changed.
+              Make any change to keep it, or publish it.
+            </p>
+          </div>
+        );
+      }
+      if (info.estimateBeforeEvent && info.estimatedEndsOn) {
+        return (
+          <div className="retention-notice warn" role="status" data-retention="estimate-before-event">
+            <p>
+              <strong>If you publish today, your invitation would close on {longDay(info.estimatedEndsOn)}, before your event on {longDay(info.lastEventDate ?? "")}.</strong>{" "}
+              You can publish later, or ask us to extend it.
+            </p>
+            <p className="retention-actions"><TalkToUs topic="extend" address={address} lead="Talk to us:" /></p>
+          </div>
+        );
+      }
+      return (
+        <p className="retention-notice quiet" data-retention="draft-quiet">
+          Drafts are removed after {info.draftIdleDays ?? 30} days without a change. This one is kept until {longDay(info.endsOn)}.
+        </p>
+      );
+    }
+    return null;
+  }
+
   if (info.stage === "hidden" || info.stage === "delete_due") {
     return (
       <div className="retention-notice alert" role="alert" data-retention="closed">
