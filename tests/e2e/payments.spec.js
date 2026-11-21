@@ -256,12 +256,12 @@ test('a payment id in the address that matches nothing on this device is not tru
   expect(page.url()).not.toContain('payment=');
 });
 
-test('the details form: the email must look right, the phone is optional, the reminders tick starts off, and what was typed is kept', async ({ page }) => {
+test('the details form: the email must look right, the phone is optional, there is no reminders tick, and what was typed is kept', async ({ page }) => {
   const server = await draftWithServer(page, { paidOnReturn: false });
   const dialog = await openShare(page);
   const pay = dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' });
   await expect(pay).toBeDisabled({ timeout: 15000 });
-  await expect(dialog.getByLabel(/Send me tips and reminders/)).not.toBeChecked();
+  await expect(dialog.getByLabel(/Send me tips and reminders/)).toHaveCount(0);   // asking for marketing consent is not part of paying
   // Nothing is said about missing details until the person starts filling them in (the button just waits).
   await expect(dialog.locator('#contact-status')).toHaveText('');
   await dialog.getByLabel('Email').fill('m');
@@ -280,16 +280,14 @@ test('the details form: the email must look right, the phone is optional, the re
   await expect(dialog.locator('#contact-status')).toContainText('7 to 15 digits');
   await dialog.getByLabel(/^Phone or WhatsApp number/).fill('');
   await expect(pay).toBeEnabled();
-  await dialog.getByLabel(/Send me tips and reminders/).check();
   // Closing and opening the dialog again keeps what was typed (it is remembered on this device).
   await dialog.getByRole('button', { name: 'Close' }).click();
   const again = await openShareAgain(page);
   await expect(again.getByLabel('Your name')).toHaveValue('Mira Nair');
   await expect(again.getByLabel('Email')).toHaveValue('mira@example.com');
-  await expect(again.getByLabel(/Send me tips and reminders/)).toBeChecked();
   await again.getByRole('button', { name: 'Pay ₹2,999 and continue' }).click();
   await expect.poll(() => server.checkouts.length).toBe(1);
-  expect(server.checkouts[0]).toEqual({ name: 'Mira Nair', email: 'mira@example.com', phone: '', marketing: true });
+  expect(server.checkouts[0]).toEqual({ name: 'Mira Nair', email: 'mira@example.com', phone: '', marketing: false });
 });
 
 test('early access and unlocked websites are never asked for these details', async ({ page }) => {
