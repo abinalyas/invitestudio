@@ -100,11 +100,12 @@ async function openShare(page) {
   return page.locator('#modal-root');
 }
 
-test('payments live: the dialog shows this design\'s price, and the main button takes a payment', async ({ page }) => {
+test('payments live: the dialog shows the publishing plan price, and the main button takes a payment', async ({ page }) => {
   await draftWithServer(page, { country: 'IN' });
   const dialog = await openShare(page);
   await expect(dialog.locator('[data-price-note]')).toContainText('One-time price: ₹2,999');
-  await expect(dialog.locator('[data-price-note]')).toContainText('Signature design');
+  await expect(dialog.locator('[data-price-note]')).toContainText('Signature plan');
+  await expect(dialog.locator('.pub-order .pub-line')).toContainText('Signature publishing plan');
   // Name and email come first: the button stays off until they are given.
   await expect(dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' })).toBeDisabled({ timeout: 15000 });
   await fillDetails(dialog);

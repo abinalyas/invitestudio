@@ -1216,8 +1216,8 @@
     const primary = live ? (session.changing ? 'Change address and update' : 'Update live page') : paying ? (priceText ? `Pay ${priceText} and continue` : 'Pay and continue') : 'Make it live';
     const priceNote = live || project.publishUnlocked || !session.price ? ''
       : session.price.mode === 'live'
-        ? `<p class="pub-fine" data-price-note><strong>One-time price: ${escapeText(session.price.text)}</strong> (${escapeText(session.price.tierName)} design). Pay on Razorpay's secure page with UPI, card or netbanking. By paying you agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a> and <a href="/refund-policy" target="_blank" rel="noopener">Refund policy</a>.</p>`
-        : `<p class="pub-fine" data-price-note><strong>Free during early access.</strong> Later price: ${escapeText(session.price.text)} (${escapeText(session.price.tierName)} design), paid once.</p>`;
+        ? `<p class="pub-fine" data-price-note><strong>One-time price: ${escapeText(session.price.text)}</strong> (${escapeText(session.price.tierName)} plan). Switch designs within your plan anytime, even after publishing. Razorpay shows the payment methods available to you. By paying you agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a> and <a href="/refund-policy" target="_blank" rel="noopener">Refund policy</a>.</p>`
+        : `<p class="pub-fine" data-price-note><strong>Free during early access.</strong> Later price: ${escapeText(session.price.text)} (${escapeText(session.price.tierName)} plan), paid once.</p>`;
 
     // Your details (asked for before paying).
     const contactBlock = paying ? `<fieldset class="pub-card" data-buyer-contact>
@@ -1319,7 +1319,7 @@
     const showOrder = !live && !project.publishUnlocked && session.price;
     const orderCard = `<section class="pub-card pub-order">
         ${showOrder ? `<h3 class="pub-card-title">Your order</h3>
-        <div class="pub-line"><span>${designName} (live invitation)</span><span>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</span></div>
+        <div class="pub-line"><span>${escapeText(session.price.tierName)} publishing plan</span><span>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</span></div>
         <div class="pub-total"><span>${session.price.mode === 'live' ? 'Total payable' : 'Total today'}</span><strong>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</strong></div>
         <p class="pub-pill">${ICON.bolt} ${session.price.mode === 'live' ? 'One-time payment · No recurring charges' : 'Free during early access'}</p>` : `<h3 class="pub-card-title">${live ? 'Your live page' : paidReturn ? 'Your invitation is ready' : 'Ready to go live'}</h3>`}
         ${priceNote}${keptBlock}${notSaved}${info}${checkAgain}${error}${success}

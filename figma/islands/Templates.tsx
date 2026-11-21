@@ -288,7 +288,7 @@ export function TemplatesPage() {
                         const tier = tierOf(pricing, template.backendId)
                         return tier ? (
                           <p className="gallery-price">
-                            {tier.name} <strong>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}</strong> to publish
+                            {tier.name} plan <strong>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}</strong> to publish
                           </p>
                         ) : null
                       })()}

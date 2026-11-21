@@ -48,7 +48,7 @@ export const FAQ = Object.freeze([
   ['Do I need any technical skills to create a wedding website?', 'No. Pick a template, add your names, date and event details, and publish in a few simple steps.'],
   ['Can I collect RSVPs from my guests?', 'Yes. Guests reply from your invitation with their name, whether they are coming and how many. You see every reply in your editor and can download them as a spreadsheet, or switch replies off and ask guests to contact you instead.'],
   ['Can I customise the design and content?', 'Yes. You can change colours, fonts, photos, event details and page sections. Each template keeps its own curated look.'],
-  ['What is free on InviteStudio, and when do I pay?', 'Building and previewing your wedding invitation is free, as often as you like. You pay once, only when you publish and share it. The price depends on the design you choose and where you are, and there is no subscription.'],
+  ['What is free on InviteStudio, and when do I pay?', 'Build and preview for free. When you publish, you pay once for a plan that includes your design. The price depends on the plan and your region.'],
   ['Can I change my wedding invitation design later?', 'Yes, anytime, even after you publish. You can switch to any design in your plan or a lower one at no extra cost, and your details stay the same.'],
   ['Do my wedding guests need an app or an account?', 'No. Guests open your invitation link in their phone\u2019s browser and reply with their name.'],
   ['What happens to my invitation after the wedding?', 'Your invitation stays online until 2 months after your event. Then it and the guest replies are deleted.'],
@@ -239,7 +239,7 @@ export function staticContent(page, origin) {
 <h2>Guides</h2><ul>${LANDING.map(item => `<li>${link(`/${item.slug}`, item.h1)}</li>`).join('')}</ul>
 <h2>Templates</h2>${templateList}
 <h2>Pricing</h2>
-<p>Building and previewing your invitation is free. You pay once, when you publish, and the price depends on the design you choose and where you are. There is no subscription.</p>
+<p>Building and previewing your invitation is free. Pay once for a publishing plan, with pricing based on your region. Switch designs within your plan anytime, even after publishing. Classic includes Classic designs, Premium includes Classic and Premium, and Signature includes every design.</p>
 <p>Published invitations normally stay online for two months after your last event, subject to the hosting limit shown when you publish. Export your RSVPs before your invitation expires.</p>
 <h2>Frequently asked questions</h2>
 ${FAQ.map(([question, answer]) => `<h3>${escapeHtml(question)}</h3><p>${escapeHtml(answer)}</p>`).join('')}`;
@@ -305,7 +305,7 @@ export function llmsTxt(origin) {
 ## How it works
 1. Choose a template.
 2. Add your details. Drafts save automatically, and building and previewing are free.
-3. Publish (a one-time payment, priced by design and by country, no subscription) and share the link.
+3. Publish with a one-time plan priced by region and share the link. Switch designs anytime within your plan, even after publishing.
 
 ## Pages
 - [Home](${absolute(origin, '/')}): what ${SITE_NAME} does, how it works, pricing and answers to common questions

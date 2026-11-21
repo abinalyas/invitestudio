@@ -21,7 +21,8 @@ test('home: the three tiers show this country\'s price, with no country or curre
   await expect(plans(page).nth(1)).toContainText('₹1,999');
   await expect(plans(page).nth(2)).toContainText('₹2,999');
   await expect(plans(page).nth(2)).toContainText('one-time');
-  await expect(page.getByText('Publishing is free during early access')).toBeVisible();
+  await expect(page.locator('.hero-promise')).toContainText('Publishing is free during early access.');
+  await expect(page.locator('#pricing').getByText('Publishing is free during early access')).toBeVisible();
   // Each tier says which designs belong to it.
   await expect(plans(page).nth(2)).toContainText('5 designs');
   await expect(plans(page).nth(2)).toContainText('Velvet Reveal');
@@ -49,6 +50,8 @@ test('home: if the prices cannot be loaded, no numbers are shown (never a wrong 
   await expect(page.getByText('Prices are shown when you choose a design.')).toBeVisible();
   await expect(plans(page)).toHaveCount(0);
   await expect(page.locator('.pricing')).not.toContainText('₹');
+  await expect(page.locator('.hero-promise')).toContainText('Pay once to publish.');
+  await expect(page.locator('.hero-promise')).not.toContainText('₹');
 });
 
 test('template page and gallery: each design shows its tier and the price for this country', async ({ page }) => {

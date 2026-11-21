@@ -1,24 +1,20 @@
 // Home screen from the Figma Make export (App.tsx lines 1054-1476).
 import { useState } from "react";
 import { Art, Icon, Logo, faqs, galleryTemplates, phoneSmall, testimonials } from "./shared";
-import { formatMoney, usePricing } from "./pricing";
+import { formatMoney, tierOf, usePricing } from "./pricing";
 import { CustomDesignCard, MyProjectsLink, RecoveryBanner, StartCreatingLink, TalkToUs } from "./extras";
-import { quote } from "../../functions/_shared/pricing.js";
 
 const featuredDesigns = ["minimalist", "bloom-reveal", "under-the-same-moon"].map(
   (id) => galleryTemplates.find((design) => design.backendId === id)!,
 );
 const bloomReveal = featuredDesigns[1];
 
-function indiaPrice(designId: string) {
-  const { amountMinor, currency } = quote(designId, "in");
-  return formatMoney(amountMinor, currency, "en-IN");
-}
-
 export function HomePage() {
   // The Instagram address is set once in site-config.js (social.instagram); with none set, no social icon is shown.
   const instagramUrl = ((window as unknown as { INVITESTUDIO_SITE?: { social?: { instagram?: string } } }).INVITESTUDIO_SITE?.social?.instagram || "").trim()
   const { data: pricing } = usePricing()
+  const classic = pricing?.tiers.find((tier) => tier.id === "classic")
+  const startPrice = pricing && classic ? formatMoney(classic.amountMinor, pricing.currency, pricing.locale) : ""
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -73,7 +69,9 @@ export function HomePage() {
               </a>
               <p className="hero-promise">
                 <strong>Preview free.</strong>
-                <span>One-time publishing from {indiaPrice("minimalist")} in India{pricing?.mode === "early-access" ? " after early access" : ""}.</span>
+                <span>{pricing?.mode === "early-access"
+                  ? "Publishing is free during early access."
+                  : startPrice ? `One-time publishing plans from ${startPrice}.` : "Pay once to publish."}</span>
               </p>
             </div>
           </div>
@@ -103,21 +101,26 @@ export function HomePage() {
           <div>
             <Art name="eucalyptus" className="deco deco-edge-l deco-tpl" />
             <h2 id="featured-designs-title">Featured wedding designs</h2>
-            <p>One-time publishing prices in India{pricing?.mode === "early-access" ? " after early access" : ""}.</p>
+            <p>Each design is available with the plan shown and any higher plan.</p>
           </div>
           <a href="/templates">View all designs <Icon name="arrow" size={18} /></a>
         </div>
         <div className="featured-design-grid">
-          {featuredDesigns.map((design) => (
-            <article className="featured-design" key={design.id}>
-              <img src={phoneSmall(design.phone)} alt="" width={160} height={338} loading="lazy" decoding="async" />
-              <div>
-                <h3>{design.title}</h3>
-                <p>{indiaPrice(design.backendId)}</p>
-                <a href={`/templates/${design.id}`} aria-label={`Preview ${design.title}`}>Preview <Icon name="arrow" size={16} /></a>
-              </div>
-            </article>
-          ))}
+          {featuredDesigns.map((design) => {
+            const tier = tierOf(pricing, design.backendId);
+            return (
+              <article className="featured-design" key={design.id}>
+                <img src={phoneSmall(design.phone)} alt="" width={160} height={338} loading="lazy" decoding="async" />
+                <div>
+                  <h3>{design.title}</h3>
+                  {pricing && tier && (
+                    <p>{tier.name} plan{pricing.mode === "live" ? ` · ${formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}` : ""}</p>
+                  )}
+                  <a href={`/templates/${design.id}`} aria-label={`Preview ${design.title}`}>Preview <Icon name="arrow" size={16} /></a>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -239,9 +242,9 @@ export function HomePage() {
           <Art name="petal-2" className="deco deco-petal deco-pricing-petal" />
           <div>
             <span className="section-kicker">Choose your collection</span>
-            <h2>Find the perfect design for your big day</h2>
+            <h2>Choose a publishing plan</h2>
             <p>
-              Same tools in every plan. The plan decides which designs you can choose from.
+              Every plan includes the same invitation tools. Prices vary by region.
             </p>
           </div>
         </div>
@@ -257,7 +260,7 @@ export function HomePage() {
             <Art name="icon-shield" className="fp-art" />
             <p>
               <strong>Pay once, to publish</strong>
-              <span>One payment, no subscription. The price is shown before you pay.</span>
+              <span>Your one-time payment covers publishing and the designs included in your plan.</span>
             </p>
           </div>
         </div>
@@ -282,7 +285,7 @@ export function HomePage() {
                   ))}
                 </ul>
                 <p className="plan-designs">
-                  {designs.length} {designs.length === 1 ? "design" : "designs"}: {designs.slice(0, 3).map((item) => item.title).join(", ")}
+                  {tier.name} collection · {designs.length} {designs.length === 1 ? "design" : "designs"}: {designs.slice(0, 3).map((item) => item.title).join(", ")}
                   {designs.length > 3 ? " and more" : ""}
                 </p>
                 <a className={tier.id === "premium" ? "button" : "button outline"} href={`/templates?tier=${tier.id}`}>
@@ -312,7 +315,7 @@ export function HomePage() {
         <div>
           <h2>Edit anytime. Switch designs whenever you want.</h2>
           <p>
-            Even after you publish. Change your mind about the look? Move to any design in your plan or a lower one, at no extra cost, and all your details come with you.
+            Your details come with you, even after publishing. Classic includes Classic designs, Premium includes Classic and Premium, and Signature includes every design.
           </p>
         </div>
       </section>
