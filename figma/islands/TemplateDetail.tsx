@@ -116,20 +116,20 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
                 <span key={tag}>{tag}</span>
               ))}
             </div>
-            {tier && pricing && (
-              <p className="detail-price" data-testid="detail-price">
-                <strong>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}</strong>
-                <span>
-                  {tier.name} design, one-time when you publish.{" "}
-                  {pricing.mode === "live" ? "" : "Free during early access."}
-                </span>
-              </p>
-            )}
             <div className="detail-actions">
               <button className="button" onClick={() => bridge.startSetup(template.backendId)}>
                 <Icon name="edit" size={19} />
                 Start with this design
               </button>
+              {tier && pricing && (
+                <p className="detail-price" data-testid="detail-price">
+                  <strong>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}</strong>
+                  <span>
+                    {tier.name} design, one-time when you publish.{" "}
+                    {pricing.mode === "live" ? "" : "Free during early access."}
+                  </span>
+                </p>
+              )}
             </div>
             <p className="detail-path">Next: your names, date and place. It takes about a minute, and you can edit your details afterwards.</p>
 
