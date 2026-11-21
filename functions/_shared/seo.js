@@ -50,6 +50,8 @@ export const FAQ = Object.freeze([
   ['Can I customise the design and content?', 'Yes. You can change colours, fonts, photos, event details and page sections. Each template keeps its own curated look.'],
   ['What is free on InviteStudio, and when do I pay?', 'Building and previewing your wedding invitation is free, as often as you like. You pay once, only when you publish and share it. The price depends on the design you choose and where you are, and there is no subscription.'],
   ['Can I change my wedding invitation design later?', 'Yes, anytime, even after you publish. You can switch to any design in your plan or a lower one at no extra cost, and your details stay the same.'],
+  ['Do my wedding guests need an app or an account?', 'No. Guests open your invitation link in their phone\u2019s browser and reply with their name.'],
+  ['What happens to my invitation after the wedding?', 'Your invitation stays online until 2 months after your event. Then it and the guest replies are deleted.'],
   ['Can I use my own domain?', 'Not yet. Every invitation gets its own InviteStudio link to share with your guests.']
 ]);
 

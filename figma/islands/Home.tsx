@@ -95,6 +95,26 @@ export function HomePage() {
         </div>
       </section>
 
+      <section className="section shell what" id="problem">
+        <div className="section-heading centered">
+          <span className="section-kicker">One page for everything</span>
+          <h2>Wedding details shouldn{"’"}t live in twelve chat threads</h2>
+          <p>Put it all on one page instead.</p>
+        </div>
+        <div className="what-grid">
+          {[
+            ["The card has no room", "Venues, schedules and travel details end up in separate messages."],
+            ["Changes mean resending", "A new time or venue should reach every guest at once."],
+            ["Replies get lost", "Counting who is coming shouldn\u2019t mean scrolling through WhatsApp."],
+          ].map(([title, text]) => (
+            <article key={title}>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="section shell how" id="how">
         <Art name="flowers-a" className="deco deco-edge-l deco-how-l" />
         <Art name="gypsophila" className="deco deco-edge-r deco-how-r" />
@@ -131,7 +151,7 @@ export function HomePage() {
         <div className="section-heading centered">
           <span className="section-kicker">A complete digital invitation</span>
           <h2>Everything you need for your big day</h2>
-          <p>All the essentials, with every design.</p>
+          <p>All the essentials in one place, on every plan.</p>
         </div>
         <div className="what-grid">
           {[
@@ -333,10 +353,9 @@ export function HomePage() {
         <Art name="flowers-a" className="cta-art cta-art-l" />
         <Art name="flowers-b" className="cta-art cta-art-r" />
         <div>
-          <h2>Ready to create your wedding website?</h2>
+          <h2>Ready to send something they’ll remember?</h2>
           <p>
-            Pick a template, make it yours, and share it with your loved ones in
-            minutes.
+            Start with a design you love. It's free until you publish.
           </p>
         </div>
         <a className="button light" href="/templates">

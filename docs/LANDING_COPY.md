@@ -1,6 +1,6 @@
 # Landing page copy: launch version
 
-Status: decisions made by the product owner. The hero subhead and the features subhead are applied in `figma/islands/Home.tsx`; the rest is still draft.
+Status: decisions made by the product owner. Applied: hero subhead, problem strip, closing call to action, two new FAQ questions (home page and `functions/_shared/seo.js`), and the "in minutes" claim removed from the closing call to action and the `/wedding-invitation-website` heading. Not applied, with reasons, in the list below.
 
 **Decisions:** (1) keep the current main headline; the subhead change is approved. (2) Payments are live, so no early-access wording. (3) No "in minutes" claim until a first-time build is timed.
 
@@ -109,3 +109,15 @@ Keep the existing questions and add:
 2. Publish one polished demo invitation and wire the secondary button to it.
 3. Apply the remaining sections (problem strip, feature tiles, FAQ additions, closing call to action) once approved.
 4. Apply to `figma/islands/Home.tsx` and `functions/_shared/seo.js`, run `npm run build:figma`, `npm run stamp` and `npm run test:unit` (the SEO tests check page copy).
+
+## Not applied, and why
+
+- **Feature tiles, templates strip, pricing section:** the live page already has accurate versions (the tiers are real plans: Classic, Premium, Signature). The pricing copy there is better than my draft, so it stays.
+- **Features subhead:** my earlier "no plans" change was wrong and is reverted.
+- **Kerala "cultural fit" section:** wait until the Kasavu design is approved and offered.
+- **Social proof:** see below.
+- **"See a live example" button:** needs a published demo invitation first.
+
+## Launch blocker: placeholder testimonials
+
+`figma/islands/shared.tsx` still holds three **dummy testimonials** (Priya & Arjun, Anjali & Rahul, Meera & Abin), marked "DUMMY PLACEHOLDERS ... replace before launch". They currently render on the home page. Remove them, or replace them with real quotes with written permission, before announcing. An empty list hides the section.
