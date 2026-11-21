@@ -291,7 +291,7 @@ test.describe('on a phone', () => {
   const { viewport, screen, userAgent, deviceScaleFactor } = devices['iPhone 13'];
   test.use({ viewport, screen, userAgent, deviceScaleFactor, isMobile: true, hasTouch: true });
 
-  test('tapping edits, the tip stays on screen above the tab bar, and event controls work by touch', async ({ page }) => {
+  test('tapping edits, the tip stays on screen above the tab bar, and a tapped event opens its form with touch-sized controls', async ({ page }) => {
     await openEditor(page, 'minimalist', { withEvents: true, hintSeen: false });
     const pill = page.locator('.edit-hint-pill');
     await expect(pill).toContainText('Tap any outlined text');
@@ -309,12 +309,14 @@ test.describe('on a phone', () => {
     await expect.poll(async () => (await snapshot(page)).title).toBe('Mia & Ben');
     await expect(pill).toHaveCount(0); // the first edit retires the tip
 
+    // On a phone a tapped event opens its whole form on the Edit view (not just its title in place); moving and removing it are there.
+    // (tests/e2e/phone-event-form.spec.js covers the opening; here: the controls are touch-sized and still work.)
     await page.locator('[data-edit="event:title"][data-id="ev1"]').tap();
-    await expect(page.locator('[data-event-bar]')).toBeVisible();
-    const down = await page.locator('[data-event-move="1"]').boundingBox();
-    expect(down.width).toBeGreaterThanOrEqual(40); // a touch-sized button
-    await page.locator('[data-event-move="1"]').tap();
-    await expect.poll(async () => (await snapshot(page)).events.map(event => event.title)).toEqual(['Sangeet', 'Mehndi', 'Wedding']);
+    await expect(page.getByLabel(/Event name/)).toHaveValue('Mehndi');
+    const grip = await page.locator('[data-grip="ev1"]').boundingBox();
+    expect(grip.width).toBeGreaterThanOrEqual(40); // a touch-sized handle
+    expect(grip.height).toBeGreaterThanOrEqual(40);
+    await expect(page.getByRole('button', { name: 'Remove event' })).toBeVisible();
   });
 });
 
