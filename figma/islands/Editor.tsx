@@ -421,19 +421,30 @@ export function EditorPage() {
       setMobileTab("edit");
       return;
     }
+    scrollPreviewTo(key);
+  }
+
+  // Scrolls the preview itself (not the page) so the section starts at the top of the frame,
+  // below any sticky header the template declares with scroll-margin-top.
+  function scrollPreviewTo(key: SectionKey) {
     const item = sections.find(section => section.key === key);
     const target = key === "home" ? "hero" : item?.sectionId;
-    if (target) {
-      // Scroll the preview itself (not the page) so the chosen section starts at the top of the frame,
-      // below any sticky header the template declares with scroll-margin-top.
-      const canvas = canvasRef.current;
-      const section = canvas?.shadowRoot?.querySelector<HTMLElement>(`[data-section="${target}"]`);
-      if (canvas && section) {
-        const margin = parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
-        const top = section.getBoundingClientRect().top - canvas.getBoundingClientRect().top + canvas.scrollTop - margin;
-        canvas.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-      }
+    if (!target) return;
+    const canvas = canvasRef.current;
+    const section = canvas?.shadowRoot?.querySelector<HTMLElement>(`[data-section="${target}"]`);
+    if (canvas && section) {
+      const margin = parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
+      const top = section.getBoundingClientRect().top - canvas.getBoundingClientRect().top + canvas.scrollTop - margin;
+      canvas.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
     }
+  }
+
+  // Phone: from the Edit view back to the invitation, at the section that was being edited, so the change can be seen.
+  function backToPreview() {
+    setMobileTab("preview");
+    setPicked(false);
+    window.scrollTo({ top: 0 });
+    window.setTimeout(() => scrollPreviewTo(active), 80);
   }
 
   // The preview asks for an event's form (it was just added there, or tapped): show it on the Edit view with that event open.
@@ -649,6 +660,18 @@ export function EditorPage() {
         </section>
 
         <aside className="editor-controls" id="panel-edit" aria-labelledby="editing-heading" ref={controlsRef}>
+          {/* Phones only: the way back to the invitation, and the proof that what is typed is kept. It stays at the top while the form scrolls. */}
+          <div className="phone-edit-bar">
+            <button type="button" className="phone-back" onClick={backToPreview}><Icon name="eye" size={20} /> Back to preview</button>
+            <span className={`phone-saved save-${snap.saveState}`} role="status" aria-live="polite" data-save-state={snap.saveState}>
+              <span className="phone-saved-line">
+                <SaveLabel text={saveText(snap)} />
+                {failed ? <button type="button" onClick={() => bridge.retrySave()}>Retry</button> : null}
+                {conflict ? <button type="button" onClick={() => window.location.reload()}>Reload</button> : null}
+              </span>
+              {failed || conflict ? null : <small className="phone-saved-note">Preview updates as you type</small>}
+            </span>
+          </div>
           <p className="editing-kicker">Editing</p>
           <h2 id="editing-heading" tabIndex={-1}>{activeItem.label}</h2>
 
