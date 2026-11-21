@@ -731,6 +731,15 @@ test.describe('guest replies', () => {
     await page.getByRole('button', { name: /Share invitation/ }).first().click();
     const note = page.locator('[data-kept-note]');
     await expect(note).toContainText('Once live, online until 20 September 2027');
+    await expect(note.getByRole('link')).toHaveCount(0);   // a quiet line before paying: no sales links
+  });
+
+  test('retention: if publishing today would close it before the event, the Share dialog says so and offers a way to ask for longer', async ({ page }) => {
+    await openSavedDraft(page, { retention: keepInfo({ hasClock: false, endsOn: null, deleteOn: null, stage: 'no_clock', daysLeft: null, source: 'none', estimatedEndsOn: '2027-06-01', estimateBeforeEvent: true, lastEventDate: '2027-12-20' }) });
+    await page.waitForTimeout(600);
+    await page.getByRole('button', { name: /Share invitation/ }).first().click();
+    const note = page.locator('[data-kept-note]');
+    await expect(note).toContainText('That is before your event');
     await expect(note.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/919567882568/);
   });
 
@@ -896,26 +905,27 @@ test.describe('guest replies', () => {
     await page.getByRole('button', { name: /Share invitation/ }).first().click();
     const dialog = page.locator('#modal-title').locator('xpath=ancestor::*[contains(@class,"modal")][1]');
     const text = await dialog.innerText();
-    expect(text).toContain('Private until you go live.');
-    expect(text).toContain('Only you can see it now.');
-    expect(text).toContain('Anyone with the link can open it');
-    expect(text).toContain('Guests can reply from the live invitation.');
+    // The dialog that asks for payment stays short: the editor's own note (above) already says it is private until live.
+    expect(text).not.toContain('What happens next');
+    expect(text).not.toContain('Private until you go live.');
+    expect(text).toContain('Not ready? Friends can see a draft preview.');
     expect(text).not.toContain('Nobody can see your invitation yet');
     expect(text).not.toContain('can’t reply online yet');
     expect(text).not.toContain('for now the invitation is for viewing');
   });
 
-  test('the Share panel describes replies the way this invitation is set up', async ({ page }) => {
+  test('the Share panel before going live no longer lists what guests can do about replies, whatever the reply setting', async ({ page }) => {
     await savedDraftWithServer(page);
     await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toBeVisible();
-    for (const [mode, expected, absent] of [['contact', 'Guests see your contact details', 'Guests can reply from the live invitation'], ['none', null, 'Replies.']]) {
+    for (const mode of ['count', 'contact', 'none']) {
       await page.evaluate(mode => window.InviteStudioBridge.setRsvp(mode), mode);
       await page.getByRole('button', { name: /Share invitation/ }).first().click();
       const dialog = page.locator('#modal-title').locator('xpath=ancestor::*[contains(@class,"modal")][1]');
       const text = await dialog.innerText();
-      if (expected) expect(text).toContain(expected);
-      expect(text).not.toContain(absent);
+      expect(text).not.toContain('Guests can reply from the live invitation');
+      expect(text).not.toContain('Guests see your contact details');
+      expect(text).not.toContain('Replies.');
       await page.getByRole('button', { name: 'Close' }).click();
     }
   });

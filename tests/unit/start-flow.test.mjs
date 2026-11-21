@@ -77,7 +77,11 @@ test('the last step says what it does before and inside the Share dialog', () =>
   assert.doesNotMatch(editor, /Nothing is public until you do/, 'one voice: private now, a link once live (no "nothing is public" next to "anyone can open it")');
   assert.match(editor, /Update live page/); // the live state explains how changes go live
   const sync = read('cloud-sync.js');
-  for (const text of ['Private until you go live.', 'Only you can see it now.', 'Going live gives it a web link.', 'Anyone with the link can open it.', 'Guests can reply from the live invitation.', 'You can change your mind.', 'Preview invitation', 'Make it live']) {
+  // The page that asks for payment stays short: no "what happens next" list (the editor's note already says it is private until live).
+  for (const gone of ['What happens next', 'Private until you go live.', 'Going live gives it a web link.', 'You can change your mind.', 'Keep editing anytime', 'Secure and trusted']) {
+    assert.equal(sync.includes(gone), false, `removed from the go-live dialog: ${gone}`);
+  }
+  for (const text of ['Preview invitation', 'Make it live', 'Secure payment with Razorpay', 'Not ready? Friends can see a draft preview.']) {
     assert.ok(sync.includes(text), text);
   }
   // Replies are live, and the panel must never say they are not, or say nobody can see what a link makes visible.
