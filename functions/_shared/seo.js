@@ -230,7 +230,8 @@ export function staticContent(page, origin) {
   let body;
   if (page.kind === 'home') {
     body = `<h1>Create a wedding invitation website your guests will love</h1>
-<p>${SITE_NAME} is a wedding invitation website builder. Choose an animated template, add your names, date, events, venues, travel details and photos, and share one link with your guests. Guests can reply (RSVP) from the invitation, and you see every reply in your editor and can download them as a spreadsheet.</p>
+<p>${SITE_NAME} is a wedding invitation website builder. Choose an animated template and publish your wedding schedule, photos and guest RSVP on your own shareable InviteStudio link.</p>
+<p>${link('/templates', 'Browse wedding designs')} · ${link('/templates/18', 'See a sample invitation')}</p>
 <h2>How it works</h2>
 <ol><li>Choose a template.</li><li>Add your names, date, events and photos. Drafts save automatically.</li><li>Preview it privately, then publish and share the link on WhatsApp, text or email.</li></ol>
 <h2>What you get</h2>
@@ -239,6 +240,7 @@ export function staticContent(page, origin) {
 <h2>Templates</h2>${templateList}
 <h2>Pricing</h2>
 <p>Building and previewing your invitation is free. You pay once, when you publish, and the price depends on the design you choose and where you are. There is no subscription.</p>
+<p>Published invitations normally stay online for two months after your last event, subject to the hosting limit shown when you publish. Export your RSVPs before your invitation expires.</p>
 <h2>Frequently asked questions</h2>
 ${FAQ.map(([question, answer]) => `<h3>${escapeHtml(question)}</h3><p>${escapeHtml(answer)}</p>`).join('')}`;
   } else if (page.kind === 'templates') {

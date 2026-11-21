@@ -1,10 +1,20 @@
 // Home screen from the Figma Make export (App.tsx lines 1054-1476).
 import { useState } from "react";
-import { Art, Icon, Logo, faqs, templates, galleryTemplates, testimonials } from "./shared";
+import { Art, Icon, Logo, faqs, galleryTemplates, phoneSmall, testimonials } from "./shared";
 import { formatMoney, usePricing } from "./pricing";
-import { bridge } from "./bridge";
 import { CustomDesignCard, MyProjectsLink, RecoveryBanner, StartCreatingLink, TalkToUs } from "./extras";
-import { TemplateStrip } from "./TemplateStrip";
+import { quote } from "../../functions/_shared/pricing.js";
+
+const featuredDesigns = ["minimalist", "bloom-reveal", "under-the-same-moon"].map(
+  (id) => galleryTemplates.find((design) => design.backendId === id)!,
+);
+const bloomReveal = featuredDesigns[1];
+
+function indiaPrice(designId: string) {
+  const { amountMinor, currency } = quote(designId, "in");
+  return formatMoney(amountMinor, currency, "en-IN");
+}
+
 export function HomePage() {
   // The Instagram address is set once in site-config.js (social.instagram); with none set, no social icon is shown.
   const instagramUrl = ((window as unknown as { INVITESTUDIO_SITE?: { social?: { instagram?: string } } }).INVITESTUDIO_SITE?.social?.instagram || "").trim()
@@ -54,44 +64,60 @@ export function HomePage() {
                 will <em>love</em>
               </span>
             </h1>
-            <p className="lead hero-promise">
-              <strong>Preview your own invitation free. Pay only when you make it live.</strong>
-            </p>
             <p className="lead hero-sub">
-              An animated invitation with your events, photos and RSVP,
-              <br className="desktop-only" /> all in one link guests open on their phone.
+              Give guests your wedding schedule, your photos and a place to RSVP, all on your own shareable InviteStudio link.
             </p>
             <div className="hero-buttons">
               <a className="button" href="/templates">
-                Start your invitation <Icon name="arrow" size={18} />
+                Browse wedding designs <Icon name="arrow" size={18} />
               </a>
-              <a className="button outline" href="#how">
-                See how it works
-              </a>
-            </div>
-            <div className="trust-row">
-              <span>
-                <Icon name="sparkle" size={18} /> Free to build and preview
-              </span>
-              <span>
-                <Icon name="device" size={18} /> Works on all devices
-              </span>
-              <span>
-                <Icon name="heart" size={18} /> Made for modern weddings
-              </span>
+              <p className="hero-promise">
+                <strong>Personal previews are free.</strong>
+                <span>One-time publishing starts at {indiaPrice("minimalist")} in India{pricing?.mode === "early-access" ? " after early access" : ""}.</span>
+              </p>
             </div>
           </div>
 
-          <div className="hero-art">
-            <img
-              className="hero-envelope"
-              src="/assets/hero/hero-envelope-invitation.webp"
-              alt="Floral wedding invitation in a green envelope"
-              width={853}
-              height={738}
-              fetchPriority="high"
-            />
+          <figure className="hero-demo">
+            <video
+              controls
+              muted
+              playsInline
+              preload="none"
+              poster="/assets/home/bloom-reveal-demo-poster.webp"
+              width={360}
+              height={610}
+              aria-label="Bloom Reveal demo showing the opening animation, wedding schedule and guest RSVP"
+            >
+              <source src="/assets/home/bloom-reveal-demo.mp4" type="video/mp4" />
+            </video>
+            <figcaption>
+              <a href={`/templates/${bloomReveal.id}`}>See a sample invitation <Icon name="arrow" size={16} /></a>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section className="section shell templates featured-designs" aria-labelledby="featured-designs-title">
+        <div className="section-heading row">
+          <div>
+            <Art name="eucalyptus" className="deco deco-edge-l deco-tpl" />
+            <h2 id="featured-designs-title">Featured wedding designs</h2>
+            <p>One-time publishing prices in India{pricing?.mode === "early-access" ? " after early access" : ""}.</p>
           </div>
+          <a href="/templates">View all designs <Icon name="arrow" size={18} /></a>
+        </div>
+        <div className="featured-design-grid">
+          {featuredDesigns.map((design) => (
+            <article className="featured-design" key={design.id}>
+              <img src={phoneSmall(design.phone)} alt="" width={160} height={338} loading="lazy" decoding="async" />
+              <div>
+                <h3>{design.title}</h3>
+                <p>{indiaPrice(design.backendId)}</p>
+                <a href={`/templates/${design.id}`} aria-label={`Preview ${design.title}`}>Preview <Icon name="arrow" size={16} /></a>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -129,7 +155,7 @@ export function HomePage() {
             ["laptop", "1", "Choose a design", "Browse our collections and pick the one that feels like you", "Free"],
             ["notebook", "2", "Add your details", "Your names, date, events, photos and story", "Free"],
             ["eye", "3", "Preview it", "See exactly what guests will see, as often as you like", "Free"],
-            ["plane", "4", "Publish and share", "Pay once, get your link and send it on WhatsApp, text or email", "One-time payment"],
+            ["plane", "4", "Publish and share", "Get your own InviteStudio link and send it on WhatsApp, text or email", "One-time payment"],
           ].map(([icon, number, title, text, tag], index) => (
             <article key={title}>
               <span className="step-icon">
@@ -193,21 +219,6 @@ export function HomePage() {
         </ul>
       </section>
 
-      <section className="section shell templates" id="templates">
-        <div className="section-heading row">
-          <div>
-            <Art name="eucalyptus" className="deco deco-edge-l deco-tpl" />
-            <span className="section-kicker">Curated designs</span>
-            <h2>Explore beautiful templates</h2>
-            <p>Start from a design, preview it, then make it yours.</p>
-          </div>
-          <a href="/templates">
-            View all templates <Icon name="arrow" size={18} />
-          </a>
-        </div>
-        <TemplateStrip />
-      </section>
-
       <section className="section shell pricing" id="pricing">
         <div className="section-heading row">
           <Art name="flowers-b" className="deco deco-corner-r deco-pricing" />
@@ -267,15 +278,18 @@ export function HomePage() {
             )
           })}
         </div>
-        {pricing ? (
+        {pricing?.mode === "early-access" && (
           <p className="pricing-note">
-            {pricing.mode === "live"
-              ? "Pay once to publish. Your invitation stays online until 2 months after your event."
-              : "Publishing is free during early access while we finish setting up payments. These are the prices that will apply afterwards."}
+            Publishing is free during early access. The prices above apply when payments open.
           </p>
-        ) : (
+        )}
+        {!pricing && (
           <p className="pricing-note">Prices are shown when you choose a design.</p>
         )}
+        <p className="pricing-note">
+          Published invitations normally stay online for two months after your last event, subject to the hosting limit shown when you publish.
+          Export your RSVPs before your invitation expires.
+        </p>
       </section>
 
       <section className="shell switch-strip">
