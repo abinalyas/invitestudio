@@ -9,10 +9,9 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const read = path => readFileSync(join(root, path), 'utf8');
 
-test('the big "Start your invitation" button on the home page is a link to /templates', () => {
+test('the "Browse wedding designs" button on the home page is a link to /templates', () => {
   const home = read('figma/islands/Home.tsx');
-  assert.match(home, /<a className="button" href="\/templates">\s*Start your invitation/);
-  assert.doesNotMatch(home, /onClick=\{\(\) => bridge\.startCreate\("Wedding"\)\}>\s*Start your invitation/);
+  assert.match(home, /<a className="button" href="\/templates">\s*Browse wedding designs/);
 });
 
 test('a new draft does not copy the template example names into the couple\'s names', () => {
@@ -96,7 +95,7 @@ test('one clear creation path: the header starts creating, and the template page
   assert.match(home, /<StartCreatingLink \/>/);
   assert.match(read('figma/islands/extras.tsx'), /if \(bridge\.hasProjects\(\)\) return null;\s*return \(\s*<a className="button small" href="\/templates">\s*Start creating/); // only for people with no invitation yet
   assert.doesNotMatch(home, /Get started/);
-  assert.match(home, /<a className="button outline" href="#how">\s*See how it works/); // not a second link to the same place
+  assert.match(home, />See a sample invitation/);
   for (const page of ['figma/islands/Templates.tsx', 'figma/islands/TemplateDetail.tsx']) assert.doesNotMatch(read(page), /Get started/);
   const detail = read('figma/islands/TemplateDetail.tsx');
   assert.match(detail, /bridge\.startSetup\(template\.backendId\)/);

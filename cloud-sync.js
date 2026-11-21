@@ -298,23 +298,27 @@
     window.InviteRetentionLast = result && result.available ? { ...result, projectId: project.id } : null;
     return result;
   };
-  // My invitations: when each invitation (draft or published) stops being online. One quiet fetch per card, kept for a few
-  // minutes; the cards repaint when the dates arrive. Drafts show an estimate ("Once live ...") until they are published.
+  // My invitations: fetch the existing retention dates for each card and repaint when they arrive.
+  // A dated draft without a retention clock can still have an estimate for publishing today.
   const keptByProject = {};
   let keptLoading = false;
   window.dashKeptLine = function dashKeptLine(project) {
     const info = (keptByProject[project.id] || {}).info;
     if (!info) return '';
     const live = typeof isLiveProject === 'function' ? isLiveProject(project) : false;
-    const fmt = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-    if (info.closed || info.stage === 'hidden') {
-      return info.deleteOn ? `<p class="dash-kept" data-tone="closed" data-kept>Offline. Can be restored until <strong>${escapeText(fmt(info.deleteOn))}</strong></p>` : '';
-    }
+    const dateHtml = iso => {
+      const label = new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      return `<strong><time datetime="${escapeText(iso)}">${escapeText(label)}</time></strong>`;
+    };
     const date = live ? info.endsOn : (info.endsOn || info.estimatedEndsOn);
     if (!date) return '';
-    const soon = live && typeof info.daysLeft === 'number' && info.daysLeft <= (info.warnDays || 14);
-    const lead = live ? 'Online until' : 'Once live, online until';
-    return `<p class="dash-kept" data-tone="${soon ? 'soon' : 'ok'}" data-kept>${lead} <strong>${escapeText(fmt(date))}</strong>${soon ? ` (${Math.max(0, info.daysLeft)} day${info.daysLeft === 1 ? '' : 's'} left)` : ''}</p>`;
+    if (info.closed || info.stage === 'hidden' || info.stage === 'delete_due') {
+      const restore = info.stage === 'hidden' && info.deleteOn ? `. Can be restored until ${dateHtml(info.deleteOn)}` : '';
+      return `<p class="dash-kept" data-tone="closed" data-kept>Expired on ${dateHtml(date)}${restore}</p>`;
+    }
+    const soon = typeof info.daysLeft === 'number' && info.daysLeft <= (info.warnDays ?? 14);
+    const lead = live ? 'Online until' : info.endsOn ? 'Draft expires on' : 'Once live, online until';
+    return `<p class="dash-kept" data-tone="${soon ? 'soon' : 'ok'}" data-kept>${lead} ${dateHtml(date)}${soon ? ` (${Math.max(0, info.daysLeft)} day${info.daysLeft === 1 ? '' : 's'} left)` : ''}</p>`;
   };
   async function loadDashboardRetention() {
     const api = window.inviteStudioApi;
