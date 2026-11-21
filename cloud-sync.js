@@ -699,6 +699,15 @@
     if (typeof window.paintSetupStatus === 'function') window.paintSetupStatus();
     // Figma islands subscribe to save status; tell them whenever it may have changed.
     if (typeof window.notifyInviteStudioChange === 'function') window.notifyInviteStudioChange();
+    if (project && publishSession?.projectId === project.id) {
+      const note = document.querySelector('#modal-root [data-publish-save-status]');
+      const submit = document.querySelector('#modal-root [data-publish-submit]');
+      if (note) {
+        note.hidden = project.cloudStatus === 'saved';
+        note.textContent = note.hidden ? '' : window.cloudSaveLabel(project);
+      }
+      if (submit) submit.disabled = !canPublish(project, publishSession);
+    }
     const status = document.querySelector('.status');
     if (!status || !project || typeof window.cloudSaveLabel !== 'function') return;
     status.setAttribute('aria-label', window.cloudSaveLabel(project));
@@ -1206,9 +1215,8 @@
       : '';
     const error = session.error ? `<p class="pub-note bad" role="alert">${escapeText(session.error)}</p>` : '';
     const success = session.success && !session.paidLive ? '<p class="pub-note ok" role="status">Your invitation is live. Share the link below.</p>' : '';
-    const notSaved = project.cloudStatus !== 'saved'
-      ? '<p class="pub-note" role="status">Saving your latest changes. You can go live in a moment.</p>'
-      : '';
+    const saved = project.cloudStatus === 'saved';
+    const saveStatus = `<p class="pub-note" role="status" data-publish-save-status ${saved ? 'hidden' : ''}>${saved ? '' : escapeText(window.cloudSaveLabel(project))}</p>`;
     const info = session.info ? `<p class="pub-note ok" role="status" data-payment-info>${escapeText(session.info)}</p>` : '';
     const checkAgain = session.checkAgain ? '<button class="btn small" type="button" data-check-payment>Check again</button>' : '';
     const paying = needsPayment(project, session);
@@ -1322,7 +1330,7 @@
         <div class="pub-line"><span>${escapeText(session.price.tierName)} publishing plan</span><span>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</span></div>
         <div class="pub-total"><span>${session.price.mode === 'live' ? 'Total payable' : 'Total today'}</span><strong>${escapeText(session.price.mode === 'live' ? session.price.text : 'Free')}</strong></div>
         <p class="pub-pill">${ICON.bolt} ${session.price.mode === 'live' ? 'One-time payment · No recurring charges' : 'Free during early access'}</p>` : `<h3 class="pub-card-title">${live ? 'Your live page' : paidReturn ? 'Your invitation is ready' : 'Ready to go live'}</h3>`}
-        ${priceNote}${keptBlock}${notSaved}${info}${checkAgain}${error}${success}
+        ${priceNote}${keptBlock}${saveStatus}${info}${checkAgain}${error}${success}
         <div class="pub-actions">${submit}
           ${live && !session.changing ? '<button class="btn" type="button" data-share-card>Share card for WhatsApp</button>' : ''}
           ${live ? '<button class="btn" type="button" data-unpublish>Take offline</button>' : ''}

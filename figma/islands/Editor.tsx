@@ -605,8 +605,8 @@ export function EditorPage() {
           {snap.hasPrivateLink ? (
             <div className="draft-access">
               <span className="draft-access-icon"><Icon name="lock" size={22} /></span>
-              <strong>Your draft is private</strong>
-              <p>Only you can see it. Anyone with your private link can edit, so keep it to yourself.</p>
+              <strong>Private editing link</strong>
+              <p>Use this link to edit on another device. Anyone with the link can edit your invitation, so keep it to yourself.</p>
               <button type="button" className="btn small" onClick={() => bridge.copyPrivateLink()}><Icon name="link" size={18} /> Copy private link</button>
             </div>
           ) : null}
@@ -903,15 +903,23 @@ export function EventsPanel({ snap, request = null }: { snap: EditorSnapshot; re
   });
   useEffect(() => {
     const id = justAdded.current;
-    if (!id) return;
+    if (!id || openId !== id) return;
     const row = [...(listRef.current?.querySelectorAll<HTMLElement>("[data-event-id]") ?? [])].find(el => el.dataset.eventId === id);
-    if (!row) return; // the list has not drawn it yet: this runs again after the next draw
-    justAdded.current = null;
-    const calm = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    row.scrollIntoView({ block: "start", behavior: calm ? "auto" : "smooth" });
-    setFlash(id);
-    window.setTimeout(() => setFlash(null), 2400); // no cleanup: this effect runs after every draw, and a cleanup would cancel the timer
-  });
+    if (!row) return;
+    // Wait for the open form and the phone's Edit panel to finish laying out.
+    const frame = window.requestAnimationFrame(() => {
+      justAdded.current = null;
+      const calm = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      row.scrollIntoView({ block: "start", behavior: calm ? "instant" : "smooth" });
+      setFlash(id);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [openId, request, snap.events.length]);
+  useEffect(() => {
+    if (!flash) return;
+    const timer = window.setTimeout(() => setFlash(null), 2400);
+    return () => window.clearTimeout(timer);
+  }, [flash]);
   useEffect(() => {
     // Keep keyboard focus on the handle that was just used, after the list re-orders.
     const id = focusGrip.current;

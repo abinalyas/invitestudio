@@ -117,7 +117,7 @@ test('the preview and the saved-draft banner say plainly who can see and edit', 
   const sync = read('cloud-sync.js');
   assert.match(sync, /Only you can see it, and it is not public until you share it\./);
   assert.match(sync, /Anyone with that link can edit/);
-  assert.match(read('figma/islands/Editor.tsx'), /Your draft is private/);
+  assert.match(read('figma/islands/Editor.tsx'), /Private editing link/);
 });
 
 test('long names are sized by their longest word in every template, so they fit instead of breaking mid-word', () => {
@@ -126,12 +126,12 @@ test('long names are sized by their longest word in every template, so they fit 
 
 test('the template page shows the real design in a phone beside the details, with no Live preview button or popup', () => {
   const detail = read('figma/islands/TemplateDetail.tsx');
-  assert.match(detail, /bridge\.renderTemplateDemo\(screenRef\.current, template\.backendId\)/);
+  assert.match(detail, /bridge\.renderTemplateDemo\(screenRef\.current, template\.backendId, phoneSmall\(template\.phone\)\)/);
   assert.match(detail, /className="detail-device"/);
   assert.match(detail, /scroll-cue detail-cue/); // the "Scroll" animation, as in the editor and setup previews
   assert.doesNotMatch(detail, /Live preview|previewTemplate/);
   assert.doesNotMatch(read('figma/islands/bridge.ts'), /previewTemplate/);
-  assert.match(read('figma-host.js'), /renderTemplateDemo\(host, backendTemplateId\)/);
+  assert.match(read('figma-host.js'), /renderTemplateDemo\(host, backendTemplateId, poster\)/);
   assert.match(read('index.html'), /function templateDemoProject\(t\)/);
   const css = read('figma/islands/islands.css');
   assert.match(css, /@media \(min-width: 901px\) \{ \.detail-showcase \{ position: sticky;/); // stays in view while the details scroll

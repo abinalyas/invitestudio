@@ -47,6 +47,29 @@ test('a published invitation renders read-only, without tokens or hidden events'
   await expect(page.getByText(/preview only/i)).toHaveCount(0);
 });
 
+test('a guest can open a reply link in the invitation tab', async ({ page, request }) => {
+  const slug = `reply-${randomUUID().slice(0, 8)}`;
+  await createPublished(request, { title: 'Daniel & Amelia', slug });
+  const response = await request.post(`/api/public-weddings/${slug}/rsvp`, {
+    data: { name: 'Test Guest', attending: true, party: 1 }
+  });
+  expect(response.status()).toBe(201);
+  const { changeToken } = await response.json();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(`/s/${slug}`);
+  const reply = page.locator('[data-public-invitation] [data-rsvp-open]');
+  await reply.click();
+  await expect(page.getByRole('heading', { name: 'Will you join us?' })).toBeFocused();
+  await page.getByRole('button', { name: 'Cancel' }).click();
+
+  await page.evaluate(token => { location.hash = `reply=${token}`; }, changeToken);
+  await expect(page.getByRole('heading', { name: 'Change your reply' })).toBeFocused();
+  await expect(page.getByLabel('Your name')).toHaveValue('Test Guest');
+  await expect.poll(() => new URL(page.url()).hash).toBe('');
+});
+
 test('an invitation that does not exist shows a clear not-available message', async ({ page }) => {
   await page.goto(`/s/no-such-invitation-${randomUUID().slice(0, 6)}`);
   await expect(page.getByText('This invitation is not available.')).toBeVisible({ timeout: 15000 });

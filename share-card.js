@@ -610,7 +610,7 @@
     function render() {
       var event = list[state.index];
       var picker = list.length > 1
-        ? '<label class="tiny muted" for="sc-event" style="display:block;margin-top:10px">Event</label><select id="sc-event" data-sc-event>' +
+        ? '<label class="tiny muted" for="sc-event" style="display:block;margin-top:10px">Event</label><select id="sc-event" data-sc-event style="box-sizing:border-box;width:100%;max-width:100%;text-overflow:ellipsis">' +
           list.map(function (e, i) { return '<option value="' + i + '"' + (i === state.index ? ' selected' : '') + '>' + esc(e.title || 'Wedding') + (e.date ? ' · ' + esc(dateLine(e.date)) : '') + '</option>'; }).join('') + '</select>'
         : '';
       shell(picker +
