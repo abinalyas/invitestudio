@@ -197,6 +197,14 @@ export const faqs = [
     "Yes, anytime, even after you publish. You can switch to any design in your plan or in a lower one at no extra cost, and your details stay the same. A design in a higher plan needs an upgrade.",
   ],
   [
+    "Do my guests need an app or an account?",
+    "No. They open your link in their phone\u2019s browser and reply with their name.",
+  ],
+  [
+    "What happens after the wedding?",
+    "Your invitation stays online until 2 months after your event. Then it and the replies are deleted.",
+  ],
+  [
     "Can I use my own domain?",
     "Not yet. Every invitation gets its own InviteStudio link that you can share with your guests.",
   ],

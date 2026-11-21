@@ -8,7 +8,7 @@ export const LANDING = Object.freeze([
     slug: 'wedding-invitation-website',
     title: 'Wedding invitation website builder — InviteStudio',
     description: 'Build a wedding invitation website with your story, events, photos and RSVP. Pick an animated template, preview it free and share one link with guests.',
-    h1: 'A wedding invitation website, made in minutes',
+    h1: 'A wedding invitation website, made simple',
     lead: 'Put everything your guests need on one beautiful page: who is getting married, when and where, the schedule, photos and a way to reply. InviteStudio gives you a designed, animated wedding invitation website to fill in, not a blank page to design.',
     picks: [14, 15, 16],
     sections: [

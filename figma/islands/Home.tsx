@@ -58,8 +58,8 @@ export function HomePage() {
               <strong>Preview your own invitation free. Pay only when you make it live.</strong>
             </p>
             <p className="lead hero-sub">
-              Beautiful, interactive wedding invitations with
-              <br className="desktop-only" /> animations, events and travel details.
+              An animated invitation with your events, photos and RSVP,
+              <br className="desktop-only" /> all in one link guests open on their phone.
             </p>
             <div className="hero-buttons">
               <a className="button" href="/templates">
@@ -92,6 +92,26 @@ export function HomePage() {
               fetchPriority="high"
             />
           </div>
+        </div>
+      </section>
+
+      <section className="section shell what" id="problem">
+        <div className="section-heading centered">
+          <span className="section-kicker">One page for everything</span>
+          <h2>Wedding details shouldn{"’"}t live in twelve chat threads</h2>
+          <p>Put it all on one page instead.</p>
+        </div>
+        <div className="what-grid">
+          {[
+            ["The card has no room", "Venues, schedules and travel details end up in separate messages."],
+            ["Changes mean resending", "A new time or venue should reach every guest at once."],
+            ["Replies get lost", "Counting who is coming shouldn\u2019t mean scrolling through WhatsApp."],
+          ].map(([title, text]) => (
+            <article key={title}>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -333,10 +353,9 @@ export function HomePage() {
         <Art name="flowers-a" className="cta-art cta-art-l" />
         <Art name="flowers-b" className="cta-art cta-art-r" />
         <div>
-          <h2>Ready to create your wedding website?</h2>
+          <h2>Ready to send something they’ll remember?</h2>
           <p>
-            Pick a template, make it yours, and share it with your loved ones in
-            minutes.
+            Start with a design you love. It's free until you publish.
           </p>
         </div>
         <a className="button light" href="/templates">
