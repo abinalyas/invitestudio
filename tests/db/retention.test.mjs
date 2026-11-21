@@ -286,3 +286,130 @@ test('a closed website says so; the public key cannot ask what a couple is shown
     assert.equal(rows.rows.length, 0);
   } finally { await client.query('rollback'); }
 });
+
+// ---- Deleting idle drafts -------------------------------------------------------------------------------------------
+// A draft last changed on 2027-01-10 ends 2027-02-09; with the 14-day grace it may be deleted from 2027-02-23.
+const OLD = '2027-01-10', DUE = '2027-03-01', DUE_FROM = '2027-02-23';
+const exists = async id => (await client.query('select 1 from weddings where id = $1', [id])).rowCount === 1;
+const del = async (id, today = DUE) => (await client.query('select retention_delete_draft($1, $2::date) as r', [id, today])).rows[0].r;
+const plan = async (today = DUE) => (await client.query('select retention_draft_plan($1::date) as r', [today])).rows[0].r;
+const switchDeletion = on => client.query('update retention_settings set draft_deletion_enabled = $1', [on]);
+
+test('draft deletion starts switched off, and while it is off nothing is deleted or planned as enabled', async () => {
+  await client.query('delete from weddings');
+  assert.equal((await client.query('select draft_deletion_enabled as e from retention_settings')).rows[0].e, false);
+  const id = await add({ updated: OLD });
+  const p = await plan();
+  assert.deepEqual([p.enabled, p.eligible, p.ids], [false, 1, [id]], 'it can say what is due');
+  assert.equal(await del(id), false);
+  assert.equal(await exists(id), true, 'switched off: the draft stays');
+  assert.equal((await client.query('select count(*)::int as n from retention_log')).rows[0].n, 0);
+});
+
+test('switched on, a draft past its end date and grace period is deleted, with what hangs off it, and logged by id only', async () => {
+  await client.query('delete from weddings');
+  await switchDeletion(true);
+  try {
+    const id = await add({ updated: OLD });
+    await shown(id, '2027-01-12');                                   // records the date shown (retention_shown row)
+    await client.query(`insert into edit_tokens (wedding_id, token_hash, expires_at) values ($1, $2, now() + interval '1 day')`, [id, 'h'.repeat(64)]).catch(() => null);
+    assert.equal(await del(id, '2027-02-22'), false, 'the day before the grace period ends it stays');
+    assert.equal(await del(id, DUE_FROM), true, 'on the first day it may go');
+    assert.equal(await exists(id), false);
+    assert.equal((await client.query('select count(*)::int as n from retention_shown where wedding_id = $1', [id])).rows[0].n, 0, 'removed with it');
+    const log = (await client.query('select * from retention_log where wedding_id = $1', [id])).rows;
+    assert.equal(log.length, 1);
+    assert.deepEqual([log[0].action, log[0].rule, iso(log[0].last_change), iso(log[0].ended_on), log[0].grace_days], ['delete_draft', 'draft_idle', OLD, '2027-02-09', 14]);
+    assert.equal(JSON.stringify(log).includes('Test'), false, 'no title or name in the record');
+    assert.equal(await del(id), false, 'a second call finds nothing to delete');
+  } finally { await switchDeletion(false); }
+});
+
+test('what must never be deleted, even when switched on and long past due', async () => {
+  await client.query('delete from weddings');
+  await switchDeletion(true);
+  try {
+    const keep = [];
+    keep.push(['published now', await add({ status: 'published', published: '2026-12-01', updated: OLD })]);
+    const everPublished = await add({ updated: OLD, status: 'unpublished', published: '2026-12-01' });
+    keep.push(['was published once, now unpublished', everPublished]);
+    keep.push(['keep_until set', await add({ updated: OLD, keepUntil: '2030-01-01' })]);
+    const paid = await add({ updated: OLD });
+    await client.query(`insert into payments (wedding_id, provider, status, amount_minor) values ($1, 'test', 'paid', 100)`, [paid]);
+    keep.push(['a paid payment', paid]);
+    const refunded = await add({ updated: OLD });
+    await client.query(`insert into payments (wedding_id, provider, status, amount_minor) values ($1, 'test', 'refunded', 100)`, [refunded]);
+    keep.push(['a refunded payment', refunded]);
+    const unlocked = await add({ updated: OLD });
+    await client.query(`update weddings set publish_unlocked_at = now() where id = $1`, [unlocked]);
+    keep.push(['publishing unlocked', unlocked]);
+    const promo = await add({ updated: OLD });
+    await client.query(`insert into promo_codes (code, note) values ('PROMO-TEST-0001', 'test')`);
+    await client.query(`insert into promo_redemptions (code, wedding_id) values ('PROMO-TEST-0001', $1)`, [promo]);
+    keep.push(['a promo code used', promo]);
+    const closed = await add({ updated: OLD });
+    await client.query(`update weddings set retention_hidden_at = now() where id = $1`, [closed]);
+    keep.push(['closed by the cleanup', closed]);
+    keep.push(['edited recently (ends 2027-03-22)', await (async () => { const id = await add({ updated: '2027-02-20' }); return id; })()]);
+
+    const p = await plan();
+    assert.deepEqual([p.eligible, p.ids], [0, []], 'none of them is even planned');
+    for (const [why, id] of keep) {
+      assert.equal(await del(id), false, why);
+      assert.equal(await exists(id), true, `${why}: still there`);
+    }
+    // A pending or failed payment (an abandoned checkout) does not protect a draft.
+    const abandoned = await add({ updated: OLD });
+    await client.query(`insert into payments (wedding_id, provider, status, amount_minor) values ($1, 'test', 'pending', 100), ($1, 'test2', 'failed', 100)`, [abandoned]);
+    assert.equal(await del(abandoned), true, 'an abandoned checkout does not keep a draft alive');
+  } finally { await switchDeletion(false); }
+});
+
+test('a save that lands before the delete keeps the draft: it is checked again with the row locked', async () => {
+  await client.query('delete from weddings');
+  await switchDeletion(true);
+  try {
+    const id = await add({ updated: OLD });
+    assert.equal((await plan()).eligible, 1, 'it was due when the run planned');
+    await client.query(`alter table weddings disable trigger weddings_set_updated_at`);
+    await client.query(`update weddings set updated_at = '2027-02-28T10:00:00Z' where id = $1`, [id]);   // the couple saved after the plan
+    await client.query(`alter table weddings enable trigger weddings_set_updated_at`);
+    assert.equal(await del(id), false);
+    assert.equal(await exists(id), true);
+  } finally { await switchDeletion(false); }
+});
+
+test('the plan lists the oldest first, at most one batch, and says how many are due in all', async () => {
+  await client.query('delete from weddings');
+  await client.query('update retention_settings set batch_limit = 2');
+  try {
+    const newest = await add({ updated: '2027-01-12' });
+    const oldest = await add({ updated: '2027-01-02' });
+    const middle = await add({ updated: '2027-01-08' });
+    const p = await plan();
+    assert.equal(p.eligible, 3);
+    assert.deepEqual(p.ids, [oldest, middle], 'two of three, oldest first');
+    assert.deepEqual([p.batchLimit, p.brakeLimit], [2, 10]);
+    void newest;
+  } finally { await client.query('update retention_settings set batch_limit = 20'); }
+});
+
+test('the public key cannot run, plan or read the log of draft deletion', async () => {
+  const asRole = async (role, sql) => {
+    await client.query('begin');
+    try { await client.query(`set local role ${role}`); const res = await client.query(sql); await client.query('commit'); return res; }
+    catch (error) { await client.query('rollback'); throw error; }
+  };
+  const id = '00000000-0000-4000-8000-000000000000';
+  for (const role of ['anon', 'authenticated']) {
+    await assert.rejects(asRole(role, `select retention_delete_draft('${id}')`), /permission denied/);
+    await assert.rejects(asRole(role, `select retention_draft_plan()`), /permission denied/);
+  }
+  await client.query(`insert into retention_log (wedding_id, action) values ($1, 'delete_draft')`, [id]);
+  for (const role of ['anon', 'authenticated']) {
+    const rows = await asRole(role, `select * from retention_log`).catch(() => ({ rows: [] }));
+    assert.equal(rows.rows.length, 0, `${role} sees no log rows (row-level security, no policy)`);
+  }
+  assert.ok((await asRole('service_role', `select retention_draft_plan() as r`)).rows[0].r);
+  await client.query('delete from retention_log');
+});
