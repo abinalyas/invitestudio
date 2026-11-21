@@ -21,5 +21,6 @@ test('Create an invitation on the dashboard goes to the designs first', async ({
   await page.goto('/');
   await page.evaluate(() => { localStorage.clear(); go('dashboard'); });
   await page.getByRole('button', { name: /Create an invitation/ }).click();
-  await expect.poll(() => page.evaluate(() => state.page)).toBe('templates');
+  await expect(page).toHaveURL(/\/templates$/);
+  await expect(page.locator('.figma-island-host')).toBeVisible();
 });

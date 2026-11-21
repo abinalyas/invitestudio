@@ -52,7 +52,8 @@ test('there is no grid/list switch, and the new-invitation card goes to the desi
   await seed(page, LIST);
   await expect(page.getByRole('button', { name: /list view|grid view/i })).toHaveCount(0);
   await page.getByRole('button', { name: /Start a new invitation/ }).click();
-  await expect.poll(() => page.evaluate(() => state.page)).toBe('templates');
+  await expect(page).toHaveURL(/\/templates$/);
+  await expect(page.locator('.figma-island-host')).toBeVisible();
 });
 
 test('editing stamps the edit time; just opening does not', async ({ page }) => {
