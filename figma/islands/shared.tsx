@@ -448,7 +448,7 @@ export const editableItems = [
   "Your story, with your own title",
   "An event schedule: times, venues, dress code and directions",
   "Show or hide any section",
-  "Publish at your own web address",
+  "Get your own shareable InviteStudio link",
 ] as const
 
 export const guestSections = [
