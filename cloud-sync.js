@@ -1262,16 +1262,14 @@
 
     // Your invitation link.
     const status = slugStatusText(project, session);
-    const suggestions = session.availability && !session.availability.available && session.availability.suggestions?.length
-      ? `<div class="pub-suggest" role="group" aria-label="Available alternatives"><span>Suggested alternatives</span><div>${session.availability.suggestions.map(sug => `<button class="pub-chip" type="button" data-use-suggestion="${escapeText(sug)}">${escapeText(sug)}</button>`).join('')}</div></div>`
-      : '';
     const addressField = live && !session.changing
       ? ''
       : `<section class="pub-card">
          <h3 class="pub-card-title">Your invitation link</h3>
          <label class="sr-only" for="publishSlug">Web address</label>
          <div class="pub-slug"><span class="pub-prefix">${escapeText(window.location.origin)}/s/</span><input id="publishSlug" type="text" value="${escapeText(session.typed)}" maxlength="60" autocomplete="off" spellcheck="false" aria-describedby="slug-status"></div>
-         <p id="slug-status" aria-live="polite" class="pub-status-pill" data-tone="${status.tone}">${escapeText(status.text)}</p>${suggestions}
+         <p id="slug-status" aria-live="polite" class="pub-status-pill" data-tone="${status.tone}">${escapeText(status.text)}</p>
+         <div class="pub-suggest" role="group" aria-label="Available alternatives" data-address-suggestions hidden><span>Suggested alternatives</span><div></div></div>
        </section>`;
     // How long the invitation stays online: the closing date, or an estimate before it is live (docs/RETENTION_PLAN.md).
     const kept = window.InviteRetentionLast && window.InviteRetentionLast.projectId === project.id ? window.InviteRetentionLast : null;
@@ -1356,6 +1354,7 @@
       <div class="pub-foot"><p>${ICON.help} <span><strong>Questions?</strong> <a href="/contact" target="_blank" rel="noopener">Contact us</a>.</span></p><button class="btn" type="button" data-publish-close>Close</button></div>
     </div>`);
     wirePublishDialog(project);
+    updateAddressSuggestions(document.querySelector('#modal-root'), session);
     ensureAddressChecked(project);
     loadPublishPrice(project);
   }
@@ -1406,12 +1405,6 @@
       publishSession.confirmed = event.target.checked;
       paintPublishDialog(project, {});
     });
-    root.querySelectorAll('[data-use-suggestion]').forEach(button => button.addEventListener('click', () => {
-      publishSession.typed = button.getAttribute('data-use-suggestion');
-      publishSession.availability = null;
-      paintPublishDialog(project, {});
-      checkAddressSoon(project);
-    }));
     [['#buyerName', 'name'], ['#buyerEmail', 'email'], ['#buyerPhone', 'phone']].forEach(([selector, key]) => {
       const field = root.querySelector(selector);
       field?.addEventListener('input', () => {
@@ -1427,6 +1420,13 @@
     root.querySelector('[data-promo]')?.addEventListener('toggle', event => { if (publishSession) publishSession.promoOpen = event.target.open; });
     root.querySelector('[data-promo-apply]')?.addEventListener('click', () => redeemPromo(project));
     const input = root.querySelector('#publishSlug');
+    root.querySelector('[data-address-suggestions]')?.addEventListener('click', event => {
+      const button = event.target.closest('[data-use-suggestion]');
+      if (!button) return;
+      input.value = button.dataset.useSuggestion;
+      input.focus();
+      input.dispatchEvent(new Event('input'));
+    });
     input?.addEventListener('input', () => {
       publishSession.typed = input.value.trim().toLowerCase();
       publishSession.availability = null;
@@ -1450,7 +1450,17 @@
     if (contactLine) contactLine.textContent = contactHint(publishSession);
     const button = root?.querySelector('[data-publish-submit]');
     if (button) button.disabled = !canPublish(project, publishSession);
-    root?.querySelectorAll('[data-use-suggestion]').forEach(element => element.remove());
+    updateAddressSuggestions(root, publishSession);
+  }
+
+  function updateAddressSuggestions(root, session) {
+    const group = root?.querySelector('[data-address-suggestions]');
+    if (!group) return;
+    const suggestions = session.availability?.available === false ? session.availability.suggestions || [] : [];
+    const buttons = group.querySelector('div');
+    const markup = suggestions.map(slug => `<button class="pub-chip" type="button" data-use-suggestion="${escapeText(slug)}">${escapeText(slug)}</button>`).join('');
+    if (buttons.innerHTML !== markup) buttons.innerHTML = markup;
+    group.hidden = !suggestions.length;
   }
 
   function checkAddressSoon(project) {
@@ -1481,7 +1491,7 @@
         }
       } finally {
         if (publishSession === session) session.checking = false;
-        if (publishSession === session && session.typed === typed) paintPublishDialog(project, {});
+        if (publishSession === session && session.typed === typed) updateDialogWithoutRepaint(project);
       }
     }, 350);
   }
@@ -1525,7 +1535,7 @@
       session.price = false;
     }
     session.priceLoading = false;
-    if (publishSession === session) paintPublishDialog(project, {});
+    if (publishSession === session && !isLive(project) && !session.goingLive) paintPublishDialog(project, {});
   }
 
   // Whether this dialog's main button takes a payment: the server has said so, or payments are live and this website is not unlocked.
