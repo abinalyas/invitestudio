@@ -522,6 +522,9 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
 .detail-price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; margin: 18px 0 4px; }
 .detail-price strong { font-family: "Playfair Display", serif; font-size: 30px; color: var(--ink); }
 .detail-price span { font-size: 13px; color: var(--muted-text); }
+/* The price sits beside the Start button, in the button row's second column. */
+.detail-actions .detail-price { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; gap: 2px; margin: 0; align-self: center; }
+.detail-actions .detail-price strong { font-size: 26px; line-height: 1.1; }
 .gallery-price { margin: 8px 0 0; font-size: 12px; color: var(--muted-text); }
 .gallery-price strong { margin-left: 4px; color: var(--ink); font-weight: 600; }
 
