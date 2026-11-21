@@ -82,6 +82,7 @@ test('create, edit, save, publish, share, edit after publishing, and take offlin
   await guest.close();
 
   // 7. Open Share while the edit is saving. The same dialog should become usable once the save returns.
+  await page.locator('#modal-root').getByRole('button', { name: 'Dismiss' }).click();
   const weddingId = (await savedStatus(page, title)).cloudId;
   let releaseSave;
   const waitForRelease = new Promise(resolve => { releaseSave = resolve; });
