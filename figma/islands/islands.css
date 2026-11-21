@@ -176,6 +176,30 @@ button.btn.small.danger:focus-visible { outline: 2px solid #9b5147; outline-offs
   }
 }
 
+/* Phone Edit view: the way back to the preview, and the save status, stay at the top while the form scrolls. */
+.phone-edit-bar { display: none; }
+@media (max-width: 767px) {
+  .phone-edit-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: 0; z-index: 6;
+    margin: -4px -4px 8px; padding: 8px 4px; background: #fffdf8; border-bottom: 1px solid #ece6dc;
+  }
+  .phone-back {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 1px solid #145c37; border-radius: 999px;
+    background: #fff; color: #145c37; font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer;
+  }
+  .phone-back:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }
+  .phone-saved { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 1px; font-size: 13px; line-height: 1.3; color: #4f4b44; text-align: right; }
+  .phone-saved-line { display: inline-flex; align-items: center; gap: 8px; }
+  .phone-saved-note { font-size: 12px; color: #5c625e; }
+  .phone-saved.save-saved { color: #2f6b45; }
+  .phone-saved.save-error, .phone-saved.save-conflict { color: #9b5147; }
+  .phone-saved .save-when { display: inline; }
+  .phone-saved button { min-height: 40px; padding: 0 12px; border: 1px solid #145c37; border-radius: 8px; background: #fff; color: #145c37; font: inherit; cursor: pointer; }
+  /* The panel's rounded corners used overflow: hidden, which stops the bar above from sticking to the screen. clip rounds the same way
+     without making the panel a scroll container (older browsers just show the content unclipped). */
+  .editor-workspace[data-tab="edit"] > .editor-controls { overflow: visible; overflow: clip; }
+}
+
 /* D3 phone polish: header on two rows, and field hints inline with their labels. */
 .editor-form label, .event-form label, .add-event label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
 .editor-form label > input, .editor-form label > textarea, .editor-form label > select, .editor-form label > .input-with-icon,
