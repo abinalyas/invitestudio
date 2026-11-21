@@ -17,6 +17,7 @@ rebuild.
 | 4 | What "kept" covers | The invitation page, replies, photos, private edit links: everything, as in `docs/RSVP_PLAN.md`. |
 | 5 | Changing the rules later | Yes, expected. See "Built to change". |
 | 7 | Settled answers | 8-month cap from first publishing. No event date: kept **4 months** after the last change. 14-day grace period and 14-day warning. A freed web address is held **6 months**. Contact route: **email and WhatsApp** (the details are set in one place in the site's settings, not written into pages). |
+| 8 | Drafts nobody comes back to | A draft that was **never published** is removed **30 days after its last change**, with a warning in the last 7 days and the same 14-day grace period. Any change moves the date out. Settings, not hard-wired: `draft_idle_days` (30) and `draft_warn_days` (7). See "Idle drafts" below. |
 | 6 | Publishing very early | The cap counted from the publish date means a very early publisher pays to keep the page live through their event. The app tells them the closing date when they publish. |
 
 ## What happens, in order
@@ -62,6 +63,17 @@ asks the very early to pay.
 - **Tuning:** the audit log records how far ahead of the event each website was published. After a few weeks of real use
   the cap can be set from data instead of a guess. (The "most people publish within 3 months" idea has not been
   checked against real customers; destination weddings often publish much earlier.)
+
+## Idle drafts
+
+A website that was never published (no first-publish date, not published now) has its own clock, replacing the two rules above for as long as it is a draft:
+
+- **Ends:** `draft_idle_days` (30) after its last change. The last save counts as a change, so editing a draft moves the date out; opening it does not.
+- **Warned:** in the last `draft_warn_days` (7) days. The My invitations card turns amber ("Removed on 9 Feb 2027 if not edited (4 days left)") and the editor shows the same notice.
+- **Grace:** the same 14 days after the end date. The editor and the card say "Draft expired. Make a change by <date> to keep it": a change inside the grace period brings it back.
+- **Deleted:** for good after the grace period, with its photos, by the cleanup. **That step is not built yet** (see Progress): today the date is shown and counted in the dry-run report, and nothing is removed.
+- **Publishing** switches it to the published rule above; the end date is never earlier than a date the couple was shown.
+- Drafts that only exist on one device (never saved online) are not part of this; nothing is stored on the server for them.
 
 ## Built to change
 
@@ -155,6 +167,8 @@ They are left as they are until the prices are decided.
   and the couple's way back. "Talk to us" (WhatsApp and email, each opening a message that already names the website)
   is in the editor notices, the Share dialog, the ended page, the home page footer and the gallery. The two contact
   details live in `site-config.js`. **Nothing closes a website yet** (step 4 sets `retention_hidden_at`).
+
+- **Idle drafts: built, dry-run only.** Migration `202611210001_draft_idle_removal.sql` adds `draft_idle_days` and `draft_warn_days`, makes `wedding_ends_on()` return the draft date for a never-published website, tells the editor and the My invitations cards (`draft`, `draftIdleDays`, a 7-day `warnDays`), and adds a `drafts` section to the dry-run report (`total`, `endingWithinWarning`, `inGrace`, `wouldDelete`). Nothing is deleted. Read the report for a few days first; real deletion is step 4.
 
 ## Order of work
 

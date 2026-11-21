@@ -307,6 +307,15 @@
     if (!info) return '';
     const live = typeof isLiveProject === 'function' ? isLiveProject(project) : false;
     const fmt = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    // A draft that was never published is removed after a stretch with no changes; any change moves the date out.
+    if (info.draft) {
+      if (info.stage === 'hidden' || info.stage === 'delete_due') {
+        return info.deleteOn ? `<p class="dash-kept" data-tone="closed" data-kept data-kept-draft>Draft expired. Make a change by <strong>${escapeText(fmt(info.deleteOn))}</strong> to keep it</p>` : '';
+      }
+      if (!info.endsOn) return '';
+      const draftSoon = typeof info.daysLeft === 'number' && info.daysLeft <= (info.warnDays || 7);
+      return `<p class="dash-kept" data-tone="${draftSoon ? 'soon' : 'ok'}" data-kept data-kept-draft>Removed on <strong>${escapeText(fmt(info.endsOn))}</strong> if not edited${draftSoon ? ` (${Math.max(0, info.daysLeft)} day${info.daysLeft === 1 ? '' : 's'} left)` : ''}</p>`;
+    }
     if (info.closed || info.stage === 'hidden') {
       return info.deleteOn ? `<p class="dash-kept" data-tone="closed" data-kept>Offline. Can be restored until <strong>${escapeText(fmt(info.deleteOn))}</strong></p>` : '';
     }
@@ -1248,7 +1257,8 @@
        </section>`;
     // How long the invitation stays online: the closing date, or an estimate before it is live (docs/RETENTION_PLAN.md).
     const kept = window.InviteRetentionLast && window.InviteRetentionLast.projectId === project.id ? window.InviteRetentionLast : null;
-    const keptDate = kept ? (kept.endsOn || kept.estimatedEndsOn) : '';
+    // A draft's own end date is when the draft is removed, not when the invitation closes: say what publishing today would give.
+    const keptDate = kept ? (kept.draft ? (kept.estimatedEndsOn || '') : (kept.endsOn || kept.estimatedEndsOn)) : '';
     const keptBefore = kept ? Boolean(kept.endsBeforeEvent || kept.estimateBeforeEvent) : false;
     const keptLinks = window.InviteContact ? window.InviteContact.links('extend', live ? publicLinkFor(project.publicSlug) : '') : null;
     const keptBlock = keptDate
