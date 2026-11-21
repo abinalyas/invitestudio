@@ -262,7 +262,12 @@ test('the details form: the email must look right, the phone is optional, the re
   const pay = dialog.getByRole('button', { name: 'Pay ₹2,999 and continue' });
   await expect(pay).toBeDisabled({ timeout: 15000 });
   await expect(dialog.getByLabel(/Send me tips and reminders/)).not.toBeChecked();
+  // Nothing is said about missing details until the person starts filling them in (the button just waits).
+  await expect(dialog.locator('#contact-status')).toHaveText('');
+  await dialog.getByLabel('Email').fill('m');
   await expect(dialog.locator('#contact-status')).toHaveText('Enter your name.');
+  await dialog.getByLabel('Email').fill('');
+  await expect(dialog.locator('#contact-status')).toHaveText('Enter your name.', { timeout: 2000 });   // once started, it stays
   await dialog.getByLabel('Your name').fill('Mira Nair');
   await expect(dialog.locator('#contact-status')).toHaveText('Enter a valid email address.');
   await dialog.getByLabel('Email').fill('mira@example');

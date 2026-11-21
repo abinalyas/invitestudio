@@ -1116,6 +1116,14 @@
     return { name: String(saved.name || ''), email: String(saved.email || ''), phone: String(saved.phone || ''), marketing: saved.marketing === true };
   }
 
+  // What the form says is missing. Nothing is said until the person has started filling it in (or came back to details that were
+  // already partly filled), so a page they have not touched yet does not open with an error.
+  function contactHint(session) {
+    const c = session.contact;
+    const started = session.contactTouched || c.name.trim() || c.email.trim() || c.phone.trim();
+    return started ? contactProblem(c) : '';
+  }
+
   function contactProblem(contact) {
     if (!contact.name.trim()) return 'Enter your name.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contact.email.trim())) return 'Enter a valid email address.';
@@ -1231,7 +1239,7 @@
         <label for="buyerPhone">Phone or WhatsApp number <span class="pub-opt">(optional)</span></label>
         <span class="pub-field">${ICON.phone}<input id="buyerPhone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="Enter your number" value="${escapeText(session.contact.phone)}"></span>
         <label class="pub-check"><input id="buyerMarketing" type="checkbox" ${session.contact.marketing ? 'checked' : ''}><span>Send me tips and reminders about my invitation <span class="pub-opt">(optional)</span></span></label>
-        <p id="contact-status" class="pub-sub bad" aria-live="polite">${escapeText(contactProblem(session.contact))}</p>
+        <p id="contact-status" class="pub-sub bad" aria-live="polite">${escapeText(contactHint(session))}</p>
       </fieldset>` : '';
 
     // A promo code, instead of paying (only while the page is asking for a payment).
@@ -1401,6 +1409,7 @@
       const field = root.querySelector(selector);
       field?.addEventListener('input', () => {
         publishSession.contact[key] = field.value;
+        publishSession.contactTouched = true;
         rememberContact(project);
         updateDialogWithoutRepaint(project);
       });
@@ -1433,7 +1442,7 @@
     const linkLine = root?.querySelector('#link-preview');
     if (linkLine) linkLine.textContent = `${window.location.origin}/s/${publishSession.typed || '…'}`;
     const contactLine = root?.querySelector('#contact-status');
-    if (contactLine) contactLine.textContent = contactProblem(publishSession.contact);
+    if (contactLine) contactLine.textContent = contactHint(publishSession);
     const button = root?.querySelector('[data-publish-submit]');
     if (button) button.disabled = !canPublish(project, publishSession);
     root?.querySelectorAll('[data-use-suggestion]').forEach(element => element.remove());
