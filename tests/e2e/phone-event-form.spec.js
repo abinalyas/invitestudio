@@ -59,6 +59,34 @@ test.describe('phone', () => {
     await expect(page.locator('.event-item', { hasText: 'Sangeet' }).first().getByLabel(/Event name/)).toHaveValue('Sangeet');
     await expect.poll(() => inView(page, 'Sangeet')).toBe(true);
   });
+
+  // After the form opens, people have to be able to see how to get back, and that what they type is kept and shown in the preview.
+  test('the Edit view says how to go back to the preview, and that changes are saved and shown there', async ({ page }) => {
+    await openEditor(page);
+    await page.locator('[data-add-event]').click();
+    await page.locator('.edit-chip', { hasText: 'Reception' }).click();
+    await expect(editTab(page)).toHaveAttribute('aria-selected', 'true');
+    const bar = page.locator('.phone-edit-bar');
+    await expect(bar.getByRole('button', { name: 'Back to preview' })).toBeVisible();
+    await expect(bar.getByRole('status')).toContainText(/Saved|Saving/);
+    await expect(bar).toContainText('Preview updates as you type');   // proof that what is typed is applied, in the part that stays on screen
+  });
+
+  test('the way back stays at the top while the form scrolls and while a field is being typed in (when the tab bar is hidden)', async ({ page }) => {
+    await openEditor(page);
+    await page.locator('[data-edit="event:title"][data-id="ev2"]').click();
+    const name = page.locator('.event-item', { hasText: 'Sangeet' }).first().getByLabel(/Event name/);
+    await name.focus();
+    await page.keyboard.type('!');
+    await page.evaluate(() => window.scrollBy(0, 500));
+    const back = page.locator('.phone-edit-bar').getByRole('button', { name: 'Back to preview' });
+    await expect(back).toBeVisible();
+    expect(await back.evaluate(el => { const r = el.getBoundingClientRect(); return r.top >= 0 && r.top < 80; })).toBe(true);   // pinned at the top
+    await back.click();
+    await expect(editTab(page)).toHaveAttribute('aria-selected', 'false');
+    await expect(page.getByRole('tab', { name: /^Preview/ })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('[data-edit="event:title"][data-id="ev2"]')).toContainText('Sangeet!');   // what was typed is in the invitation
+  });
 });
 
 test.describe('wide screen', () => {
@@ -68,5 +96,6 @@ test.describe('wide screen', () => {
     await openEditor(page);
     await page.locator('[data-edit="event:title"][data-id="ev2"]').click();
     await expect(page.locator('[data-edit="event:title"][data-id="ev2"]')).toHaveAttribute('contenteditable', 'true');
+    await expect(page.locator('.phone-edit-bar')).toBeHidden();   // the way back is for phones only: the preview is already beside the form
   });
 });
