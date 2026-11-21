@@ -58,8 +58,8 @@ export function HomePage() {
               <strong>Preview your own invitation free. Pay only when you make it live.</strong>
             </p>
             <p className="lead hero-sub">
-              Beautiful, interactive wedding invitations with
-              <br className="desktop-only" /> animations, events and travel details.
+              An animated invitation with your events, photos and RSVP,
+              <br className="desktop-only" /> all in one link guests open on their phone.
             </p>
             <div className="hero-buttons">
               <a className="button" href="/templates">
@@ -131,7 +131,7 @@ export function HomePage() {
         <div className="section-heading centered">
           <span className="section-kicker">A complete digital invitation</span>
           <h2>Everything you need for your big day</h2>
-          <p>All the essentials in one place, on every plan.</p>
+          <p>All the essentials, with every design.</p>
         </div>
         <div className="what-grid">
           {[

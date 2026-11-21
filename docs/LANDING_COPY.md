@@ -1,6 +1,8 @@
 # Landing page copy: launch version
 
-Status: draft for the product owner's approval. Not yet applied to `figma/islands/Home.tsx`.
+Status: decisions made by the product owner. The hero subhead and the features subhead are applied in `figma/islands/Home.tsx`; the rest is still draft.
+
+**Decisions:** (1) keep the current main headline; the subhead change is approved. (2) Payments are live, so no early-access wording. (3) No "in minutes" claim until a first-time build is timed.
 
 ## Rules this copy follows
 
@@ -14,10 +16,7 @@ Status: draft for the product owner's approval. Not yet applied to `figma/island
 
 **Eyebrow:** Wedding invitation websites
 
-**Headline (recommended):** Your wedding invitation, made to be opened
-*Alternatives to A/B test:*
-- A: Create a wedding website your guests will love (current)
-- B: One beautiful link for your whole wedding
+**Headline:** Create a wedding website your guests will love *(unchanged, by decision)*
 
 **Subhead:** An animated invitation with your events, photos and RSVP, all in one link guests open on their phone. Build and preview it free. Pay once, only when you publish.
 
@@ -28,8 +27,6 @@ Status: draft for the product owner's approval. Not yet applied to `figma/island
 - Free to build and preview
 - Pay once. No subscription
 - Guests need no app or account
-
-**Launch-window line (use only while `PAYMENTS_MODE` is not live):** Publishing is free during early access.
 
 ## Problem strip (new, one short section under the hero)
 
@@ -110,6 +107,5 @@ Keep the existing questions and add:
 
 1. Time a first-time build and replace any "minutes" claim with the measured number.
 2. Publish one polished demo invitation and wire the secondary button to it.
-3. Product owner approves the headline, plus one test variant.
-4. Decide whether the "early access" line stays, based on the `PAYMENTS_MODE` status at launch.
-5. Apply to `figma/islands/Home.tsx` and `functions/_shared/seo.js`, run `npm run build:figma`, `npm run stamp` and `npm run test:unit` (the SEO tests check page copy).
+3. Apply the remaining sections (problem strip, feature tiles, FAQ additions, closing call to action) once approved.
+4. Apply to `figma/islands/Home.tsx` and `functions/_shared/seo.js`, run `npm run build:figma`, `npm run stamp` and `npm run test:unit` (the SEO tests check page copy).
