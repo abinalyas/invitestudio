@@ -65,35 +65,35 @@ export function HomePage() {
               </span>
             </h1>
             <p className="lead hero-sub">
-              Give guests your wedding schedule, your photos and a place to RSVP, all on your own shareable InviteStudio link.
+              One InviteStudio link for your wedding schedule, photos, and RSVPs.
             </p>
             <div className="hero-buttons">
               <a className="button" href="/templates">
                 Browse wedding designs <Icon name="arrow" size={18} />
               </a>
               <p className="hero-promise">
-                <strong>Personal previews are free.</strong>
-                <span>One-time publishing starts at {indiaPrice("minimalist")} in India{pricing?.mode === "early-access" ? " after early access" : ""}.</span>
+                <strong>Preview free.</strong>
+                <span>One-time publishing from {indiaPrice("minimalist")} in India{pricing?.mode === "early-access" ? " after early access" : ""}.</span>
               </p>
             </div>
           </div>
 
           <figure className="hero-demo">
+            <figcaption>
+              <a href={`/templates/${bloomReveal.id}`}>See a sample invitation <Icon name="arrow" size={16} /></a>
+            </figcaption>
             <video
               controls
               muted
               playsInline
               preload="none"
-              poster="/assets/home/bloom-reveal-demo-poster.webp"
-              width={360}
-              height={610}
-              aria-label="Bloom Reveal demo showing the opening animation, wedding schedule and guest RSVP"
+              poster="/assets/home/bloom-reveal-demo-poster.webp?v=2"
+              width={320}
+              height={544}
+              aria-label="Bloom Reveal demo showing the floral opening, wedding schedule, photo gallery, and guest RSVP"
             >
-              <source src="/assets/home/bloom-reveal-demo.mp4" type="video/mp4" />
+              <source src="/assets/home/bloom-reveal-demo.mp4?v=2" type="video/mp4" />
             </video>
-            <figcaption>
-              <a href={`/templates/${bloomReveal.id}`}>See a sample invitation <Icon name="arrow" size={16} /></a>
-            </figcaption>
           </figure>
         </div>
       </section>
@@ -211,6 +211,20 @@ export function HomePage() {
               </ul>
             </article>
           ))}
+        </div>
+        <div className="feature-examples">
+          <figure>
+            <div className="feature-example-art">
+              <img src="/assets/home/bloom-reveal-whatsapp-card.webp" alt="A floral wedding ceremony card for Daniel and Amelia" width={360} height={480} loading="lazy" decoding="async" />
+            </div>
+            <figcaption>Send a WhatsApp card with your invitation link</figcaption>
+          </figure>
+          <figure>
+            <div className="feature-example-art">
+              <img src="/assets/home/host-rsvp-example.webp" alt="A guest’s reply with attendance, event and meal details, and a spreadsheet download button" width={330} height={258} loading="lazy" decoding="async" />
+            </div>
+            <figcaption>See guest replies and download your list</figcaption>
+          </figure>
         </div>
         <ul className="what-assure">
           <li><Art name="icon-notebook" className="assure-art" /> Edit anytime</li>

@@ -8,13 +8,18 @@ for (const [device, width, height] of [['desktop', 1280, 800], ['phone', 393, 85
     const browse = hero.getByRole('link', { name: 'Browse wedding designs' });
     await expect(browse).toHaveAttribute('href', '/templates');
     await expect(browse).toBeInViewport();
-    await expect(hero.locator('.hero-promise')).toContainText('Personal previews are free.');
-    await expect(hero.locator('.hero-promise')).toContainText('One-time publishing starts at ₹999 in India.');
+    await expect(hero.locator('.hero-sub')).toHaveText('One InviteStudio link for your wedding schedule, photos, and RSVPs.');
+    await expect(hero.locator('.hero-promise')).toContainText('Preview free.');
+    await expect(hero.locator('.hero-promise')).toContainText('One-time publishing from ₹999 in India.');
     await expect(hero.locator('.hero-promise')).toBeInViewport();
-    await expect(hero.getByRole('link', { name: 'See a sample invitation' })).toHaveAttribute('href', '/templates/18');
+    const sample = hero.getByRole('link', { name: 'See a sample invitation' });
+    await expect(sample).toHaveAttribute('href', '/templates/18');
+    await expect(sample).toBeInViewport();
 
     const demo = hero.locator('video');
     await expect(demo).toBeVisible();
+    expect((await sample.boundingBox()).y).toBeLessThan((await demo.boundingBox()).y);
+    await expect(demo).toHaveAccessibleName(/photo gallery/);
     await expect(demo).toHaveAttribute('preload', 'none');
     await expect(demo).toHaveJSProperty('paused', true);
     await demo.evaluate(video => video.play());
@@ -22,6 +27,16 @@ for (const [device, width, height] of [['desktop', 1280, 800], ['phone', 393, 85
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 }
+
+test('features show a sample WhatsApp card and a host’s reply list', async ({ page }) => {
+  await page.goto('/');
+  const examples = page.locator('#features .feature-examples');
+  await expect(examples.getByRole('figure')).toHaveCount(2);
+  for (const image of await examples.getByRole('img').all()) {
+    await image.scrollIntoViewIfNeeded();
+    await expect.poll(() => image.evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
+  }
+});
 
 test('three priced designs follow the hero, and pricing explains hosting and RSVP export', async ({ page }) => {
   const { pricingFor } = await import('../../functions/_shared/pricing.js');
