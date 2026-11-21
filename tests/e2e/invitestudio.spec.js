@@ -914,17 +914,18 @@ test.describe('guest replies', () => {
     expect(text).not.toContain('for now the invitation is for viewing');
   });
 
-  test('the Share panel describes replies the way this invitation is set up', async ({ page }) => {
+  test('the Share panel before going live no longer lists what guests can do about replies, whatever the reply setting', async ({ page }) => {
     await savedDraftWithServer(page);
     await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toBeVisible();
-    for (const [mode, expected, absent] of [['contact', 'Guests see your contact details', 'Guests can reply from the live invitation'], ['none', null, 'Replies.']]) {
+    for (const mode of ['count', 'contact', 'none']) {
       await page.evaluate(mode => window.InviteStudioBridge.setRsvp(mode), mode);
       await page.getByRole('button', { name: /Share invitation/ }).first().click();
       const dialog = page.locator('#modal-title').locator('xpath=ancestor::*[contains(@class,"modal")][1]');
       const text = await dialog.innerText();
-      if (expected) expect(text).toContain(expected);
-      expect(text).not.toContain(absent);
+      expect(text).not.toContain('Guests can reply from the live invitation');
+      expect(text).not.toContain('Guests see your contact details');
+      expect(text).not.toContain('Replies.');
       await page.getByRole('button', { name: 'Close' }).click();
     }
   });
