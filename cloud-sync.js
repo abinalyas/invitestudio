@@ -1113,7 +1113,15 @@
   // They are remembered on this device, so coming back from the payment page does not ask again. The server checks them again.
   function contactOf(project) {
     const saved = project && project.buyerContact && typeof project.buyerContact === 'object' ? project.buyerContact : {};
-    return { name: String(saved.name || ''), email: String(saved.email || ''), phone: String(saved.phone || ''), marketing: saved.marketing === true };
+    return { name: String(saved.name || ''), email: String(saved.email || ''), phone: String(saved.phone || ''), marketing: false };   // no reminders tick any more: nobody is opted in from this form
+  }
+
+  // What the form says is missing. Nothing is said until the person has started filling it in (or came back to details that were
+  // already partly filled), so a page they have not touched yet does not open with an error.
+  function contactHint(session) {
+    const c = session.contact;
+    const started = session.contactTouched || c.name.trim() || c.email.trim() || c.phone.trim();
+    return started ? contactProblem(c) : '';
   }
 
   function contactProblem(contact) {
@@ -1230,8 +1238,7 @@
         <span class="pub-field">${ICON.mail}<input id="buyerEmail" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="you@example.com" value="${escapeText(session.contact.email)}"></span>
         <label for="buyerPhone">Phone or WhatsApp number <span class="pub-opt">(optional)</span></label>
         <span class="pub-field">${ICON.phone}<input id="buyerPhone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="Enter your number" value="${escapeText(session.contact.phone)}"></span>
-        <label class="pub-check"><input id="buyerMarketing" type="checkbox" ${session.contact.marketing ? 'checked' : ''}><span>Send me tips and reminders about my invitation <span class="pub-opt">(optional)</span></span></label>
-        <p id="contact-status" class="pub-sub bad" aria-live="polite">${escapeText(contactProblem(session.contact))}</p>
+        <p id="contact-status" class="pub-sub bad" aria-live="polite">${escapeText(contactHint(session))}</p>
       </fieldset>` : '';
 
     // A promo code, instead of paying (only while the page is asking for a payment).
@@ -1401,6 +1408,7 @@
       const field = root.querySelector(selector);
       field?.addEventListener('input', () => {
         publishSession.contact[key] = field.value;
+        publishSession.contactTouched = true;
         rememberContact(project);
         updateDialogWithoutRepaint(project);
       });
@@ -1410,8 +1418,6 @@
     promo?.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); redeemPromo(project); } });
     root.querySelector('[data-promo]')?.addEventListener('toggle', event => { if (publishSession) publishSession.promoOpen = event.target.open; });
     root.querySelector('[data-promo-apply]')?.addEventListener('click', () => redeemPromo(project));
-    const marketing = root.querySelector('#buyerMarketing');
-    marketing?.addEventListener('change', () => { publishSession.contact.marketing = marketing.checked; rememberContact(project); });
     const input = root.querySelector('#publishSlug');
     input?.addEventListener('input', () => {
       publishSession.typed = input.value.trim().toLowerCase();
@@ -1433,7 +1439,7 @@
     const linkLine = root?.querySelector('#link-preview');
     if (linkLine) linkLine.textContent = `${window.location.origin}/s/${publishSession.typed || '…'}`;
     const contactLine = root?.querySelector('#contact-status');
-    if (contactLine) contactLine.textContent = contactProblem(publishSession.contact);
+    if (contactLine) contactLine.textContent = contactHint(publishSession);
     const button = root?.querySelector('[data-publish-submit]');
     if (button) button.disabled = !canPublish(project, publishSession);
     root?.querySelectorAll('[data-use-suggestion]').forEach(element => element.remove());
