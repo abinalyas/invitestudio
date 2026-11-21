@@ -190,11 +190,11 @@ export const faqs = [
   ],
   [
     "What is free, and when do I pay?",
-    "Building and previewing your invitation is free, as often as you like. You pay once, only when you publish and share it. The price depends on the design you choose and where you are, it is shown before you pay, and there is no subscription.",
+    "Build and preview your invitation for free. When you publish, you pay once for a plan that includes your design. The price depends on the plan and your region.",
   ],
   [
     "Can I change my design later?",
-    "Yes, anytime, even after you publish. You can switch to any design in your plan or in a lower one at no extra cost, and your details stay the same. A design in a higher plan needs an upgrade.",
+    "Yes, anytime, even after you publish. Classic covers Classic designs, Premium covers Classic and Premium, and Signature covers every design. You can switch within your plan at no extra cost and keep your invitation details.",
   ],
   [
     "Do my guests need an app or an account?",

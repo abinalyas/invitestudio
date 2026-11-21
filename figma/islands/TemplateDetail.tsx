@@ -125,7 +125,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
                 <p className="detail-price" data-testid="detail-price">
                   <strong>{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}</strong>
                   <span>
-                    {tier.name} design, one-time when you publish.{" "}
+                    {tier.name} plan, paid once when you publish.{" "}
                     {pricing.mode === "live" ? "" : "Free during early access."}
                   </span>
                 </p>
