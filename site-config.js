@@ -14,6 +14,6 @@ window.INVITESTUDIO_SITE = Object.freeze({
     whatsapp: '919567882568'
   }),
   social: Object.freeze({
-    instagram: 'https://www.instagram.com/invite__studio.co/'
+    instagram: 'https://www.instagram.com/tryinvitestudio/'
   })
 });

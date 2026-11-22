@@ -103,7 +103,8 @@ test('on the admin page, the Visitors section shows the numbers and the owner\'s
   await page.goto('/admin');
   await expect(page.getByRole('heading', { name: 'Visitors' })).toBeVisible();
   await expect(page.getByText('Page views', { exact: true })).toBeVisible({ timeout: 15000 });
-  await expect(page.getByText('From visit to live website')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Visits and publishing activity' })).toBeVisible();
+  await expect(page.getByText('Publishing unlocked', { exact: true })).toBeVisible();
   await expect(page.getByText('Where visitors come from')).toBeVisible();
   await expect(page.getByText('instagram.com').first()).toBeVisible();
   await expect(page.getByText('Modern Heritage').first()).toBeVisible();   // design 13, by name

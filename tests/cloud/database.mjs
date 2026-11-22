@@ -51,6 +51,19 @@ const supabaseStubs = `
   alter default privileges in schema public grant all on sequences to service_role;
 `;
 
+// The roles the migrations create, read from their `create role` statements (comments ignored).
+function migrationRoles() {
+  const roles = new Set();
+  for (const file of readdirSync(migrationsDir).filter(name => name.endsWith('.sql'))) {
+    const sql = readFileSync(join(migrationsDir, file), 'utf8').replace(/--.*$/gm, '');
+    for (const match of sql.matchAll(/\bcreate\s+role\s+(?:if\s+not\s+exists\s+)?("(?:[^"]|"")+"|[a-z_][a-z0-9_$]*)/gi)) {
+      const name = match[1];
+      roles.add(name.startsWith('"') ? name.slice(1, -1).replace(/""/g, '"') : name.toLowerCase());
+    }
+  }
+  return [...roles];
+}
+
 export async function startDatabase({ port = 54329, dataDir }) {
   const bin = embeddedBinDir();
   const prefix = serverUserPrefix(dataDir);
@@ -77,6 +90,17 @@ export async function startDatabase({ port = 54329, dataDir }) {
   await admin.connect();
   // Every run starts from an empty database so migrations are verified from scratch.
   await admin.query('drop database if exists invitestudio with (force)');
+  // Roles are cluster-wide, so the ones the migrations create survive the dropped database
+  // (from the previous run, or from one that was aborted). Drop them so the migrations,
+  // whose prechecks refuse to adopt an existing role, see a clean cluster.
+  for (const role of migrationRoles()) {
+    const { rowCount } = await admin.query('select 1 from pg_roles where rolname = $1', [role]);
+    if (!rowCount) continue;
+    const ident = pg.escapeIdentifier(role);
+    // Clears anything the role still owns or was granted in the remaining databases.
+    await admin.query(`drop owned by ${ident}`);
+    await admin.query(`drop role ${ident}`);
+  }
   await admin.query('create database invitestudio');
   await admin.end();
 
