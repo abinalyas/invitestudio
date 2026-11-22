@@ -143,6 +143,16 @@
       + '<div class="dp-watermark" aria-hidden="true" data-draft-watermark></div>';
   }
 
+  // One quiet line below the end of a live invitation, after the couple's own footer: guests who are planning a wedding of their
+  // own can find where it was made. It sits in the page flow (never fixed or over the design), is tagged so /admin shows the
+  // visits it brings, and says nothing about price.
+  const GUEST_CTA = '/?utm_source=invitation&utm_medium=credit&utm_campaign=guest';
+  function guestCredit() {
+    return '<style>.pv-credit{display:block;padding:18px 16px calc(18px + env(safe-area-inset-bottom));background:#fbf7f2;border-top:1px solid #e7e0d9;text-align:center;font:400 13px/1.5 "DM Sans",system-ui,sans-serif;color:#5f5b54}'
+      + '.pv-credit a{color:#14261c;font-weight:600;text-decoration:underline;text-underline-offset:3px}.pv-credit a:focus-visible{outline:2px solid #b58c55;outline-offset:2px}</style>'
+      + `<footer class="pv-credit" data-guest-credit>Invitation made with <a href="${GUEST_CTA}">InviteStudio</a> · Planning a wedding? Build and preview yours free</footer>`;
+  }
+
   window.publicPageHtml = function publicPageHtml() {
     const view = state.publicInvitation || { status: 'loading' };
     const header = '<header class="pv-top topbar"><a class="brand pv-logo" href="/" aria-label="InviteStudio home"><span class="pv-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>InviteStudio</span></a></header>';
@@ -156,7 +166,7 @@
       return previewChrome(view) + `<div class="published-page" data-draft-preview>${sitePreview(project, tpl(project.templateId), true)}</div>`;
     } else if (view.status === 'ready') {
       const project = projectFromPublic(view.data.wedding, view.data.photos);
-      body = `<div class="published-page" data-public-invitation>${sitePreview(project, tpl(project.templateId), true)}</div>`;
+      body = `<div class="published-page" data-public-invitation>${sitePreview(project, tpl(project.templateId), true)}</div>` + guestCredit();
     } else if (view.preview && view.status === 'loading') {
       body = centred('<p class="muted">Loading preview…</p>');
     } else if (view.preview && view.status === 'error') {
@@ -176,7 +186,8 @@
     } else {
       body = centred('<h1 class="pv-h1">This invitation is not available.</h1><p class="muted">The link may be incorrect, or the invitation is not published right now.</p><a class="pv-btn primary" href="/">Create your own invitation</a>');
     }
-    // The invitation itself carries no InviteStudio branding: guests see only the couple's page.
+    // The invitation itself carries no InviteStudio branding: guests see only the couple's page, then one quiet credit line after
+    // its end (guestCredit), never over it.
     return view.status === 'ready' ? body : header + body;
   };
 })();

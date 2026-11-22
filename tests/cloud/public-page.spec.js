@@ -102,8 +102,19 @@ test('a live invitation has no InviteStudio header, while the not-available page
   await expect(page.locator('[data-public-invitation]')).toContainText(title, { timeout: 15000 });
   await expect(page.locator('header.topbar')).toHaveCount(0);
   await expect(page.locator('a.brand')).toHaveCount(0);
+  // One quiet credit line after the invitation's end (never inside or over it), with a tagged link so /admin counts its visits.
+  const credit = page.locator('[data-guest-credit]');
+  await expect(credit).toHaveCount(1);
+  await expect(credit).toContainText('Invitation made with InviteStudio');
+  await expect(credit.locator('a')).toHaveAttribute('href', '/?utm_source=invitation&utm_medium=credit&utm_campaign=guest');
+  await expect(page.locator('[data-public-invitation] [data-guest-credit]')).toHaveCount(0);
+  expect(await page.evaluate(() => {
+    const inv = document.querySelector('[data-public-invitation]'), c = document.querySelector('[data-guest-credit]');
+    return Boolean(inv.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING) && getComputedStyle(c).position === 'static';
+  })).toBe(true);
 
   await page.goto(`/s/missing-${randomUUID().slice(0, 8)}`);
   await expect(page.getByText('This invitation is not available.')).toBeVisible({ timeout: 15000 });
   await expect(page.locator('a.brand')).toHaveCount(1);
+  await expect(page.locator('[data-guest-credit]')).toHaveCount(0);
 });
