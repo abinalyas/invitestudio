@@ -166,6 +166,32 @@ for (const { manifest, parts, css } of list) {
     assert.doesNotMatch(own, new RegExp(manifest.example.story.slice(0, 30)), "the couple's content replaces the example");
   });
 
+  // The editor preview fills empty sections with the design's example content, but never shows the sample couple
+  // (sample.json) once the couple has entered their own names and date.
+  test(`${id}: the editor preview shows only the couple's names and date, never the sample's`, () => {
+    const { renderPackagedTemplate } = renderer();
+    const sample = sampleOf(id);
+    const couple = { title: 'Wilma & Oskar', date: '2031-01-21', location: 'Rose Hall, Bath', hosts: 'The Carters' };
+    for (const opts of [{ sample: true, editable: true }, { sample: true }, undefined]) {
+      const out = stripped(renderPackagedTemplate(couple, { id, packaged: id }, opts));
+      assert.match(out, /Wilma/);
+      for (const word of String(sample.title).split(/[^A-Za-z]+/).filter(w => w.length > 2)) {
+        assert.doesNotMatch(out, new RegExp(`\\b${word}\\b`, 'i'), `the sample name "${word}" is not shown (${JSON.stringify(opts)})`);
+      }
+      if (sample.date) assert.doesNotMatch(out, new RegExp(`\\b${sample.date.slice(0, 4)}\\b`), `the sample's year is not shown (${JSON.stringify(opts)})`);
+      assert.match(out, /2031/);
+    }
+  });
+
+  // A picture the design draws must be one of its own files. (Lantern Night's wide backdrop was once a mock-up of the
+  // whole invitation with the sample names in it; it is now the film's first frame, as the tall one is. Words in a
+  // picture cannot be checked here, so a backdrop's still must always be a frame of its film.)
+  test(`${id}: every picture and film the design uses is in the repository`, () => {
+    const css = readFileSync(join(root, 'templates', id, 'template.css'), 'utf8');
+    const used = new Set([...(markup + css).matchAll(/\/templates\/[a-z0-9-]+\/assets\/[^"')\s,]+/g)].map(m => m[0]));
+    for (const url of used) assert.ok(existsSync(join(root, url)), `${url} exists`);
+  });
+
   test(`${id}: sample photographs only ever appear on the template page, and empty tiles there are designed`, () => {
     const { renderPackagedTemplate } = renderer();
     const t = { id, packaged: id };
