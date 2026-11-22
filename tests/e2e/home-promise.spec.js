@@ -17,7 +17,7 @@ for (const [device, width, height] of [['desktop', 1280, 800], ['phone', 393, 85
     await expect(hero.locator('.hero-promise')).toContainText(`One-time publishing plans from ${startPrice}.`);
     await expect(hero.locator('.hero-promise')).toBeInViewport();
     const sample = hero.getByRole('link', { name: 'See a sample invitation' });
-    await expect(sample).toHaveAttribute('href', '/templates/18');
+    await expect(sample).toHaveAttribute('href', '/templates/18?view=sample');
     await expect(sample).toBeInViewport();
 
     const demo = hero.locator('video');

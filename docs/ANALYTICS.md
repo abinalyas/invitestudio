@@ -1,7 +1,7 @@
 # Visit statistics (the Visitors section of `/admin`)
 
 First-party, anonymous, no cookies. It answers: how many people visit, from where, on what device, which pages and designs they look
-at, and how many go on to start a draft, pay and go live.
+at, and how many drafts are created, unlocked for publishing and made live during the same period.
 
 ## What is collected (per page view)
 - the **page** (`/`, `/templates`, `/templates/13`, a landing page, `/s/<slug>` for a published invitation). Never the query or the
@@ -26,12 +26,13 @@ Rows are deleted after 400 days (when the owner opens the Visitors section). The
 3. Deploy. Visits start to be counted; the section fills in as people visit. Open `/admin` once in each browser you use yourself.
 
 ## What the section shows
-Visitors, page views, pages per visitor, invitation views; a daily chart; the path from visit to "looked at a design", "started a
-draft", "paid" and "made it live"; and tables by page, referrer, country, device, browser, system, screen width, language, design looked
+Visitors, page views, pages per visitor, invitation views, a daily chart, visits and publishing activity, and tables by
+page, referrer, country, device, browser, system, screen width, language, design looked
 at, campaign link and published invitation. Ranges: 7, 30 and 90 days.
 
-The draft, payment and live counts come from the database for the same period, not from the visit records, so they are exact; the
-visits are as good as an anonymous count can be (people who block scripts are not counted, and nobody is followed across days).
+Drafts, publishing unlocks and first publications are separate database totals for the selected period. Publishing unlocks include
+early access and complimentary publishing. Use confirmed Razorpay payments and refunds for sales. Campaign tags count visits.
+The daily anonymous visitor count cannot connect those campaigns to individual payments.
 
 ## Cloudflare's own analytics
 Cloudflare Pages also has Web Analytics (free, in the Cloudflare dashboard). It can be switched on alongside this for a second opinion
