@@ -9,9 +9,10 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const read = path => readFileSync(join(root, path), 'utf8');
 
-test('the "Browse wedding designs" button on the home page is a link to /templates', () => {
+test('the "Choose your design" buttons on the home page are links to /templates', () => {
   const home = read('figma/islands/Home.tsx');
-  assert.match(home, /<a className="button" href="\/templates">\s*Browse wedding designs/);
+  assert.match(home, /<a className="button" href="\/templates">\s*Choose your design/);
+  assert.match(home, /<a className="button light" href="\/templates">\s*Choose your design/);
 });
 
 test('a new draft does not copy the template example names into the couple\'s names', () => {

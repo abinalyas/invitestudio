@@ -193,7 +193,7 @@ export interface InviteStudioBridge {
   setRsvpContact(type: string, value: string): void;
   setRsvpOption(key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number): void;
   loadRetention(): Promise<RetentionInfo>;
-  contactLinks(topic: "extend" | "restore" | "custom" | "general", address?: string): ContactLinks;
+  contactLinks(topic: "extend" | "restore" | "custom" | "general" | "build", address?: string): ContactLinks;
   mediaLoad(): Promise<void>;
   mediaUpload(files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void, slot?: string): Promise<UploadResult>;
   mediaReplace(id: string, file: File, onProgress?: (progress: { index: number; total: number; name: string }) => void): Promise<UploadResult>;
@@ -260,7 +260,7 @@ export const bridge = {
   setRsvpContact: (type: string, value: string) => host().setRsvpContact(type, value),
   setRsvpOption: (key: "rsvpOpen" | "rsvpReplyBy" | "rsvpMaxParty", value: boolean | string | number) => host().setRsvpOption(key, value),
   loadRetention: () => host().loadRetention(),
-  contactLinks: (topic: "extend" | "restore" | "custom" | "general", address?: string) => host().contactLinks(topic, address),
+  contactLinks: (topic: "extend" | "restore" | "custom" | "general" | "build", address?: string) => host().contactLinks(topic, address),
   mediaLoad: () => host().mediaLoad(),
   mediaUpload: (files: File[], onProgress?: (progress: { index: number; total: number; name: string }) => void, slot?: string) => host().mediaUpload(files, onProgress, slot),
   mediaReplace: (id: string, file: File, onProgress?: (progress: { index: number; total: number; name: string }) => void) => host().mediaReplace(id, file, onProgress),

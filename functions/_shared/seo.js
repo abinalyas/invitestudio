@@ -217,7 +217,7 @@ export function headTags(page, origin) {
   ];
   // The home page's biggest picture is drawn by the application, so the browser would not ask for it until the scripts have run.
   // Asking early lets it download alongside them.
-  if (page.kind === 'home') tags.push('<link rel="preload" as="image" href="/assets/hero/hero-envelope-invitation.webp" type="image/webp" fetchpriority="high"/>');
+  if (page.kind === 'home') tags.push('<link rel="preload" as="image" href="/assets/home/bloom-reveal-demo-poster.webp?v=2" type="image/webp" fetchpriority="high"/>');
   return { title: info.title, html: tags.join('') };
 }
 
@@ -229,9 +229,10 @@ export function staticContent(page, origin) {
   const nav = `<nav aria-label="Main">${link('/', 'Home')} ${link('/templates', 'Templates')} ${POLICIES.map(item => link(`/${item.slug}`, item.h1)).join(' ')}</nav>`;
   let body;
   if (page.kind === 'home') {
-    body = `<h1>Create a wedding invitation website your guests will love</h1>
-<p>${SITE_NAME} is a wedding invitation website builder. Choose an animated template and publish your wedding schedule, photos and guest RSVP on your own shareable InviteStudio link.</p>
-<p>${link('/templates', 'Browse wedding designs')} · ${link('/templates/18?view=sample', 'See a sample invitation')}</p>
+    body = `<h1>Your wedding invitation, in one link</h1>
+<p>${SITE_NAME} makes animated wedding invitation websites. It opens like a film. Then guests see every event, find the venue and tell you they're coming, all on your own shareable InviteStudio link.</p>
+<p>${link('/templates', 'Choose your design')} · ${link('/templates/18?view=sample', 'See a sample invitation')}</p>
+<p>Rather we build it for you? Send us your names, date, venues and photos, and we'll build your invitation and send you a private preview. You pay only if you publish.</p>
 <h2>How it works</h2>
 <ol><li>Choose a template.</li><li>Add your names, date, events and photos. Drafts save automatically.</li><li>Preview it privately, then publish and share the link on WhatsApp, text or email.</li></ol>
 <h2>What you get</h2>

@@ -214,12 +214,7 @@ export const faqs = [
 // While the list is empty the home page shows no testimonials section. photo is a path like "/assets/home/testimonials/name.webp";
 // link is the couple's live invitation, so a visitor can see the proof.
 export type Testimonial = { quote: string; names: string; photo?: string; link?: string }
-// DUMMY PLACEHOLDERS for design review. Replace them with real, permitted quotes before launch (see the comment above).
-export const testimonials: Testimonial[] = [
-  { quote: "Beautiful designs, and so easy to customise. We had our invitation ready in one evening.", names: "Priya & Arjun" },
-  { quote: "Our guests loved it. The RSVP replies landed in one place and we never had to chase anyone.", names: "Anjali & Rahul" },
-  { quote: "Simple, elegant and perfect for our big day. We changed the design twice before publishing.", names: "Meera & Abin" },
-]
+export const testimonials: Testimonial[] = []
 
 // Illustrations from the asset pack (assets/home/art). Decorative ones have empty alt text; sizes are the files' own, so the page does not jump while they load.
 const ART = "/assets/home/art/"

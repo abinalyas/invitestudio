@@ -26,11 +26,14 @@ async function expectCard(page) {
   }
 }
 
-test('the gallery, a design page and the home page all offer a custom design, with WhatsApp and email buttons', async ({ page }) => {
+test('the gallery and a design page offer a custom design card; the home page offers it in its footer', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await pricesFor(page);
   await page.goto('/');
-  await expectCard(page); // home page
+  // The home page leads with "we build it for you" instead (launch rebuild); a custom design is the footer's "Want something unique?".
+  const unique = page.locator('.footer-talk');
+  await expect(unique).toContainText('Want something unique?');
+  expect(decodeURIComponent(await unique.getByRole('link', { name: 'WhatsApp' }).getAttribute('href'))).toContain('made just for us');
 
   await page.evaluate(() => { history.pushState({}, '', '/templates'); state.page = 'home'; render(); });
   await expect(page.locator('.gallery-card').first()).toBeVisible({ timeout: 15000 });

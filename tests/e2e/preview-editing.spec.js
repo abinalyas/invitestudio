@@ -492,9 +492,11 @@ test('Lantern Night: the film opens it and lifts by itself, then loops behind th
 test('music: the first tap starts the track, the button turns it off and on, the choice is remembered, and leaving the page stops it', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.addInitScript(() => {
+    // Only the music (an Audio element) is counted: the home page's sample videos also call play() and pause().
     window.__audio = { plays: [], pauses: 0 };
-    HTMLMediaElement.prototype.play = function () { window.__audio.plays.push(this.getAttribute('data-src') || this.currentSrc); Object.defineProperty(this, 'paused', { value: false, configurable: true }); this.dispatchEvent(new Event('playing')); return Promise.resolve(); };
-    HTMLMediaElement.prototype.pause = function () { window.__audio.pauses++; Object.defineProperty(this, 'paused', { value: true, configurable: true }); this.dispatchEvent(new Event('pause')); };
+    const play = HTMLMediaElement.prototype.play, pause = HTMLMediaElement.prototype.pause;
+    HTMLMediaElement.prototype.play = function () { if (!(this instanceof HTMLAudioElement)) return play.call(this); window.__audio.plays.push(this.getAttribute('data-src') || this.currentSrc); Object.defineProperty(this, 'paused', { value: false, configurable: true }); this.dispatchEvent(new Event('playing')); return Promise.resolve(); };
+    HTMLMediaElement.prototype.pause = function () { if (!(this instanceof HTMLAudioElement)) return pause.call(this); window.__audio.pauses++; Object.defineProperty(this, 'paused', { value: true, configurable: true }); this.dispatchEvent(new Event('pause')); };
   });
   const open = async () => {
     await page.goto('/');
