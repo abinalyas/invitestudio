@@ -48,7 +48,7 @@ const sections = page => page.locator('.editor-pages');
 
 test('the home design renders, and only weddings are offered at launch', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /create a wedding/i })).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('heading', { name: /your wedding\s*invitation/i })).toBeVisible({ timeout: 15000 });
   // Launch scope is weddings only (docs/PRODUCT_DECISIONS.md, section 4): no other occasion is offered.
   await expect(page.getByRole('region', { name: /choose an occasion/i })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /birthday|baptism|engagement/i })).toHaveCount(0);
@@ -56,7 +56,7 @@ test('the home design renders, and only weddings are offered at launch', async (
 
 test('the primary action takes a visitor to the designs, and every design is listed', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: /start your invitation/i }).first().click();
+  await page.getByRole('link', { name: /choose your design/i }).first().click();
   await expect(page).toHaveURL(/\/templates$/);
   await expect(page.getByRole('heading', { name: /find the perfect invitation/i })).toBeVisible({ timeout: 15000 });
   for (const { name } of Object.values(EXPECTED_TEMPLATES)) {
@@ -148,7 +148,7 @@ for (const width of [320, 375, 768, 1280]) {
   test(`island screens have no horizontal overflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /create a wedding/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('heading', { name: /your wedding\s*invitation/i })).toBeVisible({ timeout: 15000 });
     const overflows = async () => page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
     expect(await overflows(), 'home').toBe(false);
     await page.goto('/templates');

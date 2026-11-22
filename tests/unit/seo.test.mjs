@@ -30,9 +30,11 @@ test('the favicon files exist and every page head points at them', () => {
 });
 
 test('the home page preloads its hero picture, and no other page does', () => {
-  assert.ok(headTags(pageFor('/'), ORIGIN).html.includes('rel="preload" as="image" href="/assets/hero/hero-envelope-invitation.webp"'));
+  // The hero's picture is the poster of the sample invitation that plays in the phone (figma/islands/Home.tsx).
+  assert.ok(headTags(pageFor('/'), ORIGIN).html.includes('rel="preload" as="image" href="/assets/home/bloom-reveal-demo-poster.webp?v=2"'));
   assert.ok(!headTags(pageFor('/templates'), ORIGIN).html.includes('rel="preload"'));
-  assert.ok(existsSync(join(root, 'assets/hero/hero-envelope-invitation.webp')));
+  assert.ok(existsSync(join(root, 'assets/home/bloom-reveal-demo-poster.webp')));
+  assert.ok(readFileSync(join(root, 'figma', 'islands', 'Home.tsx'), 'utf8').includes('poster="/assets/home/bloom-reveal-demo-poster.webp?v=2"'), 'the preloaded picture is the one the hero shows');
 });
 
 test('only the public marketing pages are described', () => {

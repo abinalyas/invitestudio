@@ -50,7 +50,7 @@ test('home: if the prices cannot be loaded, no numbers are shown (never a wrong 
   await expect(page.getByText('Prices are shown when you choose a design.')).toBeVisible();
   await expect(plans(page)).toHaveCount(0);
   await expect(page.locator('.pricing')).not.toContainText('₹');
-  await expect(page.locator('.hero-promise')).toContainText('Pay once to publish.');
+  await expect(page.locator('.hero-promise')).toContainText('Pay once, only when you publish.');
   await expect(page.locator('.hero-promise')).not.toContainText('₹');
 });
 
@@ -86,14 +86,14 @@ test('home: each tier\'s "See designs" button opens the gallery with only that t
   await serveAppAtTemplates(page);
   await page.goto('/');
   const expected = { classic: ['Minimalist'], premium: ['Cinematic', 'Fairy Tale', 'Bloom Reveal'], signature: ['Velvet Reveal', 'Under the Same Moon', 'Golden Butterfly', 'Cherry Blossom', 'Lantern Night'] };
-  const buttons = plans(page).locator('a[href^="/templates"]');
+  const buttons = plans(page); // each tier card is itself the link to its designs
   await expect(buttons).toHaveCount(3);
   for (const [index, tier] of ['classic', 'premium', 'signature'].entries()) {
     await expect(buttons.nth(index)).toHaveAttribute('href', `/templates?tier=${tier}`);
   }
   for (const [index, tier] of ['classic', 'premium', 'signature'].entries()) {
     await page.goto('/');
-    await plans(page).nth(index).locator('a[href^="/templates"]').click();
+    await plans(page).nth(index).click();
     await expect(page).toHaveURL(new RegExp(`/templates\\?tier=${tier}$`));
     await expect(galleryTitles(page)).toHaveCount(expected[tier].length);
     expect((await galleryTitles(page).allTextContents()).sort()).toEqual([...expected[tier]].sort());

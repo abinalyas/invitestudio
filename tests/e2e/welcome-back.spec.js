@@ -75,5 +75,5 @@ test('the header offers "Start creating" only to people with no invitation; retu
   await withSavedDraft(page);
   await expect(header.getByRole('button', { name: 'My invitations' })).toBeVisible({ timeout: 15000 });
   await expect(header.getByRole('link', { name: 'Start creating' })).toHaveCount(0);
-  await expect(page.locator('.hero-buttons').getByRole('link', { name: 'Browse wedding designs' })).toBeVisible();
+  await expect(page.locator('.hero-buttons').getByRole('link', { name: 'Choose your design' })).toBeVisible();
 });

@@ -136,6 +136,11 @@ test('marketing copy makes no RSVP claim the product does not yet support, and n
   for (const claim of ['Collect RSVPs', 'Guests can RSVP online', 'RSVP & guest management', 'choose meals', 'RSVP experience', 'Neha']) {
     assert.equal(sources.includes(claim), false, `unsupported copy remains: ${claim}`);
   }
+  // The design-review placeholders were once left switched on. Only real, permitted quotes may go in this list.
+  // (Meera & Abin are also the labelled sample couple in design previews, so the quotes are checked, not the names.)
+  for (const quote of ['ready in one evening', 'we never had to chase anyone', 'We changed the design twice']) {
+    assert.equal(sources.includes(quote), false, `placeholder testimonial remains: ${quote}`);
+  }
 });
 
 test('public projection carries only how replies work and a valid contact number', () => {

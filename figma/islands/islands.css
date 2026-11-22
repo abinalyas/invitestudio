@@ -1211,3 +1211,88 @@ table.rsvp-by-event { font-size: 13px; }
   .photo-actions .link-button, .editor-controls .link-button { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 8px; }
   .footer-talk a { display: inline-flex; align-items: center; min-height: 44px; }
 }
+
+/* ==== Home, launch rebuild (Home.tsx): six short sections. Later rules here override the older home blocks above. ==== */
+.home-page .section { padding-block: 72px; }
+@media (max-width: 760px) { .home-page .section { padding-block: 48px; } }
+.home-page .section-heading h2 { font-size: clamp(28px, 4vw, 40px); line-height: 1.12; }
+.home-page .section-heading p { font-size: 15px; line-height: 1.5; max-width: 560px; margin-inline: auto; }
+.home-page .section-kicker { font-size: 11px; letter-spacing: 2.4px; }
+
+/* Hero: the invitation plays inside a phone, with a small pause button. */
+.home-page .hero-phone { position: relative; display: grid; justify-items: center; }
+.home-page .hero-demo video { border-color: #10281d; background: #fbf1e3; }
+.play-toggle { position: absolute; right: calc(50% - min(124px, 40%) + 12px); bottom: 14px; z-index: 2; min-width: 44px; min-height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: rgba(16, 40, 29, .72); color: white; font-size: 12px; font-weight: 600; cursor: pointer; }
+.play-toggle:focus-visible { outline: 2px solid #b58c55; outline-offset: 2px; }
+@media (max-width: 760px) { .play-toggle { right: calc(50% - min(109px, 40%) + 12px); } }
+
+/* 2. Every design, playing its own opening, in one row that scrolls sideways. */
+.home-page .openings { padding-top: 56px; }
+.opening-row { display: flex; gap: 18px; margin: 0; padding: 4px 2px 18px; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.opening-row li { flex: 0 0 auto; scroll-snap-align: start; }
+.opening-card { display: grid; justify-items: center; gap: 4px; width: 172px; color: inherit; text-decoration: none; }
+.opening-phone { display: block; width: 100%; aspect-ratio: 9 / 16; overflow: hidden; border: 5px solid #10281d; border-radius: 24px; background: #10281d; box-shadow: 0 16px 32px -14px rgba(50, 41, 18, .45); transition: transform .2s ease; }
+.opening-phone video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.opening-card:hover .opening-phone { transform: translateY(-4px); }
+.opening-card:focus-visible { outline: 2px solid var(--green); outline-offset: 6px; border-radius: 26px; }
+.opening-name { margin-top: 8px; font-family: "Playfair Display", Georgia, serif; font-size: 17px; color: #10281d; text-align: center; }
+.opening-tier { font-size: 12px; color: #646964; }
+@media (min-width: 1100px) { .opening-card { width: 188px; } }
+@media (max-width: 760px) { .opening-card { width: 148px; } .opening-row { gap: 14px; margin-inline: -4px; padding-inline: 4px; } }
+@media (prefers-reduced-motion: reduce) { .opening-phone { transition: none; } .opening-card:hover .opening-phone { transform: none; } }
+
+/* 3. Why one link: three points and the two real screens. */
+.home-page .why { position: relative; }
+.deco-why { top: 40px; left: -128px; width: 112px; }
+.why-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+.why-points { display: grid; gap: 22px; margin: 0; padding: 0; list-style: none; }
+.why-points li { display: grid; gap: 4px; padding-left: 18px; border-left: 2px solid #c9b48a; }
+.why-points strong { font-family: "Playfair Display", Georgia, serif; font-size: 21px; font-weight: 500; color: #10281d; }
+.why-points span { font-size: 15px; line-height: 1.5; color: #4f5651; }
+.why-proof { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: end; }
+.why-proof figure { margin: 0; display: grid; gap: 8px; }
+.why-proof img { width: 100%; height: auto; border-radius: 14px; border: 1px solid #e6dac8; background: #fffaf4; }
+.why-proof figcaption { font-size: 13px; color: #4f5651; text-align: center; }
+@media (max-width: 760px) { .why-grid { grid-template-columns: 1fr; gap: 28px; } .why-points strong { font-size: 19px; } }
+
+/* 4. Three steps on one line. */
+.home-page .how { position: relative; padding-top: 48px; }
+.how-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0; padding: 0; list-style: none; counter-reset: none; }
+.how-steps li { display: flex; align-items: flex-start; gap: 14px; padding: 20px; border: 1px solid #e1ddd6; border-radius: 16px; background: rgba(255, 255, 255, .55); }
+.how-n { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #10281d; color: white; font-weight: 700; font-size: 15px; }
+.how-steps strong { display: block; font-size: 16px; line-height: 1.35; color: #10281d; }
+.how-steps span:not(.how-n) { display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 999px; background: #e8f1e6; color: var(--green); font-size: 12px; font-weight: 600; }
+.how-steps span.paid { background: #f4ecd6; color: #7a5a14; }
+@media (max-width: 760px) { .how-steps { grid-template-columns: 1fr; gap: 10px; } .how-steps li { padding: 16px; } }
+
+/* 5. "Rather we build it for you?": the done-for-you offer, for couples and parents who won't use an editor. */
+.build-for-you { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 28px; margin-block: 24px; padding: 32px 36px; border-radius: 22px; background: linear-gradient(120deg, #123f2a, #0b2f20); color: white; }
+.build-for-you > div { position: relative; z-index: 1; }
+.build-for-you h2 { color: white; font-size: clamp(24px, 3vw, 30px); }
+.build-for-you p { margin-top: 8px; max-width: 600px; color: rgba(255, 255, 255, .86); font-size: 15px; line-height: 1.55; }
+.build-actions { display: flex; flex-wrap: wrap; gap: 10px; flex: none; }
+.build-actions .button { min-height: 48px; padding-inline: 24px; }
+.build-actions .button.outline.light { background: transparent; color: white; border-color: rgba(255, 255, 255, .6); }
+@media (max-width: 760px) {
+  .build-for-you { flex-direction: column; align-items: stretch; gap: 18px; padding: 26px 22px; }
+  .build-actions .button { flex: 1 1 140px; justify-content: center; }
+}
+
+/* 6. Price: three small cards, each a link to its designs. */
+.home-page .pricing { padding-bottom: 32px; }
+.home-page .plans { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; width: min(100%, 860px); margin-inline: auto; }
+.home-page .plans .plan { display: grid; gap: 4px; min-height: 0; padding: 22px 24px; color: inherit; text-decoration: none; text-align: center; }
+.home-page .plans .plan strong { font-family: "Playfair Display", Georgia, serif; font-size: 22px; font-weight: 500; color: #10281d; }
+.home-page .plans .plan .price { font-size: 30px; color: #10281d; }
+.home-page .plans .plan .plan-designs { margin: 0; font-size: 13px; }
+.home-page .plans .plan:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
+.home-page .pricing-note { margin-top: 16px; text-align: center; font-size: 14px; color: #646964; }
+@media (max-width: 760px) { .home-page .plans { grid-template-columns: 1fr; gap: 10px; } .home-page .plans .plan { grid-template-columns: 1fr auto; align-items: baseline; text-align: left; } .home-page .plans .plan .plan-designs { grid-column: 1 / -1; } }
+
+/* Questions: one column, readable size, answers never cut off. */
+.home-page .faq { padding-top: 40px; }
+.home-page .faq-grid { grid-template-columns: 1fr; width: min(100%, 760px); margin-inline: auto; }
+.home-page .faq-item button { min-height: 56px; font-size: 15px; }
+.home-page .faq-item p { font-size: 14px; }
+.home-page .faq-item.open p { max-height: 320px; }
+.home-page .cta p { font-size: 14px; }

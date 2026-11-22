@@ -22,6 +22,10 @@ test('each link says what it is about, and which website when one is given', () 
   assert.match(decodeURIComponent(l.email), /Its address: https:\/\/site\.test\/s\/asha-ravi/);
   assert.match(decodeURIComponent(load(GOOD).links('restore').whatsapp), /would like it back/);
   assert.match(decodeURIComponent(load(GOOD).links('custom').email), /made just for us/);
+  // The home page's "we'll build it for you": the message already asks for what we need to start.
+  const build = decodeURIComponent(load(GOOD).links('build').whatsapp);
+  assert.match(build, /please build our wedding invitation/);
+  for (const field of ['Our names:', 'Wedding date:', 'Events and venues:']) assert.ok(build.includes(field), field);
   assert.match(decodeURIComponent(load(GOOD).links('nonsense').email), /question about InviteStudio/, 'an unknown topic is a general question');
 });
 
