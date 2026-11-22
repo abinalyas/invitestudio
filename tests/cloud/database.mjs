@@ -3,7 +3,7 @@
 // and auth.uid()), and applies the repository migrations in order. It is never
 // pointed at a real Supabase project.
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
@@ -65,11 +65,12 @@ export async function startDatabase({ port = 54329, dataDir }) {
   if (existsSync(join(dataDir, 'postmaster.pid'))) {
     try { run(join(bin, 'pg_ctl'), ['-D', dataDir, '-m', 'fast', '-w', 'stop']); } catch { /* not running */ }
   }
-  if (!existsSync(join(dataDir, 'PG_VERSION'))) {
-    mkdirSync(dataDir, { recursive: true });
-    if (prefix.length) execFileSync('chown', ['-R', PG_USER, dataDir]);
-    run(join(bin, 'initdb'), ['-D', dataDir, '-U', 'postgres', '--auth=trust', '-E', 'UTF8', '--no-locale']);
-  }
+  // Every run starts from a new cluster. Roles are cluster-wide, so dropping the database alone would leave the roles a
+  // previous run's migrations created, and those migrations refuse to run again over them.
+  rmSync(dataDir, { recursive: true, force: true });
+  mkdirSync(dataDir, { recursive: true });
+  if (prefix.length) execFileSync('chown', ['-R', PG_USER, dataDir]);
+  run(join(bin, 'initdb'), ['-D', dataDir, '-U', 'postgres', '--auth=trust', '-E', 'UTF8', '--no-locale']);
   run(join(bin, 'pg_ctl'), ['-D', dataDir, '-l', join(dataDir, 'server.log'), '-w',
     '-o', `-p ${port} -k ${dataDir} -c listen_addresses=127.0.0.1`, 'start']);
 
