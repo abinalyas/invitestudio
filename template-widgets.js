@@ -8,7 +8,8 @@
  *                           reduced motion) everything simply stays visible. A --rd custom property sets the delay.
  *   data-intro              an opening screen (a template declares one in its manifest). It is the first thing in the
  *                           invitation; the platform sizes it to what the guest sees (the scrolling frame, else the window),
- *                           holds the page still while it plays, and lifts it after data-intro-ms. data-intro-skip ends it,
+ *                           holds the page still while it plays, and lifts it after data-intro-ms. data-intro-skip ends it, and so
+ *                           does a tap anywhere on it or Escape (an opening with an "open" button plays its reveal instead),
  *                           data-intro-replay (anywhere in the invitation) plays it again, and it is skipped under reduced
  *                           motion or once seen this session. With data-wait (the template page's phone) it waits for a click on
  *                           data-intro-start, and an "intro-done" event is sent when it lifts.
@@ -96,7 +97,7 @@
   }
 
   /* ---------- opening screen ---------- */
-  var introState = new WeakMap(), introHtml = new WeakMap();
+  var introState = new WeakMap(), introHtml = new WeakMap(), introLive = new Set();
   function introKey(el) {
     var root = el.closest("[data-packaged-template]");
     return "introSeen:" + window.location.pathname + ":" + (root ? root.getAttribute("data-packaged-template") : "");
@@ -115,6 +116,7 @@
     var frame = scroller(el), box = frame || document.documentElement, before = box.style.overflow;
     sizeIntro(el, frame);
     box.style.overflow = "hidden"; // the page stays still behind the opening
+    introLive.add(el);
     introState.set(el, { key: key, demo: wait, frame: frame, timer: 0, timers: [], video: null, started: false, finished: false, unlock: function () { box.style.overflow = before; } });
     if (!wait) startIntro(el);
   }
@@ -161,6 +163,7 @@
     var st = introState.get(el);
     if (!st || st.finished) return;
     st.finished = true;
+    introLive.delete(el);
     window.clearTimeout(st.timer);
     st.timers.forEach(function (t) { window.clearTimeout(t); });
     if (st.video) { try { st.video.pause(); } catch (e) { /* already stopped */ } }
@@ -175,6 +178,17 @@
     el.setAttribute("data-leaving", "");
     window.setTimeout(done, 900);
   }
+  // A tap on a playing opening, or Escape: the guest wants the invitation now. Returns whether it did anything.
+  function skipIntro(el) {
+    var st = introState.get(el);
+    if (!st || !st.started || st.finished) return false;
+    if (el.hasAttribute("data-intro-manual")) openIntro(el); else finishIntro(el);
+    return true;
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    introLive.forEach(function (el) { if (!el.isConnected) introLive.delete(el); else skipIntro(el); });
+  });
   // The guest presses the opening's button: the template plays its own reveal (data-opening), then the page is theirs.
   function openIntro(el) {
     var st = introState.get(el);
@@ -597,6 +611,9 @@
     if (closest(path, function (n) { return n.hasAttribute("data-intro-start"); })) { if (overlay) startIntro(overlay); return; }
     if (closest(path, function (n) { return n.hasAttribute("data-intro-skip"); })) { if (overlay) finishIntro(overlay); return; }
     if (closest(path, function (n) { return n.hasAttribute("data-intro-open"); })) { if (overlay) openIntro(overlay); return; }
+    // A tap anywhere on an opening that is playing ends it, as its own button would: a timed opening fades out (Skip), one with an
+    // "open" button plays its reveal. One still waiting for "Click to start" (the template page's phone) waits for that button.
+    if (overlay && skipIntro(overlay)) return;
     if (closest(path, function (n) { return n.hasAttribute("data-sound-toggle"); })) { soundToggle(); return; }
     if (closest(path, function (n) { return n.hasAttribute("data-tap-button"); })) {
       var tapper = closest(path, function (n) { return n.hasAttribute("data-tap"); });
