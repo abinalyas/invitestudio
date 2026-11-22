@@ -128,7 +128,7 @@ test('the page stays short: no more than 7 phone screens, and none of the remove
 
 // On a phone the hero's button scrolls away with the hero. The same button then waits at the bottom of the screen, so there is always a
 // way to start, and steps aside at the closing section, which has its own. On a wide screen there is no bar.
-test('phone: once the hero button has scrolled away, Choose your design stays at the bottom of the screen until the closing section', async ({ page }) => {
+test('phone: once the hero button has scrolled away, Choose your design stays at the bottom of the screen, except while the closing button is on screen', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 851 });
   await stubPrices(page, 'in');
   await page.goto('/');
@@ -152,9 +152,15 @@ test('phone: once the hero button has scrolled away, Choose your design stays at
   expect(box.height).toBeGreaterThanOrEqual(44);
   expect(box.y + box.height).toBeLessThanOrEqual(851);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  // The closing section has its own button: the bar steps aside, so the same button is not on screen twice.
-  await page.locator('.home-page #cta').scrollIntoViewIfNeeded();
+  // The closing section has its own button: the bar steps aside while it is on screen, so the same button is not shown twice.
+  await page.locator('.home-page #cta').getByRole('link', { name: 'Choose your design' }).scrollIntoViewIfNeeded();
   await expect(barButton).toBeHidden();
+  // Below it, in the footer, the bar is back, and it covers none of the footer.
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect(barButton).toBeVisible();
+  const barTop = (await bar.boundingBox()).y;
+  const footerEnd = await page.locator('.home-page .footer').evaluate(el => el.getBoundingClientRect().bottom);
+  expect(footerEnd).toBeLessThanOrEqual(barTop + 1);
   // Back at the top, the hero's button is the one.
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect(barButton).toBeHidden();
