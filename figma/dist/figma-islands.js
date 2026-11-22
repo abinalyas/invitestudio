@@ -1363,10 +1363,7 @@ Error generating stack: `+i.message+`
 .figma-app .setup-steps button{ min-height: 44px; padding: 0 10px; gap: 8px; border-radius: 12px; }
 .figma-app .setup-steps button span:not(.step-number){ display: none; }
 .figma-app .setup-steps button.active span:not(.step-number){ display: inline; }
-.figma-app .setup-selected{ gap: 10px; margin-bottom: 12px; padding: 6px 10px; }
-.figma-app .setup-selected img{ width: 28px; height: 56px; }
-.figma-app .setup-selected-text small{ display: none; }
-.figma-app .setup-selected .button{ min-height: 44px; padding-inline: 12px; font-size: 14px; }
+.figma-app .setup-selected{ display: none; }
 .figma-app .setup-card{ padding: 16px 14px; }
 .figma-app .setup-card h2{ font-size: 26px; }}
 .figma-app .sample-chips{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -2px 0 6px; padding: 12px 14px; border: 1px solid #cfe0d4; border-radius: 16px; background: #f1f7f2; }
@@ -1380,8 +1377,7 @@ Error generating stack: `+i.message+`
 .figma-app .sample-chip.active{ background: #145c37; color: #fff; }
 @media (pointer: coarse){.figma-app .sample-chip{ min-height: 44px; }}
 @media (max-width: 400px){.figma-app .setup-actions .button{ padding-inline: 6px; font-size: 14px; }
-.figma-app .setup-actions .button svg{ display: none; }
-.figma-app .setup-selected .button{ padding-inline: 10px; font-size: 13px; }}
+.figma-app .setup-actions .button svg{ display: none; }}
 .figma-app .phone-preview-tools{ display: none; }
 @media (max-width: 767px){.figma-app .phone-preview-tools{ display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 10px; }
 .figma-app .phone-switcher{ display: flex !important; order: 0; width: auto; flex: 0 1 auto; gap: 2px; padding: 3px; border-radius: 999px; background: #efeae2; }
