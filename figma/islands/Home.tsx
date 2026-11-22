@@ -138,7 +138,7 @@ export function HomePage() {
               />
             </div>
             <figcaption>
-              <a href={`/templates/${bloomReveal.id}`}>See a sample invitation <Icon name="arrow" size={16} /></a>
+              <a href={`/templates/${bloomReveal.id}?view=sample`}>See a sample invitation <Icon name="arrow" size={16} /></a>
             </figcaption>
           </figure>
         </div>

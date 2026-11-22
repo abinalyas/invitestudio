@@ -32,7 +32,7 @@ for (const [device, width, height] of [['desktop', 1280, 800], ['phone', 393, 85
     await hero.getByRole('button', { name: 'Pause the sample invitation' }).click();
     await expect(demo).toHaveJSProperty('paused', true);
     await expect(hero.getByRole('button', { name: 'Play the sample invitation' })).toBeVisible();
-    await expect(hero.getByRole('link', { name: 'See a sample invitation' })).toHaveAttribute('href', '/templates/18');
+    await expect(hero.getByRole('link', { name: 'See a sample invitation' })).toHaveAttribute('href', '/templates/18?view=sample'); // the full-screen sample (tests/e2e/guest-sample.spec.js)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 }

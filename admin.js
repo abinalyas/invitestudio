@@ -241,11 +241,11 @@
       body.appendChild(el('div', { style: 'margin-top:12px' }, [bars, el('p', { class: 'legend', text: 'Visitors per day, last ' + t.days + ' days.' })]));
 
       var f = t.funnel;
-      body.appendChild(el('h2', { text: 'From visit to live website' }));
-      body.appendChild(table(['Step', 'People', 'Of visitors'], [
-        ['Visited the site', f.visitors], ['Looked at a design', f.viewedADesign], ['Started a draft', f.draftsCreated], ['Paid', f.paid], ['Made it live', f.wentLive]
-      ].map(function (r) { return el('tr', {}, [el('td', { text: r[0] }), el('td', { text: number(r[1]) }), el('td', { text: percent(r[1], f.visitors) })]); })));
-      body.appendChild(el('p', { class: 'small muted', text: 'Visits are counted per day; drafts, payments and live websites are counted in the same period from the database, so a draft may be from someone who visited earlier.' }));
+      body.appendChild(el('h2', { text: 'Visits and publishing activity' }));
+      body.appendChild(table(['Activity', 'Count'], [
+        ['Visited the site', f.visitors], ['Looked at a design', f.viewedADesign], ['Drafts created', f.draftsCreated], ['Publishing unlocked', f.paid], ['Invitations made live', f.wentLive]
+      ].map(function (r) { return el('tr', {}, [el('td', { text: r[0] }), el('td', { text: number(r[1]) })]); })));
+      body.appendChild(el('p', { class: 'small muted', text: 'Each count covers the selected period. Publishing unlocks include payments, early access and complimentary publishing. Use confirmed Razorpay payments to measure sales.' }));
 
       var grid = el('div', { class: 'grid3' }, [
         barList('Pages', t.pages.map(function (r) { return { name: r.path, value: r.views, extra: number(r.visitors) + ' visitors' }; })),

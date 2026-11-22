@@ -231,7 +231,7 @@ export function staticContent(page, origin) {
   if (page.kind === 'home') {
     body = `<h1>Your wedding invitation, in one link</h1>
 <p>${SITE_NAME} makes animated wedding invitation websites. It opens like a film. Then guests see every event, find the venue and tell you they're coming, all on your own shareable InviteStudio link.</p>
-<p>${link('/templates', 'Choose your design')} · ${link('/templates/18', 'See a sample invitation')}</p>
+<p>${link('/templates', 'Choose your design')} · ${link('/templates/18?view=sample', 'See a sample invitation')}</p>
 <p>Rather we build it for you? Send us your names, date, venues and photos, and we'll build your invitation and send you a private preview. You pay only if you publish.</p>
 <h2>How it works</h2>
 <ol><li>Choose a template.</li><li>Add your names, date, events and photos. Drafts save automatically.</li><li>Preview it privately, then publish and share the link on WhatsApp, text or email.</li></ol>

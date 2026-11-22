@@ -624,3 +624,45 @@ for (const mode of ['mobile', 'tablet', 'desktop']) {
     await expect(overlay).toHaveCount(0);
   });
 }
+
+// The editor preview shows the couple's own invitation: once their names are in, nothing of a design's sample couple
+// (templates/<id>/sample.json) shows, neither in a new draft nor after "Change design". This runs in a landscape desktop
+// window, where Lantern Night once drew a mock-up of the whole sample invitation (names, date and all) as the backdrop
+// behind the phone preview's own text.
+const sampleWords = id => {
+  const sample = JSON.parse(require('node:fs').readFileSync(require('node:path').join(__dirname, '../../templates', id, 'sample.json'), 'utf8'));
+  return String(sample.title).split(/[^A-Za-z]+/).filter(word => word.length > 2);
+};
+const previewText = page => page.locator('.editor-site .invitation-canvas').innerText();
+const couple = { project: { title: 'Wilma & Oskar', name: 'Wilma and Oskar', date: '2031-01-21' } };
+
+for (const id of PACKAGED) {
+  test(`${id}: the editor preview shows only the couple's names, never the sample couple's`, async ({ page }) => {
+    await openEditor(page, id, couple);
+    await expect(page.locator('.editor-site .invitation-canvas')).toContainText('Wilma');
+    const text = await previewText(page);
+    for (const word of sampleWords(id)) expect(text, `"${word}" from ${id}/sample.json`).not.toMatch(new RegExp(`\\b${word}\\b`, 'i'));
+    expect(text).not.toContain('2027');
+  });
+}
+
+test('after "Change design" the preview shows only the couple\'s names, in every design', async ({ page }) => {
+  test.setTimeout(90000);
+  await openEditor(page, 'bloom-reveal', couple);
+  // The designs "Change design" offers (a design no longer offered keeps working for drafts that use it, above).
+  const offered = await page.evaluate(() => window.InviteStudioBridge.designs().map(design => design.id));
+  expect(offered).toContain('lantern-night');
+  for (const id of offered) {
+    await page.evaluate(id => window.InviteStudioBridge.setTemplate(id), id);
+    await expect(page.locator(`.editor-site [data-packaged-template="${id}"]`)).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.editor-site .invitation-canvas')).toContainText('Wilma');
+    const text = await previewText(page);
+    for (const word of sampleWords(id)) expect(text, `"${word}" from ${id}/sample.json`).not.toMatch(new RegExp(`\\b${word}\\b`, 'i'));
+  }
+});
+
+test('lantern-night: in a landscape window the editor backdrop is the wide film\'s still, which carries no words', async ({ page }) => {
+  await openEditor(page, 'lantern-night', couple);
+  const poster = page.locator('.editor-site .ln-backdrop-poster');
+  await expect.poll(() => poster.evaluate(img => img.complete && img.naturalWidth > 0 && img.currentSrc)).toMatch(/\/templates\/lantern-night\/assets\/poster-wide\.webp$/);
+});
