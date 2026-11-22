@@ -144,11 +144,15 @@ test('in the Share dialog, the couple gets a preview link, copies it again, and 
   await page.getByRole('button', { name: 'Share invitation' }).click({ timeout: 20000 });
   const card = page.locator('[data-draft-preview-share]');
   await expect(card).toBeVisible();
-  await expect(card).toContainText('Not ready? Share a preview');
+  await expect(card).toContainText('Not ready? Friends can see a draft preview.');
 
   await card.getByRole('button', { name: 'Get preview link' }).click();
-  await expect(card.getByRole('button', { name: 'Copy preview link' })).toBeVisible();
+  // Said where the person is looking: on the button, and in a line under it (not only in a toast at the bottom of the screen).
+  await expect(card.getByRole('button', { name: 'Link copied' })).toBeVisible();
+  await expect(card.locator('.pub-copied')).toContainText('Copied.');
   await expect(card).toContainText('Sharing is on');
+  // A few seconds later the button offers to copy again.
+  await expect(card.getByRole('button', { name: 'Copy preview link' })).toBeVisible({ timeout: 10000 });
   const link = await page.evaluate(() => navigator.clipboard.readText());
   expect(link).toMatch(/\/draft#[A-Za-z0-9_-]{43}$/);
 
@@ -156,6 +160,7 @@ test('in the Share dialog, the couple gets a preview link, copies it again, and 
   await page.evaluate(() => navigator.clipboard.writeText(''));
   await card.getByRole('button', { name: 'Copy preview link' }).click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(link);
+  await expect(card.getByRole('button', { name: 'Link copied' })).toBeVisible();
 
   const token = link.split('#')[1];
   expect((await open(request, token)).status()).toBe(200);
@@ -177,4 +182,42 @@ test('the share guide in the editor offers a draft preview link', async ({ page,
   await page.goto(`/edit#${draft.editToken}`);
   await page.getByRole('button', { name: 'Copy a draft preview link' }).click({ timeout: 20000 });
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toMatch(/\/draft#[A-Za-z0-9_-]{43}$/);
+});
+
+// On a phone the Share dialog is a sheet that scrolls. Copying the preview link must not jump it back to the top (the "Link copied"
+// line was then off screen), its close button must stay reachable however far it is scrolled, and the button must read cleanly.
+test('phone: getting the preview link keeps the sheet where it was and says Link copied there; the close button stays on screen', async ({ browser, request }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const page = await context.newPage();
+  await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
+  const draft = await createDraft(request, `Phone ${randomUUID().slice(0, 8)}`);
+  await page.goto(`/edit#${draft.editToken}`);
+  await page.getByRole('button', { name: 'Share invitation' }).first().click({ timeout: 20000 });
+  const sheet = page.locator('#modal-root section.modal');
+  const card = page.locator('[data-draft-preview-share]');
+  await expect(card).toBeVisible();
+  await page.waitForLoadState('networkidle');   // the price and the address check have arrived, so the sheet is complete
+  const button = card.getByRole('button', { name: 'Get preview link' });
+  // Scrolled down the sheet to where the button is (as on a phone, where the sheet is longer than the screen).
+  await sheet.evaluate(el => { el.scrollTop = el.scrollHeight; });
+  await expect(button).toBeInViewport();
+  const before = await sheet.evaluate(el => el.scrollTop);
+  expect(before).toBeGreaterThan(100);   // the sheet really is scrolled
+  // The icon and the words sit on one line, centred.
+  const parts = await button.evaluate(el => { const b = el.getBoundingClientRect(), i = el.querySelector('svg').getBoundingClientRect(); return { h: b.height, iconMid: i.top + i.height / 2, mid: b.top + b.height / 2 }; });
+  expect(Math.abs(parts.iconMid - parts.mid)).toBeLessThan(3);
+  expect(parts.h).toBeLessThan(56);
+  await button.click();
+  await expect(card.getByRole('button', { name: 'Link copied' })).toBeVisible();
+  // The sheet stayed where it was, and the confirmation is on screen.
+  expect(Math.abs((await sheet.evaluate(el => el.scrollTop)) - before)).toBeLessThan(40);
+  await expect(card.locator('.pub-copied')).toBeInViewport();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/\/draft#/);
+  // Scrolled down like this, the close button is still on screen, and closes the sheet.
+  const close = page.getByRole('button', { name: 'Dismiss' });
+  await expect(close).toBeInViewport();
+  await close.click();
+  await expect(sheet).toHaveCount(0);
+  await context.close();
 });

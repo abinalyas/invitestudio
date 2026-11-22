@@ -225,7 +225,9 @@
     const entry = storedPreview(project?.cloudId);
     return entry ? { url: previewUrl(entry.token), expiresAt: entry.expiresAt } : null;
   };
-  window.copyDraftPreviewLink = async function copyDraftPreviewLink() {
+  // { quiet: true }: the caller shows the result itself (the Share dialog says "Link copied" on the button), so no toast.
+  // Answers true once the link is on the clipboard (or shown to copy by hand).
+  window.copyDraftPreviewLink = async function copyDraftPreviewLink(options = {}) {
     const project = typeof current === 'function' ? current() : null;
     const token = project?.cloudId ? tokenFor(project.cloudId) : '';
     if (!project?.cloudId || !token || !window.inviteStudioApi?.enabled) {
@@ -251,7 +253,7 @@
     const link = previewUrl(entry.token);
     try {
       await navigator.clipboard.writeText(link);
-      toast('Preview link copied. Anyone with it can see your draft, marked as a preview.');
+      if (!options.quiet) toast('Preview link copied. Anyone with it can see your draft, marked as a preview.');
     } catch {
       window.prompt('Copy your preview link:', link);
     }
@@ -1296,9 +1298,15 @@
     // link is still on, so it can be turned off.
     const preview = window.draftPreviewInfo(project);
     const slimPreview = !live && !preview && !session.confirmStopPreview;
+    // Just copied: said on the button itself and in a line under it, where the person is looking (a toast at the bottom of a
+    // phone's screen goes unnoticed).
+    const copied = Boolean(session.previewCopied);
+    const copyLabel = copied ? `${ICON.check} Link copied` : `${ICON.link} ${preview ? 'Copy preview link' : 'Get preview link'}`;
+    const copiedNote = copied ? '<p class="pub-note ok pub-copied" role="status">Copied. Paste it in a chat: anyone with the link sees your draft, marked as a preview.</p>' : '';
     const previewBlock = justWentLive || (live && !preview) ? '' : slimPreview ? `<div class="pub-slim" data-draft-preview-share>
         <span>${ICON.eye} Not ready? Friends can see a draft preview.</span>
-        <button class="btn small" type="button" data-preview-copy ${session.previewBusy ? 'disabled' : ''}>${ICON.link} Get preview link</button>
+        <button class="btn small pub-copy${copied ? ' is-copied' : ''}" type="button" data-preview-copy ${session.previewBusy ? 'disabled' : ''}>${copyLabel}</button>
+        ${copiedNote}
       </div>` : `<section class="pub-card pub-draft-preview" data-draft-preview-share>
         <h3 class="pub-card-title">${ICON.eye} Your draft preview link</h3>
         <p class="pub-sub">Friends see your latest draft, marked <strong>Draft preview</strong>. They cannot reply.</p>
@@ -1307,8 +1315,9 @@
         <div class="pub-row">
           ${session.confirmStopPreview
             ? '<button class="btn small" type="button" data-preview-stop-yes>Yes, stop sharing</button><button class="btn small" type="button" data-preview-stop-no>Keep sharing</button>'
-            : `${live ? '' : `<button class="btn small" type="button" data-preview-copy ${session.previewBusy ? 'disabled' : ''}>${ICON.link} ${preview ? 'Copy preview link' : 'Get preview link'}</button>`}${preview ? `<button class="btn small" type="button" data-preview-stop ${session.previewBusy ? 'disabled' : ''}>Stop sharing</button>` : ''}`}
+            : `${live ? '' : `<button class="btn small pub-copy${copied ? ' is-copied' : ''}" type="button" data-preview-copy ${session.previewBusy ? 'disabled' : ''}>${copyLabel}</button>`}${preview ? `<button class="btn small" type="button" data-preview-stop ${session.previewBusy ? 'disabled' : ''}>Stop sharing</button>` : ''}`}
         </div>
+        ${session.confirmStopPreview ? '' : copiedNote}
       </section>`;
 
     // The right-hand column: the chosen design, what is included, and the order with the main button.
@@ -1388,10 +1397,22 @@
         if (publishSession) { publishSession.previewBusy = false; publishSession.confirmStopPreview = false; paintPublishDialog(project, {}); }
       }
     };
-    root.querySelector('[data-preview-copy]')?.addEventListener('click', () => previewStep(() => window.copyDraftPreviewLink()));
+    root.querySelector('[data-preview-copy]')?.addEventListener('click', () => previewStep(async () => {
+      const ok = await window.copyDraftPreviewLink({ quiet: true });
+      if (!ok || !publishSession) return;
+      // "Link copied" stays for a few seconds, then the button offers to copy again.
+      const at = Date.now();
+      publishSession.previewCopied = at;
+      window.setTimeout(() => {
+        if (publishSession && publishSession.previewCopied === at && document.querySelector('#modal-root [data-preview-copy]')) {
+          publishSession.previewCopied = 0;
+          paintPublishDialog(project, {});
+        }
+      }, 6000);
+    }));
     root.querySelector('[data-preview-stop]')?.addEventListener('click', () => { publishSession.confirmStopPreview = true; paintPublishDialog(project, {}); });
     root.querySelector('[data-preview-stop-no]')?.addEventListener('click', () => { publishSession.confirmStopPreview = false; paintPublishDialog(project, {}); });
-    root.querySelector('[data-preview-stop-yes]')?.addEventListener('click', () => previewStep(() => window.stopDraftPreviewLink()));
+    root.querySelector('[data-preview-stop-yes]')?.addEventListener('click', () => { publishSession.previewCopied = 0; previewStep(() => window.stopDraftPreviewLink()); });
     root.querySelector('[data-share-card]')?.addEventListener('click', () => { publishSession = null; if (typeof window.openShareCard === 'function') window.openShareCard(project); });
     root.querySelector('[data-copy-public-link]')?.addEventListener('click', () => copyPublicLink(publicLinkFor(project.publicSlug)));
     root.querySelector('[data-change-address]')?.addEventListener('click', () => {
