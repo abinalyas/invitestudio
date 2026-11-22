@@ -231,7 +231,7 @@ export function staticContent(page, origin) {
   if (page.kind === 'home') {
     body = `<h1>Create a wedding invitation website your guests will love</h1>
 <p>${SITE_NAME} is a wedding invitation website builder. Choose an animated template and publish your wedding schedule, photos and guest RSVP on your own shareable InviteStudio link.</p>
-<p>${link('/templates', 'Browse wedding designs')} · ${link('/templates/18', 'See a sample invitation')}</p>
+<p>${link('/templates', 'Browse wedding designs')} · ${link('/templates/18?view=sample', 'See a sample invitation')}</p>
 <h2>How it works</h2>
 <ol><li>Choose a template.</li><li>Add your names, date, events and photos. Drafts save automatically.</li><li>Preview it privately, then publish and share the link on WhatsApp, text or email.</li></ol>
 <h2>What you get</h2>

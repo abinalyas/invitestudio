@@ -9,6 +9,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
   const template =
     galleryTemplates.find((item) => item.id === templateId) ??
     galleryTemplates[0]
+  const fullSample = new URLSearchParams(window.location.search).get("view") === "sample"
   const [menuOpen, setMenuOpen] = useState(false)
   const screenRef = useRef<HTMLDivElement>(null)
   const [cue, setCue] = useState(false)
@@ -53,6 +54,24 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
     poll = window.setInterval(() => { tryStart(); if (started || ++tries > 40) window.clearInterval(poll) }, 250)
     return () => { window.clearTimeout(timer); window.clearInterval(poll); observer?.disconnect(); node.removeEventListener("intro-done", updateCue) }
   }, [template.backendId, template.phone])
+
+  if (fullSample) {
+    return (
+      <main className="guest-sample">
+        <header className="guest-sample-bar">
+          <h1>{template.title} <span>· Sample</span></h1>
+          <a href={`/templates/${template.id}`}>Design details</a>
+        </header>
+        <div className="guest-sample-screen" ref={screenRef} role="region" aria-label={`${template.title} sample invitation`} tabIndex={0} />
+        <div className="guest-sample-bar guest-sample-actions">
+          <p>Free to build and preview</p>
+          <button className="button" type="button" onClick={() => bridge.startSetup(template.backendId)}>
+            Use this design
+          </button>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="detail-page">
@@ -103,7 +122,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
               </div>
             </div>
             <p className="detail-note">
-              Scroll the phone to see the whole invitation. Example names and details are shown; yours replace them.
+              <a href={`/templates/${template.id}?view=sample`}>View full-screen sample</a>
             </p>
           </div>
 
