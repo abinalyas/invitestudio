@@ -336,6 +336,47 @@ test('template page: the Bloom Reveal phone starts its opening by itself, and it
   await expect.poll(intro, { timeout: 15000 }).toMatchObject({ done: true, locked: false });
 });
 
+// Guests who do not want to watch the opening tap it, and are taken to the invitation at once, whatever the design.
+async function openTemplatePhone(page, id) {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  await page.evaluate(n => { history.pushState({}, '', `/templates/${n}`); state.page = 'home'; render(); }, id);
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  const intro = () => screen.evaluate(el => {
+    const node = el.shadowRoot.querySelector('[data-intro]');
+    return { waiting: node.hasAttribute('data-wait'), button: node.hasAttribute('data-button'), opening: node.hasAttribute('data-opening'), leaving: node.hasAttribute('data-leaving'), done: node.hasAttribute('data-done'), locked: getComputedStyle(el).overflow === 'hidden' };
+  });
+  await expect.poll(async () => (await intro()).waiting).toBe(false);
+  return { screen, intro };
+}
+
+test('opening: a tap anywhere on a playing film skips it and shows the invitation', async ({ page }) => {
+  const { screen, intro } = await openTemplatePhone(page, 21);   // Golden Butterfly: a timed film of about ten seconds
+  expect(await intro()).toMatchObject({ done: false, locked: true });
+  const box = await screen.boundingBox();
+  const started = Date.now();
+  await screen.click({ position: { x: box.width / 2, y: box.height / 2 } });   // the middle of the film, not the Skip button
+  await expect.poll(intro, { timeout: 3000 }).toMatchObject({ done: true, locked: false });
+  expect(Date.now() - started).toBeLessThan(3000);
+});
+
+test('opening: a tap on an opening with an Open button plays its reveal, even before the button has appeared', async ({ page }) => {
+  const { screen, intro } = await openTemplatePhone(page, 19);   // Velvet Reveal: the curtains, then "Open invitation"
+  expect(await intro()).toMatchObject({ button: false, done: false });
+  const box = await screen.boundingBox();
+  await screen.click({ position: { x: box.width / 2, y: box.height / 3 } });
+  await expect.poll(async () => (await intro()).opening).toBe(true);   // its own reveal, not a cut
+  await expect.poll(intro, { timeout: 4000 }).toMatchObject({ done: true, locked: false });
+});
+
+test('opening: Escape skips it too, for people using a keyboard', async ({ page }) => {
+  const { intro } = await openTemplatePhone(page, 18);   // Bloom Reveal
+  expect(await intro()).toMatchObject({ done: false });
+  await page.keyboard.press('Escape');
+  await expect.poll(intro, { timeout: 3000 }).toMatchObject({ done: true, locked: false });
+});
+
 // Velvet Reveal: a video opening with an Open Invitation button, then a gold foil that hides the date.
 test('Velvet Reveal: starts by itself, the video opening offers its button, opening it lifts it; the foil hides the date until revealed', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
