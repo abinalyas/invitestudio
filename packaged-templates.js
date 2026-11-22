@@ -129,10 +129,15 @@
   }
 
   /* ---------- Add to calendar ----------
-   * An event with a date can be added to a guest's calendar with one button: it downloads a small .ics file (a data link, so it needs
-   * no server and works in the editor preview too) that Apple Calendar, Outlook, the calendar app on Android and most others open.
-   * A template places it with {{calendar}} at the end of an event; it is one link, so it needs no script, styled by
-   * templates/_shared/calendar.css.
+   * An event with a date can be added to a guest's calendar with one button. A downloaded file alone is not enough on phones (the
+   * Google Calendar app on Android cannot open one, and an iPhone only offers "Add to Calendar" for a file served by a website), so
+   * the button carries three ways in, and template-widgets.js picks the one for the guest's device:
+   *   - Android: the Google Calendar "add event" page (data-cal-google), which opens in the Calendar app or the browser;
+   *   - iPhone and iPad, on a live invitation: the event served by the site as a calendar entry (data-cal-apple,
+   *     functions/api/public-weddings/[slug]/calendar/[event].js), which opens the system's "Add to Calendar" sheet;
+   *   - anywhere else, or without the script: the link itself, a small .ics file (a data link, so it needs no server and works in
+   *     the editor preview too) that Apple Calendar, Outlook and most desktop calendars open.
+   * A template places it with {{calendar}} at the end of an event, styled by templates/_shared/calendar.css.
    * Times are "floating": the clock time the couple typed, shown in the guest's own calendar (events carry no time zone yet).
    * No end time (or one that is not after the start) means two hours; no time means an all-day event. */
   var CAL_DEFAULT_MINUTES = 120;
@@ -157,7 +162,10 @@
     out.push(cur);
     return out.join("\r\n");
   }
-  // f: an event of the invitation; info: { couple, where, invitation, index }. Returns { ics, file, title }, or null when the event has no usable date.
+  // The key that names an event in its calendar address: its id, or its place among the invitation's events.
+  function calendarKey(f, index) { return String((f && f.id) || "").replace(/[^A-Za-z0-9-]/g, "").slice(0, 64) || "event-" + (index || 0); }
+  // f: an event of the invitation; info: { couple, where, invitation, index }. Returns { ics, text, google, file, title }, or null when the
+  // event has no usable date. text is the calendar file itself; ics is the same as a data link.
   function calendarFor(f, info) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(f.date || ""));
     if (!m) return null;
@@ -190,13 +198,20 @@
     if (info.invitation) lines.push("URL:" + info.invitation);
     lines.push("END:VEVENT", "END:VCALENDAR");
     var slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "event";
-    return { ics: "data:text/calendar;charset=utf-8," + encodeURIComponent(lines.map(icsFold).join("\r\n") + "\r\n"), file: slug + ".ics", title: title };
+    var text = lines.map(icsFold).join("\r\n") + "\r\n";
+    // Google reads times without a zone as the guest's own clock time, like the file's floating times.
+    var google = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(summary) + "&dates=" + a + "%2F" + b +
+      (details ? "&details=" + encodeURIComponent(details.slice(0, 1500)) : "") + (where ? "&location=" + encodeURIComponent(where) : "");
+    return { ics: "data:text/calendar;charset=utf-8," + encodeURIComponent(text), text: text, google: google, file: slug + ".ics", title: title };
   }
   var CAL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4M12 12.5v4M10 14.5h4"/></svg>';
   function calendarHtml(chain) {
     var ics = lookup(chain, "cal_ics");
     if (!ics) return "";
-    return '<div data-cal><a href="' + esc(ics) + '" download="' + esc(lookup(chain, "cal_file")) + '" aria-label="Add to calendar: ' + esc(lookup(chain, "cal_title")) + '">' + CAL_ICON + '<span>Add to calendar</span></a></div>';
+    var apple = lookup(chain, "cal_apple"), google = lookup(chain, "cal_google");
+    return '<div data-cal><a href="' + esc(ics) + '" download="' + esc(lookup(chain, "cal_file")) + '"' +
+      (google ? ' data-cal-google="' + esc(google) + '"' : "") + (apple ? ' data-cal-apple="' + esc(apple) + '"' : "") +
+      ' aria-label="Add to calendar: ' + esc(lookup(chain, "cal_title")) + '">' + CAL_ICON + '<span>Add to calendar</span></a></div>';
   }
 
   // {{details}} (inside an event): the description and the labelled notes the couple wrote for it. One block, styled by
@@ -295,8 +310,11 @@
     var loc = String(p.location || "").split(","), venue = loc[0].trim(), place = loc.slice(1).join(",").trim();
     var fns = (Array.isArray(p.functions) ? p.functions : []).filter(function (f) { return f && f.visible !== false && (f.title || "").trim(); });
     // On a live invitation the calendar entry carries its address, so a guest can open it from the entry.
-    var invitation = "";
-    try { var here = root.location; if (here && /^\/s\/[a-z0-9-]+\/?$/.test(here.pathname || "")) invitation = here.origin + here.pathname.replace(/\/$/, ""); } catch (e) { invitation = ""; }
+    var invitation = "", liveSlug = "";
+    try {
+      var here = root.location, live = here && /^\/s\/([a-z0-9-]+)\/?$/.exec(here.pathname || "");
+      if (live) { invitation = here.origin + here.pathname.replace(/\/$/, ""); liveSlug = live[1]; }
+    } catch (e) { invitation = ""; liveSlug = ""; }
     var events = fns.map(function (f, index) {
       var end = showTime(f.endTime), start = showTime(f.time);
       // Start, and the end when there is one ("6:30 PM – 10:30 PM"): everything a design shows of the time, so an end time is never left out.
@@ -304,7 +322,8 @@
       var d = parseDate(f.date), bits = [d ? d.short : "", range].filter(Boolean);
       var cal = calendarFor(f, { couple: title, where: String(p.location || "").trim(), invitation: invitation, index: index }) || {};
       return {
-        cal_ics: cal.ics || "", cal_file: cal.file || "", cal_title: cal.title || "",
+        cal_ics: cal.ics || "", cal_file: cal.file || "", cal_title: cal.title || "", cal_google: cal.google || "",
+        cal_apple: cal.ics && liveSlug ? "/api/public-weddings/" + liveSlug + "/calendar/" + calendarKey(f, index) + ".ics" : "",
         title: f.title, venue: f.venue || "", when: bits.join(" · "),
         event_id: f.id || "", event_title: f.title, event_venue: f.venue || "",
         date_text: d ? d.weekday + ", " + d.long : "", time_text: range,
@@ -457,5 +476,5 @@
   root.renderPackagedTemplate = render;
   root.isPackagedTemplate = function (t) { return Boolean(t && t.packaged && template(t.packaged)); };
   root.packagedTemplateManifest = function (id) { var p = template(id); return p ? p.manifest : null; };
-  if (typeof module !== "undefined" && module.exports) module.exports = { render: render, derive: derive, esc: esc, calendarFor: calendarFor };
+  if (typeof module !== "undefined" && module.exports) module.exports = { render: render, derive: derive, esc: esc, calendarFor: calendarFor, calendarKey: calendarKey };
 })(typeof globalThis !== "undefined" ? globalThis : this);

@@ -663,7 +663,9 @@ export function EditorPage() {
           {/* Phones only: the way back to the invitation, and the proof that what is typed is kept. It stays at the top while the form scrolls. */}
           <div className="phone-edit-bar">
             <button type="button" className="phone-back" onClick={backToPreview}><Icon name="eye" size={20} /> Back to preview</button>
-            <span className={`phone-saved save-${snap.saveState}`} role="status" aria-live="polite" data-save-state={snap.saveState}>
+            {/* A visual copy of the header's save status, which stays the one live region (and the one [data-save-state]),
+                so screen readers hear each change once. Not aria-hidden: its Retry and Reload buttons must stay reachable. */}
+            <span className={`phone-saved save-${snap.saveState}`}>
               <span className="phone-saved-line">
                 <SaveLabel text={saveText(snap)} />
                 {failed ? <button type="button" onClick={() => bridge.retrySave()}>Retry</button> : null}

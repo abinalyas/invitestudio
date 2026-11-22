@@ -68,7 +68,10 @@ test.describe('phone', () => {
     await expect(editTab(page)).toHaveAttribute('aria-selected', 'true');
     const bar = page.locator('.phone-edit-bar');
     await expect(bar.getByRole('button', { name: 'Back to preview' })).toBeVisible();
-    await expect(bar.getByRole('status')).toContainText(/Saved|Saving/);
+    await expect(bar.locator('.phone-saved')).toContainText(/Saved|Saving/);
+    // The header's status is the one live region, so screen readers hear each save state once, not twice.
+    await expect(page.locator('[role="status"][aria-live]', { hasText: /Saved|Saving/ })).toHaveCount(1);
+    await expect(page.locator('[data-save-state]')).toHaveCount(1);
     await expect(bar).toContainText('Preview updates as you type');   // proof that what is typed is applied, in the part that stays on screen
   });
 

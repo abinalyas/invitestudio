@@ -33,6 +33,7 @@
   Cross-Origin-Resource-Policy: same-site
   X-Robots-Tag: noindex
 /assets/music/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
   Cross-Origin-Resource-Policy: same-site
   X-Robots-Tag: noindex
 
