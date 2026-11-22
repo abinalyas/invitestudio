@@ -125,3 +125,45 @@ test('the page stays short: no more than 7 phone screens, and none of the remove
     await expect(page.locator(gone)).toHaveCount(0);
   }
 });
+
+// On a phone the hero's button scrolls away with the hero. The same button then waits at the bottom of the screen, so there is always a
+// way to start, and steps aside at the closing section, which has its own. On a wide screen there is no bar.
+test('phone: once the hero button has scrolled away, Choose your design stays at the bottom of the screen until the closing section', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 851 });
+  await stubPrices(page, 'in');
+  await page.goto('/');
+  const bar = page.locator('.home-page .home-sticky');
+  const barButton = bar.getByRole('link', { name: 'Choose your design' });
+  await expect(page.locator('.home-page .hero').getByRole('link', { name: 'Choose your design' })).toBeInViewport();
+  // At the top: the hero has the button, the bar is away (not visible, not reachable by keyboard).
+  await expect(barButton).toBeHidden();
+  // Scrolled into the middle of the page: the bar is there, with the button and the promise, inside the screen.
+  for (const section of ['#designs', '#how', '#pricing']) {
+    await page.locator(`.home-page ${section}`).scrollIntoViewIfNeeded();
+    await expect(barButton).toBeVisible();
+    await expect(barButton).toBeInViewport();
+  }
+  await expect(barButton).toHaveAttribute('href', '/templates');
+  await expect(bar).toContainText('Free to build');
+  await expect(bar).toContainText('Pay only to publish');
+  // Nothing in the bar is cut off at phone width.
+  expect(await bar.locator('strong, small').evaluateAll(els => els.every(el => el.scrollWidth <= el.clientWidth))).toBe(true);
+  const box = await barButton.boundingBox();
+  expect(box.height).toBeGreaterThanOrEqual(44);
+  expect(box.y + box.height).toBeLessThanOrEqual(851);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  // The closing section has its own button: the bar steps aside, so the same button is not on screen twice.
+  await page.locator('.home-page #cta').scrollIntoViewIfNeeded();
+  await expect(barButton).toBeHidden();
+  // Back at the top, the hero's button is the one.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(barButton).toBeHidden();
+});
+
+test('desktop: there is no bottom bar; the header and the hero carry the buttons', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await stubPrices(page, 'gb');
+  await page.goto('/');
+  await page.locator('.home-page #pricing').scrollIntoViewIfNeeded();
+  await expect(page.locator('.home-page .home-sticky')).toBeHidden();
+});

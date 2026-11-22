@@ -619,6 +619,22 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
   .detail-sticky .button { flex: none; min-height: 48px; padding-inline: 18px; }
 }
 
+/* Home on a phone: "Choose your design" at the bottom of the screen once the hero's button has scrolled away (Home.tsx useStickyStart).
+   Hidden with visibility, so while it is away it cannot be tabbed to or read out. */
+.home-sticky { display: none; }
+@media (max-width: 900px) {
+  .home-sticky { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #e7e0d9; background: rgba(255, 250, 245, .97); box-shadow: 0 -8px 24px -16px rgba(40, 30, 20, .35);
+    transform: translateY(110%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; }
+  .home-sticky[data-shown] { transform: none; visibility: visible; transition: transform .25s ease; }
+  .home-sticky span { display: grid; min-width: 0; line-height: 1.25; }
+  .home-sticky strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+  .home-sticky small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #5c625e; font-size: 12px; }
+  .home-sticky .button { flex: none; min-height: 48px; padding-inline: 18px; }
+}
+@media (max-width: 900px) and (prefers-reduced-motion: reduce) { .home-sticky, .home-sticky[data-shown] { transition: none; } }
+@media (max-width: 360px) { .home-sticky span { display: none; } .home-sticky .button { flex: 1; justify-content: center; } }
+
 /* Setup: the chosen design, kept at the top of every step. */
 .setup-selected { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; padding: 8px 12px; border: 1px solid #e2dbd2; border-radius: 16px; background: rgba(255, 255, 255, .75); }
 .setup-selected img { width: 36px; height: 72px; flex: none; border-radius: 6px; object-fit: cover; background: #e9e4dc; }
