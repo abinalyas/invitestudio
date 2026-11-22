@@ -138,6 +138,11 @@ ul,ol{padding-left:22px}li{margin:6px 0}
 .faq h3{font-size:22px;margin:22px 0 4px}.faq p{margin:0}
 .cta{background:#f1ece3;border:1px solid var(--line);border-radius:24px;padding:32px 24px;margin:52px 0;text-align:center}.cta h2{margin:0 0 10px}
 .more ul{list-style:none;padding:0}.more li{margin:8px 0}
+.sticky-cta{display:none}
+@media (max-width:900px){body{padding-bottom:76px}.sticky-cta{position:fixed;z-index:30;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(251,247,242,.97);box-shadow:0 -8px 24px -16px rgba(40,30,20,.35);transform:translateY(110%);visibility:hidden;transition:transform .25s ease,visibility 0s linear .25s}
+.sticky-cta[data-shown]{transform:none;visibility:visible;transition:transform .25s ease}.sticky-cta span{display:grid;min-width:0;line-height:1.25}.sticky-cta strong{font-size:14px;color:var(--deep)}.sticky-cta small{font-size:12px;color:var(--muted)}.sticky-cta .btn{flex:none;width:auto;padding:0 20px;white-space:nowrap}.sticky-cta strong,.sticky-cta small{white-space:nowrap}}
+@media (max-width:900px) and (prefers-reduced-motion:reduce){.sticky-cta,.sticky-cta[data-shown]{transition:none}}
+@media (max-width:360px){.sticky-cta span{display:none}.sticky-cta .btn{flex:1;width:100%}}
 header.top nav a{margin-right:22px}
 .site-footer{border-top:1px solid var(--line);margin-top:48px;padding:48px 0 28px;color:#3a3630;font-size:14px;line-height:1.6}
 .site-footer .footer-grid{display:grid;grid-template-columns:minmax(200px,1.1fr) minmax(120px,.8fr) minmax(210px,1.3fr) minmax(110px,.8fr);gap:36px 40px;align-items:start}
@@ -201,6 +206,15 @@ function esc(value) {
   return String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
 
+// Phones: once the top buttons have scrolled away, "Choose a template" waits at the bottom of the screen, so there is always a way to
+// start, down to the footer. It steps aside while the button of the page's own "Make your invitation" box (.cta) is on screen, and
+// at the top (as on the home page). Hidden with visibility while away, so it is not tabbable or read out. Without the script it never appears; nothing else changes.
+const STICKY_CTA = `<div class="sticky-cta" data-sticky-cta><span><strong>Free to build</strong><small>Pay only to publish</small></span><a class="btn" href="/templates">Choose a template</a></div>` +
+  `<script>(function(){var bar=document.querySelector("[data-sticky-cta]"),top=document.querySelector(".hero-actions"),end=document.querySelector(".cta .btn");` +
+  `if(!bar||!top||!end)return;var f=0;function m(){f=0;var e=end.getBoundingClientRect(),on=top.getBoundingClientRect().bottom<0&&!(e.bottom>0&&e.top<innerHeight);` +
+  `if(on)bar.setAttribute("data-shown","");else bar.removeAttribute("data-shown")}function q(){if(!f)f=requestAnimationFrame(m)}` +
+  `addEventListener("scroll",q,{passive:true});addEventListener("resize",q);m()})();</script>`;
+
 // A complete HTML document. `templates` is seo.js TEMPLATES; `head` is the shared head tags from seo.js (title excluded).
 export function renderLanding(page, origin, { templates, head, title, replay = '', contact = {}, social = {} }) {
   const abs = path => new URL(path, origin).href;
@@ -216,7 +230,7 @@ ${sections}
 <section class="faq"><h2>Questions</h2>${page.faq.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}</section>
 <div class="cta"><h2>Make your invitation</h2><p>Build and preview it free. Pay once, only when you publish.</p><a class="btn" href="/templates">Choose a template</a></div>
 <section class="more"><h2>More guides</h2><ul>${others.map(p => `<li><a href="${abs(`/${p.slug}`)}">${esc(p.h1)}</a></li>`).join('')}</ul></section></main>
-${renderFooter({ contact, social })}</div><script src="/analytics.js" defer></script>${replay ? '<script src="/replay.js" defer></script>' : ''}</body></html>`;
+${renderFooter({ contact, social })}</div>${STICKY_CTA}<script src="/analytics.js" defer></script>${replay ? '<script src="/replay.js" defer></script>' : ''}</body></html>`;
 }
 
 const ICONS = '<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="icon" href="/favicon.ico" sizes="48x48"/><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"/>';

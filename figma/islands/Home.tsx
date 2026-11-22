@@ -60,22 +60,21 @@ function PlayingInView({ src, poster, label, loop = false, width, height }: { sr
 }
 
 // Phones: once the hero's "Choose your design" has scrolled away, the same button waits at the bottom of the screen, so there is
-// always a way to start. It steps aside again when the closing "Start with the design you love" section (with its own button) is
-// reached, so two of the same button are never on screen together.
+// always a way to start, down to the footer. It steps aside while the closing "Start with the design you love" button is on screen,
+// so two of the same button are never on screen together.
 function useStickyStart() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const endRef = useRef<HTMLElement>(null);
+  const endRef = useRef<HTMLAnchorElement>(null);
   const [shown, setShown] = useState(false);
   useEffect(() => {
     const hero = heroRef.current, end = endRef.current;
     if (!hero || !end) return;
-    let pastHero = false, atEnd = false, frame = 0;
+    let frame = 0;
     const measure = () => {
       frame = 0;
       const h = hero.getBoundingClientRect(), e = end.getBoundingClientRect();
-      pastHero = h.bottom < 0;
-      atEnd = e.top < window.innerHeight;
-      setShown(pastHero && !atEnd);
+      const endOnScreen = e.bottom > 0 && e.top < window.innerHeight;
+      setShown(h.bottom < 0 && !endOnScreen);
     };
     const queue = () => { if (!frame) frame = window.requestAnimationFrame(measure); };
     measure();
@@ -337,7 +336,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="cta shell" id="cta" ref={sticky.endRef}>
+      <section className="cta shell" id="cta">
         <Art name="flowers-a" className="cta-art cta-art-l" />
         <Art name="flowers-b" className="cta-art cta-art-r" />
         <div>
@@ -346,7 +345,7 @@ export function HomePage() {
             Free to build and preview. Pay once, only when you publish.
           </p>
         </div>
-        <a className="button light" href="/templates">
+        <a className="button light" href="/templates" ref={sticky.endRef}>
           Choose your design <Icon name="arrow" size={18} />
         </a>
       </section>

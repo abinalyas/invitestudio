@@ -623,6 +623,7 @@ table.rsvp-by-event{width:100%;margin:0 0 12px;border-collapse:collapse;font-siz
    Hidden with visibility, so while it is away it cannot be tabbed to or read out. */
 .home-sticky { display: none; }
 @media (max-width: 900px) {
+  .home-page { padding-bottom: 76px; }
   .home-sticky { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #e7e0d9; background: rgba(255, 250, 245, .97); box-shadow: 0 -8px 24px -16px rgba(40, 30, 20, .35);
     transform: translateY(110%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; }
