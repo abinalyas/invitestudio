@@ -82,3 +82,78 @@ test('on a phone the button fits the screen with a big enough touch target', asy
   expect(box.x + box.width).toBeLessThanOrEqual(390);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
+
+// Phones: a downloaded file is not enough there (the Google Calendar app on Android cannot open one, and an iPhone only offers
+// "Add to Calendar" for a calendar entry a website serves). The same button sends each phone to what it can add.
+test('on an Android phone the button opens Google Calendar with the event, in a new tab, and the invitation stays open', async ({ browser, request }) => {
+  const slug = `cal-${randomUUID().slice(0, 8)}`;
+  const title = `Android ${slug}`;
+  await createPublished(request, { title, slug });
+  const context = await browser.newContext({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true,
+    userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36' });
+  // Google is outside the test stack: the new tab's address is all that matters.
+  await context.route('https://calendar.google.com/**', route => route.fulfill({ status: 200, contentType: 'text/html', body: '<p>Google Calendar</p>' }));
+  const page = await context.newPage();
+  await page.goto(`/s/${slug}`);
+  const button = page.locator('[data-public-invitation]').getByRole('link', { name: 'Add to calendar: Wedding ceremony' });
+  await expect(button).toBeAttached({ timeout: 15000 });
+  await button.scrollIntoViewIfNeeded();
+  let downloaded = false;
+  page.on('download', () => { downloaded = true; });
+  const [tab] = await Promise.all([context.waitForEvent('page'), button.tap()]);
+  const url = new URL(tab.url());
+  expect(url.origin + url.pathname).toBe('https://calendar.google.com/calendar/render');
+  expect(url.searchParams.get('action')).toBe('TEMPLATE');
+  expect(url.searchParams.get('text')).toBe(`Wedding ceremony – ${title}`);
+  expect(url.searchParams.get('dates')).toBe('20270120T100000/20270120T113000');
+  expect(url.searchParams.get('location')).toBe('The Garden Estate');
+  expect(url.searchParams.get('details')).toContain('Please arrive early.');
+  expect(new URL(page.url()).pathname).toBe(`/s/${slug}`);
+  expect(downloaded).toBe(false);
+  await context.close();
+});
+
+test('on an iPhone the button opens the event as a calendar entry the site serves, which the phone offers to add', async ({ browser, request }) => {
+  const slug = `cal-${randomUUID().slice(0, 8)}`;
+  const title = `iPhone ${slug}`;
+  await createPublished(request, { title, slug });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' });
+  const page = await context.newPage();
+  await page.goto(`/s/${slug}`);
+  const button = page.locator('[data-public-invitation]').getByRole('link', { name: 'Add to calendar: Reception' });
+  await expect(button).toBeAttached({ timeout: 15000 });
+  const address = await button.getAttribute('data-cal-apple');
+  expect(address).toMatch(new RegExp(`^/api/public-weddings/${slug}/calendar/[0-9a-f-]{36}\\.ics$`));
+  await button.scrollIntoViewIfNeeded();
+  // Chromium cannot show the iPhone's sheet, so it saves what the site serves; on an iPhone the same answer opens "Add to Calendar".
+  const [response] = await Promise.all([page.waitForResponse(r => r.url().endsWith(address)), button.tap().catch(() => {})]);
+  expect(response.status()).toBe(200);
+  expect(response.headers()['content-type']).toBe('text/calendar; charset=utf-8');
+  expect(response.headers()['content-disposition']).toBe('inline; filename="reception.ics"');
+  // The body of a navigation that became a download is not kept by the browser: the same address is read again.
+  const ics = await (await page.request.get(address)).text();
+  expect(ics).toContain('BEGIN:VEVENT');
+  expect(ics).toContain('DTSTART:20270120T190000');
+  expect(ics).toContain(`SUMMARY:Reception – ${title}`);
+  expect(ics).toContain('LOCATION:The Garden Hall');
+  expect(ics).toContain(`URL:${new URL(page.url()).origin}/s/${slug}`);
+  await context.close();
+});
+
+test('the served calendar entry is only there for a published invitation\'s own events', async ({ request }) => {
+  const slug = `cal-${randomUUID().slice(0, 8)}`;
+  await createPublished(request, { title: `Served ${slug}`, slug });
+  const body = await (await request.get(`/api/public-weddings/${slug}`)).json();
+  const events = body.wedding.content.functions;
+  const ceremony = events.find(f => f.title === 'Wedding ceremony');
+  const ok = await request.get(`/api/public-weddings/${slug}/calendar/${ceremony.id}.ics`);
+  expect(ok.status()).toBe(200);
+  expect(await ok.text()).toContain('DTEND:20270120T113000');
+  // The undated event has no entry; neither has an unknown event, an unknown invitation, or a malformed address.
+  const dinner = events.find(f => f.title === 'Welcome dinner');
+  expect((await request.get(`/api/public-weddings/${slug}/calendar/${dinner.id}.ics`)).status()).toBe(404);
+  expect((await request.get(`/api/public-weddings/${slug}/calendar/${randomUUID()}.ics`)).status()).toBe(404);
+  expect((await request.get(`/api/public-weddings/not-${slug}/calendar/${ceremony.id}.ics`)).status()).toBe(404);
+  expect((await request.get(`/api/public-weddings/${slug}/calendar/..%2Fx.ics`)).status()).toBe(404);
+});

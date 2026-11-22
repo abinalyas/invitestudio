@@ -97,14 +97,15 @@ const project = {
 
 for (const { manifest, parts, css } of list) {
   const id = manifest.id;
-  test(`${id}: every event with a date gets one Add to calendar button (a file), and an undated one does not`, () => {
+  test(`${id}: every event with a date gets one Add to calendar button (a file, with Google's page for Android), and an undated one does not`, () => {
     const r = renderer();
     const html = r.renderPackagedTemplate(project, { id, packaged: id }, {});
     assert.equal((html.match(/<div data-cal>/g) || []).length, 2, 'one for each dated event');
-    assert.equal((html.match(/<a href="data:text\/calendar;charset=utf-8,BEGIN%3AVCALENDAR[^"]*" download="[a-z0-9-]+\.ics" aria-label="Add to calendar: [^"]+"><svg [^>]*>.*?<\/svg><span>Add to calendar<\/span><\/a>/g) || []).length, 2);
+    assert.equal((html.match(/<a href="data:text\/calendar;charset=utf-8,BEGIN%3AVCALENDAR[^"]*" download="[a-z0-9-]+\.ics" data-cal-google="https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE[^"]*" aria-label="Add to calendar: [^"]+"><svg [^>]*>.*?<\/svg><span>Add to calendar<\/span><\/a>/g) || []).length, 2);
     assert.match(html, /aria-label="Add to calendar: Wedding ceremony"/);
     assert.match(html, /aria-label="Add to calendar: Reception"/);
-    assert.ok(!/calendar\.google\.com|<details data-cal|Google Calendar|Apple, Outlook/.test(html), 'one button, not a menu of calendars');
+    assert.ok(!/<details data-cal|Google Calendar|Apple, Outlook/.test(html), 'one button, not a menu of calendars');
+    assert.ok(!html.includes('data-cal-apple'), 'outside a live invitation there is no served entry to open');
     const none = r.renderPackagedTemplate({ ...project, functions: [event('Welcome dinner', '')] }, { id, packaged: id }, {});
     assert.ok(!none.includes('data-cal'), 'no date, no button');
     // The design's own sample events have no date either.
@@ -135,8 +136,28 @@ for (const { manifest, parts, css } of list) {
 test('the button is one plain link: no script, a visible label, a name that says which event, and a download name', () => {
   const html = renderer().renderPackagedTemplate(project, { id: 'minimalist', packaged: 'minimalist' }, {});
   const one = html.slice(html.indexOf('<div data-cal>'), html.indexOf('</div>', html.indexOf('<div data-cal>')) + 6);
-  assert.match(one, /^<div data-cal><a href="data:text\/calendar;charset=utf-8,[^"]+" download="wedding-ceremony\.ics" aria-label="Add to calendar: Wedding ceremony"><svg [^>]*aria-hidden="true"[^>]*>.*<\/svg><span>Add to calendar<\/span><\/a><\/div>$/);
+  assert.match(one, /^<div data-cal><a href="data:text\/calendar;charset=utf-8,[^"]+" download="wedding-ceremony\.ics" data-cal-google="[^"]+" aria-label="Add to calendar: Wedding ceremony"><svg [^>]*aria-hidden="true"[^>]*>.*<\/svg><span>Add to calendar<\/span><\/a><\/div>$/);
   assert.ok(!/<script|onclick|<button|<details/i.test(one));
+});
+
+test('Google Calendar gets the same event: floating times, the place, and the notes', () => {
+  const r = calendarFor({ id: 'e1', title: 'Wedding ceremony', date: '2027-06-19', time: '16:00', endTime: '17:30', venue: 'St. Mary’s Church', description: 'Arrive early & smile' }, info);
+  const url = new URL(r.google);
+  assert.equal(url.origin + url.pathname, 'https://calendar.google.com/calendar/render');
+  assert.equal(url.searchParams.get('action'), 'TEMPLATE');
+  assert.equal(url.searchParams.get('text'), 'Wedding ceremony – Ava & Ben');
+  assert.equal(url.searchParams.get('dates'), '20270619T160000/20270619T173000', 'no Z: the guest\'s own clock time, like the file');
+  assert.equal(url.searchParams.get('location'), 'St. Mary’s Church');
+  assert.ok(url.searchParams.get('details').includes('Arrive early & smile'));
+  const allDay = new URL(calendarFor({ title: 'Mehndi', date: '2027-06-18' }, info).google);
+  assert.equal(allDay.searchParams.get('dates'), '20270618/20270619', 'an all-day event ends the next day');
+});
+
+test('on a live invitation each button also names the entry the site serves for iPhones, by the event\'s id or its place', () => {
+  const live = renderer({ location: { origin: 'https://invitestudio.co', pathname: '/s/ava-and-ben' } });
+  const html = live.renderPackagedTemplate({ ...project, functions: [{ ...project.functions[0], id: 'abc-123' }, { ...project.functions[1], id: undefined }] }, { id: 'minimalist', packaged: 'minimalist' }, {});
+  const apple = [...html.matchAll(/data-cal-apple="([^"]+)"/g)].map(m => m[1]);
+  assert.deepEqual(apple, ['/api/public-weddings/ava-and-ben/calendar/abc-123.ics', '/api/public-weddings/ava-and-ben/calendar/event-1.ics']);
 });
 
 test('on a live invitation the calendar entry carries its address', () => {

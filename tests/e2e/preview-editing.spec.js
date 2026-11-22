@@ -488,13 +488,15 @@ test('Lantern Night: the film opens it and lifts by itself, then loops behind th
   await expect.poll(zone).toMatchObject({ scratched: true });
 });
 
-// Background music: a round on/off button, started by the first touch, remembered when turned off, stopped when the page is left.
-test('music: the first tap starts the track, the button turns it off and on, the choice is remembered, and leaving the page stops it', async ({ page }) => {
+// Background music: on by default, fetched before the first touch and started by it, remembered for the visit when turned off,
+// stopped when the page is left.
+test('music: on by default, the track is fetched early and the first tap starts it, the button turns it off and on, the choice is kept for the visit, and leaving the page stops it', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.addInitScript(() => {
     // Only the music (an Audio element) is counted: the home page's sample videos also call play() and pause().
-    window.__audio = { plays: [], pauses: 0 };
-    const play = HTMLMediaElement.prototype.play, pause = HTMLMediaElement.prototype.pause;
+    window.__audio = { plays: [], pauses: 0, loads: [] };
+    const play = HTMLMediaElement.prototype.play, pause = HTMLMediaElement.prototype.pause, load = HTMLMediaElement.prototype.load;
+    HTMLMediaElement.prototype.load = function () { if (this instanceof HTMLAudioElement) window.__audio.loads.push({ src: this.getAttribute('data-src'), preload: this.preload }); return load.call(this); };
     HTMLMediaElement.prototype.play = function () { if (!(this instanceof HTMLAudioElement)) return play.call(this); window.__audio.plays.push(this.getAttribute('data-src') || this.currentSrc); Object.defineProperty(this, 'paused', { value: false, configurable: true }); this.dispatchEvent(new Event('playing')); return Promise.resolve(); };
     HTMLMediaElement.prototype.pause = function () { if (!(this instanceof HTMLAudioElement)) return pause.call(this); window.__audio.pauses++; Object.defineProperty(this, 'paused', { value: true, configurable: true }); this.dispatchEvent(new Event('pause')); };
   });
@@ -506,9 +508,11 @@ test('music: the first tap starts the track, the button turns it off and on, the
   await open();
   const screen = page.locator('.figma-island-host .detail-screen');
   const toggle = () => screen.evaluate(el => { const b = el.shadowRoot.querySelector('[data-sound-toggle]'); return { state: b.getAttribute('data-sound'), pressed: b.getAttribute('aria-pressed'), label: b.getAttribute('aria-label'), src: b.getAttribute('data-sound-src') }; });
-  // Before any touch the page is silent and the button says so.
-  expect(await toggle()).toMatchObject({ state: 'off', pressed: 'false', label: 'Turn the music on', src: '/assets/music/romantic-piano.mp3' });
+  // Before any touch the browser allows no sound, but music is on by default: the button shows it on, and the track is already
+  // being fetched so it can start at once.
+  await expect.poll(toggle).toMatchObject({ state: 'on', pressed: 'true', label: 'Play the music', src: '/assets/music/romantic-piano.mp3' });
   expect(await page.evaluate(() => window.__audio.plays.length)).toBe(0);
+  expect(await page.evaluate(() => window.__audio.loads)).toEqual([{ src: '/assets/music/romantic-piano.mp3', preload: 'auto' }]);
   // The first tap anywhere in the page (here, a tap on the phone) starts the music.
   await screen.click({ position: { x: 12, y: 12 } });
   await expect.poll(toggle).toMatchObject({ state: 'on', pressed: 'true', label: 'Turn the music off' });
@@ -518,8 +522,9 @@ test('music: the first tap starts the track, the button turns it off and on, the
   await expect.poll(toggle, { timeout: 5000 }).toMatchObject({ state: 'off', pressed: 'false' });
   expect(await page.evaluate(() => sessionStorage.getItem('invitestudio-sound'))).toBe('off');
   expect(await page.evaluate(() => localStorage.getItem('invitestudio-sound'))).toBeNull();
-  // Within the same visit it stays off after a tap, until the music is turned on again.
+  // Within the same visit it stays off (and shows off) after a tap, until the music is turned on again.
   await open();
+  await expect.poll(toggle).toMatchObject({ state: 'off', label: 'Turn the music on' });
   await screen.click({ position: { x: 12, y: 12 } });
   await page.waitForTimeout(400);
   expect(await toggle()).toMatchObject({ state: 'off' });
@@ -527,10 +532,14 @@ test('music: the first tap starts the track, the button turns it off and on, the
   await screen.locator('[data-sound-toggle]').click();
   await expect.poll(toggle).toMatchObject({ state: 'on' });
   expect(await page.evaluate(() => sessionStorage.getItem('invitestudio-sound'))).toBe('on');
-  // A new visit (a new browser session) starts with the music on again after the first tap, even if it was turned off before.
+  // A new visit (a new browser session) starts with the music on again after the first tap, even if it was turned off before,
+  // and an "off" that older versions kept for good is forgotten.
   await page.evaluate(() => { sessionStorage.setItem('invitestudio-sound', 'off'); localStorage.setItem('invitestudio-sound', 'off'); });
   await page.evaluate(() => sessionStorage.clear());
+  await page.reload();
   await open();
+  await expect.poll(toggle).toMatchObject({ state: 'on', label: 'Play the music' });
+  expect(await page.evaluate(() => localStorage.getItem('invitestudio-sound'))).toBeNull();
   const playsBefore = await page.evaluate(() => window.__audio.plays.length);
   await screen.click({ position: { x: 12, y: 12 } });
   await expect.poll(toggle).toMatchObject({ state: 'on' });

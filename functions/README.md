@@ -110,6 +110,14 @@ GET /api/public-weddings/<slug>
 Only rows with `status = 'published'` and `visibility = 'public'` are returned.
 This route has no update operation and does not accept an edit token.
 
+```http
+GET /api/public-weddings/<slug>/calendar/<event>.ics
+```
+
+One visible, dated event of a published invitation as a calendar entry (`text/calendar`, shown inline), so an iPhone or iPad
+offers "Add to Calendar". `<event>` is the event's id, or `event-<n>` for one without an id. Anything else is a 404. See
+section 15.13 of `docs/TEMPLATE_CONTRACT.md`.
+
 ### Publish and unpublish
 
 ```http

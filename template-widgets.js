@@ -24,9 +24,10 @@
  *   --frame-h               set on every invitation ([data-packaged-template]): the height of what the guest sees (the
  *                           editor's scrolling frame, else the window), kept current on resize. A template can pin a backdrop
  *                           (a film, a sky) to the visible frame with position:sticky and height:var(--frame-h).
- *   data-sound-toggle       the round music on/off button the platform adds to a template that has music (manifest "music"). The first
- *                           tap, key press or click on the page starts the track (browsers allow no sound before that), the button
- *                           shows whether it is playing, and turning it off is remembered. The track stops when the page is redrawn
+ *   data-sound-toggle       the round music on/off button the platform adds to a template that has music (manifest "music"). Music is
+ *                           on by default: the track starts downloading as soon as the button appears, and the first tap, key press or
+ *                           click on the page starts it (browsers allow no sound before that). The button shows "on" until the guest
+ *                           turns it off; turning it off is remembered for this visit only. The track stops when the page is redrawn
  *                           without a button (leaving the page) and pauses while the tab is hidden.
  *   data-tap="3"            tap a button [data-tap-button] that many times to reveal what follows (the date). Each tap plays a small
  *                           chime made in the browser (only once the guest has tapped). data-tap-armed shows the tapping state
@@ -183,33 +184,52 @@
   }
 
   /* ---------- background music ---------- */
-  // One track plays at a time, from the first button on the page (several can exist while the page redraws). Browsers do not let
-  // a page start sound before the guest has touched it, so the track starts on the first tap, key press or click anywhere on the
-  // page (a tap on the opening's own button counts), and the button shows what is really happening. Turning it off is remembered.
+  // One track plays at a time, from the first button on the page (several can exist while the page redraws). Music is on by default.
+  // Browsers do not let a page start sound before the guest has touched it, so the track is downloaded as soon as the button
+  // appears and starts on the first tap, key press or click anywhere on the page (a tap on the opening's own button counts).
+  // Turning it off is remembered for this visit only, so the next visit starts with music again.
   var SOUND_KEY = "invitestudio-sound", soundButtons = new Set(), soundAudio = null, soundWanted = false, soundTimer = 0, soundResume = false;
   // soundOn is what the guest asked for (the button shows it at once); soundTurn grows with every on/off, so a slow play() or a fade
   // started by an earlier tap never overrides a later one.
   var soundOn = false, soundTurn = 0;
-  // The template page's sample (data-sound-demo) always starts with sound on the first tap: a "off" chosen on an earlier visit, or on a
-  // guest's own invitation, must not silence every sample for ever. Its choice is remembered for this visit only.
-  function soundStore() {
-    var demo = false;
-    soundButtons.forEach(function (b) { if (b.isConnected && b.hasAttribute("data-sound-demo")) demo = true; });
-    try { return demo ? window.sessionStorage : window.localStorage; } catch (e) { return null; }
-  }
+  // The choice is kept in sessionStorage: an "off" chosen on one invitation (or on an earlier visit) must not silence every
+  // invitation on this site for ever. An "off" that older versions kept in localStorage is cleared once.
+  function soundStore() { try { return window.sessionStorage; } catch (e) { return null; } }
+  try { if (window.localStorage && window.localStorage.getItem(SOUND_KEY)) window.localStorage.removeItem(SOUND_KEY); } catch (e) { /* storage blocked */ }
   function soundOff() { try { var store = soundStore(); return Boolean(store) && store.getItem(SOUND_KEY) === "off"; } catch (e) { return false; } }
   function soundSave(on) { try { var store = soundStore(); if (store) store.setItem(SOUND_KEY, on ? "on" : "off"); } catch (e) { /* asked again next time */ } }
+  // Before the first touch the music is "on, waiting": the button shows on (music is the default), and pressing it starts the track.
+  function soundPending() { return !soundOn && !soundWanted && !soundOff(); }
   function soundPaint() {
-    var on = soundOn;
+    var on = soundOn, pending = !on && soundButtons.size && soundPending();
     soundButtons.forEach(function (b) {
-      b.setAttribute("data-sound", on ? "on" : "off");
-      b.setAttribute("aria-pressed", String(on));
-      b.setAttribute("aria-label", on ? "Turn the music off" : "Turn the music on");
+      b.setAttribute("data-sound", on || pending ? "on" : "off");
+      b.setAttribute("aria-pressed", String(on || Boolean(pending)));
+      b.setAttribute("aria-label", on ? "Turn the music off" : pending ? "Play the music" : "Turn the music on");
     });
+  }
+  // The track is fetched as soon as there is a button, so it can start at once on the first touch instead of downloading then.
+  function soundPrepare() {
+    var first = null;
+    soundButtons.forEach(function (b) { if (!first && b.isConnected) first = b; });
+    if (!first) return;
+    var src = first.getAttribute("data-sound-src");
+    if (!src) return;
+    if (!soundAudio) {
+      soundAudio = new Audio(); soundAudio.loop = true; soundAudio.preload = "auto";
+      // Paused by the browser itself (another app took the sound, headphones unplugged): the button follows.
+      soundAudio.addEventListener("pause", function () { if (!document.hidden && soundOn && !soundAudio.ended && soundAudio.readyState > 0) { soundOn = false; soundTurn++; } soundPaint(); });
+      soundAudio.addEventListener("playing", soundPaint);
+    }
+    if (soundAudio.getAttribute("data-src") !== src) {
+      soundAudio.setAttribute("data-src", src); soundAudio.src = src;
+      try { soundAudio.load(); } catch (e) { /* fetched on play instead */ }
+    }
   }
   function soundSync() {
     soundButtons.forEach(function (b) { if (!b.isConnected) soundButtons.delete(b); });
     if (!soundButtons.size) { soundWanted = false; soundOn = false; soundTurn++; if (soundAudio) { try { soundAudio.pause(); } catch (e) { /* stopped already */ } window.clearInterval(soundTimer); } }
+    else soundPrepare();
     soundPaint();
   }
   function soundFade(to, done) {
@@ -228,14 +248,9 @@
     var first = null;
     soundButtons.forEach(function (b) { if (!first && b.isConnected) first = b; });
     if (!first) return;
-    var src = first.getAttribute("data-sound-src"), vol = Math.min(1, Math.max(0.05, parseFloat(first.getAttribute("data-sound-volume")) || 0.35));
-    if (!soundAudio) {
-      soundAudio = new Audio(); soundAudio.loop = true; soundAudio.preload = "none";
-      // Paused by the browser itself (another app took the sound, headphones unplugged): the button follows.
-      soundAudio.addEventListener("pause", function () { if (!document.hidden && soundOn && !soundAudio.ended && soundAudio.readyState > 0) { soundOn = false; soundTurn++; } soundPaint(); });
-      soundAudio.addEventListener("playing", soundPaint);
-    }
-    if (soundAudio.getAttribute("data-src") !== src) { soundAudio.setAttribute("data-src", src); soundAudio.src = src; }
+    var vol = Math.min(1, Math.max(0.05, parseFloat(first.getAttribute("data-sound-volume")) || 0.35));
+    soundPrepare();
+    if (!soundAudio) return;
     var turn = ++soundTurn;
     soundOn = true; soundPaint();
     // Still playing (it was fading out after an "off"): fade back up.
@@ -261,11 +276,17 @@
   // The first touch of the page starts the music, unless the guest turned it off before.
   function soundGesture(e) {
     if (soundWanted || soundOn || soundOff() || !soundButtons.size) return;
+    // Only the guest's own touch counts: a click made by a script (an opening that opens itself) cannot start sound.
+    if (e.isTrusted === false) return;
+    // A finger's pointerdown never unlocks sound, and a try made then would be refused just before the touchend that would have worked.
+    if (e.type === "pointerdown" && e.pointerType && e.pointerType !== "mouse") return;
     var path = e.composedPath ? e.composedPath() : [e.target];
     for (var i = 0; i < path.length; i++) { if (path[i] && path[i].nodeType === 1 && path[i].hasAttribute("data-sound-toggle")) return; }
     soundPlay();
   }
-  ["pointerdown", "keydown", "touchend"].forEach(function (name) { document.addEventListener(name, soundGesture, { capture: true, passive: true }); });
+  // Several kinds of touch, because browsers differ in which one lets a page start sound (a touch's pointerdown does not on most
+  // phones; its touchend, pointerup or click does). A refused try is simply made again on the next one.
+  ["pointerdown", "pointerup", "touchend", "click", "keydown"].forEach(function (name) { document.addEventListener(name, soundGesture, { capture: true, passive: true }); });
   document.addEventListener("visibilitychange", function () {
     if (!soundAudio) return;
     if (document.hidden) { soundResume = !soundAudio.paused; if (soundResume) soundAudio.pause(); }
@@ -537,8 +558,35 @@
     for (var i = 0; i < path.length; i++) { if (path[i] && path[i].nodeType === 1 && test(path[i])) return path[i]; }
     return null;
   }
+  // Add to calendar (packaged-templates.js draws one link per dated event): the way in that works on the guest's device. The link
+  // itself downloads the event file, which desktop calendars open; a phone needs something else (see calendarHtml there).
+  function calendarDevice() {
+    var nav = window.navigator || {}, ua = nav.userAgent || "";
+    // iPadOS reports itself as a Mac; it is told apart by its touch screen.
+    if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && nav.maxTouchPoints > 1)) return "apple";
+    if (/Android/i.test(ua)) return "android";
+    return "";
+  }
+  function calendarOpen(link, e) {
+    var device = calendarDevice(), apple = link.getAttribute("data-cal-apple"), google = link.getAttribute("data-cal-google");
+    if (device === "apple" && apple) {
+      // The site serves the event as a calendar entry; opening it shows "Add to Calendar" over the invitation.
+      e.preventDefault(); window.location.href = apple; return;
+    }
+    if (device === "android" && google) {
+      e.preventDefault();
+      // A new tab keeps the invitation open behind it ("noopener" is not passed: with it, open() always answers null).
+      var opened = null;
+      try { opened = window.open(google, "_blank"); } catch (err) { opened = null; }
+      if (opened) { try { opened.opener = null; } catch (err) { /* already cut */ } }
+      else window.location.href = google;
+    }
+  }
+
   document.addEventListener("click", function (e) {
     var path = e.composedPath ? e.composedPath() : [e.target];
+    var calLink = closest(path, function (n) { return n.tagName === "A" && n.parentNode && n.parentNode.nodeType === 1 && n.parentNode.hasAttribute("data-cal"); });
+    if (calLink) { calendarOpen(calLink, e); return; }
     var toggle = closest(path, function (n) { return n.hasAttribute("data-menu-toggle"); });
     if (toggle) {
       var nav = toggle.parentNode.querySelector("[data-nav]");

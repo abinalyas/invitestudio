@@ -520,7 +520,7 @@ for (const { manifest } of loadTemplates()) {
 
 test('the music players are platform behaviour: the sound button is styled for every template, and the widget starts the track only after a touch', () => {
   const widgets = readFileSync(join(root, 'template-widgets.js'), 'utf8');
-  assert.match(widgets, /"pointerdown", "keydown", "touchend"/);
+  assert.match(widgets, /"pointerdown", "pointerup", "touchend", "click", "keydown"/);
   assert.match(widgets, /invitestudio-sound/);
   const css = readFileSync(join(root, 'templates/_shared/sound.css'), 'utf8');
   for (const { manifest, css: scoped } of loadTemplates()) assert.ok(scoped.includes(`.${manifest.root} [data-sound-toggle]`), `${manifest.id} carries the button styles`);
@@ -578,9 +578,11 @@ test('the template page sample is marked, so its sound always starts on the firs
   assert.ok(guest.includes('data-sound-toggle') && !guest.includes('data-sound-demo'));
 });
 
-test('the sound choice of the template page sample is kept for the visit only (session storage), a guest\'s for good (local storage)', () => {
+test('the sound choice is kept for the visit only (session storage) everywhere, so music is on by default on every new visit', () => {
   const widgets = readFileSync(join(root, 'template-widgets.js'), 'utf8');
-  assert.match(widgets, /demo \? window\.sessionStorage : window\.localStorage/);
+  assert.match(widgets, /function soundStore\(\) \{ try \{ return window\.sessionStorage; \}/);
+  assert.doesNotMatch(widgets, /localStorage\.setItem\(SOUND_KEY/, 'an "off" is never kept for good');
+  assert.match(widgets, /soundAudio\.preload = "auto"/, 'the track is fetched before the first touch');
 });
 
 test('the two names are told apart by a sign or by "and", "weds", "wed", "marries" or a lower-case x', () => {
