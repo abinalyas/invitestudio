@@ -8,6 +8,8 @@
     extend: { subject: "Keep my InviteStudio website longer", text: "Hello, I would like to keep my InviteStudio website online for longer." },
     restore: { subject: "Bring back my InviteStudio website", text: "Hello, my InviteStudio website has closed and I would like it back." },
     custom: { subject: "Something unique for my celebration", text: "Hello, I would like to talk about a design made just for us." },
+    // The home page's "we'll build it for you" offer: the message asks for what we need to start, so the first reply can be a preview.
+    build: { subject: "Please build our wedding invitation", text: "Hello, please build our wedding invitation.\n\nOur names:\nWedding date:\nEvents and venues:\n\nWe'll send our photos here too." },
     general: { subject: "A question about InviteStudio", text: "Hello, I have a question about InviteStudio." }
   };
 

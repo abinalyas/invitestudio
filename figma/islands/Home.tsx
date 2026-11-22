@@ -1,13 +1,63 @@
-// Home screen from the Figma Make export (App.tsx lines 1054-1476).
-import { useState } from "react";
-import { Art, Icon, Logo, faqs, galleryTemplates, phoneSmall, testimonials } from "./shared";
+// Home screen. Rebuilt for launch (marketing/LAUNCH_PLAYBOOK.md): six short sections that lead with what the product looks like.
+//   1 hero: the line and a playing invitation    2 every design, playing its own opening    3 why one link beats a video
+//   4 three steps                                 5 "we'll build it for you"                  6 price, five questions, last call
+import { useEffect, useRef, useState } from "react";
+import { Art, Icon, Logo, faqs, galleryTemplates, testimonials } from "./shared";
 import { formatMoney, tierOf, usePricing } from "./pricing";
-import { CustomDesignCard, MyProjectsLink, RecoveryBanner, StartCreatingLink, TalkToUs } from "./extras";
+import { MyProjectsLink, RecoveryBanner, StartCreatingLink, TalkToUs } from "./extras";
+import { bridge } from "./bridge";
 
-const featuredDesigns = ["minimalist", "bloom-reveal", "under-the-same-moon"].map(
-  (id) => galleryTemplates.find((design) => design.backendId === id)!,
-);
-const bloomReveal = featuredDesigns[1];
+// The most striking openings first: the first two or three cards are all most visitors see without swiping.
+const OPENING_ORDER = ["lantern-night", "velvet-reveal", "cherry-blossom", "under-the-same-moon", "golden-butterfly", "fairy-tale", "bloom-reveal", "cinematic", "minimalist"];
+const openingDesigns = OPENING_ORDER.map((id) => galleryTemplates.find((design) => design.backendId === id)).filter(Boolean) as typeof galleryTemplates;
+const bloomReveal = galleryTemplates.find((design) => design.backendId === "bloom-reveal")!;
+
+// The five questions people ask before they start (the full list stays in shared.tsx and the search-engine copy).
+const HOME_FAQS = ["What is free, and when do I pay?", "Can I collect RSVPs from my guests?", "Do my guests need an app or an account?", "Can I change my design later?", "What happens after the wedding?"]
+  .map((question) => faqs.find(([q]) => q === question)!)
+  .filter(Boolean);
+
+const reducedMotion = () => typeof window !== "undefined" && !!window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// A muted recording that plays only while it is on screen, and never for people who ask for less motion. Nothing is downloaded
+// until it first comes into view (preload="none"). `loop` recordings get a pause button (WCAG 2.2.2); the short design openings play
+// once each time they come into view and rest on their last frame.
+function PlayingInView({ src, poster, label, loop = false, width, height }: { src: string; poster: string; label: string; loop?: boolean; width: number; height: number }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [paused, setPaused] = useState(false);
+  const pausedRef = useRef(false);
+  useEffect(() => {
+    const video = ref.current;
+    if (!video || reducedMotion() || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !pausedRef.current) {
+        if (!loop && video.ended) video.currentTime = 0;
+        video.play().catch(() => {});
+      } else if (!entry.isIntersecting) video.pause();
+    }, { threshold: 0.6 });
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [loop]);
+  const toggle = () => {
+    const video = ref.current;
+    if (!video) return;
+    pausedRef.current = !pausedRef.current;
+    setPaused(pausedRef.current);
+    if (pausedRef.current) video.pause(); else video.play().catch(() => {});
+  };
+  return (
+    <>
+      <video ref={ref} muted playsInline loop={loop} preload="none" poster={poster} width={width} height={height} aria-label={label} disablePictureInPicture>
+        <source src={src} type="video/mp4" />
+      </video>
+      {loop && !reducedMotion() ? (
+        <button type="button" className="play-toggle" onClick={toggle} aria-label={paused ? "Play the sample invitation" : "Pause the sample invitation"}>
+          {paused ? "Play" : "Pause"}
+        </button>
+      ) : null}
+    </>
+  );
+}
 
 export function HomePage() {
   // The Instagram address is set once in site-config.js (social.instagram); with none set, no social icon is shown.
@@ -17,6 +67,7 @@ export function HomePage() {
   const startPrice = pricing && classic ? formatMoney(classic.amountMinor, pricing.currency, pricing.locale) : ""
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const build = bridge.contactLinks("build")
 
   return (
     <main className="home-page">
@@ -26,7 +77,6 @@ export function HomePage() {
           <img className="deco deco-floral-left" src="/assets/hero/floral-cluster-left.webp" alt="" width={394} height={425} fetchPriority="low" decoding="async" />
           <img className="deco deco-floral-right" src="/assets/hero/floral-cluster-right.webp" alt="" width={374} height={323} fetchPriority="low" decoding="async" />
           <img className="deco deco-petals" src="/assets/hero/scattered-petals.webp" alt="" width={189} height={174} fetchPriority="low" decoding="async" />
-          <img className="deco deco-fabric" src="/assets/hero/ivory-fabric-drape.webp" alt="" width={474} height={412} fetchPriority="low" decoding="async" />
         </div>
         <header className="site-header shell">
           <Logo />
@@ -52,272 +102,160 @@ export function HomePage() {
 
         <div className="hero-grid shell">
           <div className="hero-copy">
-            <p className="eyebrow">Wedding invitation websites</p>
+            <p className="eyebrow">Animated wedding invitations</p>
             <h1>
-              <span>Create a wedding</span>
-              <span>website your guests</span>
+              <span>Your wedding</span>
+              <span>invitation,</span>
               <span>
-                will <em>love</em>
+                in <em>one link</em>
               </span>
             </h1>
             <p className="lead hero-sub">
-              One InviteStudio link for your wedding schedule, photos, and RSVPs.
+              It opens like a film. Then guests see every event, find the venue and tell you they{"’"}re coming.
             </p>
             <div className="hero-buttons">
               <a className="button" href="/templates">
-                Browse wedding designs <Icon name="arrow" size={18} />
+                Choose your design <Icon name="arrow" size={18} />
               </a>
               <p className="hero-promise">
-                <strong>Preview free.</strong>
+                <strong>Free to build and preview.</strong>
                 <span>{pricing?.mode === "early-access"
                   ? "Publishing is free during early access."
-                  : startPrice ? `One-time publishing plans from ${startPrice}.` : "Pay once to publish."}</span>
+                  : startPrice ? `Pay once to publish, from ${startPrice}.` : "Pay once, only when you publish."}</span>
               </p>
             </div>
           </div>
 
           <figure className="hero-demo">
+            <div className="hero-phone">
+              <PlayingInView
+                loop
+                src="/assets/home/bloom-reveal-demo.mp4?v=2"
+                poster="/assets/home/bloom-reveal-demo-poster.webp?v=2"
+                width={320}
+                height={544}
+                label="Bloom Reveal sample invitation: the floral opening, wedding schedule, photo gallery and guest RSVP"
+              />
+            </div>
             <figcaption>
               <a href={`/templates/${bloomReveal.id}`}>See a sample invitation <Icon name="arrow" size={16} /></a>
             </figcaption>
-            <video
-              controls
-              muted
-              playsInline
-              preload="none"
-              poster="/assets/home/bloom-reveal-demo-poster.webp?v=2"
-              width={320}
-              height={544}
-              aria-label="Bloom Reveal demo showing the floral opening, wedding schedule, photo gallery, and guest RSVP"
-            >
-              <source src="/assets/home/bloom-reveal-demo.mp4?v=2" type="video/mp4" />
-            </video>
           </figure>
         </div>
       </section>
 
-      <section className="section shell templates featured-designs" aria-labelledby="featured-designs-title">
+      <section className="section shell openings" id="designs" aria-labelledby="designs-title">
         <div className="section-heading row">
           <div>
-            <Art name="eucalyptus" className="deco deco-edge-l deco-tpl" />
-            <h2 id="featured-designs-title">Featured wedding designs</h2>
-            <p>Each design is available with the plan shown and any higher plan.</p>
+            <span className="section-kicker">{openingDesigns.length} designs</span>
+            <h2 id="designs-title">Pick how your invitation opens</h2>
           </div>
-          <a href="/templates">View all designs <Icon name="arrow" size={18} /></a>
+          <a href="/templates">See all designs <Icon name="arrow" size={18} /></a>
         </div>
-        <div className="featured-design-grid">
-          {featuredDesigns.map((design) => {
+        <ul className="opening-row">
+          {openingDesigns.map((design) => {
             const tier = tierOf(pricing, design.backendId);
             return (
-              <article className="featured-design" key={design.id}>
-                <img src={phoneSmall(design.phone)} alt="" width={160} height={338} loading="lazy" decoding="async" />
-                <div>
-                  <h3>{design.title}</h3>
-                  {pricing && tier && (
-                    <p>{tier.name} plan{pricing.mode === "live" ? ` · ${formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}` : ""}</p>
-                  )}
-                  <a href={`/templates/${design.id}`} aria-label={`Preview ${design.title}`}>Preview <Icon name="arrow" size={16} /></a>
-                </div>
-              </article>
+              <li key={design.id}>
+                <a className="opening-card" href={`/templates/${design.id}`} aria-label={`${design.title}: see this design`}>
+                  <span className="opening-phone">
+                    <PlayingInView
+                      src={`/assets/home/openings/${design.backendId}.mp4`}
+                      poster={`/assets/home/openings/${design.backendId}.webp`}
+                      width={288}
+                      height={512}
+                      label={`${design.title} opening`}
+                    />
+                  </span>
+                  <span className="opening-name">{design.title}</span>
+                  {pricing && tier ? (
+                    <span className="opening-tier">{tier.name}{pricing.mode === "live" ? ` · ${formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}` : ""}</span>
+                  ) : null}
+                </a>
+              </li>
             );
           })}
-        </div>
-      </section>
-
-      <section className="section shell what" id="problem">
-        <div className="section-heading centered">
-          <span className="section-kicker">One page for everything</span>
-          <h2>Wedding details shouldn{"’"}t live in twelve chat threads</h2>
-          <p>Put it all on one page instead.</p>
-        </div>
-        <div className="what-grid">
-          {[
-            ["The card has no room", "Venues, schedules and travel details end up in separate messages."],
-            ["Changes mean resending", "A new time or venue should reach every guest at once."],
-            ["Replies get lost", "Counting who is coming shouldn\u2019t mean scrolling through WhatsApp."],
-          ].map(([title, text]) => (
-            <article key={title}>
-              <h3>{title}</h3>
-              <p>{text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="section shell how" id="how">
-        <Art name="flowers-a" className="deco deco-edge-l deco-how-l" />
-        <Art name="gypsophila" className="deco deco-edge-r deco-how-r" />
-        <Art name="petal-1" className="deco deco-petal deco-how-petal" />
-        <div className="section-heading centered">
-          <span className="section-kicker">Simple by design</span>
-          <h2>How it works</h2>
-          <p>From first look to shared link in four steps. You only pay at step 4.</p>
-        </div>
-        <div className="steps four">
-          {[
-            ["laptop", "1", "Choose a design", "Browse our collections and pick the one that feels like you", "Free"],
-            ["notebook", "2", "Add your details", "Your names, date, events, photos and story", "Free"],
-            ["eye", "3", "Preview it", "See exactly what guests will see, as often as you like", "Free"],
-            ["plane", "4", "Publish and share", "Get your own InviteStudio link and send it on WhatsApp, text or email", "One-time payment"],
-          ].map(([icon, number, title, text, tag], index) => (
-            <article key={title}>
-              <span className="step-icon">
-                <Art name={`icon-${icon}`} className="step-art" />
-              </span>
-              <strong className="number">{number}</strong>
-              <div>
-                <h3>{title}</h3>
-                <p>{text}</p>
-                <span className={index === 3 ? "step-tag paid" : "step-tag"}>{tag}</span>
-              </div>
-              {index < 3 && <span className="step-link" aria-hidden="true" />}
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="section shell what" id="features">
-        <div className="section-heading centered">
-          <span className="section-kicker">A complete digital invitation</span>
-          <h2>Everything you need for your big day</h2>
-          <p>All the essentials in one place, on every plan.</p>
-        </div>
-        <div className="what-grid">
-          {[
-            [
-              "laptop",
-              "Your digital invitation",
-              "A beautiful, personalised wedding website for your day.",
-              ["Names and date", "Events and venues", "Countdown"],
-            ],
-            [
-              "link",
-              "Share with one link",
-              "Send your invitation to everyone you love, in seconds.",
-              ["WhatsApp", "Text and email", "Works on any phone"],
-            ],
-            [
-              "people",
-              "Guests and memories",
-              "Know who is coming and share your story with them.",
-              ["Guest RSVP", "Photo gallery", "Travel details"],
-            ],
-          ].map(([icon, title, text, chips]) => (
-            <article key={title as string}>
-              <Art name={`icon-${icon}`} className="what-art" />
-              <h3>{title}</h3>
-              <p>{text}</p>
-              <ul>
-                {(chips as string[]).map((chip) => (
-                  <li key={chip}>{chip}</li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-        <div className="feature-examples">
-          <figure>
-            <div className="feature-example-art">
-              <img src="/assets/home/bloom-reveal-whatsapp-card.webp" alt="A floral wedding ceremony card for Daniel and Amelia" width={360} height={480} loading="lazy" decoding="async" />
-            </div>
-            <figcaption>Send a WhatsApp card with your invitation link</figcaption>
-          </figure>
-          <figure>
-            <div className="feature-example-art">
-              <img src="/assets/home/host-rsvp-example.webp" alt="A guest’s reply with attendance, event and meal details, and a spreadsheet download button" width={330} height={258} loading="lazy" decoding="async" />
-            </div>
-            <figcaption>See guest replies and download your list</figcaption>
-          </figure>
-        </div>
-        <ul className="what-assure">
-          <li><Art name="icon-notebook" className="assure-art" /> Edit anytime</li>
-          <li><Art name="icon-phone" className="assure-art" /> Looks great on any device</li>
-          <li><span className="assure-blob"><Icon name="cloud" size={22} /></span> No hosting or setup needed</li>
         </ul>
       </section>
 
-      <section className="section shell pricing" id="pricing">
-        <div className="section-heading row">
-          <Art name="flowers-b" className="deco deco-corner-r deco-pricing" />
-          <Art name="petal-2" className="deco deco-petal deco-pricing-petal" />
-          <div>
-            <span className="section-kicker">Choose your collection</span>
-            <h2>Choose a publishing plan</h2>
-            <p>
-              Every plan includes the same invitation tools. Prices vary by region.
-            </p>
+      <section className="section shell why" id="features" aria-labelledby="why-title">
+        <Art name="eucalyptus" className="deco deco-edge-l deco-why" />
+        <div className="section-heading centered">
+          <span className="section-kicker">Better than a video invitation</span>
+          <h2 id="why-title">It opens like a video. Then it stays useful.</h2>
+        </div>
+        <div className="why-grid">
+          <ul className="why-points">
+            <li><strong>Every event on one page</strong><span>Times, venues and directions, from the first function to the reception.</span></li>
+            <li><strong>Replies in one list</strong><span>Guests reply on the page. You see who{"’"}s coming and download the list.</span></li>
+            <li><strong>Change it anytime</strong><span>A time moves? Update it once and every guest sees the latest.</span></li>
+          </ul>
+          <div className="why-proof">
+            <figure>
+              <img src="/assets/home/bloom-reveal-whatsapp-card.webp" alt="A floral wedding card with the couple’s names, as it appears when the link is shared on WhatsApp" width={360} height={480} loading="lazy" decoding="async" />
+              <figcaption>One light link with a preview card, on WhatsApp</figcaption>
+            </figure>
+            <figure>
+              <img src="/assets/home/host-rsvp-example.webp" alt="A guest’s reply with attendance, event and meal details, and a spreadsheet download button" width={330} height={258} loading="lazy" decoding="async" />
+              <figcaption>Every reply, ready to download</figcaption>
+            </figure>
           </div>
         </div>
-        <div className="free-paid">
-          <div>
-            <Art name="icon-eye" className="fp-art" />
-            <p>
-              <strong>Free</strong>
-              <span>Build, edit and preview your invitation, as often as you like.</span>
-            </p>
-          </div>
-          <div>
-            <Art name="icon-shield" className="fp-art" />
-            <p>
-              <strong>Pay once, to publish</strong>
-              <span>Your one-time payment covers publishing and the designs included in your plan.</span>
-            </p>
-          </div>
+      </section>
+
+      <section className="section shell how" id="how" aria-labelledby="how-title">
+        <Art name="gypsophila" className="deco deco-edge-r deco-how-r" />
+        <div className="section-heading centered">
+          <span className="section-kicker">How it works</span>
+          <h2 id="how-title">Three steps. You pay only at the end.</h2>
         </div>
-        <div className="plans">
-          {(pricing ? pricing.tiers : []).map((tier) => {
-            const designs = galleryTemplates.filter((item) => (pricing!.templates[item.backendId] || "classic") === tier.id)
-            return (
-              <article className={tier.id === "premium" ? "plan featured" : "plan"} key={tier.id}>
-                {tier.id === "premium" && <span className="popular">Most popular</span>}
-                <h3>{tier.name}</h3>
-                <p>{tier.tagline}</p>
-                <div className="price">
-                  {formatMoney(tier.amountMinor, pricing!.currency, pricing!.locale)}
-                  <small> one-time</small>
-                </div>
-                <ul>
-                  {tier.features.map((feature) => (
-                    <li key={feature}>
-                      <Icon name="check" size={16} />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <p className="plan-designs">
-                  {tier.name} collection · {designs.length} {designs.length === 1 ? "design" : "designs"}: {designs.slice(0, 3).map((item) => item.title).join(", ")}
-                  {designs.length > 3 ? " and more" : ""}
-                </p>
-                <a className={tier.id === "premium" ? "button" : "button outline"} href={`/templates?tier=${tier.id}`}>
-                  See {tier.name} designs
+        <ol className="how-steps">
+          <li><span className="how-n" aria-hidden="true">1</span><div><strong>Choose a design</strong><span>Free</span></div></li>
+          <li><span className="how-n" aria-hidden="true">2</span><div><strong>Add your names, events and photos</strong><span>Free, and preview as often as you like</span></div></li>
+          <li><span className="how-n" aria-hidden="true">3</span><div><strong>Publish and share one link</strong><span className="paid">One-time payment</span></div></li>
+        </ol>
+      </section>
+
+      {build.whatsapp || build.email ? (
+        <section className="shell build-for-you" aria-labelledby="build-title" data-build-for-you>
+          <div>
+            <h2 id="build-title">Rather we build it for you?</h2>
+            <p>Send us your names, date, venues and photos. We{"’"}ll build your invitation and send you a private preview. You pay only if you publish.</p>
+          </div>
+          <div className="build-actions">
+            {build.whatsapp ? <a className="button light" href={build.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp us</a> : null}
+            {build.email ? <a className="button outline light" href={build.email}>Email us</a> : null}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="section shell pricing" id="pricing" aria-labelledby="pricing-title">
+        <div className="section-heading centered">
+          <span className="section-kicker">Pricing</span>
+          <h2 id="pricing-title">One payment. No subscription.</h2>
+          <p>Building and previewing are free. You pay once, when you publish, for the design you chose.</p>
+        </div>
+        {pricing ? (
+          <div className="plans">
+            {pricing.tiers.map((tier) => {
+              const designs = galleryTemplates.filter((item) => (pricing.templates[item.backendId] || "classic") === tier.id)
+              return (
+                <a className="plan" key={tier.id} href={`/templates?tier=${tier.id}`}>
+                  <strong>{tier.name}</strong>
+                  <span className="price">{formatMoney(tier.amountMinor, pricing.currency, pricing.locale)}<small> one-time</small></span>
+                  <span className="plan-designs">{designs.length} {designs.length === 1 ? "design" : "designs"}{designs.length ? `, like ${designs[0].title}` : ""}</span>
                 </a>
-              </article>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        ) : (
+          <p className="pricing-note">Prices are shown when you choose a design.</p>
+        )}
         {pricing?.mode === "early-access" && (
           <p className="pricing-note">
             Publishing is free during early access. The prices above apply when payments open.
           </p>
         )}
-        {!pricing && (
-          <p className="pricing-note">Prices are shown when you choose a design.</p>
-        )}
-        <p className="pricing-note">
-          Published invitations normally stay online for two months after your last event, subject to the hosting limit shown when you publish.
-          Export your RSVPs before your invitation expires.
-        </p>
-      </section>
-
-      <section className="shell switch-strip">
-        <Art name="icon-layers" className="switch-art" />
-        <Art name="gold-swoosh" className="switch-swoosh" />
-        <div>
-          <h2>Edit anytime. Switch designs whenever you want.</h2>
-          <p>
-            Your details come with you, even after publishing. Classic includes Classic designs, Premium includes Classic and Premium, and Signature includes every design.
-          </p>
-        </div>
       </section>
 
       {testimonials.length > 0 && (
@@ -343,54 +281,41 @@ export function HomePage() {
         </section>
       )}
 
-      <section className="section shell faq">
-        <div className="faq-layout">
-          <Art name="arch" className="faq-art" />
-          <div className="faq-main">
-          <div className="section-heading row">
-            <div>
-              <span className="section-kicker">Questions, answered</span>
-              <h2>Frequently asked questions</h2>
-              <p>Have a question? We’re here to help.</p>
-            </div>
-            <a href="#faq-list">
-              View all FAQs <Icon name="arrow" size={18} />
-            </a>
-          </div>
-          <div className="faq-grid" id="faq-list">
-            {faqs.map(([question, answer], index) => (
-              <div
-                className={openFaq === index ? "faq-item open" : "faq-item"}
-                key={question}
+      <section className="section shell faq" aria-labelledby="faq-title">
+        <div className="section-heading centered">
+          <span className="section-kicker">Questions</span>
+          <h2 id="faq-title">Before you start</h2>
+        </div>
+        <div className="faq-grid" id="faq-list">
+          {HOME_FAQS.map(([question, answer], index) => (
+            <div
+              className={openFaq === index ? "faq-item open" : "faq-item"}
+              key={question}
+            >
+              <button
+                onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                aria-expanded={openFaq === index}
               >
-                <button
-                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  aria-expanded={openFaq === index}
-                >
-                  {question}
-                  <span>{openFaq === index ? "−" : "+"}</span>
-                </button>
-                <p>{answer}</p>
-              </div>
-            ))}
-          </div>
-          </div>
+                {question}
+                <span>{openFaq === index ? "−" : "+"}</span>
+              </button>
+              <p>{answer}</p>
+            </div>
+          ))}
         </div>
       </section>
-
-      <CustomDesignCard className="shell" />
 
       <section className="cta shell" id="cta">
         <Art name="flowers-a" className="cta-art cta-art-l" />
         <Art name="flowers-b" className="cta-art cta-art-r" />
         <div>
-          <h2>Ready to send something they’ll remember?</h2>
+          <h2>Start with the design you love</h2>
           <p>
-            Start with a design you love. It's free until you publish.
+            Free to build and preview. Pay once, only when you publish.
           </p>
         </div>
         <a className="button light" href="/templates">
-          Start your invitation <Icon name="arrow" size={18} />
+          Choose your design <Icon name="arrow" size={18} />
         </a>
       </section>
 
@@ -453,4 +378,3 @@ export function HomePage() {
     </main>
   )
 }
-

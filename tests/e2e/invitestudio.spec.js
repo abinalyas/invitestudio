@@ -8,10 +8,10 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('homepage starts a short personalised-preview journey', async ({ page }) => {
-  await expect(page.getByRole('heading', { name: /create a wedding|make the moment|find the feeling|invite.*moment/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /your wedding\s*invitation|create a wedding|make the moment|find the feeling|invite.*moment/i })).toBeVisible();
   // The big button is a link to the template gallery, where the couple picks a design first.
   // (The plain static test server has no route for /templates, so only the destination is checked here.)
-  await expect(page.getByRole('link', { name: /start your invitation/i }).first()).toHaveAttribute('href', '/templates');
+  await expect(page.getByRole('link', { name: /choose your design/i }).first()).toHaveAttribute('href', '/templates');
   // Starting from scratch (the "New website" path) opens the setup wizard.
   await page.evaluate(() => window.InviteStudioBridge.startCreate('Wedding'));
   await expect(page.getByRole('heading', { name: /create your invitation/i })).toBeVisible();
@@ -108,7 +108,7 @@ test('malformed private link does not break the app', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/?draft=3f2c1a9e-8b7d-4c6e-9f10-2a3b4c5d6e7f');
-  await expect(page.getByRole('heading', { name: /create a wedding|make the moment|find the feeling|invite.*moment/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /your wedding\s*invitation|create a wedding|make the moment|find the feeling|invite.*moment/i })).toBeVisible();
   expect(errors).toEqual([]);
 });
 

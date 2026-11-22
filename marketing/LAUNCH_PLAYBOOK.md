@@ -155,6 +155,9 @@ directories second.
 ## 8. Product changes that would help marketing (in priority order)
 
 1. **Shipped:** the credit line on live invitations (section 3).
+1. **Shipped:** the home page rebuilt to match this plan: the "one link" headline, all 9 designs playing their openings, the video-invitation
+   comparison, three steps, the "we'll build it for you" WhatsApp offer, one price section and five questions (about 6 phone screens, from 10½).
+   The made-up testimonials were removed.
 2. **A "Real invitations" page** on the site, filled with founding couples who agreed (`OUTREACH_PLAN` section 4).
 3. **A referral reward:** a couple who brings another couple gets something. Needs payments tied to a referral code.
 4. **Vendor attribution:** promo codes that give a discount (not only a free publish) and tie a payment to a vendor, so we can pay a commission.

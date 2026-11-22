@@ -1,5 +1,10 @@
 # Landing page copy: launch version
 
+> **Superseded for the home page (22 November 2026).** The home page was rebuilt into six sections with the owner's approval
+> (`marketing/LAUNCH_PLAYBOOK.md`): headline "Your wedding invitation, in one link", every design playing its opening, "It opens like
+> a video. Then it stays useful.", three steps, "Rather we build it for you?", one compact price section and five questions.
+> The source is `figma/islands/Home.tsx`; the rules below (true claims only, no invented testimonials) still apply.
+
 Status: decisions made by the product owner. Applied: hero subhead, problem strip, closing call to action, two new FAQ questions (home page and `functions/_shared/seo.js`), and the "in minutes" claim removed from the closing call to action and the `/wedding-invitation-website` heading. Not applied, with reasons, in the list below.
 
 **Decisions:** (1) keep the current main headline; the subhead change is approved. (2) Payments are live, so no early-access wording. (3) No "in minutes" claim until a first-time build is timed.

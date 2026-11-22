@@ -15,6 +15,7 @@ for (const [name, width, height] of [['phone', 390, 844], ['tablet', 820, 1100],
     await stubPrices(page);
     await page.goto('/');
     await expect(page.locator('.plans .plan')).toHaveCount(3, { timeout: 15000 });
+    // The launch rebuild keeps a few botanical illustrations (and drops the clip-art icons), so the counts are smaller.
     // Scroll through so lazy pictures load, then check every illustration that is shown has real pixels.
     await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 500) { window.scrollTo(0, y); await new Promise(r => setTimeout(r, 60)); } window.scrollTo(0, 0); });
     await page.waitForTimeout(500);
@@ -24,8 +25,8 @@ for (const [name, width, height] of [['phone', 390, 844], ['tablet', 820, 1100],
       const shown = imgs.filter(i => i.getClientRects().length && getComputedStyle(i).display !== 'none');
       return { total: imgs.length, shown: shown.length, broken: shown.filter(i => !i.complete || i.naturalWidth === 0).map(i => i.getAttribute('src')), sideways: document.documentElement.scrollWidth > window.innerWidth };
     });
-    expect(result.total).toBeGreaterThan(15);
-    expect(result.shown).toBeGreaterThan(8);
+    expect(result.total).toBeGreaterThanOrEqual(4);
+    expect(result.shown).toBeGreaterThanOrEqual(width >= 1100 ? 3 : 2);
     expect(result.broken).toEqual([]);
     expect(result.sideways).toBe(false);
     // Decoration is for looking at: it takes no clicks and is hidden from screen readers.
