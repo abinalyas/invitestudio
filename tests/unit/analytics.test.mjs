@@ -59,7 +59,7 @@ test('slugOf, referrerHost, screenBucket and cleanLang', () => {
   assert.equal(slugOf('/s/mira-and-arun'), 'mira-and-arun');
   assert.equal(slugOf('/s/Bad_Slug'), null);
   assert.equal(slugOf('/templates/13'), null);
-  assert.equal(referrerHost('https://www.instagram.com/invite__studio.co?x=1', 'invitestudio.co'), 'instagram.com');
+  assert.equal(referrerHost('https://www.instagram.com/tryinvitestudio?x=1', 'invitestudio.co'), 'instagram.com');
   assert.equal(referrerHost('https://invitestudio.co/templates', 'invitestudio.co'), null, 'our own pages are not a referrer');
   assert.equal(referrerHost('https://www.invitestudio.co/', 'invitestudio.co'), null);
   assert.equal(referrerHost('not a url', 'invitestudio.co'), null);

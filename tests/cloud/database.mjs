@@ -3,7 +3,7 @@
 // and auth.uid()), and applies the repository migrations in order. It is never
 // pointed at a real Supabase project.
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
@@ -51,6 +51,19 @@ const supabaseStubs = `
   alter default privileges in schema public grant all on sequences to service_role;
 `;
 
+// The roles the migrations create, read from their `create role` statements (comments ignored).
+function migrationRoles() {
+  const roles = new Set();
+  for (const file of readdirSync(migrationsDir).filter(name => name.endsWith('.sql'))) {
+    const sql = readFileSync(join(migrationsDir, file), 'utf8').replace(/--.*$/gm, '');
+    for (const match of sql.matchAll(/\bcreate\s+role\s+(?:if\s+not\s+exists\s+)?("(?:[^"]|"")+"|[a-z_][a-z0-9_$]*)/gi)) {
+      const name = match[1];
+      roles.add(name.startsWith('"') ? name.slice(1, -1).replace(/""/g, '"') : name.toLowerCase());
+    }
+  }
+  return [...roles];
+}
+
 export async function startDatabase({ port = 54329, dataDir }) {
   const bin = embeddedBinDir();
   const prefix = serverUserPrefix(dataDir);
@@ -65,12 +78,11 @@ export async function startDatabase({ port = 54329, dataDir }) {
   if (existsSync(join(dataDir, 'postmaster.pid'))) {
     try { run(join(bin, 'pg_ctl'), ['-D', dataDir, '-m', 'fast', '-w', 'stop']); } catch { /* not running */ }
   }
-  // Every run starts from a new cluster. Roles are cluster-wide, so dropping the database alone would leave the roles a
-  // previous run's migrations created, and those migrations refuse to run again over them.
-  rmSync(dataDir, { recursive: true, force: true });
-  mkdirSync(dataDir, { recursive: true });
-  if (prefix.length) execFileSync('chown', ['-R', PG_USER, dataDir]);
-  run(join(bin, 'initdb'), ['-D', dataDir, '-U', 'postgres', '--auth=trust', '-E', 'UTF8', '--no-locale']);
+  if (!existsSync(join(dataDir, 'PG_VERSION'))) {
+    mkdirSync(dataDir, { recursive: true });
+    if (prefix.length) execFileSync('chown', ['-R', PG_USER, dataDir]);
+    run(join(bin, 'initdb'), ['-D', dataDir, '-U', 'postgres', '--auth=trust', '-E', 'UTF8', '--no-locale']);
+  }
   run(join(bin, 'pg_ctl'), ['-D', dataDir, '-l', join(dataDir, 'server.log'), '-w',
     '-o', `-p ${port} -k ${dataDir} -c listen_addresses=127.0.0.1`, 'start']);
 
@@ -78,6 +90,17 @@ export async function startDatabase({ port = 54329, dataDir }) {
   await admin.connect();
   // Every run starts from an empty database so migrations are verified from scratch.
   await admin.query('drop database if exists invitestudio with (force)');
+  // Roles are cluster-wide, so the ones the migrations create survive the dropped database
+  // (from the previous run, or from one that was aborted). Drop them so the migrations,
+  // whose prechecks refuse to adopt an existing role, see a clean cluster.
+  for (const role of migrationRoles()) {
+    const { rowCount } = await admin.query('select 1 from pg_roles where rolname = $1', [role]);
+    if (!rowCount) continue;
+    const ident = pg.escapeIdentifier(role);
+    // Clears anything the role still owns or was granted in the remaining databases.
+    await admin.query(`drop owned by ${ident}`);
+    await admin.query(`drop role ${ident}`);
+  }
   await admin.query('create database invitestudio');
   await admin.end();
 

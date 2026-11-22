@@ -485,6 +485,11 @@ whole invitation, rising lanterns, a date to scratch from a dark foil pill). Wha
   The template leaves it out of the editor. It is pinned to the visible frame with `position:sticky` and the new
   `--frame-h` value the platform sets on every invitation (the editor's phone frame, else the window; measured again when
   an opening lifts, because the frame does not scroll while one is up). Templates still may not use viewport units.
+- **Stills behind the film** (`poster-tall.webp`, `poster-wide.webp`) are each the first frame of their film, so nothing
+  jumps when it starts and nothing shows in the editor (which never plays the film) but the night sky. They must never
+  carry words: the wide still was once a mock-up of the whole sample invitation ("Meera & Abin", its date and lines), which
+  showed faintly behind the couple's own names in the editor and on wide screens. The `<picture>` chooses the still by the
+  window's orientation, not the frame's, so the editor's phone frame on a desktop shows the wide one.
 - **The date**: the platform scratch widget with a new `data-scratch-foil="night"` style (dark bronze, a sheen, gold
   speckles, a gold edge that follows the pill's rounded corners, small spaced capitals). The parts of the date rise in once
   revealed.
