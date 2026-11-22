@@ -764,7 +764,10 @@ export function EditorPage() {
         </button>
       ) : null}
 
-      <nav className="mobile-tabs" role="tablist" aria-label="Editor views">
+      {/* Phones: the views, and Share. The header with Share invitation scrolls away on a phone, so the next step after editing
+          (a draft link, or making it live) stays here, on screen in every view. It opens the same Share dialog. */}
+      <div className="mobile-tabs">
+        <div className="mobile-tablist" role="tablist" aria-label="Editor views">
         {mobileTabs.map(tab => (
           <button
             key={tab.key}
@@ -779,7 +782,12 @@ export function EditorPage() {
             <span>{tab.label}</span>
           </button>
         ))}
-      </nav>
+        </div>
+        <button type="button" className="mobile-share" onClick={publish}>
+          <Icon name={snap.published ? "check" : "send"} size={20} />
+          <span>Share</span>
+        </button>
+      </div>
     </main>
   );
 }

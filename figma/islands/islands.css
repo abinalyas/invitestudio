@@ -160,7 +160,7 @@ button.btn.small.danger:focus-visible { outline: 2px solid #9b5147; outline-offs
   .mobile-only { display: inline-flex; margin-top: 16px; }
   .editor-controls, .editor-pages { border-radius: 14px; }
   .mobile-tabs {
-    display: grid; grid-template-columns: repeat(3, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
     gap: 4px; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: #fffdf8; border-top: 1px solid #ded9d0;
   }
   .mobile-tabs button {
@@ -168,6 +168,11 @@ button.btn.small.danger:focus-visible { outline: 2px solid #9b5147; outline-offs
     border: 0; border-radius: 12px; background: transparent; font: inherit; font-size: 13px; color: #4f4b44; cursor: pointer;
   }
   .mobile-tabs button[aria-selected="true"] { background: #e9eadb; color: #145c37; font-weight: 600; }
+  /* The tabs sit in their own tablist; display: contents lets them share the bar's grid with Share. */
+  .mobile-tablist { display: contents; }
+  /* Share: the next step after editing, filled so it reads as the main action. */
+  .mobile-tabs .mobile-share { background: #145c37; color: #fff; font-weight: 600; }
+  .mobile-tabs .mobile-share:hover { background: #0f4a2c; }
   .mobile-tabs button:focus-visible, .mobile-edit-pill:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }
   .mobile-edit-pill {
     display: inline-flex; align-items: center; position: fixed; left: 50%; bottom: 96px; z-index: 21; transform: translateX(-50%);

@@ -75,6 +75,37 @@ test.describe('phone', () => {
     await expect(bar).toContainText('Preview updates as you type');   // proof that what is typed is applied, in the part that stays on screen
   });
 
+  // After editing, the next step (a draft link, or making it live) must be in reach: the header with Share invitation scrolls away on a
+  // phone, so the bottom bar carries Share in every view, and it opens the same Share dialog.
+  test('Share stays on screen in the bottom bar in every view, also after scrolling the preview, and opens the Share dialog', async ({ page }) => {
+    await openEditor(page);
+    const share = page.locator('.mobile-tabs').getByRole('button', { name: 'Share', exact: true });
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await expect(share).toBeInViewport();
+    const box = await share.boundingBox();
+    expect(box.y + box.height).toBeLessThanOrEqual(844);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    for (const name of ['Sections', 'Edit', 'Preview']) {
+      await page.getByRole('tab', { name: new RegExp(`^${name}`) }).click();
+      await expect(share).toBeInViewport();
+    }
+    // The views are still a tablist of three tabs; Share is a button beside them, not a fourth tab.
+    await expect(page.getByRole('tablist', { name: 'Editor views' }).getByRole('tab')).toHaveCount(3);
+    await share.click();
+    await expect(page.locator('#modal-root [role="dialog"], #modal-root .modal').first()).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+
+  test('Share in the bottom bar asks for the names first, like Share invitation does, when there are none', async ({ page }) => {
+    await openEditor(page);
+    await page.getByRole('tab', { name: /^Edit/ }).click();
+    await page.getByLabel('Couple or celebration names').fill('');
+    await page.getByRole('tab', { name: /^Preview/ }).click();
+    await page.locator('.mobile-tabs').getByRole('button', { name: 'Share', exact: true }).click();
+    await expect(editTab(page)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByLabel('Couple or celebration names')).toBeVisible();
+  });
+
   test('the way back stays at the top while the form scrolls and while a field is being typed in (when the tab bar is hidden)', async ({ page }) => {
     await openEditor(page);
     await page.locator('[data-edit="event:title"][data-id="ev2"]').click();
