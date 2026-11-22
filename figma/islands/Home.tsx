@@ -59,6 +59,37 @@ function PlayingInView({ src, poster, label, loop = false, width, height }: { sr
   );
 }
 
+// Phones: once the hero's "Choose your design" has scrolled away, the same button waits at the bottom of the screen, so there is
+// always a way to start. It steps aside again when the closing "Start with the design you love" section (with its own button) is
+// reached, so two of the same button are never on screen together.
+function useStickyStart() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLElement>(null);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const hero = heroRef.current, end = endRef.current;
+    if (!hero || !end) return;
+    let pastHero = false, atEnd = false, frame = 0;
+    const measure = () => {
+      frame = 0;
+      const h = hero.getBoundingClientRect(), e = end.getBoundingClientRect();
+      pastHero = h.bottom < 0;
+      atEnd = e.top < window.innerHeight;
+      setShown(pastHero && !atEnd);
+    };
+    const queue = () => { if (!frame) frame = window.requestAnimationFrame(measure); };
+    measure();
+    window.addEventListener("scroll", queue, { passive: true });
+    window.addEventListener("resize", queue);
+    return () => {
+      window.removeEventListener("scroll", queue);
+      window.removeEventListener("resize", queue);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+  return { heroRef, endRef, shown };
+}
+
 export function HomePage() {
   // The Instagram address is set once in site-config.js (social.instagram); with none set, no social icon is shown.
   const instagramUrl = ((window as unknown as { INVITESTUDIO_SITE?: { social?: { instagram?: string } } }).INVITESTUDIO_SITE?.social?.instagram || "").trim()
@@ -68,6 +99,7 @@ export function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const build = bridge.contactLinks("build")
+  const sticky = useStickyStart()
 
   return (
     <main className="home-page">
@@ -113,7 +145,7 @@ export function HomePage() {
             <p className="lead hero-sub">
               It opens like a film. Then guests see every event, find the venue and tell you they{"’"}re coming.
             </p>
-            <div className="hero-buttons">
+            <div className="hero-buttons" ref={sticky.heroRef}>
               <a className="button" href="/templates">
                 Choose your design <Icon name="arrow" size={18} />
               </a>
@@ -305,7 +337,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="cta shell" id="cta">
+      <section className="cta shell" id="cta" ref={sticky.endRef}>
         <Art name="flowers-a" className="cta-art cta-art-l" />
         <Art name="flowers-b" className="cta-art cta-art-r" />
         <div>
@@ -318,6 +350,16 @@ export function HomePage() {
           Choose your design <Icon name="arrow" size={18} />
         </a>
       </section>
+
+      <div className="home-sticky" data-shown={sticky.shown ? "" : undefined}>
+        <span>
+          <strong>Free to build</strong>
+          <small>{pricing?.mode === "early-access" ? "Free to publish for now" : "Pay only to publish"}</small>
+        </span>
+        <a className="button" href="/templates">
+          Choose your design <Icon name="arrow" size={18} />
+        </a>
+      </div>
 
       <footer className="footer shell" id="footer">
         <div className="footer-grid">
