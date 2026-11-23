@@ -231,7 +231,8 @@ test.describe('designer on a phone', () => {
 
   test('tapping a section in the preview offers its editor; the offer opens the Edit view', async ({ page }) => {
     await openDesigner(page, 1);   // a design without an opening film, so nothing covers the invitation
-    await page.locator('.invitation-canvas [data-section="story"]').click({ timeout: 15000 });
+    // On the section itself, not on one of its texts: a tap on a text edits that text right there, with no offer on top of it.
+    await page.locator('.invitation-canvas [data-section="story"]').click({ position: { x: 6, y: 6 }, timeout: 15000 });
     const pill = page.getByRole('button', { name: /^Edit Our story$/ });
     await expect(pill).toBeVisible();
     await pill.click();
@@ -273,7 +274,7 @@ test.describe('setup on a phone', () => {
 
 test('the default copy is THE WEDDING OF and Our Story, and clearing a field returns to it', async ({ page }) => {
   await openDesigner(page, 2);
-  await expect(page.getByLabel(/^Pre-title/)).toHaveValue('THE WEDDING OF');
+  await expect(page.getByLabel(/^Line above your names/)).toHaveValue('THE WEDDING OF');
   await page.locator('.editor-pages').getByRole('button', { name: /our story/i }).click();
   await expect(page.getByLabel(/^Heading/)).toHaveValue('Our Story');
 
