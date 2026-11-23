@@ -96,6 +96,30 @@
     return n ? n.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
   }
 
+  /* ---------- videos the phone would not start ---------- */
+  // Some phones refuse to start even a silent video until the guest touches the page (an iPhone in Low Power Mode, data-saver
+  // modes, some in-app browsers): the poster stayed and the opening never played. Such a video is started again on the guest's
+  // next touch, which every browser allows.
+  var blockedVideos = new Set();
+  function playVideo(video, onBlocked) {
+    var attempt;
+    try { attempt = video.play(); } catch (e) { attempt = null; }
+    if (attempt && attempt.catch) attempt.catch(function (err) {
+      if (err && err.name === "AbortError") return; // paused or given a new file on purpose
+      blockedVideos.add(video);
+      if (onBlocked) onBlocked();
+    });
+  }
+  function retryVideos(e) {
+    if (!blockedVideos.size || e.isTrusted === false) return;
+    if (e.type === "pointerdown" && e.pointerType && e.pointerType !== "mouse") return;
+    blockedVideos.forEach(function (video) {
+      blockedVideos.delete(video);
+      if (video.isConnected && video.paused && !video.ended && !document.hidden) playVideo(video);
+    });
+  }
+  ["pointerdown", "pointerup", "touchend", "click", "keydown"].forEach(function (name) { document.addEventListener(name, retryVideos, { capture: true, passive: true }); });
+
   /* ---------- opening screen ---------- */
   var introState = new WeakMap(), introHtml = new WeakMap(), introLive = new Set();
   function introKey(el) {
@@ -130,13 +154,14 @@
     var src = h > w ? (tall || wide) : (wide || tall);
     if (!src) return null;
     st.video = video;
-    video.muted = true; video.defaultMuted = true;
-    video.addEventListener("playing", function () { el.setAttribute("data-playing", ""); });
+    video.muted = true; video.defaultMuted = true; video.playsInline = true;
+    video.setAttribute("muted", ""); video.setAttribute("playsinline", "");
+    video.addEventListener("playing", function () { st.blocked = false; el.setAttribute("data-playing", ""); });
     if (onTime) video.addEventListener("timeupdate", function () { onTime(video.currentTime); });
     video.addEventListener("error", function () { if (onFail) onFail(); });
     video.src = src;
-    var attempt = video.play && video.play();
-    if (attempt && attempt.catch) attempt.catch(function () { /* autoplay refused: the poster stays */ });
+    // Refused (the phone wants a touch first): the poster stays, and the guest's first tap plays the film (see skipIntro).
+    playVideo(video, function () { if (!st.finished) st.blocked = true; });
     return video;
   }
   // An opening that ends when the guest presses its button: the button appears once the video has had time to play.
@@ -166,7 +191,7 @@
     introLive.delete(el);
     window.clearTimeout(st.timer);
     st.timers.forEach(function (t) { window.clearTimeout(t); });
-    if (st.video) { try { st.video.pause(); } catch (e) { /* already stopped */ } }
+    if (st.video) { blockedVideos.delete(st.video); try { st.video.pause(); } catch (e) { /* already stopped */ } }
     if (!st.demo) remember(st.key);
     st.unlock();
     el.removeAttribute("data-wait");
@@ -179,15 +204,26 @@
     window.setTimeout(done, 900);
   }
   // A tap on a playing opening, or Escape: the guest wants the invitation now. Returns whether it did anything.
-  function skipIntro(el) {
+  function skipIntro(el, now) {
     var st = introState.get(el);
     if (!st || !st.started || st.finished) return false;
+    // The phone refused to start the film before a touch: this first tap plays it (retryVideos has just started it again)
+    // instead of skipping an opening the guest has not seen. A timed opening gets its full time from now.
+    if (st.blocked && st.video && !now) {
+      st.blocked = false;
+      if (st.video.paused) playVideo(st.video);
+      if (!el.hasAttribute("data-intro-manual")) {
+        window.clearTimeout(st.timer);
+        st.timer = window.setTimeout(function () { finishIntro(el); }, parseInt(el.getAttribute("data-intro-ms"), 10) || 9400);
+      }
+      return true;
+    }
     if (el.hasAttribute("data-intro-manual")) openIntro(el); else finishIntro(el);
     return true;
   }
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Escape") return;
-    introLive.forEach(function (el) { if (!el.isConnected) introLive.delete(el); else skipIntro(el); });
+    introLive.forEach(function (el) { if (!el.isConnected) introLive.delete(el); else skipIntro(el, true); });
   });
   // The guest presses the opening's button: the template plays its own reveal (data-opening), then the page is theirs.
   function openIntro(el) {
@@ -246,16 +282,23 @@
     else soundPrepare();
     soundPaint();
   }
+  // A fade always ends, and `done` always runs once: when the volume arrives, when the device does not let a page change it
+  // (iPhones and iPads always read 1; some phone browsers throw), or after a second at most. A fade that never finished left
+  // the music playing after the guest turned it off.
   function soundFade(to, done) {
     window.clearInterval(soundTimer);
     var a = soundAudio;
     if (!a) return;
+    var started = Date.now(), over = false;
+    var finish = function () { if (over) return; over = true; window.clearInterval(soundTimer); try { a.volume = to; } catch (e) { /* fixed volume */ } if (done) done(); };
     soundTimer = window.setInterval(function () {
-      var v = a.volume, step = 0.04;
-      if (Math.abs(v - to) <= step) { a.volume = to; window.clearInterval(soundTimer); if (done) done(); return; }
-      a.volume = v < to ? v + step : v - step;
-      // iPhones and iPads do not let a page change the volume (it always reads 1): finish at once instead of waiting for ever.
-      if (a.volume === v) { window.clearInterval(soundTimer); if (done) done(); }
+      var v, step = 0.04;
+      try {
+        v = a.volume;
+        if (Math.abs(v - to) <= step || Date.now() - started > 1000) { finish(); return; }
+        a.volume = v < to ? v + step : v - step;
+        if (a.volume === v) finish();
+      } catch (e) { finish(); }
     }, 60);
   }
   function soundPlay() {
@@ -490,7 +533,7 @@
   }
   /* ---------- looping background film (data-film) ---------- */
   var films = new Set();
-  function playFilm(video) { var p = video.play(); if (p && p.catch) p.catch(function () {}); }
+  function playFilm(video) { playVideo(video); }
   function setupFilm(video) {
     video.setAttribute("data-film-ready", "");
     if (reduce()) return;

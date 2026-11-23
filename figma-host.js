@@ -232,7 +232,8 @@
         styleText = Array.from(document.querySelectorAll('style')).map(style => style.textContent).join('\n');
       }
       const style = document.createElement('style');
-      style.textContent = `:host{display:block}${styleText}`;
+      // [data-phone-fit]: the template page's phone, scaled from a real phone's size (fitDemoPhone); it scrolls itself.
+      style.textContent = `:host{display:block}${styleText}.invitation-canvas[data-phone-fit]{box-sizing:border-box;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}.invitation-canvas[data-phone-fit]::-webkit-scrollbar{display:none}`;
       const container = document.createElement('div');
       container.className = 'invitation-canvas';
       shadow.append(style, container);
@@ -893,6 +894,46 @@
     }
   }
 
+  // The template page's phone on a phone or tablet. Its screen is narrower than a real phone (about 270px against 390px), so the
+  // invitation drawn at that width looked oversized: text and everything else about 1.45 times too big for the frame. There the
+  // invitation is laid out at a real phone's width and height and scaled down to the screen. It scrolls inside itself (not the
+  // screen around it), so the opening, sticky backdrops (--frame-h) and the music button measure the real phone's frame.
+  const DEMO_PHONE_WIDTH = 390;
+  const demoFits = new WeakMap();
+  function fitDemoPhone(host, container) {
+    const old = demoFits.get(host);
+    if (old) old();
+    if (!host.classList.contains('detail-screen') || !window.matchMedia) return;
+    const narrow = window.matchMedia('(max-width: 900px)');
+    const apply = () => {
+      const w = host.clientWidth, h = host.clientHeight;
+      if (!narrow.matches || !w || !h || w >= DEMO_PHONE_WIDTH) {
+        container.removeAttribute('data-phone-fit');
+        container.style.height = container.style.transform = container.style.transformOrigin = '';
+        container.style.width = container.style.maxWidth = '100%';
+        host.style.overflow = '';
+        return;
+      }
+      const k = w / DEMO_PHONE_WIDTH;
+      container.setAttribute('data-phone-fit', '');
+      container.style.width = DEMO_PHONE_WIDTH + 'px';
+      container.style.maxWidth = 'none';
+      container.style.height = (h / k) + 'px';
+      container.style.transformOrigin = '0 0';
+      container.style.transform = 'scale(' + k + ')';
+      host.scrollTop = 0;
+      host.style.overflow = 'hidden';
+    };
+    apply();
+    const observer = window.ResizeObserver ? new ResizeObserver(apply) : null;
+    if (observer) observer.observe(host);
+    if (narrow.addEventListener) narrow.addEventListener('change', apply);
+    demoFits.set(host, () => {
+      if (observer) observer.disconnect();
+      if (narrow.removeEventListener) narrow.removeEventListener('change', apply);
+    });
+  }
+
   const bridge = {
     snapshot,
     subscribe(listener) {
@@ -1198,6 +1239,7 @@
       const container = invitationShadow(host);
       container.style.width = '100%';
       container.style.maxWidth = '100%';
+      fitDemoPhone(host, container);
       // A design with an opening screen waits for a click in the phone, so a visitor starts it themselves.
       withTemplate(host, container, t, () => {
         container.innerHTML = sitePreview(templateDemoProject(t), t, false, { intro: 'wait', sound: true, showcase: true });
