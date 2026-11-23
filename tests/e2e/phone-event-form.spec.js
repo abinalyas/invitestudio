@@ -106,6 +106,44 @@ test.describe('phone', () => {
     await expect(page.getByLabel('Couple or celebration names')).toBeVisible();
   });
 
+  // From the mobile critique: the invitation, not the controls, fills the first screen, and tapping its text edits it right there.
+  test('the first screen is mostly the invitation: one header row, no size switch, Share only in the bottom bar, Replies once there are any', async ({ page }) => {
+    await openEditor(page);
+    await expect(page.getByRole('button', { name: 'Guest view' })).toBeVisible();
+    await expect(page.locator('.editor-header .editor-publish')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Tablet' })).toHaveCount(0);
+    await expect(page.locator('.editor-header .editor-replies.no-replies')).toBeHidden();
+    // The header is one row, and the invitation starts within the top third of the screen.
+    const header = await page.locator('.editor-header').boundingBox();
+    expect(header.height).toBeLessThan(72);
+    const frameTop = await page.locator('.device-frame').evaluate(el => el.getBoundingClientRect().top);
+    expect(frameTop).toBeLessThan(844 / 3);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+
+  test('tapping a text in the invitation edits it there: no extra Edit button over it, the tip goes, and the cursor is at the end', async ({ page }) => {
+    await openEditor(page);
+    const names = page.locator('[data-edit="names:first"]').first();
+    await names.tap();
+    await expect(names).toHaveAttribute('contenteditable', 'true');
+    await expect(page.locator('.mobile-edit-pill')).toHaveCount(0);
+    await expect(page.locator('.edit-hint')).toHaveCount(0);
+    // Not everything selected, so the first key pressed adds to the names instead of wiping them.
+    expect(await names.evaluate(el => { const sel = el.getRootNode().getSelection ? el.getRootNode().getSelection() : window.getSelection(); return sel ? sel.toString() : ''; })).toBe('');
+    await page.keyboard.type('!');
+    await page.keyboard.press('Enter');
+    await expect(names).toContainText('Ava!');
+    // A tap on the design itself (not on a text) still offers its section's form.
+    await page.locator('[data-section="hero"]').first().click({ position: { x: 8, y: 8 } });
+    await expect(page.locator('.mobile-edit-pill')).toBeVisible();
+  });
+
+  test('on the Edit view a chosen date is also said in words (the field itself may show month first)', async ({ page }) => {
+    await openEditor(page);
+    await editTab(page).click();
+    await expect(page.locator('[data-date-words]').first()).toHaveText('Saturday, 19 June 2027');
+  });
+
   test('the way back stays at the top while the form scrolls and while a field is being typed in (when the tab bar is hidden)', async ({ page }) => {
     await openEditor(page);
     await page.locator('[data-edit="event:title"][data-id="ev2"]').click();

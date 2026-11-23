@@ -44,7 +44,7 @@ test('after the first photo the editor still offers a place to add the next, and
   await page.getByRole('tab', { name: /Preview/ }).click();
   await expect(page.locator('.editor-site [data-photo-add]').first()).toBeVisible(); // still a tile to tap for the next photo
 
-  await page.getByRole('button', { name: /Share invitation/ }).first().click();
+  await page.locator('.editor-publish:visible, .mobile-share:visible').first().click();   // the header's button, or Share in a phone's bottom bar
   const slug = `photos-${randomUUID().slice(0, 6)}`;
   await page.locator('#publishSlug').fill(slug);
   await page.getByRole('button', { name: 'Make it live' }).click();

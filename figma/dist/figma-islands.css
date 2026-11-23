@@ -1841,3 +1841,26 @@
 .figma-app .home-page .faq-item p{ font-size: 14px; }
 .figma-app .home-page .faq-item.open p{ max-height: 320px; }
 .figma-app .home-page .cta p{ font-size: 14px; }
+.figma-app .editor-guest{ display: none; }
+@media (max-width: 767px){.figma-app .editor-header{ display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; }
+.figma-app .editor-brand{ flex: 0 1 auto; }
+.figma-app .editor-brand .logo > span:not(.logo-mark){ display: none; }
+.figma-app .editor-header-actions{ grid-column: auto; flex: 1 1 auto; width: auto; justify-content: flex-end; flex-wrap: nowrap; }
+.figma-app .editor-header-actions .save-status{ flex: 0 1 auto; }
+.figma-app .editor-header-actions .editor-publish, .figma-app .editor-header-actions .editor-replies.no-replies{ display: none; }
+.figma-app .editor-guest{ display: inline-flex; flex: none; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.figma-app .editor-guest:focus-visible{ outline: 2px solid #145c37; outline-offset: 2px; }
+.figma-app .share-guide{ grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px 12px; padding: 10px 12px; }
+.figma-app .share-guide .share-guide-close{ justify-self: end; }
+.figma-app .share-guide-preview{ display: inline-block; padding: 12px 0; margin: -12px 0; }
+.figma-app .share-guide.keep-link{ grid-template-columns: auto minmax(0, 1fr); }
+.figma-app .share-guide.keep-link .keep-link-actions{ grid-column: 1 / -1; }
+.figma-app .preset-chips{ grid-template-columns: 1fr 1fr; justify-items: stretch; }
+.figma-app .preset-chips p{ grid-column: 1 / -1; }
+.figma-app .preset-chip{ padding: 0 10px; text-align: center; }}
+@media (max-width: 767px){.figma-app .editor-page:has(.editor-workspace[data-tab="edit"]) > .share-guide:not(.keep-link){ display: none; }}
+.figma-app .share-guide.keep-link{ grid-template-columns: auto minmax(0, 1fr) auto; }
+.figma-app .keep-link-icon{ display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #eef4ef; color: #145c37; }
+.figma-app .keep-link-actions{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.figma-app .keep-link-actions .btn{ display: inline-flex; align-items: center; gap: 6px; }
+.figma-app .date-words{ color: #2f6b45; font-weight: 600; }

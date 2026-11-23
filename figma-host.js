@@ -331,7 +331,10 @@
     '@media(pointer:coarse){.edit-event-bar button{width:40px!important;height:40px!important;font-size:18px!important;line-height:40px!important}.edit-photo-bar button{width:auto!important;font-size:14px!important}' +
     '[data-add-event],.edit-chip{padding:12px 18px!important}button[data-photo-add]{min-height:44px}.edit-hint-pill button{position:relative;width:32px;height:32px;line-height:32px}' +
     // The visible button stays small; its tappable area grows to 44px.
-    '.edit-hint-pill button::after{content:"";position:absolute;inset:-6px}}</style>';
+    '.edit-hint-pill button::after{content:"";position:absolute;inset:-6px}' +
+    '[data-add-event],.edit-chip{min-height:44px!important}}' +
+    // Phones: lighter outlines, so the invitation reads as the design and not as a form (a tap still shows the solid edit outline).
+    '@media(max-width:767px){[data-edit]{outline:1px dashed rgba(128,128,128,.4);outline:1px dashed color-mix(in srgb,currentColor 20%,transparent)}}</style>';
 
   // The tip is shown until it is dismissed or the person makes their first edit, and then not again on this device.
   const HINT_KEY = 'invitestudio-edit-hint-seen';
@@ -774,6 +777,11 @@
 
   function startEditing(el) {
     const field = el.dataset.edit;
+    // They have found how to edit, so the tip goes now (not only after the first saved change); a notice, if one shows, stays.
+    if (!previewNotice) {
+      markHintSeen();
+      try { el.getRootNode().querySelector('.edit-hint')?.remove(); } catch (e) { /* no tip shown */ }
+    }
     // Tell the panel which field is being edited, so it can show it too.
     try { window.dispatchEvent(new CustomEvent('invitestudio:edit-field', { detail: { field, id: el.dataset.id || '' } })); } catch (e) { /* no panel to tell */ }
     if (field === 'date') { pickDate(el); return; }
@@ -788,6 +796,9 @@
     el.focus();
     const range = document.createRange();
     range.selectNodeContents(el);
+    // With a mouse the whole text is selected, so typing replaces it. On a touch screen the cursor goes to the end instead: there the
+    // selection hides behind the phone's copy/paste menu, and the first key pressed would wipe the names without warning.
+    try { if (window.matchMedia('(pointer: coarse)').matches) range.collapse(false); } catch (e) { /* select all, as before */ }
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);

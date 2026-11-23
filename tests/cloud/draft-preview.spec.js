@@ -180,6 +180,8 @@ test('the share guide in the editor offers a draft preview link', async ({ page,
   await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
   const draft = await createDraft(request, `Guide ${randomUUID().slice(0, 8)}`);
   await page.goto(`/edit#${draft.editToken}`);
+  // The private link is offered first (the way back in on another device); once it is put off, the guide offers the preview link.
+  await page.getByRole('button', { name: 'Later' }).click({ timeout: 20000 });
   await page.getByRole('button', { name: 'Copy a draft preview link' }).click({ timeout: 20000 });
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toMatch(/\/draft#[A-Za-z0-9_-]{43}$/);
 });
@@ -193,7 +195,7 @@ test('phone: getting the preview link keeps the sheet where it was and says Link
   await page.addInitScript(() => { window.INVITESTUDIO_API_ENABLED = true; });
   const draft = await createDraft(request, `Phone ${randomUUID().slice(0, 8)}`);
   await page.goto(`/edit#${draft.editToken}`);
-  await page.getByRole('button', { name: 'Share invitation' }).first().click({ timeout: 20000 });
+  await page.locator('.mobile-tabs').getByRole('button', { name: 'Share', exact: true }).click({ timeout: 20000 });   // on a phone, Share is in the bottom bar
   const sheet = page.locator('#modal-root section.modal');
   const card = page.locator('[data-draft-preview-share]');
   await expect(card).toBeVisible();
