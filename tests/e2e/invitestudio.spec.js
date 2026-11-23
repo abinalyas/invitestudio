@@ -378,6 +378,9 @@ test.describe('guest replies', () => {
     await page.evaluate(() => {
       window.loadRsvpReplies = async () => ({ replies: [{ id: 'r1', name: 'Meera Nair', attending: true, party: 2, events: {}, needs: '', message: '', createdAt: '2027-01-01T10:00:00Z', updatedAt: '2027-01-01T10:00:00Z' }], totals: { replies: 1, attending: 1, notAttending: 0, headcount: 2, byEvent: {} } });
     });
+    // On a phone the Replies button is shown once there can be replies (the invitation is live, or replies came in): a draft has none.
+    await expect(page.locator('.editor-header .editor-replies')).toBeHidden();
+    await page.evaluate(() => { const p = current(); p.publishStatus = 'published'; p.publicSlug = 'mira-and-arun'; window.notifyInviteStudioChange?.(); render(); });
     // From the first screen of the editor (the preview), one tap reaches the replies.
     await page.getByRole('button', { name: 'Replies' }).click();
     await expect(page.getByRole('heading', { name: 'RSVP' })).toBeVisible();
@@ -896,7 +899,9 @@ test.describe('guest replies', () => {
     await savedDraftWithServer(page);
     await openLatestDraft(page);
     await expect(page.getByLabel(/Welcome message/)).toBeVisible();
-    // The note above the editor
+    // The note above the editor. First it offers the private link (the way back in on another device); once that is put off, the guide.
+    await expect(page.locator('.share-guide.keep-link')).toContainText('Keep your private link');
+    await page.getByRole('button', { name: 'Later' }).click();
     const guide = page.locator('.share-guide');
     await expect(guide).toContainText('Right now only you can see your invitation');
     await expect(guide).toContainText('gives it a link anyone can open');

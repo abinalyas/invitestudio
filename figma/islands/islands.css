@@ -1315,3 +1315,37 @@ table.rsvp-by-event { font-size: 13px; }
 .home-page .faq-item p { font-size: 14px; }
 .home-page .faq-item.open p { max-height: 320px; }
 .home-page .cta p { font-size: 14px; }
+
+/* Phone editor, from the mobile critique: the invitation, not the controls, fills the first screen.
+   - One header row: the logo, the save status, Replies (only once there are replies, or the invitation is live) and Guest view.
+     Share lives in the bottom bar on a phone, so the header's Share invitation is not repeated there.
+   - The guide is one short card with its button beside it; the preview size switch is not offered (Guest view shows the real thing).
+   - Quick-add events two to a row; a chosen date also in words. */
+.editor-guest { display: none; }
+@media (max-width: 767px) {
+  .editor-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; }
+  .editor-brand { flex: 0 1 auto; }
+  /* The mark alone (it still links home, and is named for screen readers), so the save status and Guest view share its row. */
+  .editor-brand .logo > span:not(.logo-mark) { display: none; }
+  .editor-header-actions { grid-column: auto; flex: 1 1 auto; width: auto; justify-content: flex-end; flex-wrap: nowrap; }
+  .editor-header-actions .save-status { flex: 0 1 auto; }
+  .editor-header-actions .editor-publish, .editor-header-actions .editor-replies.no-replies { display: none; }
+  .editor-guest { display: inline-flex; flex: none; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid #145c37; border-radius: 999px; background: #fff; color: #145c37; font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+  .editor-guest:focus-visible { outline: 2px solid #145c37; outline-offset: 2px; }
+  .share-guide { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px 12px; padding: 10px 12px; }
+  .share-guide .share-guide-close { justify-self: end; }
+  /* The draft-link button reads as a link, but its tap area is a full 44px. */
+  .share-guide-preview { display: inline-block; padding: 12px 0; margin: -12px 0; }
+  .share-guide.keep-link { grid-template-columns: auto minmax(0, 1fr); }
+  .share-guide.keep-link .keep-link-actions { grid-column: 1 / -1; }
+  .preset-chips { grid-template-columns: 1fr 1fr; justify-items: stretch; }
+  .preset-chips p { grid-column: 1 / -1; }
+  .preset-chip { padding: 0 10px; text-align: center; }
+}
+/* On the Edit view the form comes first: the guide (not the private-link card) waits on the other views. */
+@media (max-width: 767px) { .editor-page:has(.editor-workspace[data-tab="edit"]) > .share-guide:not(.keep-link) { display: none; } }
+.share-guide.keep-link { grid-template-columns: auto minmax(0, 1fr) auto; }
+.keep-link-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #eef4ef; color: #145c37; }
+.keep-link-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.keep-link-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
+.date-words { color: #2f6b45; font-weight: 600; }

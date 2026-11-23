@@ -23,6 +23,16 @@ const mobileTabs: Array<{ key: MobileTab; label: string; icon: IconName }> = [
 ];
 
 // Phone layout: one panel at a time, starting with the invitation.
+// A chosen date in words ("Thursday, 28 January 2027"), shown under date fields: the browser's own field shows the date in whatever
+// order the phone uses (often month first), which is easy to misread.
+function DateInWords({ value }: { value: string }) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || "");
+  if (!m) return null;
+  const date = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  const text = date.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  return <span className="field-hint date-words" data-date-words>{text}</span>;
+}
+
 function isPhone(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
 }
@@ -287,6 +297,14 @@ export function EditorPage() {
   }, [designsOpen]);
   const [mobileTab, setMobileTabState] = useState<MobileTab>(remembered.mobileTab);
   const setDevice = (next: Device) => { remembered.device = next; setDeviceState(next); };
+  // Phones show the invitation at phone size only (the size switch is not offered there; Guest view shows the real thing). A
+  // tablet or desktop size chosen on a wider screen is not carried onto a phone.
+  useEffect(() => {
+    const fit = () => { if (isPhone() && remembered.device !== "mobile") setDevice("mobile"); };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, []);
   const setActive = (next: SectionKey) => { remembered.active = next; setActiveState(next); };
   const setMobileTab = (next: MobileTab) => { remembered.mobileTab = next; setMobileTabState(next); };
   const replyCount = useReplyCount(snap);
@@ -401,15 +419,17 @@ export function EditorPage() {
     window.setTimeout(() => namesRef.current?.focus(), 50);
   }
 
-  // A click on the preview selects the section that was clicked.
+  // A click on the preview selects the section that was clicked. On a phone it also offers "Edit <section>", except when the tap was on
+  // something that is edited right there (a text, the add-event button, an event's own bar): that is being edited already, and a second offer on top of
+  // it only gets in the way.
   function selectFromPreview(event: ReactMouseEvent<HTMLDivElement>) {
-    const node = event.nativeEvent
-      .composedPath()
-      .find((item): item is HTMLElement => item instanceof HTMLElement && Boolean(item.dataset?.section));
+    const path = event.nativeEvent.composedPath();
+    const node = path.find((item): item is HTMLElement => item instanceof HTMLElement && Boolean(item.dataset?.section));
     const key = node ? previewSectionToKey[node.dataset.section ?? ""] : undefined;
     if (key) {
       setActive(key);
-      if (isPhone()) setPicked(true);
+      const inPlace = path.some(item => item instanceof HTMLElement && item.matches("[data-edit], [data-add-event], .edit-chip, .edit-event-bar"));
+      if (isPhone() && !inPlace) setPicked(true);
     }
   }
 
@@ -524,13 +544,17 @@ export function EditorPage() {
             {conflict ? <button type="button" onClick={() => window.location.reload()}>Reload</button> : null}
           </div>
           {snap.rsvp === "count" || snap.rsvp === "rsvp" ? (
-            <button className="editor-action editor-replies" type="button" onClick={openReplies} aria-label={replyCount ? `Replies, ${replyCount}` : "Replies"}>
+            <button className={replyCount || snap.published ? "editor-action editor-replies" : "editor-action editor-replies no-replies"} type="button" onClick={openReplies} aria-label={replyCount ? `Replies, ${replyCount}` : "Replies"}>
               <Icon name="people" size={20} /> Replies
               {replyCount ? <span className="reply-badge">{replyCount}</span> : null}
             </button>
           ) : null}
           <button className="editor-action" type="button" onClick={() => bridge.openPreview()}>
             <Icon name="eye" size={20} /> Preview
+          </button>
+          {/* Phones: the full guest view (it plays the opening), next to the save status, instead of a row of its own. */}
+          <button className="editor-guest" type="button" onClick={() => bridge.openPreview()}>
+            <Icon name="eye" size={18} /> Guest view
           </button>
           <button className="editor-publish" type="button" onClick={publish}>
             Share invitation <Icon name={snap.published ? "check" : "chevron"} size={17} />
@@ -624,19 +648,6 @@ export function EditorPage() {
         </aside>
 
         <section className="editor-canvas-area" id="panel-preview">
-          {/* Phones only: the preview size (the header's icons are hidden there) and the full guest view, which plays the opening. */}
-          <div className="phone-preview-tools">
-            <div className="device-switcher phone-switcher" role="group" aria-label="Preview size">
-              {(["mobile", "tablet", "desktop"] as const).map(mode => (
-                <button key={mode} type="button" className={device === mode ? "active" : ""} onClick={() => setDevice(mode)} aria-pressed={device === mode}>
-                  {mode === "mobile" ? "Phone" : mode === "tablet" ? "Tablet" : "Desktop"}
-                </button>
-              ))}
-            </div>
-            <button type="button" className="button outline small" onClick={() => bridge.openPreview()}>
-              Guest view
-            </button>
-          </div>
           <div className={`device-frame ${device}`}>
             {device === "desktop" ? (
               <div className="browser-bar">
@@ -676,12 +687,14 @@ export function EditorPage() {
           </div>
           <p className="editing-kicker">Editing</p>
           <h2 id="editing-heading" tabIndex={-1}>{activeItem.label}</h2>
+          {/* First, so it is read before the form: the preview's example content for an empty section is not published. */}
+          <ExampleNote snap={snap} section={active} />
 
           {active === "home" ? (
             <div className="editor-form">
               <p className="tiny muted">The first thing guests see: names, date, place and welcome message. Always shown.</p>
               <label>
-                Pre-title <span className="optional">(optional)</span>
+                Line above your names <span className="optional">(optional)</span>
                 <input value={snap.pretitle} placeholder="e.g. The wedding of" onChange={event => set({ pretitle: event.target.value })} />
               </label>
               <label>
@@ -712,7 +725,7 @@ export function EditorPage() {
                   <Icon name="calendar" size={18} />
                   <input type="date" data-field="date" value={snap.date} onClick={openPickerOnClick} onChange={event => set({ date: event.target.value })} />
                 </span>
-                {snap.date ? null : <span className="field-hint">Until you choose a date, the invitation shows “{snap.shown.date}”.</span>}
+                {snap.date ? <DateInWords value={snap.date} /> : <span className="field-hint">Until you choose a date, the invitation shows “{snap.shown.date}”.</span>}
               </label>
               <label>
                 Location <span className="optional">(optional)</span>
@@ -753,7 +766,6 @@ export function EditorPage() {
           {active === "functions" ? <EventsPanel snap={snap} request={eventRequest} /> : null}
           {active === "gallery" ? <GalleryPanel snap={snap} /> : null}
           {active === "rsvp" ? <RsvpPanel snap={snap} /> : null}
-          <ExampleNote snap={snap} section={active} />
           <WordingPanel snap={snap} section={active} />
         </aside>
       </div>
@@ -800,6 +812,16 @@ function ShareGuide({ snap }: { snap: EditorSnapshot }) {
     try { return window.localStorage.getItem(guideKey) === "1"; } catch { return false; }
   });
   const [copied, setCopied] = useState<"" | "yes" | "no">("");
+  // The private editing link is the only way back into a draft on another phone or browser. Once the draft is saved online it is
+  // offered here, in the guide's place, until it is copied or put off, rather than only at the bottom of Sections.
+  const keepKey = `invitestudio-private-link-kept:${snap.draftId}`;
+  const readKept = () => { try { return window.localStorage.getItem(keepKey) === "1"; } catch { return true; } };
+  const [kept, setKept] = useState(readKept);
+  useEffect(() => { setKept(readKept()); }, [keepKey]);
+  const keep = () => {
+    try { window.localStorage.setItem(keepKey, "1"); } catch { /* offered again next time */ }
+    setKept(true);
+  };
   async function copyLink(url: string) {
     try {
       await navigator.clipboard.writeText(url);
@@ -829,6 +851,18 @@ function ShareGuide({ snap }: { snap: EditorSnapshot }) {
       </section>
     );
   }
+  if (snap.hasPrivateLink && !kept) {
+    return (
+      <div className="share-guide keep-link" role="note">
+        <span className="keep-link-icon" aria-hidden="true"><Icon name="lock" size={20} /></span>
+        <p><strong>Keep your private link.</strong> It opens this invitation for editing on another phone or computer. Anyone with it can edit, so keep it to yourself.</p>
+        <div className="keep-link-actions">
+          <button type="button" className="btn small" onClick={() => { bridge.copyPrivateLink(); keep(); }}><Icon name="link" size={18} /> Copy private link</button>
+          <button type="button" className="share-guide-close" onClick={keep}>Later</button>
+        </div>
+      </div>
+    );
+  }
   if (hidden) return null;
   return (
     <div className="share-guide" role="note">
@@ -838,7 +872,7 @@ function ShareGuide({ snap }: { snap: EditorSnapshot }) {
         <li><span>3</span> Share invitation</li>
       </ol>
       <p>
-        Right now only you can see your invitation. <strong>Share invitation</strong> gives it a link anyone can open.
+        Right now only you can see your invitation. <strong>{isPhone() ? "Share" : "Share invitation"}</strong> gives it a link anyone can open.
         {snap.hasPrivateLink ? (
           <>
             {" "}Want opinions first?{" "}
@@ -1134,6 +1168,7 @@ function EventForm({ item, onRemove }: { item: EventItem; onRemove: () => void }
         <label>
           Date <span className="optional">(optional)</span>
           <input type="date" value={item.date} onClick={openPickerOnClick} onChange={event => change({ date: event.target.value })} />
+          <DateInWords value={item.date} />
         </label>
         <label>
           Start time <span className="optional">(optional)</span>
@@ -1400,6 +1435,7 @@ function RsvpPanel({ snap }: { snap: EditorSnapshot }) {
           <label>
             Reply by (optional)
             <input type="date" value={snap.rsvpReplyBy} onClick={openPickerOnClick} onChange={event => bridge.setRsvpOption("rsvpReplyBy", event.target.value)} />
+            <DateInWords value={snap.rsvpReplyBy} />
           </label>
           {snap.rsvp === "count" ? (
             <label>

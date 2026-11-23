@@ -89,14 +89,17 @@ async function fillDetails(dialog, { name = 'Mira Nair', email = 'mira@example.c
   if (phone) await dialog.getByLabel(/^Phone or WhatsApp number/).fill(phone);
 }
 
+// Share invitation in the header, or on a phone, Share in the bottom bar (the header's button is not shown there).
+const shareButton = page => page.locator('.editor-publish:visible, .mobile-share:visible').first();
+
 async function openShareAgain(page) {
-  await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
+  await shareButton(page).click();
   return page.locator('#modal-root');
 }
 
 async function openShare(page) {
   await openLatestDraft(page);
-  await page.getByRole('button', { name: 'Share invitation', exact: true }).click();
+  await shareButton(page).click();
   return page.locator('#modal-root');
 }
 

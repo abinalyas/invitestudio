@@ -389,7 +389,8 @@ test('Velvet Reveal: starts by itself, the video opening offers its button, open
     const video = node && node.querySelector('video');
     return node && { waiting: node.hasAttribute('data-wait'), button: node.hasAttribute('data-button'), opening: node.hasAttribute('data-opening'), done: node.hasAttribute('data-done'), locked: getComputedStyle(el).overflow === 'hidden', src: video ? video.getAttribute('src') : null };
   });
-  await screen.click({ position: { x: 12, y: 12 } });
+  // No tap on the phone here: it starts by itself, and a tap on a playing opening now skips it (opening it at once), which is a
+  // different test ("opening: a tap on an opening with an Open button ...").
   // The phone is portrait, so only the portrait video is fetched.
   await expect.poll(intro).toMatchObject({ waiting: false, src: '/templates/velvet-reveal/assets/opening-tall.mp4' });
   // The button always appears (with the video, or a moment later when it cannot play), and the page stays still until it is pressed.
@@ -517,8 +518,7 @@ test('Lantern Night: the film opens it and lifts by itself, then loops behind th
       film: film.getAttribute('src'), frame: Boolean(root.style.getPropertyValue('--frame-h'))
     };
   });
-  // Nothing downloads while the opening waits; the invitation already knows the height of the phone's screen.
-  await screen.click({ position: { x: 12, y: 12 } });
+  // The opening starts by itself (no tap: a tap on a playing opening skips it, and the background film would start at once).
   // The phone is portrait, so the tall film plays; the background film waits for the opening to lift.
   await expect.poll(look).toMatchObject({ waiting: false, src: '/templates/lantern-night/assets/film-tall.mp4', film: null });
   await expect.poll(look, { timeout: 15000 }).toMatchObject({ done: true, film: '/templates/lantern-night/assets/film-tall.mp4' });

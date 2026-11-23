@@ -1325,7 +1325,7 @@
     const designName = escapeText((design && design.name) || project.templateName || 'Your design');
     const designCard = `<section class="pub-card pub-design">
         ${design && design.image ? `<img src="${escapeText(design.image)}" alt="" width="190" height="190">` : '<span class="pub-design-empty"></span>'}
-        <div><h3>${designName}</h3><p class="pub-sub">Your selected design</p>
+        <div><h3>${designName}</h3><p class="pub-sub">Your selected design${design && design.image ? ' <span class="pub-fine">(picture shows sample names)</span>' : ''}</p>
         ${live ? '' : `<button class="btn small pub-ghost" type="button" data-preview-first>${ICON.eye} Preview invitation</button>`}</div>
       </section>`;
     // Straight after paying, the one thing to do is go live: that card leads, and the sales copy (already paid for) is dropped.
