@@ -29,14 +29,38 @@ function PlayingInView({ src, poster, label, loop = false, width, height }: { sr
   useEffect(() => {
     const video = ref.current;
     if (!video || reducedMotion() || typeof IntersectionObserver === "undefined") return;
+    // React sets `muted` only as a property; iPhones decide whether a video may play by itself from the attribute.
+    video.muted = true;
+    video.defaultMuted = true;
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    let inView = false;
+    // Some phones refuse to start even a silent video before the visitor touches the page (an iPhone in Low Power Mode, data
+    // saver): the poster stayed. The visitor's next touch starts it, if it is still on screen.
+    const retry = (event: Event) => {
+      if (!event.isTrusted) return;
+      if (inView && !pausedRef.current && video.paused) video.play().catch(() => {});
+    };
+    const play = () => {
+      video.play().catch((error: unknown) => {
+        if ((error as { name?: string } | null)?.name === "AbortError") return;
+        document.addEventListener("touchend", retry, { capture: true, passive: true, once: true });
+        document.addEventListener("click", retry, { capture: true, passive: true, once: true });
+      });
+    };
     const observer = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
       if (entry.isIntersecting && !pausedRef.current) {
         if (!loop && video.ended) video.currentTime = 0;
-        video.play().catch(() => {});
+        play();
       } else if (!entry.isIntersecting) video.pause();
     }, { threshold: 0.6 });
     observer.observe(video);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("touchend", retry, { capture: true });
+      document.removeEventListener("click", retry, { capture: true });
+    };
   }, [loop]);
   const toggle = () => {
     const video = ref.current;

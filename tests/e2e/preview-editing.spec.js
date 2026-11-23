@@ -716,3 +716,65 @@ test('lantern-night: in a landscape window the editor backdrop is the wide film\
   const poster = page.locator('.editor-site .ln-backdrop-poster');
   await expect.poll(() => poster.evaluate(img => img.complete && img.naturalWidth > 0 && img.currentSrc)).toMatch(/\/templates\/lantern-night\/assets\/poster-wide\.webp$/);
 });
+
+// Some phone browsers throw when a page sets the volume: the fade-out then never finished and the music could not be turned off.
+test('music: turning it off stops the track even where setting the volume throws', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.addInitScript(() => {
+    Object.defineProperty(HTMLMediaElement.prototype, 'volume', { get() { return 0.5; }, set() { throw new DOMException('fixed', 'NotSupportedError'); }, configurable: true });
+    HTMLMediaElement.prototype.play = function () { if (this instanceof HTMLAudioElement) window.__music = this; Object.defineProperty(this, 'paused', { value: false, configurable: true }); this.dispatchEvent(new Event('playing')); return Promise.resolve(); };
+    HTMLMediaElement.prototype.pause = function () { Object.defineProperty(this, 'paused', { value: true, configurable: true }); this.dispatchEvent(new Event('pause')); };
+  });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/18'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  const button = screen.locator('[data-sound-toggle]');
+  await button.click();
+  await expect.poll(() => page.evaluate(() => window.__music && !window.__music.paused)).toBe(true);
+  await button.click();
+  await expect.poll(() => page.evaluate(() => window.__music.paused), { timeout: 3000 }).toBe(true);
+});
+
+// A phone that refuses to start a silent video before a touch (iPhone Low Power Mode): the first tap plays the opening film
+// instead of skipping an opening the visitor never saw.
+test('opening: where the phone refuses autoplay, the first tap plays the film instead of skipping it', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    // Allowed only once the visitor has really touched the page (a script's evaluate counts as a gesture in tests).
+    window.__touched = false;
+    document.addEventListener('pointerdown', e => { if (e.isTrusted) window.__touched = true; }, true);
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      if (this instanceof HTMLVideoElement && !window.__touched) return Promise.reject(new DOMException('blocked', 'NotAllowedError'));
+      return play.call(this);
+    };
+  });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/23'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  const intro = screen.locator('[data-intro]');
+  await expect.poll(() => screen.locator('[data-intro] video').evaluate(v => Boolean(v.getAttribute('src')))).toBe(true);
+  expect(await screen.locator('[data-intro] video').evaluate(v => v.paused)).toBe(true);
+  await screen.click({ position: { x: 120, y: 200 } });
+  await expect.poll(() => screen.locator('[data-intro] video').evaluate(v => !v.paused)).toBe(true);
+  expect(await intro.evaluate(el => el.hasAttribute('data-done') || el.hasAttribute('data-leaving'))).toBe(false);
+});
+
+// On a phone the template page's preview is laid out at a real phone's width and scaled into the mockup, so text is not oversized.
+test('template page on a phone: the preview is a real phone layout scaled into the frame', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.evaluate(() => { history.pushState({}, '', '/templates/19'); state.page = 'home'; render(); });
+  const screen = page.locator('.figma-island-host .detail-screen');
+  await expect(screen).toBeVisible();
+  await expect.poll(() => screen.evaluate(el => el.shadowRoot.querySelector('.invitation-canvas').hasAttribute('data-phone-fit'))).toBe(true);
+  const fit = await screen.evaluate(el => {
+    const c = el.shadowRoot.querySelector('.invitation-canvas');
+    return { layout: c.offsetWidth, shown: c.getBoundingClientRect().width, screen: el.clientWidth, scrolls: c.scrollHeight > c.clientHeight };
+  });
+  expect(fit.layout).toBe(390);
+  expect(Math.abs(fit.shown - fit.screen)).toBeLessThan(2);
+  expect(fit.scrolls).toBe(true);
+});

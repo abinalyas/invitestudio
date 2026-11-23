@@ -17,11 +17,17 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
   const tier = tierOf(pricing, template.backendId)
 
   // Scroll cue: shown while the invitation can scroll and is still at the top.
+  // On a phone the invitation is drawn at a real phone's size and scaled into the screen, and then it scrolls itself
+  // (figma-host.js fitDemoPhone); otherwise the screen scrolls.
+  const scrollBox = (element: HTMLElement) =>
+    element.shadowRoot?.querySelector<HTMLElement>(".invitation-canvas[data-phone-fit]") ?? element
   const updateCue = () => {
     const element = screenRef.current
+    if (!element) { setCue(false); return }
     // While the opening screen is still up, the cue would point at something hidden behind it.
-    const opening = Boolean(element?.shadowRoot?.querySelector("[data-intro]:not([data-done])"))
-    setCue(!opening && Boolean(element) && element!.scrollHeight > element!.clientHeight + 24 && element!.scrollTop < 24)
+    const opening = Boolean(element.shadowRoot?.querySelector("[data-intro]:not([data-done])"))
+    const box = scrollBox(element)
+    setCue(!opening && box.scrollHeight > box.clientHeight + 24 && box.scrollTop < 24)
   }
 
   // The real template, with example names and content, inside the phone. It stays beside the details.
@@ -29,10 +35,14 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
     if (!screenRef.current) return
     bridge.renderTemplateDemo(screenRef.current, template.backendId, phoneSmall(template.phone))
     screenRef.current.scrollTop = 0
+    const node = screenRef.current
+    const inner = node.shadowRoot?.querySelector<HTMLElement>(".invitation-canvas")
+    if (inner) inner.scrollTop = 0
     updateCue()
     const timer = window.setTimeout(updateCue, 500)
-    const node = screenRef.current
     node.addEventListener("intro-done", updateCue)
+    // Scrolling inside the shadow root does not reach the screen's onScroll.
+    inner?.addEventListener("scroll", updateCue, { passive: true })
 
     // The opening starts by itself once the phone is on screen (the "Click to start" button stays as the fallback, e.g. when
     // the phone is below the fold on a small screen: it starts when scrolled into view, so the visitor never misses it).
@@ -52,7 +62,7 @@ export function TemplateDetailPage({ templateId }: { templateId: number }) {
     // The template loads a moment after the page does, so look again until the opening exists (or give up).
     let tries = 0
     poll = window.setInterval(() => { tryStart(); if (started || ++tries > 40) window.clearInterval(poll) }, 250)
-    return () => { window.clearTimeout(timer); window.clearInterval(poll); observer?.disconnect(); node.removeEventListener("intro-done", updateCue) }
+    return () => { window.clearTimeout(timer); window.clearInterval(poll); observer?.disconnect(); node.removeEventListener("intro-done", updateCue); inner?.removeEventListener("scroll", updateCue) }
   }, [template.backendId, template.phone])
 
   if (fullSample) {
